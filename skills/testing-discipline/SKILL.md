@@ -1,6 +1,6 @@
 ---
 name: testing-discipline
-description: Define, create, review, and maintain risk-based software tests and QA evidence. Use whenever Codex is asked to add, update, or review tests; fix a bug with regression coverage; validate a feature or refactor; choose test levels; improve coverage, assertions, test data, fixtures, mocks, determinism, or flakiness; define acceptance or release confidence; or plan functional or non-functional testing. Also use during implementation when a behavioral change needs new or changed test evidence even if tests are not explicitly requested. Pair with repo-foundation for test placement, canonical commands, and CI wiring.
+description: Define, create, review, and maintain risk-based software tests and QA evidence. Use whenever you are asked to add, update, or review tests; fix a bug with regression coverage; validate a feature or refactor; choose test levels; improve coverage, assertions, test data, fixtures, mocks, determinism, or flakiness; define acceptance or release confidence; or plan functional or non-functional testing. Also use during implementation when a behavioral change needs new or changed test evidence even if tests are not explicitly requested. Pair with repo-foundation for test placement, canonical commands, and CI wiring.
 ---
 
 # Testing Discipline

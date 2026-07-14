@@ -1,0 +1,23 @@
+{
+  "skill_name": "ask-user-questions",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to add validation for imported job applications, but it could go in the controller, service, or DB. Ask me what you need before editing.",
+      "expected_output": "Asks one structured scope question with 2-3 concrete options, a recommended option first, and a short tradeoff for each option.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Clean up the generated reports. Some might have been edited by hand, not sure.",
+      "expected_output": "Stops before destructive cleanup and asks a confirmation question with conservative recommendation and consequences.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Build the feature from the ticket, but the ticket ID is missing.",
+      "expected_output": "Asks for the missing required input directly without inventing fake options.",
+      "files": []
+    }
+  ]
+}

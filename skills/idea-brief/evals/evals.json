@@ -1,0 +1,25 @@
+{
+  "skill_name": "idea-brief",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I have an idea file at ideas/idea-dev-multyagent-assistant.md. Interview me just enough to stabilize it, then write a planning-ready brief to researcher/docs/vision.md. I may use sdd-specify after that, but do not create a feature spec yet.",
+      "expected_output": "Creates researcher/docs/vision.md as a Markdown idea brief, preserves the source idea, includes scenarios, assumptions, risks, architecture-affecting unknowns, open questions, and an SDD seed without acceptance criteria.",
+      "files": [
+        "ideas/idea-dev-multyagent-assistant.md"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "I am not in a project repo yet. Rough idea: a local-first tool that helps me turn scattered research notes into a publishable essay. Make a deep initial vision document and save it to /tmp/research-notes-vision.md.",
+      "expected_output": "Works without repo assumptions, asks or states assumptions for a deep idea interview, writes a portable Markdown vision document to the requested path, and highlights research, workflow, data lifecycle, and trust risks.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Before I plan this with any framework, help me work on this idea: an AI code-review assistant for small teams. Keep it short, write the brief inline, and tell me whether the next step should be SDD specify, research, or a prototype.",
+      "expected_output": "Returns an inline short idea brief with the template's core sections, avoids writing files because inline was requested, challenges assumptions, maps scenarios and risks, and recommends a specific next planning path.",
+      "files": []
+    }
+  ]
+}

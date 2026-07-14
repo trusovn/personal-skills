@@ -1,0 +1,23 @@
+{
+  "skill_name": "idea-investigator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have an idea for a small SaaS: AI-generated onboarding checklists for remote engineering teams. Can you investigate if it makes sense commercially and save the result as a markdown brief?",
+      "expected_output": "A decision-oriented Markdown investigation that identifies assumptions, evidence needs, monetization risks, competitors/substitutes, and concrete validation steps.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I want to build a local-first desktop app that records meetings, extracts tasks, and maybe monetizes via one-time license. Pressure-test the idea and tell me what is missing for it to be a real project.",
+      "expected_output": "A pragmatic idea investigation that compares user, technical, privacy/legal, monetization, and distribution perspectives, then recommends proceed/pivot/park/stop with next experiments.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Should I make a marketplace for indie developers to sell tiny automation scripts? I don't know if it should be SaaS, marketplace, or just a content site. Guide me through the decision.",
+      "expected_output": "A guided investigation with pros/cons for the main strategic options, key assumptions, missing evidence, and a validation plan before building.",
+      "files": []
+    }
+  ]
+}

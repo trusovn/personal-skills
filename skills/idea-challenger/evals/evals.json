@@ -1,0 +1,23 @@
+{
+  "skill_name": "idea-challenger",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want you to build a small SaaS app that automatically rewrites customer support replies in our brand voice and sends them without a human review step. Let's just make the MVP quickly.",
+      "expected_output": "The response should challenge the no-human-review premise, surface customer trust and liability risks, identify the upside, suggest safer MVP guardrails, and then proceed or propose a scoped implementation plan.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Add a Redis cache around the product details endpoint so the API feels faster. Don't overthink it.",
+      "expected_output": "The response should give a concise implementation preflight that questions measurement, cache invalidation, staleness, and TTL, then continue with a practical implementation path if no blocker exists.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Actually change the product idea from a browser extension for recruiters into a full marketplace where candidates bid for interview slots. I think that's more viral.",
+      "expected_output": "The response should use follow-up correction mode, identify conflict with the original likely goal, test the virality logic, flag marketplace cold-start and incentive risks, and recommend a smaller validation step.",
+      "files": []
+    }
+  ]
+}

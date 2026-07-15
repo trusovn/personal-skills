@@ -26,6 +26,7 @@ Current source skills:
 - `senior-code-review`
 - `session-handoff`
 - `skill-creator`
+- `task-orchestrator`
 - `testing-discipline`
 
 Installed copies under `~/.agents/skills`, `~/.codex/skills`, or a project are

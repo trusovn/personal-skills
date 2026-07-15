@@ -1,0 +1,44 @@
+{
+  "skill_name": "task-orchestrator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Work through `docs/web-manager-tasks.md` starting at task 14. Each task has its own brief. Use my local model as the supervisor and `codex exec` as the implementation worker. Per-task commits are authorized, but do not push, install dependencies, or use the network. I don't want to babysit normal implementation choices.",
+      "expected_output": "A sequential orchestration run that snapshots the dirty tree, selects only the next ready task, launches a resumable structured Codex worker, inspects its result and task-scoped diff, applies only policy-bounded judgment, verifies, commits task-scoped paths, updates progress, and moves to the next task without reading full transcripts.",
+      "files": [],
+      "expectations": [
+        "The orchestrator establishes the explicit commit and permission policy before dispatch.",
+        "It launches exactly one bounded task at a time and does not combine adjacent task briefs.",
+        "It persists and reuses the Codex thread ID for clarification or interruption recovery.",
+        "It reads structured worker results and task-scoped diffs by default, not full transcripts.",
+        "It stages only task-scoped paths rather than using blanket git staging.",
+        "It does not push, install dependencies, or use the network."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "The worker for task 14 stopped to ask whether a canonical YAML change should be a unified diff string or transport-neutral before/after strings. The approved plan explicitly says the preview model is transport-independent. The worker recommends before/after strings. Decide if you can, then continue the same worker session.",
+      "expected_output": "The orchestrator recognizes that the recommendation is directly entailed by the transport-independence constraint, records the bounded decision, and resumes the recorded worker thread with a concise follow-up instead of launching a new session.",
+      "files": [],
+      "expectations": [
+        "The decision is justified from the authoritative transport-independence constraint.",
+        "The orchestrator records the decision and its reasoning.",
+        "It resumes the exact recorded thread ID rather than starting the task again.",
+        "The follow-up contains the decision without replaying the full task or transcript."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our SDD feature folder has final `tasks.json`, task markdown, tracker, spec, SAD, ADRs, and test plan. I want a cheap local Qwen process to supervise Codex workers through the remaining tasks so I can leave it running. Use the SDD artifacts, but avoid having two orchestration engines fighting each other.",
+      "expected_output": "A plan to use the generic task orchestrator as the sole execution engine, reading the SDD DAG and one task's cited artifacts at a time, preserving SDD TDD/gate semantics, and not wrapping or invoking the whole-feature sdd-implement engine.",
+      "files": [],
+      "expectations": [
+        "The orchestrator treats tasks.json and the tracker as authoritative queue state.",
+        "It loads only the selected task and cited upstream sections rather than every artifact and transcript.",
+        "It preserves the selected task's RED, GREEN, REFACTOR, and GATE requirements.",
+        "It explicitly avoids nesting the generic supervisor around whole-feature sdd-implement.",
+        "It escalates unresolved SDD contract or architecture decisions instead of inventing them."
+      ]
+    }
+  ]
+}

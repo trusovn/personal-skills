@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["complete", "needs_input", "blocked", "failed"]
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "files_changed": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "verification": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "command": { "type": "string" },
+          "outcome": {
+            "type": "string",
+            "enum": ["passed", "failed", "not_run"]
+          },
+          "summary": { "type": "string" }
+        },
+        "required": ["command", "outcome", "summary"],
+        "additionalProperties": false
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision": { "type": "string" },
+          "reason": { "type": "string" },
+          "scope": {
+            "type": "string",
+            "enum": ["task", "plan"]
+          }
+        },
+        "required": ["decision", "reason", "scope"],
+        "additionalProperties": false
+      }
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": { "type": "string" },
+          "recommendation": { "type": "string" },
+          "blocking": { "type": "boolean" }
+        },
+        "required": ["question", "recommendation", "blocking"],
+        "additionalProperties": false
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "next_action": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "task_id",
+    "summary",
+    "files_changed",
+    "verification",
+    "decisions",
+    "questions",
+    "risks",
+    "next_action"
+  ],
+  "additionalProperties": false
+}

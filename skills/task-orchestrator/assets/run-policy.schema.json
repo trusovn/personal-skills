@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:task-orchestrator:run-policy:v1",
+  "title": "Task Orchestrator Run Policy",
+  "type": "object",
+  "required": [
+    "version",
+    "run_id",
+    "repository",
+    "task_ids",
+    "verification",
+    "permissions",
+    "commit_policy",
+    "stop_policy"
+  ],
+  "properties": {
+    "version": { "const": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "repository": { "type": "string", "minLength": 1 },
+    "task_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["targeted_checks", "repository_gate", "authorized_gap"],
+      "properties": {
+        "targeted_checks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "repository_gate": {
+          "type": ["string", "null"]
+        },
+        "authorized_gap": {
+          "type": ["object", "null"],
+          "required": ["reason", "owner", "follow_up"],
+          "properties": {
+            "reason": { "type": "string", "minLength": 1 },
+            "owner": { "type": "string", "minLength": 1 },
+            "follow_up": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "permissions": {
+      "type": "object",
+      "required": [
+        "sandbox",
+        "approval_policy",
+        "network",
+        "dependency_install",
+        "writable_roots",
+        "danger_full_access_authorized"
+      ],
+      "properties": {
+        "sandbox": {
+          "enum": ["read-only", "workspace-write", "danger-full-access"]
+        },
+        "approval_policy": { "const": "never" },
+        "network": { "type": "boolean" },
+        "dependency_install": { "type": "boolean" },
+        "writable_roots": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "danger_full_access_authorized": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "sandbox": { "const": "danger-full-access" } },
+            "required": ["sandbox"]
+          },
+          "then": {
+            "properties": {
+              "danger_full_access_authorized": { "const": true }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "commit_policy": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["off", "controller_exact_paths"] }
+      },
+      "additionalProperties": false
+    },
+    "stop_policy": {
+      "type": "object",
+      "required": ["on_blocked", "on_failed", "on_needs_input", "on_unexpected_changes"],
+      "properties": {
+        "on_blocked": { "enum": ["stop", "escalate"] },
+        "on_failed": { "enum": ["stop", "escalate"] },
+        "on_needs_input": { "enum": ["stop", "escalate"] },
+        "on_unexpected_changes": { "enum": ["stop", "escalate"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

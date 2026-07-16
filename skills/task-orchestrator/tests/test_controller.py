@@ -1392,7 +1392,16 @@ raise SystemExit(0)
         self.assertEqual([], closure_data["controller_observations"]["unexpected_paths"])
         self.assertTrue(closure_data["controller_observations"]["head_changed"])
         self.assertTrue(closure_data["controller_observations"]["index_changed"])
-        self.assertEqual(2, len(closure_data["controller_observations"]["mechanical_violations"]))
+        mechanical_violations = [
+            "worker changed HEAD despite commit prohibition",
+            "worker changed the Git index",
+        ]
+        self.assertEqual(
+            mechanical_violations,
+            closure_data["controller_observations"]["mechanical_violations"],
+        )
+        for violation in mechanical_violations:
+            self.assertIn(violation, closure_data["reasons"])
         # Verify identity binding
         self.assertIn("identity", closure_data)
         self.assertEqual("run-1", closure_data["identity"]["run_id"])

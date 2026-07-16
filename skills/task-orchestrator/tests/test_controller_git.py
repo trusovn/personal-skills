@@ -140,8 +140,9 @@ class ControllerGitTest(unittest.TestCase):
 
         self.assertEqual(baseline["head_oid"], fields["head_before"])
         self.assertEqual(baseline["head_oid"], fields["head_after"])
-        self.assertTrue(observations["index_changed"])
-        self.assertIn("worker changed the Git index", evidence["mechanical_violations"])
+        self.assertTrue(evidence["index_changed"])
+        self.assertNotIn("mechanical_violations", evidence)
+        self.assertNotIn("mechanical_violations", observations)
         self.assertEqual(
             ["dirty-modified.txt"], observations["modified_preexisting_paths"]
         )
@@ -199,6 +200,35 @@ class ControllerGitTest(unittest.TestCase):
             self.assertEqual(sha256_text(content), artifact["sha256"], name)
         self.assertEqual(sha256_text(patch), fields["task_patch_digest"])
 
+    def test_closure_evidence_returns_raw_comparison_facts_without_worker_policy(self):
+        baseline = self.git.capture_task_baseline(self.repo)
+        (self.repo / "allowed.txt").write_text("committed worker change\n")
+        run_git(self.repo, "add", "allowed.txt")
+        run_git(self.repo, "commit", "-qm", "worker commit")
+        (self.repo / "staged.txt").write_text("staged worker change\n")
+        run_git(self.repo, "add", "staged.txt")
+
+        evidence = self.git.capture_closure_evidence(
+            repository=self.repo,
+            run_dir=self.root / "run-comparison-facts",
+            attempt_id="attempt-001",
+            task_baseline=baseline,
+            task_baseline_digest="baseline-digest",
+            allowed_paths=["allowed.txt", "staged.txt"],
+            policy_sha256="policy-digest",
+            manifest_sha256="manifest-digest",
+            prompt_sha256="prompt-digest",
+            adapter_state_digest="adapter-digest",
+        )
+
+        self.assertTrue(evidence["head_changed"])
+        self.assertTrue(evidence["index_changed"])
+        self.assertNotIn("mechanical_violations", evidence)
+        self.assertNotIn(
+            "mechanical_violations",
+            evidence["closure_fields"]["controller_observations"],
+        )
+
     def test_task_patch_excludes_allowed_paths_that_were_dirty_at_baseline(self):
         (self.repo / "dirty-modified.txt").write_text("pre-existing allowed dirty\n")
         (self.repo / "dirty-unchanged.txt").write_text(
@@ -227,6 +257,85 @@ class ControllerGitTest(unittest.TestCase):
         self.assertEqual("", fields["task_patch"])
         task_patch_artifact = run_dir / fields["evidence_artifacts"]["task_patch"]["path"]
         self.assertEqual("", task_patch_artifact.read_text())
+
+    def test_task_patch_excludes_both_sides_of_preexisting_rename(self):
+        (self.repo / "old.txt").write_text("pre-existing rename\n")
+        run_git(self.repo, "add", "old.txt")
+        run_git(self.repo, "commit", "-qm", "add rename source")
+        run_git(self.repo, "mv", "old.txt", "new.txt")
+        baseline = self.git.capture_task_baseline(self.repo)
+
+        for allowed_paths in (["old.txt"], ["new.txt"], ["old.txt", "new.txt"]):
+            with self.subTest(allowed_paths=allowed_paths):
+                evidence = self.git.capture_closure_evidence(
+                    repository=self.repo,
+                    run_dir=self.root / ("run-" + "-".join(allowed_paths)),
+                    attempt_id="attempt-001",
+                    task_baseline=baseline,
+                    task_baseline_digest="baseline-digest",
+                    allowed_paths=allowed_paths,
+                    policy_sha256="policy-digest",
+                    manifest_sha256="manifest-digest",
+                    prompt_sha256="prompt-digest",
+                    adapter_state_digest="adapter-digest",
+                )
+
+                self.assertEqual("", evidence["closure_fields"]["task_patch"])
+                observations = evidence["closure_fields"]["controller_observations"]
+                self.assertEqual([], observations["disappeared_preexisting_paths"])
+                self.assertEqual([], observations["modified_preexisting_paths"])
+
+        self.assertEqual(
+            status_value("R ", b"<missing>"), baseline["status"]["old.txt"]
+        )
+        self.assertEqual(
+            status_value("R ", b"pre-existing rename\n"),
+            baseline["status"]["new.txt"],
+        )
+
+        (self.repo / "new.txt").write_text("modified pre-existing rename\n")
+        modified = self.git.capture_closure_evidence(
+            repository=self.repo,
+            run_dir=self.root / "run-modified-rename",
+            attempt_id="attempt-001",
+            task_baseline=baseline,
+            task_baseline_digest="baseline-digest",
+            allowed_paths=["old.txt", "new.txt"],
+            policy_sha256="policy-digest",
+            manifest_sha256="manifest-digest",
+            prompt_sha256="prompt-digest",
+            adapter_state_digest="adapter-digest",
+        )
+        modified_observations = modified["closure_fields"]["controller_observations"]
+        self.assertEqual(
+            ["new.txt", "old.txt"],
+            modified_observations["modified_preexisting_paths"],
+        )
+        self.assertEqual("", modified["closure_fields"]["task_patch"])
+
+        run_git(self.repo, "restore", "--staged", "--", "old.txt", "new.txt")
+        run_git(self.repo, "restore", "--worktree", "--", "old.txt")
+        (self.repo / "new.txt").unlink()
+        disappeared = self.git.capture_closure_evidence(
+            repository=self.repo,
+            run_dir=self.root / "run-disappeared-rename",
+            attempt_id="attempt-001",
+            task_baseline=baseline,
+            task_baseline_digest="baseline-digest",
+            allowed_paths=["old.txt", "new.txt"],
+            policy_sha256="policy-digest",
+            manifest_sha256="manifest-digest",
+            prompt_sha256="prompt-digest",
+            adapter_state_digest="adapter-digest",
+        )
+        disappeared_observations = disappeared["closure_fields"][
+            "controller_observations"
+        ]
+        self.assertEqual(
+            ["new.txt", "old.txt"],
+            disappeared_observations["disappeared_preexisting_paths"],
+        )
+        self.assertEqual("", disappeared["closure_fields"]["task_patch"])
 
     def test_status_preserves_unusual_path_identity_without_shell_interpretation(self):
         unusual_paths = (
@@ -265,6 +374,103 @@ class ControllerGitTest(unittest.TestCase):
         self.assertTrue(set(unusual_paths).issubset(status))
         self.assertIn(os.fsdecode(b"non-utf-8-\xff.txt"), status)
         self.assertFalse((self.repo / "side-effect").exists())
+
+    def test_status_preserves_both_copy_path_identities(self):
+        source = "copy\nsource.txt"
+        destination = "copy\tdestination.txt"
+        for path in (source, destination):
+            (self.repo / path).write_text("copied content\n")
+        porcelain = f"C  {destination}\0{source}\0".encode()
+
+        with mock.patch.object(
+            self.git,
+            "_run_git",
+            return_value=subprocess.CompletedProcess([], 0, porcelain, b""),
+        ):
+            status = self.git.capture_git_status(self.repo)
+
+        expected = status_value("C ", b"copied content\n")
+        self.assertEqual({source: expected, destination: expected}, status)
+
+    def test_closure_evidence_preserves_unusual_paths_and_artifact_digests(self):
+        baseline = self.git.capture_task_baseline(self.repo)
+        unusual_paths = [
+            "space name.txt",
+            "-leading-dash.txt",
+            "tab\tname.txt",
+            "line\nname.txt",
+            "shell$(touch side-effect).txt",
+        ]
+        for index, path in enumerate(unusual_paths):
+            (self.repo / path).write_text(f"unusual content {index}\n")
+
+        raw_path = os.fsdecode(b"non-utf-8-\xff.txt")
+        blob = subprocess.run(
+            ["git", "-C", str(self.repo), "hash-object", "-w", "--stdin"],
+            input=b"raw path content\n",
+            check=True,
+            capture_output=True,
+        ).stdout.strip()
+        subprocess.run(
+            [
+                b"git",
+                b"-C",
+                os.fsencode(self.repo),
+                b"update-index",
+                b"--add",
+                b"--cacheinfo",
+                b"100644",
+                blob,
+                os.fsencode(raw_path),
+            ],
+            check=True,
+            capture_output=True,
+        )
+        allowed_paths = [*unusual_paths, raw_path]
+        original_run_git = self.git._run_git
+
+        with mock.patch.object(self.git, "_run_git", wraps=original_run_git) as git_call:
+            evidence = self.git.capture_closure_evidence(
+                repository=self.repo,
+                run_dir=self.root / "run-unusual-paths",
+                attempt_id="attempt-001",
+                task_baseline=baseline,
+                task_baseline_digest="baseline-digest",
+                allowed_paths=allowed_paths,
+                policy_sha256="policy-digest",
+                manifest_sha256="manifest-digest",
+                prompt_sha256="prompt-digest",
+                adapter_state_digest="adapter-digest",
+            )
+
+        git_call.assert_any_call(
+            self.repo,
+            "diff",
+            "--binary",
+            baseline["head_oid"],
+            "--",
+            *allowed_paths,
+        )
+        self.assertTrue(set(allowed_paths).issubset(evidence["current_status"]))
+        self.assertEqual(
+            sorted(unusual_paths),
+            evidence["closure_fields"]["untracked_paths"],
+        )
+        self.assertFalse((self.repo / "side-effect").exists())
+
+        fields = evidence["closure_fields"]
+        patch = fields["task_patch"]
+        for index in range(len(unusual_paths)):
+            self.assertIn(f"unusual content {index}", patch)
+        # The sandbox permits the raw-byte index identity but not creation of
+        # its matching worktree path, so no raw-file content enters this patch.
+        self.assertIn(raw_path, evidence["current_status"])
+        for name, artifact in fields["evidence_artifacts"].items():
+            content = (self.root / "run-unusual-paths" / artifact["path"]).read_text(
+                errors="surrogateescape"
+            )
+            self.assertEqual(sha256_text(content), artifact["sha256"], name)
+        self.assertEqual(sha256_text(patch), fields["task_patch_digest"])
 
     def test_shell_metacharacter_is_literal_in_untracked_patch(self):
         baseline = self.git.capture_task_baseline(self.repo)
@@ -314,7 +520,7 @@ class ControllerGitTest(unittest.TestCase):
 
 
 class ControllerGitWiringTest(unittest.TestCase):
-    def test_run_next_uses_controller_git_task_baseline(self):
+    def test_run_next_uses_controller_git_task_baseline_and_closure_evidence(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             repo = root / "repo"
@@ -374,22 +580,63 @@ class ControllerGitWiringTest(unittest.TestCase):
             run_dir = root / "run"
             controller.init_run(run_dir, policy_path, manifest_path, repo)
             fake_codex = root / "fake-codex"
-            fake_codex.write_text("#!/bin/sh\nexit 0\n")
+            fake_codex.write_text(
+                """#!/usr/bin/env python3
+import json
+from pathlib import Path
+import sys
+
+args = sys.argv[1:]
+if "--help" in args:
+    raise SystemExit(0)
+Path.cwd().joinpath("allowed.txt").write_text("worker change\\n")
+print(json.dumps({"type": "thread.started", "thread_id": "thread-wiring"}), flush=True)
+result_path = Path(args[args.index("-o") + 1])
+result_path.write_text(json.dumps({
+    "status": "complete",
+    "task_id": "T1",
+    "summary": "done",
+    "files_changed": ["allowed.txt"],
+    "verification": [],
+    "decisions": [],
+    "questions": [],
+    "risks": [],
+    "next_action": "inspect",
+}))
+"""
+            )
             fake_codex.chmod(0o755)
 
-            sentinel = RuntimeError("controller-git task baseline sentinel")
+            original_task_baseline = controller._git_module.capture_task_baseline
+            original_closure_evidence = controller._git_module.capture_closure_evidence
             with (
                 mock.patch.dict(sys.modules, {"codex_worker": controller._worker_module}),
                 mock.patch.object(
                     controller._git_module,
                     "capture_task_baseline",
-                    side_effect=sentinel,
-                ),
-                self.assertRaisesRegex(RuntimeError, "controller-git task baseline sentinel"),
+                    wraps=original_task_baseline,
+                ) as task_baseline,
+                mock.patch.object(
+                    controller._git_module,
+                    "capture_closure_evidence",
+                    wraps=original_closure_evidence,
+                ) as closure_evidence,
+                mock.patch("builtins.print"),
             ):
-                controller._cli_run_next(SimpleNamespace(
+                return_code = controller._cli_run_next(SimpleNamespace(
                     run_dir=str(run_dir), timeout_seconds=10.0, codex_bin=str(fake_codex)
                 ))
+
+            self.assertEqual(0, return_code)
+            task_baseline.assert_called_once_with(repo.resolve())
+            closure_evidence.assert_called_once()
+            closure = json.loads((run_dir / "closure" / "attempt-001.json").read_text())
+            self.assertEqual("worker change\n", (repo / "allowed.txt").read_text())
+            self.assertIn("worker change", closure["task_patch"])
+            self.assertEqual(
+                closure["task_patch_digest"],
+                sha256_text(closure["task_patch"]),
+            )
 
 
 if __name__ == "__main__":

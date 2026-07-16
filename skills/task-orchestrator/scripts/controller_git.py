@@ -75,17 +75,19 @@ def capture_git_status(repository: Path) -> dict[str, str]:
             index += 1
             continue
         code = entry[:2]
-        path = entry[3:]
-        worktree_path = repository / path
-        if worktree_path.is_symlink():
-            content = os.fsencode(worktree_path.readlink())
-        elif worktree_path.is_file():
-            content = worktree_path.read_bytes()
-        else:
-            content = b"<missing>"
-        status[path] = f"{code}:{hashlib.sha256(content).hexdigest()}"
+        paths = [entry[3:]]
         if "R" in code or "C" in code:
             index += 1
+            paths.append(entries[index])
+        for path in paths:
+            worktree_path = repository / path
+            if worktree_path.is_symlink():
+                content = os.fsencode(worktree_path.readlink())
+            elif worktree_path.is_file():
+                content = worktree_path.read_bytes()
+            else:
+                content = b"<missing>"
+            status[path] = f"{code}:{hashlib.sha256(content).hexdigest()}"
         index += 1
     return status
 
@@ -196,11 +198,6 @@ def capture_closure_evidence(
     index_tree_digest = _sha256_text(index_tree)
     head_changed = head_before != head_after
     index_changed = task_baseline["index_tree"] != index_tree
-    mechanical_violations = []
-    if head_changed:
-        mechanical_violations.append("worker changed HEAD despite commit prohibition")
-    if index_changed:
-        mechanical_violations.append("worker changed the Git index")
 
     evidence_record = {
         "policy_sha256": policy_sha256,
@@ -260,7 +257,6 @@ def capture_closure_evidence(
         "controller_observations": {
             "head_changed": head_changed,
             "index_changed": index_changed,
-            "mechanical_violations": mechanical_violations,
             "allowed_changed_paths": allowed_changed_paths,
             "unexpected_paths": unexpected_paths,
             "disappeared_preexisting_paths": disappeared_preexisting_paths,
@@ -276,6 +272,7 @@ def capture_closure_evidence(
     }
     return {
         "current_status": current_status,
-        "mechanical_violations": mechanical_violations,
+        "head_changed": head_changed,
+        "index_changed": index_changed,
         "closure_fields": closure_fields,
     }

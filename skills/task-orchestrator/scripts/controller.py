@@ -603,7 +603,14 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     )
     current_status = git_evidence["current_status"]
     closure_git_fields = git_evidence["closure_fields"]
-    mechanical_violations = git_evidence["mechanical_violations"]
+    mechanical_violations = []
+    if git_evidence["head_changed"]:
+        mechanical_violations.append("worker changed HEAD despite commit prohibition")
+    if git_evidence["index_changed"]:
+        mechanical_violations.append("worker changed the Git index")
+    closure_git_fields["controller_observations"][
+        "mechanical_violations"
+    ] = mechanical_violations
     evidence_digest = closure_git_fields["evidence_digest"]
 
     # Build the complete closure packet

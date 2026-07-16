@@ -466,6 +466,60 @@ class ControllerStateContractTest(unittest.TestCase):
             with self.subTest(run_state=run_state):
                 state.validate_ledger(self.coherent_ledger(run_state))
 
+    def test_non_selected_task_cannot_transition_to_running_while_run_is_owned(self):
+        state = load_controller_state()
+        ledger = self.coherent_ledger("running")
+        ledger["tasks"].append({
+            "id": "T2", "title": "Second", "brief_path": "tasks/T2.md",
+            "dependencies": [], "allowed_paths": ["second.txt"],
+            "required_checks": [], "state": "ready", "attempt_ids": [],
+        })
+        original = json.dumps(ledger, sort_keys=True)
+        updated_tasks = json.loads(json.dumps(ledger["tasks"]))
+        updated_tasks[1]["state"] = "running"
+        updated_tasks[1]["attempt_ids"].append("attempt-002")
+
+        with self.assertRaises(ValueError):
+            state.apply_ledger_update(
+                ledger, {"tasks": updated_tasks}, "2026-07-16T01:00:00+00:00",
+                expected_revision=1,
+            )
+
+        self.assertEqual(original, json.dumps(ledger, sort_keys=True))
+
+    def test_non_selected_task_rejects_every_ownership_bearing_state(self):
+        state = load_controller_state()
+        cases = (
+            ("running", "awaiting_inspection"),
+            ("finalizing", "resumable"),
+            ("initialized", "running"),
+        )
+        for run_state, non_selected_state in cases:
+            with self.subTest(
+                run_state=run_state, non_selected_state=non_selected_state
+            ):
+                ledger = self.coherent_ledger(run_state)
+                ledger["tasks"].append({
+                    "id": "T2", "title": "Second", "brief_path": "tasks/T2.md",
+                    "dependencies": [], "allowed_paths": ["second.txt"],
+                    "required_checks": [], "state": non_selected_state,
+                    "attempt_ids": ["attempt-002"],
+                })
+                with self.assertRaisesRegex(ValueError, "ownership-bearing state"):
+                    state.validate_ledger(ledger)
+
+    def test_selected_task_permits_independent_ready_task(self):
+        state = load_controller_state()
+        for run_state in ("running", "finalizing"):
+            with self.subTest(run_state=run_state):
+                ledger = self.coherent_ledger(run_state)
+                ledger["tasks"].append({
+                    "id": "T2", "title": "Second", "brief_path": "tasks/T2.md",
+                    "dependencies": [], "allowed_paths": ["second.txt"],
+                    "required_checks": [], "state": "ready", "attempt_ids": [],
+                })
+                state.validate_ledger(ledger)
+
     def test_stage_3_ledger_coherence_rejects_missing_or_mismatched_ownership(self):
         state = load_controller_state()
         cases = []
@@ -492,7 +546,7 @@ class ControllerStateContractTest(unittest.TestCase):
         cases.append((ledger, "ready unfinished task"))
         ledger = self.coherent_ledger("stopped")
         ledger["tasks"][0]["state"] = "running"
-        cases.append((ledger, "active task state"))
+        cases.append((ledger, "ownership-bearing state"))
         for ledger, message in cases:
             with self.subTest(message=message):
                 with self.assertRaisesRegex(ValueError, message):

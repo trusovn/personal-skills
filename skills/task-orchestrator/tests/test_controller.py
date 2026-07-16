@@ -1062,6 +1062,42 @@ class ControllerContractTest(unittest.TestCase):
             holder.stdin.flush()
             holder.communicate(timeout=5)
 
+    def test_stale_revision_leaves_persisted_ledger_bytes_unchanged(self):
+        controller = load_controller()
+        run_dir = self.root / "stale-run"
+        run_dir.mkdir()
+        ledger_path = run_dir / "ledger.json"
+        ledger = {
+            "version": 1, "run_id": "run-1", "repository": str(self.repo),
+            "created_at": "2026-07-16T00:00:00+00:00",
+            "updated_at": "2026-07-16T00:00:00+00:00", "revision": 1,
+            "policy_path": "run-policy.json", "policy_sha256": "abc",
+            "manifest_path": "task-manifest.json", "manifest_sha256": "def",
+            "initial_baseline_path": "run-initial.json",
+            "initial_baseline_digest": "ghi", "completed_task_ids": [],
+            "state": "ready", "selected_task_id": None,
+            "active_attempt_id": None, "last_closure_path": None,
+            "last_verification_path": None, "last_decision_path": None,
+            "active_operation_path": None,
+            "tasks": [{
+                "id": "T1", "title": "Test task", "brief_path": "tasks/T1.md",
+                "dependencies": [], "allowed_paths": ["allowed.txt"],
+                "required_checks": [], "state": "ready", "attempt_ids": [],
+            }],
+        }
+        ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
+        original_bytes = ledger_path.read_bytes()
+        updater = {"state": "stopped", "tasks": [dict(ledger["tasks"][0], state="stopped")]}
+        original_updater = json.dumps(updater, sort_keys=True)
+
+        with self.assertRaisesRegex(ValueError, "Stale ledger revision"):
+            controller.update_ledger(run_dir, updater, expected_revision=0)
+
+        self.assertEqual(original_updater, json.dumps(updater, sort_keys=True))
+        self.assertEqual(original_bytes, ledger_path.read_bytes())
+        self.assertFalse((run_dir / "attempts").exists())
+        self.assertFalse((run_dir / "closure").exists())
+
     def test_closure_rejects_worker_claimed_verification_without_controller_evidence(self):
         """decide_closure must not accept worker-claimed verification as independent proof."""
         controller = load_controller()

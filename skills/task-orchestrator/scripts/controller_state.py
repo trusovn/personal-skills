@@ -405,6 +405,12 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
             attempt_owners[attempt_id] = task_id
         if task_id == ledger["selected_task_id"]:
             selected_task = task
+    if any(
+        task["state"] in {"running", "awaiting_inspection", "resumable"}
+        and task is not selected_task
+        for task in ledger["tasks"]
+    ):
+        raise ValueError("Only the selected task may have an ownership-bearing state")
     run_state = ledger["state"]
     selected_id = ledger["selected_task_id"]
     active_attempt_id = ledger["active_attempt_id"]

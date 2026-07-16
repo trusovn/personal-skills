@@ -27,6 +27,7 @@ Current source skills:
 - `session-handoff`
 - `skill-creator`
 - `task-brief-designer`
+- `task-preflight`
 - `task-orchestrator`
 - `testing-discipline`
 

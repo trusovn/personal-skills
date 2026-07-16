@@ -1,0 +1,44 @@
+{
+  "skill_name": "task-preflight",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Preflight task brief `docs/tasks/QR-12.md` in `/work/queue-runner` and write the packet to `/work/queue-runner/.runner/runs/QR-12/preflight.md`. The brief is `ready_for_preflight`, dependency `QR-11` is complete in `.runner/tracker.json`, and run policy `local-medium-v1` permits cheap local tests but no network or commits. The brief cites the existing helper `tests/helpers/queue_state.py` and candidate test `test_second_selection` in `tests/integration/test_run_next.py`; this repository requires `uv run pytest`, and the parametrized node id contains spaces and square brackets. Resolve the real helper interface and exact invocation from the tree, run only the authorized targeted baseline, and do not edit repository files.",
+      "expected_output": "A fresh `ready` packet that records all baseline and policy digests, confirms the helper and AC oracle, and supplies the exact quoted copy-pasteable pytest node invocation with working directory, environment, expected signal, and truthful baseline result.",
+      "files": [],
+      "expectations": [
+        "The packet uses exactly status `ready` only after confirming the brief, dependency, dirty baseline, helper interface, entry point, oracle, and unchanged freshness fields.",
+        "The targeted command is fully copy-pasteable and correctly quotes or escapes the exact parametrized pytest node id rather than naming a test class or command family.",
+        "The command record includes working directory, required environment, purpose, expected signal, cost/authorization, whether it ran, and its truthful result.",
+        "The packet records the brief, dependency source, applicable instructions, run policy, HEAD, exact Git status, and required content digests.",
+        "The output does not edit source, tests, helpers, tracker state, task-orchestrator, or dependencies."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Run task-preflight for `/work/scheduler/docs/tasks/SCH-09.md` and save its packet under `/work/scheduler/.runs/SCH-09/preflight.md`. The brief is `ready_for_preflight` and requires deterministic proof that two workers cannot claim the same job. It says the believed-existing helper is `tests/helpers/concurrent_claims.py`, but current tree inspection shows that path and any equivalent process/barrier helper are absent. All dependencies are complete and the repository is otherwise clean. Preflight is read-only: do not create the helper or add it to implementation scope.",
+      "expected_output": "A `blocked` packet that proves the required concurrency capability is absent, identifies the owning design/prerequisite route, and refuses to create the helper or tell the implementer to discover it.",
+      "files": [],
+      "expectations": [
+        "The packet uses exactly status `blocked` and states that implementation must not begin.",
+        "It records exact searches or path evidence showing the required concurrency helper and a supported equivalent are absent.",
+        "It identifies the missing deterministic concurrency oracle as a required verification capability rather than an optional baseline gap.",
+        "It routes the missing capability to `task-brief-designer` or its prerequisite owner with the smallest next action, followed by fresh preflight.",
+        "It does not create a helper, edit tests or code, widen implementation scope, or modify task-orchestrator."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Preflight `/work/api/docs/tasks/API-31.md` for implementation. The brief is `ready_for_preflight` and allows edits to `src/auth/session.py` and `tests/auth/test_session.py`. Before preflight, `git status --short` already shows ` M src/auth/session.py`; its current SHA-256 differs from HEAD because the user is working on an unrelated token-refresh change, and the run policy does not authorize merging with user work. Dependencies, helper paths, and commands otherwise resolve. Write durable preflight evidence, but preserve the user's file and do not ask the implementer to work around it.",
+      "expected_output": "A `blocked` packet that captures the exact dirty entry and content digest, classifies it as overlapping user-owned work on an allowed path, preserves the file, and names the smallest route needed before a fresh preflight.",
+      "files": [],
+      "expectations": [
+        "The packet uses exactly status `blocked` and does not treat otherwise-valid commands or dependencies as sufficient for readiness.",
+        "It preserves the exact `git status --short` entry and records the dirty path's lowercase SHA-256 digest and user ownership evidence.",
+        "It identifies that an allowed implementation path overlaps pre-existing user work under the supplied run policy.",
+        "It names a smallest next action owned by the user or orchestrator and requires a fresh preflight after the overlap is resolved or explicitly authorized.",
+        "It does not modify, stash, reset, overwrite, commit, or claim ownership of the user's change."
+      ]
+    }
+  ]
+}

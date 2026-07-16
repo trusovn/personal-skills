@@ -4,6 +4,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 
 
@@ -494,18 +495,21 @@ class ControllerContractTest(unittest.TestCase):
         )
 
         self.assertEqual("run-1", result["run_id"])
-        self.assertEqual("initialized", result["state"])
+        self.assertEqual("ready", result["state"])
         self.assertTrue((run_dir / "run-policy.json").exists())
         self.assertTrue((run_dir / "task-manifest.json").exists())
         self.assertTrue((run_dir / "ledger.json").exists())
         self.assertTrue((run_dir / "baselines" / "run-initial.json").exists())
         ledger = json.loads((run_dir / "ledger.json").read_text())
-        self.assertEqual("initialized", ledger["state"])
+        self.assertEqual("ready", ledger["state"])
         self.assertIsNone(ledger["selected_task_id"])
         self.assertIsNone(ledger["active_attempt_id"])
         self.assertEqual(1, len(ledger["tasks"]))
         self.assertEqual("T1", ledger["tasks"][0]["id"])
-        self.assertEqual("initialized", ledger["tasks"][0]["state"])
+        self.assertEqual("ready", ledger["tasks"][0]["state"])
+        self.assertIsNone(ledger["last_verification_path"])
+        self.assertIsNone(ledger["last_decision_path"])
+        self.assertIsNone(ledger["active_operation_path"])
 
     def test_init_run_rejects_incomplete_dependencies(self):
         """init_run must reject authorized tasks depending on incomplete external tasks."""
@@ -582,6 +586,9 @@ class ControllerContractTest(unittest.TestCase):
         )
 
         ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual(["ready", "ready", "initialized"], [
+            task["state"] for task in ledger["tasks"]
+        ])
         selected = controller.select_task(ledger, policy)
         # T2 comes before T1 in policy order, so T2 is selected
         self.assertEqual("T2", selected["id"])
@@ -603,10 +610,13 @@ class ControllerContractTest(unittest.TestCase):
             "manifest_sha256": "def",
             "initial_baseline_path": "run-initial.json",
             "initial_baseline_digest": "ghi",
-            "state": "initialized",
+            "state": "ready",
             "selected_task_id": None,
             "active_attempt_id": None,
             "last_closure_path": None,
+            "last_verification_path": None,
+            "last_decision_path": None,
+            "active_operation_path": None,
             "tasks": [
                 {
                     "id": "T1",
@@ -615,7 +625,7 @@ class ControllerContractTest(unittest.TestCase):
                     "dependencies": ["T99"],
                     "allowed_paths": ["allowed.txt"],
                     "required_checks": [],
-                    "state": "initialized",
+                    "state": "ready",
                     "attempt_ids": [],
                 },
             ],
@@ -1020,6 +1030,38 @@ class ControllerContractTest(unittest.TestCase):
         self.assertEqual(ledger_before, ledger_path.read_bytes())
         self.assertFalse((run_dir / "attempts").exists())
 
+    def test_run_lock_contention_leaves_run_bytes_unchanged(self):
+        controller = load_controller()
+        run_dir = self.root / "locked-run"
+        run_dir.mkdir()
+        ledger_path = run_dir / "ledger.json"
+        ledger_path.write_text("{}\n")
+        holder_code = (
+            "import importlib.util, pathlib, sys; "
+            f"p=pathlib.Path({str(CONTROLLER_PATH)!r}); "
+            "s=importlib.util.spec_from_file_location('holder_controller', p); "
+            "m=importlib.util.module_from_spec(s); s.loader.exec_module(m); "
+            f"lock=m.RunCommandLock(pathlib.Path({str(run_dir)!r})); lock.acquire(); "
+            "print('locked', flush=True); sys.stdin.readline(); lock.release()"
+        )
+        holder = subprocess.Popen(
+            [sys.executable, "-c", holder_code], text=True,
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        assert holder.stdout is not None
+        self.assertEqual("locked", holder.stdout.readline().strip())
+        before = ledger_path.read_bytes()
+        try:
+            with self.assertRaisesRegex(ValueError, "Another controller command owns"):
+                controller.update_ledger(run_dir, {}, expected_revision=1)
+            self.assertEqual(before, ledger_path.read_bytes())
+            self.assertFalse((run_dir / "attempts").exists())
+        finally:
+            assert holder.stdin is not None
+            holder.stdin.write("release\n")
+            holder.stdin.flush()
+            holder.communicate(timeout=5)
+
     def test_closure_rejects_worker_claimed_verification_without_controller_evidence(self):
         """decide_closure must not accept worker-claimed verification as independent proof."""
         controller = load_controller()
@@ -1242,6 +1284,126 @@ raise SystemExit(0)
         fake.chmod(0o755)
         return fake
 
+    def initialize_waiting_run(self):
+        controller = load_controller()
+        run_dir = self.root / "runs" / "waiting-run"
+        policy_path = self.root / "run-policy.json"
+        manifest_path = self.root / "task-manifest.json"
+        release_path = self.root / "release-worker"
+        marker_path = self.root / "worker-started"
+        fake = self.root / "waiting-fake-codex"
+        fake.write_text(
+            f"""#!/usr/bin/env python3
+import json
+from pathlib import Path
+import sys
+import time
+
+args = sys.argv[1:]
+if "--help" in args:
+    raise SystemExit(0)
+Path({str(marker_path)!r}).write_text("started\\n")
+release = Path({str(release_path)!r})
+for _ in range(6000):
+    if release.exists():
+        break
+    time.sleep(0.01)
+else:
+    raise SystemExit(9)
+print(json.dumps({{"type": "thread.started", "thread_id": "thread-waiting-001"}}), flush=True)
+result_path = Path(args[args.index("-o") + 1])
+result_path.write_text(json.dumps({{
+    "status": "complete", "task_id": "T1", "summary": "done",
+    "files_changed": [], "verification": [], "decisions": [],
+    "questions": [], "risks": [], "next_action": "inspect"
+}}))
+"""
+        )
+        fake.chmod(0o755)
+        controller.persist_run_policy(policy_path, self.policy())
+        (self.repo / "tasks").mkdir()
+        (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        manifest_path.write_text(json.dumps({
+            "version": 1,
+            "manifest_id": "waiting-feature",
+            "completed_task_ids": [],
+            "tasks": [{
+                "id": "T1", "title": "Wait", "brief_path": "tasks/T1.md",
+                "dependencies": [], "allowed_paths": ["allowed.txt"],
+                "required_checks": ["python3 -m unittest test_targeted"],
+            }],
+        }, indent=2, sort_keys=True) + "\n")
+        controller.init_run(run_dir, policy_path, manifest_path, self.repo)
+        return controller, run_dir, fake, marker_path, release_path
+
+    def start_waiting_run_next(self, run_dir, fake, marker_path):
+        process = subprocess.Popen(
+            [
+                sys.executable, str(CONTROLLER_PATH), "run-next",
+                "--run-dir", str(run_dir), "--timeout-seconds", "20",
+                "--codex-bin", str(fake),
+            ],
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        for _ in range(500):
+            if marker_path.exists():
+                break
+            if process.poll() is not None:
+                break
+            time.sleep(0.01)
+        if not marker_path.exists():
+            _, stderr = process.communicate(timeout=5)
+            self.fail(f"waiting worker did not start: {stderr}")
+        return process
+
+    def test_second_run_next_cannot_launch_while_first_worker_waits(self):
+        _, run_dir, fake, marker_path, release_path = self.initialize_waiting_run()
+        first = self.start_waiting_run_next(run_dir, fake, marker_path)
+        ledger_path = run_dir / "ledger.json"
+        running_bytes = ledger_path.read_bytes()
+        second_fake = self.root / "second-preflight-codex"
+        second_fake.write_text("#!/bin/sh\nexit 0\n")
+        second_fake.chmod(0o755)
+
+        second = subprocess.run(
+            [
+                sys.executable, str(CONTROLLER_PATH), "run-next",
+                "--run-dir", str(run_dir), "--timeout-seconds", "20",
+                "--codex-bin", str(second_fake),
+            ],
+            text=True, capture_output=True,
+        )
+
+        self.assertNotEqual(0, second.returncode)
+        self.assertIn("Cannot select task from state 'running'", second.stderr)
+        self.assertEqual(running_bytes, ledger_path.read_bytes())
+        self.assertEqual(["attempt-001"], [path.name for path in (run_dir / "attempts").iterdir()])
+        release_path.write_text("release\n")
+        stdout, stderr = first.communicate(timeout=10)
+        self.assertEqual(0, first.returncode, stderr)
+        self.assertEqual("awaiting_inspection", json.loads(stdout)["status"])
+
+    def test_waiting_run_next_rejects_competing_terminal_update(self):
+        controller, run_dir, fake, marker_path, release_path = self.initialize_waiting_run()
+        first = self.start_waiting_run_next(run_dir, fake, marker_path)
+        ledger_path = run_dir / "ledger.json"
+        running = json.loads(ledger_path.read_text())
+        stopped_tasks = [dict(task) for task in running["tasks"]]
+        stopped_tasks[0]["state"] = "stopped"
+        controller.update_ledger(run_dir, {
+            "state": "stopped", "selected_task_id": None,
+            "active_attempt_id": None, "tasks": stopped_tasks,
+        }, expected_revision=running["revision"])
+        winning_bytes = ledger_path.read_bytes()
+
+        release_path.write_text("release\n")
+        _, stderr = first.communicate(timeout=10)
+
+        self.assertNotEqual(0, first.returncode)
+        self.assertIn("terminal reconciliation rejected", stderr)
+        self.assertEqual(winning_bytes, ledger_path.read_bytes())
+        self.assertFalse((run_dir / "closure").exists())
+
     def test_full_init_and_run_next_flow(self):
         """End-to-end: init + run-next with fake transport produces awaiting_inspection."""
         controller = load_controller()
@@ -1296,7 +1458,7 @@ raise SystemExit(0)
         self.assertEqual(0, init_result.returncode, init_result.stderr)
         init_data = json.loads(init_result.stdout)
         self.assertEqual("run-1", init_data["run_id"])
-        self.assertEqual("initialized", init_data["state"])
+        self.assertEqual("ready", init_data["state"])
 
         # Run next
         run_result = subprocess.run(
@@ -1423,7 +1585,9 @@ raise SystemExit(0)
         rewritten_tasks = [dict(entry) for entry in ledger["tasks"]]
         rewritten_tasks[0]["attempt_ids"] = []
         with self.assertRaisesRegex(ValueError, "append-only"):
-            controller.update_ledger(run_dir, {"tasks": rewritten_tasks})
+            controller.update_ledger(
+                run_dir, {"tasks": rewritten_tasks}, expected_revision=ledger["revision"]
+            )
         self.assertEqual(ledger_before, ledger_path.read_bytes())
 
     def test_run_next_stops_on_missing_terminal_result(self):

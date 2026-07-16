@@ -134,17 +134,23 @@ def capture_closure_evidence(
         repository, "ls-files", "--others", "--exclude-standard", "-z"
     ).stdout
     untracked_paths = sorted(path for path in _decode(untracked_output).split("\0") if path)
-    task_patch = _decode(
-        _run_git(
-            repository,
-            "diff",
-            "--binary",
-            head_before,
-            "--",
-            *allowed_paths,
-        ).stdout
-    )
-    for untracked_path in sorted(set(untracked_paths) & set(allowed_paths)):
+    task_patch_paths = [
+        path for path in allowed_paths if path not in task_baseline["status"]
+    ]
+    if task_patch_paths:
+        task_patch = _decode(
+            _run_git(
+                repository,
+                "diff",
+                "--binary",
+                head_before,
+                "--",
+                *task_patch_paths,
+            ).stdout
+        )
+    else:
+        task_patch = ""
+    for untracked_path in sorted(set(untracked_paths) & set(task_patch_paths)):
         untracked_patch = subprocess.run(
             [
                 "git",

@@ -199,6 +199,35 @@ class ControllerGitTest(unittest.TestCase):
             self.assertEqual(sha256_text(content), artifact["sha256"], name)
         self.assertEqual(sha256_text(patch), fields["task_patch_digest"])
 
+    def test_task_patch_excludes_allowed_paths_that_were_dirty_at_baseline(self):
+        (self.repo / "dirty-modified.txt").write_text("pre-existing allowed dirty\n")
+        (self.repo / "dirty-unchanged.txt").write_text(
+            "pre-existing allowed unchanged\n"
+        )
+        baseline = self.git.capture_task_baseline(self.repo)
+
+        (self.repo / "dirty-modified.txt").write_text(
+            "worker changed allowed dirty\n"
+        )
+        run_dir = self.root / "run"
+        evidence = self.git.capture_closure_evidence(
+            repository=self.repo,
+            run_dir=run_dir,
+            attempt_id="attempt-001",
+            task_baseline=baseline,
+            task_baseline_digest="baseline-digest",
+            allowed_paths=["dirty-modified.txt", "dirty-unchanged.txt"],
+            policy_sha256="policy-digest",
+            manifest_sha256="manifest-digest",
+            prompt_sha256="prompt-digest",
+            adapter_state_digest="adapter-digest",
+        )
+
+        fields = evidence["closure_fields"]
+        self.assertEqual("", fields["task_patch"])
+        task_patch_artifact = run_dir / fields["evidence_artifacts"]["task_patch"]["path"]
+        self.assertEqual("", task_patch_artifact.read_text())
+
     def test_status_preserves_unusual_path_identity_without_shell_interpretation(self):
         unusual_paths = (
             "space name.txt",

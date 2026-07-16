@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import tempfile
@@ -274,6 +275,54 @@ class CodexWorkerTest(unittest.TestCase):
             time.sleep(0.01)
         self.assertFalse(child_alive, f"child process {child_pid} remained alive")
 
+    def test_signal_interruption_terminates_process_group_and_records_terminal_state(self):
+        fake = self.write_sleeping_fake_codex()
+        wrapper = subprocess.Popen(
+            [
+                sys.executable, str(SCRIPT), "start",
+                "--run-dir", str(self.run_dir),
+                "--cwd", str(self.root),
+                "--prompt-file", str(self.prompt),
+                "--codex-bin", str(fake),
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        state_path = self.run_dir / "state.json"
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline:
+            if state_path.exists() and (self.root / "child.pid").exists():
+                state = json.loads(state_path.read_text())
+                if state.get("status") == "running" and state.get("thread_id"):
+                    break
+            time.sleep(0.01)
+        else:
+            wrapper.kill()
+            wrapper.wait(timeout=2)
+            self.fail("wrapper did not reach a recorded running state")
+
+        wrapper.send_signal(signal.SIGTERM)
+        stdout, stderr = wrapper.communicate(timeout=3)
+        self.assertNotEqual(0, wrapper.returncode, stdout + stderr)
+        state = json.loads(state_path.read_text())
+        self.assertEqual("resumable", state["status"])
+        self.assertEqual("interrupted", state["attempt_outcome"])
+        self.assertIsNone(state["process_pid"])
+        terminal_path = self.run_dir / "turn-001.result.state.json"
+        self.assertEqual(state, json.loads(terminal_path.read_text()))
+
+        child_pid = int((self.root / "child.pid").read_text())
+        deadline = time.monotonic() + 2
+        while time.monotonic() < deadline:
+            try:
+                os.kill(child_pid, 0)
+            except ProcessLookupError:
+                break
+            time.sleep(0.01)
+        else:
+            self.fail(f"child process {child_pid} remained alive")
+
     def test_resume_rejects_live_recorded_process_without_starting_another(self):
         fake = self.write_fake_codex()
         process = subprocess.Popen([sys.executable, "-c", "import signal; signal.pause()"])
@@ -353,6 +402,105 @@ class CodexWorkerTest(unittest.TestCase):
         self.assertEqual("stopped", state["status"])
         self.assertEqual("missing_result", state["attempt_outcome"])
 
+    def test_malformed_nested_result_fields_are_not_complete(self):
+        """Malformed nested values (integer summary, string question entries, null next_action)
+        must not be treated as complete."""
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "task_orchestrator_worker",
+            SCRIPT,
+        )
+        mod = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(mod)
 
-if __name__ == "__main__":
-    unittest.main()
+        # Construct a result with correct top-level keys but invalid nested values.
+        malformed = {
+            "status": "complete",
+            "task_id": "T1",
+            "summary": 42,  # should be a string
+            "files_changed": ["src/main.py"],
+            "verification": [
+                {"command": "make verify", "outcome": "passed", "summary": "ok"},
+            ],
+            "decisions": [
+                {"decision": "used X", "reason": "faster", "scope": "task"},
+            ],
+            "questions": ["this is a string not an object"],  # should be objects
+            "risks": ["some risk"],
+            "next_action": None,  # should be a string
+        }
+        result_path = self.run_dir / "turn-001.result.json"
+        self.run_dir.mkdir(parents=True)
+        result_path.write_text(json.dumps(malformed))
+
+        status = mod.result_status(result_path)
+        self.assertIsNone(status, "Malformed nested values must not return 'complete'")
+
+    def test_missing_required_nested_fields_are_not_complete(self):
+        """Verification items missing required fields (command, outcome, summary)
+        must not be treated as complete."""
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "task_orchestrator_worker",
+            SCRIPT,
+        )
+        mod = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(mod)
+
+        # Verification items missing required fields.
+        malformed = {
+            "status": "complete",
+            "task_id": "T1",
+            "summary": "Done.",
+            "files_changed": [],
+            "verification": [
+                {"command": "make verify"},  # missing "outcome" and "summary"
+            ],
+            "decisions": [],
+            "questions": [],
+            "risks": [],
+            "next_action": "Inspect.",
+        }
+        result_path = self.run_dir / "turn-001.result.json"
+        self.run_dir.mkdir(parents=True)
+        result_path.write_text(json.dumps(malformed))
+
+        status = mod.result_status(result_path)
+        self.assertIsNone(status, "Missing required nested fields must not return 'complete'")
+
+    def test_valid_result_returns_complete(self):
+        """A fully valid result must return 'complete'."""
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "task_orchestrator_worker",
+            SCRIPT,
+        )
+        mod = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(mod)
+
+        valid = {
+            "status": "complete",
+            "task_id": "T1",
+            "summary": "Done.",
+            "files_changed": ["src/main.py"],
+            "verification": [
+                {"command": "make verify", "outcome": "passed", "summary": "ok"},
+            ],
+            "decisions": [
+                {"decision": "used X", "reason": "faster", "scope": "task"},
+            ],
+            "questions": [
+                {"question": "any?", "recommendation": "none", "blocking": False},
+            ],
+            "risks": [],
+            "next_action": "Inspect.",
+        }
+        result_path = self.run_dir / "turn-001.result.json"
+        self.run_dir.mkdir(parents=True)
+        result_path.write_text(json.dumps(valid))
+
+        status = mod.result_status(result_path)
+        self.assertEqual("complete", status)

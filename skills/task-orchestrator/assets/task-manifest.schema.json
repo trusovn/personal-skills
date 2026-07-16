@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:task-orchestrator:task-manifest:v1",
+  "title": "Task Orchestrator Task Manifest",
+  "type": "object",
+  "required": [
+    "version",
+    "manifest_id",
+    "completed_task_ids",
+    "tasks"
+  ],
+  "properties": {
+    "version": { "const": 1 },
+    "manifest_id": { "type": "string", "minLength": 1 },
+    "completed_task_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "brief_path", "allowed_paths"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "brief_path": { "type": "string", "minLength": 1 },
+          "dependencies": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "allowed_paths": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "required_checks": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -57,13 +57,72 @@ def result_status(path: Path) -> str | None:
         return None
     if set(result) != RESULT_FIELDS:
         return None
+    if not _validate_result_fields(result):
+        return None
     status = result.get("status")
     if not isinstance(result.get("task_id"), str) or not result["task_id"]:
         return None
-    for field in ("files_changed", "verification", "decisions", "questions", "risks"):
-        if not isinstance(result.get(field), list):
-            return None
     return status if status in RESULT_STATUSES else None
+
+
+def _validate_result_fields(result: dict[str, Any]) -> bool:
+    """Return True if the result passes all nested field validations."""
+    if not isinstance(result.get("summary"), str):
+        return False
+    if not isinstance(result.get("next_action"), str):
+        return False
+    if not isinstance(result.get("files_changed"), list):
+        return False
+    for item in result.get("files_changed", []):
+        if not isinstance(item, str):
+            return False
+    if not isinstance(result.get("verification"), list):
+        return False
+    for item in result.get("verification", []):
+        if not isinstance(item, dict):
+            return False
+        if set(item.keys()) != {"command", "outcome", "summary"}:
+            return False
+        if not isinstance(item.get("command"), str):
+            return False
+        if not isinstance(item.get("outcome"), str):
+            return False
+        if item.get("outcome") not in {"passed", "failed", "not_run"}:
+            return False
+        if not isinstance(item.get("summary"), str):
+            return False
+    if not isinstance(result.get("decisions"), list):
+        return False
+    for item in result.get("decisions", []):
+        if not isinstance(item, dict):
+            return False
+        if set(item.keys()) != {"decision", "reason", "scope"}:
+            return False
+        if not isinstance(item.get("decision"), str):
+            return False
+        if not isinstance(item.get("reason"), str):
+            return False
+        if item.get("scope") not in {"task", "plan"}:
+            return False
+    if not isinstance(result.get("questions"), list):
+        return False
+    for item in result.get("questions", []):
+        if not isinstance(item, dict):
+            return False
+        if set(item.keys()) != {"question", "recommendation", "blocking"}:
+            return False
+        if not isinstance(item.get("question"), str):
+            return False
+        if not isinstance(item.get("recommendation"), str):
+            return False
+        if not isinstance(item.get("blocking"), bool):
+            return False
+    if not isinstance(result.get("risks"), list):
+        return False
+    for item in result.get("risks", []):
+        if not isinstance(item, str):
+            return False
+    return True
 
 
 def parse_thread_id(line: str) -> str | None:
@@ -88,6 +147,10 @@ def preflight_codex(
     sandbox: str,
     resume: bool = False,
 ) -> None:
+    if sandbox == "danger-full-access":
+        raise ValueError(
+            "danger-full-access requires persisted authorization not accepted by this adapter"
+        )
     command = [*safe_codex_prefix(codex_bin)]
     if resume:
         command.extend(["resume", "-c", f'sandbox_mode="{sandbox}"'])
@@ -146,6 +209,13 @@ def run_turn(
     result_path: Path,
     timeout_seconds: float | None,
 ) -> int:
+    """Run a worker turn with guaranteed cleanup on interruption/exception."""
+    state_lock = threading.Lock()
+
+    def persist_state() -> None:
+        with state_lock:
+            atomic_write_json(state_path, state)
+
     state.update(
         status="starting",
         exit_code=None,
@@ -155,55 +225,83 @@ def run_turn(
         stderr_path=str(stderr_path),
         result_path=str(result_path),
     )
-    atomic_write_json(state_path, state)
+    persist_state()
 
-    with events_path.open("x") as events, stderr_path.open("x") as errors:
-        process = subprocess.Popen(
-            command,
-            cwd=state["cwd"],
-            stdout=subprocess.PIPE,
-            stderr=errors,
-            text=True,
-            bufsize=1,
-            start_new_session=True,
-        )
-        state.update(status="running", process_pid=process.pid)
-        atomic_write_json(state_path, state)
+    process: subprocess.Popen[str] | None = None
+    exit_code: int | None = None
+    timed_out = False
+    interruption_error: BaseException | None = None
+    reader: threading.Thread | None = None
+    previous_sigterm = signal.getsignal(signal.SIGTERM)
+    previous_sigint = signal.getsignal(signal.SIGINT)
 
-        assert process.stdout is not None
-        reader_errors: list[BaseException] = []
+    def handle_sigterm(signum: int, frame: Any) -> None:
+        raise SystemExit(128 + signum)
 
-        def consume_stdout() -> None:
+    signal.signal(signal.SIGTERM, handle_sigterm)
+    try:
+        with events_path.open("x") as events, stderr_path.open("x") as errors:
+            process = subprocess.Popen(
+                command,
+                cwd=state["cwd"],
+                stdout=subprocess.PIPE,
+                stderr=errors,
+                text=True,
+                bufsize=1,
+                start_new_session=True,
+            )
+            state.update(status="running", process_pid=process.pid)
+            persist_state()
+
+            assert process.stdout is not None
+            reader_errors: list[BaseException] = []
+
+            def consume_stdout() -> None:
+                try:
+                    for line in process.stdout:
+                        events.write(line)
+                        events.flush()
+                        thread_id = parse_thread_id(line)
+                        if thread_id and not state.get("thread_id"):
+                            state["thread_id"] = thread_id
+                            persist_state()
+                except BaseException as error:
+                    reader_errors.append(error)
+
+            reader = threading.Thread(target=consume_stdout, daemon=True)
+            reader.start()
             try:
-                for line in process.stdout:
-                    events.write(line)
-                    events.flush()
-                    thread_id = parse_thread_id(line)
-                    if thread_id and not state.get("thread_id"):
-                        state["thread_id"] = thread_id
-                        atomic_write_json(state_path, state)
-            except BaseException as error:
-                reader_errors.append(error)
+                exit_code = process.wait(timeout=timeout_seconds)
+            except subprocess.TimeoutExpired:
+                timed_out = True
+                terminate_process_group(process)
+                exit_code = process.returncode
+            reader.join(timeout=1)
+            if reader.is_alive():
+                raise RuntimeError("Worker stdout reader did not terminate after process exit")
+            if reader_errors:
+                raise RuntimeError(f"Worker stdout reader failed: {reader_errors[0]}")
 
-        reader = threading.Thread(target=consume_stdout, daemon=True)
-        reader.start()
-        timed_out = False
-        try:
-            exit_code = process.wait(timeout=timeout_seconds)
-        except subprocess.TimeoutExpired:
-            timed_out = True
+    except (KeyboardInterrupt, SystemExit, Exception) as error:
+        interruption_error = error
+        if process is not None:
             terminate_process_group(process)
-            exit_code = process.returncode
-        reader.join(timeout=1)
-        if reader.is_alive():
-            raise RuntimeError("Worker stdout reader did not terminate after process exit")
-        if reader_errors:
-            raise RuntimeError(f"Worker stdout reader failed: {reader_errors[0]}")
+    finally:
+        if process is not None and process.poll() is None:
+            terminate_process_group(process)
+        if reader is not None and reader.is_alive():
+            reader.join(timeout=1)
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     state["process_pid"] = None
-    state["exit_code"] = exit_code
+    state["exit_code"] = process.returncode if process is not None else exit_code
     state["ended_at"] = datetime.now(timezone.utc).isoformat()
-    if timed_out:
+    if interruption_error is not None:
+        state["attempt_outcome"] = "interrupted"
+        state["status"] = "resumable" if state.get("thread_id") else "stopped"
+        wrapper_exit = 130
+    elif timed_out:
         state["attempt_outcome"] = "timed_out"
         state["status"] = "resumable" if state.get("thread_id") else "stopped"
         wrapper_exit = 124
@@ -227,9 +325,11 @@ def run_turn(
         else:
             state["status"] = "stopped"
             wrapper_exit = 3
-    atomic_write_json(state_path, state)
+    persist_state()
     terminal_path = result_path.with_suffix(".state.json")
     exclusive_write_json(terminal_path, state)
+    signal.signal(signal.SIGTERM, previous_sigterm)
+    signal.signal(signal.SIGINT, previous_sigint)
 
     print(
         json.dumps(

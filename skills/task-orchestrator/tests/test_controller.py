@@ -1195,7 +1195,7 @@ class ControllerIntegrationTest(unittest.TestCase):
             },
         }
 
-    def write_fake_codex(self, *, write_result=True):
+    def write_fake_codex(self, *, write_result=True, created_paths=("new.txt",)):
         """Write a fake codex that emits a thread and a valid result."""
         fake = self.root / "fake-codex"
         fake.write_text(
@@ -1219,7 +1219,9 @@ subprocess.run(["git", "commit", "-qm", "unauthorized worker commit"], check=Tru
 allowed.write_text("staged change\\n")
 subprocess.run(["git", "add", "allowed.txt"], check=True)
 allowed.write_text("worker change\\n")
-Path.cwd().joinpath("new.txt").write_text("new allowed file\\n")
+created_paths = {created_paths!r}
+for index, path in enumerate(created_paths):
+    Path.cwd().joinpath(path).write_text(f"untracked content {{index}}\\n")
 print(json.dumps({{"type": "thread.started", "thread_id": "thread-fake-001"}}), flush=True)
 if {write_result!r} and "-o" in args:
     result_path = Path(args[args.index("-o") + 1])
@@ -1227,7 +1229,7 @@ if {write_result!r} and "-o" in args:
         "status": "complete",
         "task_id": "T1",
         "summary": "Implemented task T1.",
-        "files_changed": ["allowed.txt", "new.txt"],
+        "files_changed": ["allowed.txt", *created_paths],
         "verification": [],
         "decisions": [],
         "questions": [],
@@ -1246,7 +1248,15 @@ raise SystemExit(0)
         run_dir = self.root / "runs" / "run-001"
         policy_path = self.root / "run-policy.json"
         manifest_path = self.root / "task-manifest.json"
-        fake = self.write_fake_codex()
+        created_paths = (
+            "new.txt",
+            "space name.txt",
+            "-leading-dash.txt",
+            "tab\tname.txt",
+            "line\nname.txt",
+            "shell$(touch side-effect).txt",
+        )
+        fake = self.write_fake_codex(created_paths=created_paths)
 
         # Write policy
         controller.persist_run_policy(policy_path, self.policy())
@@ -1264,7 +1274,7 @@ raise SystemExit(0)
                     "title": "Test task",
                     "brief_path": "tasks/T1.md",
                     "dependencies": [],
-                    "allowed_paths": ["allowed.txt", "new.txt"],
+                    "allowed_paths": ["allowed.txt", *created_paths],
                     "required_checks": ["python3 -m unittest test_targeted"],
                 }
             ],
@@ -1346,8 +1356,11 @@ raise SystemExit(0)
         self.assertTrue((closure_dir / f"{attempt.name}.staged.stat.txt").exists())
         self.assertTrue((closure_dir / f"{attempt.name}.unstaged.stat.txt").exists())
         patch_path = closure_dir / f"{attempt.name}.diff.patch"
-        self.assertIn("worker change", patch_path.read_text())
-        self.assertIn("new allowed file", patch_path.read_text())
+        patch = patch_path.read_text()
+        self.assertIn("worker change", patch)
+        for index in range(len(created_paths)):
+            self.assertIn(f"untracked content {index}", patch)
+        self.assertFalse((self.repo / "side-effect").exists())
         # Verify the closure packet has complete identity and evidence
         closure_data = json.loads((closure_dir / f"{attempt.name}.json").read_text())
         self.assertIn("run_id", closure_data)
@@ -1369,8 +1382,12 @@ raise SystemExit(0)
         self.assertEqual(0, closure_data["worker_claims"]["exit_code"])
         self.assertEqual("complete", closure_data["worker_claims"]["attempt_outcome"])
         self.assertEqual(
-            ["allowed.txt", "new.txt"],
+            sorted(["allowed.txt", *created_paths]),
             closure_data["controller_observations"]["allowed_changed_paths"],
+        )
+        self.assertEqual(
+            sorted([*created_paths, "tasks/T1.md"]),
+            closure_data["controller_observations"]["untracked_paths"],
         )
         self.assertEqual([], closure_data["controller_observations"]["unexpected_paths"])
         self.assertTrue(closure_data["controller_observations"]["head_changed"])

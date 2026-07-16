@@ -700,15 +700,14 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
         text=True,
     )
     untracked_result = subprocess.run(
-        ["git", "-C", str(repo), "ls-files", "--others", "--exclude-standard"],
+        ["git", "-C", str(repo), "ls-files", "--others", "--exclude-standard", "-z"],
         check=True,
         capture_output=True,
-        text=True,
     )
-    untracked_paths = (
-        sorted(untracked_result.stdout.rstrip("\n").split("\n"))
-        if untracked_result.stdout.strip()
-        else []
+    untracked_paths = sorted(
+        path
+        for path in untracked_result.stdout.decode(errors="surrogateescape").split("\0")
+        if path
     )
     task_patch_result = subprocess.run(
         [

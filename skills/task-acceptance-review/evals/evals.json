@@ -1,0 +1,44 @@
+{
+  "skill_name": "task-acceptance-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Independently review completed task `QR-12` in `/work/queue-runner` using `docs/tasks/QR-12.md`, the ready packet `.runner/runs/QR-12/preflight.md`, and `.runner/runs/QR-12/worker-result.json`. The worker's unit and state tests pass and its result claims both invocations work. The approved AC requires two consecutive public `runner run-next` invocations against persisted `.runner/state.json`. In an authorized disposable directory, the first invocation claims `TASK-1`, but the second reuses an initial-baseline guard and exits without claiming ready `TASK-2`. Write only `.runner/runs/QR-12/acceptance.md`; do not fix the implementation or update the tracker.",
+      "expected_output": "A read-only acceptance report with a blocking located finding tied to the repeated-flow AC, independently observed first-state-change-plus-second-invocation evidence, and verdict `CHANGES_REQUESTED` routed to the same bounded implementation thread.",
+      "files": [],
+      "expectations": [
+        "The report treats the passing worker tests and result as claims and independently exercises the real `runner run-next` public entry point twice through persisted state.",
+        "It records the first legitimate claim/state change and the second invocation's failure to claim `TASK-2`, rather than inferring repeated behavior from unit or state tests.",
+        "A P1 or P2 finding includes a current implementation location, triggering state, consequence, evidence, affected AC, and smallest corrective direction without a patch.",
+        "The report uses exactly verdict `CHANGES_REQUESTED` and routes to the same `bounded-task-implementer` thread followed by a new acceptance review.",
+        "Only the authorized acceptance report is written; source, tests, task artifacts, tracker state, and task-orchestrator are not modified."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Run task acceptance review for `EXP-08` in `/work/exporter`. The brief, ready preflight packet, worker result, baseline digests, and local-only run policy are supplied under `.runs/EXP-08/`. Current state equals the preflight baseline plus changes only to the two allowed paths. The worker added deterministic module coverage and an integration probe through public `exportctl resume`; an independent disposable-state probe reproduces the first export, checkpoint, and resumed export, including no duplicate rows on retry. All exact targeted and owning-suite commands pass. Write `.runs/EXP-08/acceptance.md` and do not advance the task.",
+      "expected_output": "A concise clean acceptance report that corroborates every AC at module and real-entry levels, records deterministic retry/resume evidence and clean scope, states `No findings.`, and returns `ACCEPT` routed only to task-orchestrator.",
+      "files": [],
+      "expectations": [
+        "The report reconstructs a clean scoped diff from the preflight baseline and confirms that only allowed task-owned paths changed.",
+        "Every AC has corroborated module/state evidence plus real public `exportctl resume` evidence, including negative no-duplicate behavior.",
+        "The lifecycle row and independent probe record the first export, legitimate checkpoint state, resumed or retried occurrence, and externally observed result.",
+        "The findings section says `No findings.` and does not manufacture a defect when the evidence is clean.",
+        "The report uses exactly verdict `ACCEPT`, states any residual limits, and routes only to `task-orchestrator` without updating tracker or orchestration state."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review task `SCH-09` in `/work/scheduler` from its brief, preflight packet, and complete worker result. The AC requires deterministic proof that two workers cannot claim the same job. The preflight packet says `tests/helpers/concurrent_claims.py` exists, but its recorded digest no longer matches and current inspection shows the helper was removed after preflight. The ordinary unit suite passes, but the run policy does not authorize inventing a replacement, editing tests, or using a live scheduler. Produce durable acceptance evidence without repairing anything.",
+      "expected_output": "An `INCONCLUSIVE` acceptance report that identifies the stale/invalid helper evidence and missing decisive concurrency capability, refuses to substitute unit tests or create a helper, and routes to task-preflight or the prerequisite owner before review can be repeated.",
+      "files": [],
+      "expectations": [
+        "The report identifies the preflight helper digest mismatch and current absence as exact stale/current-state evidence.",
+        "It marks the real concurrency AC unverified and does not treat the passing unit suite or worker result as sufficient proof.",
+        "It does not create or replace the helper, edit tests or source, run an unauthorized live probe, or ask the implementer to discover around the gap.",
+        "The report uses exactly verdict `INCONCLUSIVE`, not `ACCEPT` or `CHANGES_REQUESTED`.",
+        "The next route names `task-preflight` or the prerequisite capability owner with the smallest action, followed by a new acceptance review."
+      ]
+    }
+  ]
+}

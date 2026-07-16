@@ -357,7 +357,7 @@ def _now_iso() -> str:
 
 
 def update_ledger(
-    run_dir: Path, updater: dict[str, Any], *, expected_revision: int | None = None
+    run_dir: Path, updater: dict[str, Any], *, expected_revision: int
 ) -> dict[str, Any]:
     """Read, update, validate, and atomically write the ledger."""
     ledger_path = run_dir / "ledger.json"

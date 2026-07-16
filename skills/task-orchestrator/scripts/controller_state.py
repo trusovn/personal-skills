@@ -461,6 +461,19 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
     elif ledger["selected_task_id"] is not None:
         raise ValueError(f"'{state}' must have no selected_task_id")
 
+    active_tasks = [
+        task
+        for task in ledger["tasks"]
+        if task["state"] in {"running", "awaiting_inspection", "resumable"}
+    ]
+    if state in selected_states:
+        if len(active_tasks) != 1 or active_tasks[0]["id"] != selected_task["id"]:
+            raise ValueError(
+                "An active lifecycle state must belong only to the selected task"
+            )
+    elif active_tasks:
+        raise ValueError(f"'{state}' cannot contain a task in an active lifecycle state")
+
     if state == "running":
         if ledger["active_attempt_id"] != selected_task["attempt_ids"][-1]:
             raise ValueError("Active attempt must be the latest selected task attempt")
@@ -503,17 +516,29 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
 
 def apply_ledger_update(
     ledger: dict[str, Any], updater: dict[str, Any], updated_at: str,
-    *, expected_revision: int | None = None,
+    *, expected_revision: int,
+    closure_decision: dict[str, Any] | None = None,
+    expected_identity: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     next_ledger = json.loads(json.dumps(ledger))
     validate_ledger(next_ledger)
-    if expected_revision is not None and next_ledger["revision"] != expected_revision:
+    if next_ledger["revision"] != expected_revision:
         raise ValueError(
             f"Stale ledger revision: expected {expected_revision}, "
             f"found {next_ledger['revision']}"
         )
     if "revision" in updater:
         raise ValueError("Ledger revision is controller-managed")
+    if "updated_at" in updater:
+        raise ValueError("Ledger updated_at is controller-managed")
+    immutable_ledger_fields = (
+        "version", "run_id", "repository", "created_at", "policy_path",
+        "policy_sha256", "manifest_path", "manifest_sha256",
+        "initial_baseline_path", "initial_baseline_digest",
+    )
+    for field in immutable_ledger_fields:
+        if field in updater and updater[field] != ledger[field]:
+            raise ValueError(f"Ledger {field} is immutable")
     previous_tasks = next_ledger["tasks"]
     next_ledger.update(updater)
     next_ledger["updated_at"] = updated_at
@@ -546,10 +571,11 @@ def apply_ledger_update(
             if current[field] != previous[field]:
                 raise ValueError(f"Task {task_id} {field} is immutable")
         if current["state"] != previous["state"]:
-            if current["state"] not in ALLOWED_TASK_TRANSITIONS[previous["state"]]:
-                raise ValueError(
-                    f"Task transition {previous['state']} -> {current['state']} is not allowed"
-                )
+            transition_task(
+                previous["state"], current["state"],
+                closure_decision=closure_decision,
+                expected_identity=expected_identity,
+            )
         attempts = current["attempt_ids"]
         if attempts[:len(previous["attempt_ids"])] != previous["attempt_ids"]:
             raise ValueError(f"Task {task_id} attempt history is append-only")

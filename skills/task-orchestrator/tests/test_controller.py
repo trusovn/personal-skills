@@ -1435,7 +1435,10 @@ raise SystemExit(0)
         rewritten_tasks = [dict(entry) for entry in ledger["tasks"]]
         rewritten_tasks[0]["attempt_ids"] = []
         with self.assertRaisesRegex(ValueError, "append-only"):
-            controller.update_ledger(run_dir, {"tasks": rewritten_tasks})
+            controller.update_ledger(
+                run_dir, {"tasks": rewritten_tasks},
+                expected_revision=ledger["revision"],
+            )
         self.assertEqual(ledger_before, ledger_path.read_bytes())
 
     def test_run_lock_and_revision_prevent_duplicate_or_stale_reconciliation(self):

@@ -1,9 +1,11 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 
 
@@ -456,8 +458,8 @@ class ControllerContractTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "unknown|unique"):
                     controller.validate_task_manifest(self.policy(), manifest, self.repo)
 
-    def test_init_run_creates_initialized_ledger_outside_repo(self):
-        """init_run must atomically create an initialized run directory."""
+    def test_init_run_creates_ready_ledger_outside_repo(self):
+        """init_run must atomically expose dependency-ready tasks."""
         controller = load_controller()
         run_dir = self.root / "runs" / "run-001"
         policy_path = self.root / "run-policy.json"
@@ -494,18 +496,21 @@ class ControllerContractTest(unittest.TestCase):
         )
 
         self.assertEqual("run-1", result["run_id"])
-        self.assertEqual("initialized", result["state"])
+        self.assertEqual("ready", result["state"])
         self.assertTrue((run_dir / "run-policy.json").exists())
         self.assertTrue((run_dir / "task-manifest.json").exists())
         self.assertTrue((run_dir / "ledger.json").exists())
         self.assertTrue((run_dir / "baselines" / "run-initial.json").exists())
         ledger = json.loads((run_dir / "ledger.json").read_text())
-        self.assertEqual("initialized", ledger["state"])
+        self.assertEqual("ready", ledger["state"])
         self.assertIsNone(ledger["selected_task_id"])
         self.assertIsNone(ledger["active_attempt_id"])
         self.assertEqual(1, len(ledger["tasks"]))
         self.assertEqual("T1", ledger["tasks"][0]["id"])
-        self.assertEqual("initialized", ledger["tasks"][0]["state"])
+        self.assertEqual("ready", ledger["tasks"][0]["state"])
+        self.assertIsNone(ledger["last_verification_path"])
+        self.assertIsNone(ledger["last_decision_path"])
+        self.assertIsNone(ledger["active_operation_path"])
 
     def test_init_run_rejects_incomplete_dependencies(self):
         """init_run must reject authorized tasks depending on incomplete external tasks."""
@@ -582,6 +587,10 @@ class ControllerContractTest(unittest.TestCase):
         )
 
         ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual(
+            ["ready", "ready", "initialized"],
+            [task["state"] for task in ledger["tasks"]],
+        )
         selected = controller.select_task(ledger, policy)
         # T2 comes before T1 in policy order, so T2 is selected
         self.assertEqual("T2", selected["id"])
@@ -603,10 +612,13 @@ class ControllerContractTest(unittest.TestCase):
             "manifest_sha256": "def",
             "initial_baseline_path": "run-initial.json",
             "initial_baseline_digest": "ghi",
-            "state": "initialized",
+            "state": "ready",
             "selected_task_id": None,
             "active_attempt_id": None,
             "last_closure_path": None,
+            "last_verification_path": None,
+            "last_decision_path": None,
+            "active_operation_path": None,
             "tasks": [
                 {
                     "id": "T1",
@@ -1296,7 +1308,7 @@ raise SystemExit(0)
         self.assertEqual(0, init_result.returncode, init_result.stderr)
         init_data = json.loads(init_result.stdout)
         self.assertEqual("run-1", init_data["run_id"])
-        self.assertEqual("initialized", init_data["state"])
+        self.assertEqual("ready", init_data["state"])
 
         # Run next
         run_result = subprocess.run(
@@ -1425,6 +1437,135 @@ raise SystemExit(0)
         with self.assertRaisesRegex(ValueError, "append-only"):
             controller.update_ledger(run_dir, {"tasks": rewritten_tasks})
         self.assertEqual(ledger_before, ledger_path.read_bytes())
+
+    def test_run_lock_and_revision_prevent_duplicate_or_stale_reconciliation(self):
+        controller = load_controller()
+        run_dir = self.root / "runs" / "run-owned"
+        policy_path = self.root / "run-policy.json"
+        manifest_path = self.root / "task-manifest.json"
+        marker = self.root / "worker-started"
+        release_fifo = self.root / "release-worker"
+        os.mkfifo(release_fifo)
+        fake = self.root / "blocking-codex"
+        fake.write_text(
+            f"""#!/usr/bin/env python3
+import json
+from pathlib import Path
+import sys
+
+args = sys.argv[1:]
+if "--help" in args:
+    raise SystemExit(0)
+with Path({str(marker)!r}).open("a") as stream:
+    stream.write("started\\n")
+with Path({str(release_fifo)!r}).open() as stream:
+    stream.read(1)
+print(json.dumps({{"type": "thread.started", "thread_id": "thread-blocked-001"}}), flush=True)
+if "-o" in args:
+    result_path = Path(args[args.index("-o") + 1])
+    result_path.write_text(json.dumps({{
+        "status": "complete",
+        "task_id": "T1",
+        "summary": "done",
+        "files_changed": [],
+        "verification": [],
+        "decisions": [],
+        "questions": [],
+        "risks": [],
+        "next_action": "inspect"
+    }}))
+raise SystemExit(0)
+"""
+        )
+        fake.chmod(0o755)
+        controller.persist_run_policy(policy_path, self.policy())
+        (self.repo / "tasks").mkdir()
+        (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        manifest_path.write_text(json.dumps({
+            "version": 1,
+            "manifest_id": "test-feature",
+            "completed_task_ids": [],
+            "tasks": [{
+                "id": "T1",
+                "title": "Test task",
+                "brief_path": "tasks/T1.md",
+                "dependencies": [],
+                "allowed_paths": ["allowed.txt"],
+                "required_checks": ["python3 -m unittest test_targeted"],
+            }],
+        }, indent=2, sort_keys=True) + "\n")
+        controller.init_run(run_dir, policy_path, manifest_path, self.repo)
+        ledger_path = run_dir / "ledger.json"
+        command = [
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir),
+            "--timeout-seconds", "10",
+            "--codex-bin", str(fake),
+        ]
+
+        original = ledger_path.read_bytes()
+        original_baselines = sorted(path.name for path in (run_dir / "baselines").iterdir())
+        lock = controller.acquire_run_lock(run_dir)
+        try:
+            contended = subprocess.run(command, text=True, capture_output=True)
+        finally:
+            controller.release_run_lock(lock)
+        self.assertNotEqual(0, contended.returncode)
+        self.assertIn("Another controller command owns run", contended.stderr)
+        self.assertEqual(original, ledger_path.read_bytes())
+        self.assertFalse((run_dir / "attempts").exists())
+        self.assertEqual(
+            original_baselines,
+            sorted(path.name for path in (run_dir / "baselines").iterdir()),
+        )
+
+        first = subprocess.Popen(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            deadline = time.monotonic() + 5
+            while not marker.exists() and first.poll() is None and time.monotonic() < deadline:
+                pass
+            self.assertTrue(marker.exists(), "first worker did not reach its wait boundary")
+            running = json.loads(ledger_path.read_text())
+            self.assertEqual("running", running["state"])
+            self.assertEqual("attempt-001", running["active_attempt_id"])
+
+            running_bytes = ledger_path.read_bytes()
+            second = subprocess.run(command, text=True, capture_output=True)
+            self.assertNotEqual(0, second.returncode)
+            self.assertIn("Cannot select task from state 'running'", second.stderr)
+            self.assertEqual(running_bytes, ledger_path.read_bytes())
+            self.assertEqual(["started"], marker.read_text().splitlines())
+            self.assertEqual(
+                ["attempt-001"],
+                sorted(path.name for path in (run_dir / "attempts").iterdir()),
+            )
+
+            stopped_tasks = json.loads(json.dumps(running["tasks"]))
+            stopped_tasks[0]["state"] = "stopped"
+            lock = controller.acquire_run_lock(run_dir)
+            try:
+                controller.update_ledger(
+                    run_dir,
+                    {
+                        "state": "stopped",
+                        "selected_task_id": None,
+                        "active_attempt_id": None,
+                        "tasks": stopped_tasks,
+                    },
+                    expected_revision=running["revision"],
+                )
+            finally:
+                controller.release_run_lock(lock)
+            competing_bytes = ledger_path.read_bytes()
+            release_fifo.write_text("x")
+            stdout, stderr = first.communicate(timeout=10)
+            self.assertNotEqual(0, first.returncode, stdout)
+            self.assertIn("refusing stale reconciliation", stderr)
+            self.assertEqual(competing_bytes, ledger_path.read_bytes())
+        finally:
+            if first.poll() is None:
+                first.kill()
+            first.communicate()
 
     def test_run_next_stops_on_missing_terminal_result(self):
         controller = load_controller()

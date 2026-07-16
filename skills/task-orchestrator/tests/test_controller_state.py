@@ -1,6 +1,7 @@
 import hashlib
 import importlib.util
 import json
+from itertools import product
 from pathlib import Path
 import tempfile
 import unittest
@@ -103,6 +104,9 @@ class ControllerStateContractTest(unittest.TestCase):
             "selected_task_id": None,
             "active_attempt_id": None,
             "last_closure_path": None,
+            "last_verification_path": None,
+            "last_decision_path": None,
+            "active_operation_path": None,
             "tasks": [{
                 "id": "T1",
                 "title": "Test task",
@@ -122,6 +126,7 @@ class ControllerStateContractTest(unittest.TestCase):
         for name in (
             "canonical_json", "sha256_text", "validate_run_policy", "transition_task",
             "validate_attempt_record", "build_attempt_record", "validate_task_manifest",
+            "transition_run", "dependency_ready_task_ids", "mark_ready_tasks",
             "select_task", "validate_ledger", "apply_ledger_update",
         ):
             with self.subTest(name=name):
@@ -286,17 +291,34 @@ class ControllerStateContractTest(unittest.TestCase):
     def test_selection_transition_and_ledger_update_are_pure(self):
         state = load_controller_state()
         ledger = self.ledger()
+        ledger["state"] = "ready"
+        ledger["tasks"][0]["state"] = "ready"
 
         self.assertEqual("T1", state.select_task(ledger, self.policy())["id"])
         self.assertEqual("awaiting_inspection", state.transition_task("running", "awaiting_inspection"))
-        updated = state.apply_ledger_update(ledger, {"state": "ready"}, "2026-07-16T01:00:00+00:00")
-        self.assertEqual("ready", updated["state"])
+        running_tasks = json.loads(json.dumps(ledger["tasks"]))
+        running_tasks[0]["state"] = "running"
+        running_tasks[0]["attempt_ids"] = ["attempt-001"]
+        updated = state.apply_ledger_update(
+            ledger,
+            {
+                "state": "running",
+                "selected_task_id": "T1",
+                "active_attempt_id": "attempt-001",
+                "tasks": running_tasks,
+            },
+            "2026-07-16T01:00:00+00:00",
+            expected_revision=1,
+        )
+        self.assertEqual("running", updated["state"])
         self.assertEqual(2, updated["revision"])
         self.assertEqual(1, ledger["revision"])
 
     def test_unavailable_selection_and_invalid_transitions_are_exact(self):
         state = load_controller_state()
         ledger = self.ledger()
+        ledger["state"] = "ready"
+        ledger["tasks"][0]["state"] = "initialized"
         ledger["tasks"][0]["dependencies"] = ["T99"]
 
         with self.assertRaisesRegex(
@@ -337,7 +359,7 @@ class ControllerStateContractTest(unittest.TestCase):
         original = json.dumps(ledger, sort_keys=True)
         with self.assertRaisesRegex(
             ValueError,
-            "^'running' state requires both selected_task_id and active_attempt_id$",
+            "^'running' requires selected_task_id$",
         ):
             state.apply_ledger_update(
                 ledger, {"state": "running"}, "2026-07-16T01:00:00+00:00"
@@ -349,7 +371,7 @@ class ControllerStateContractTest(unittest.TestCase):
         ledger = self.ledger()
         original = json.dumps(ledger, sort_keys=True)
 
-        with self.assertRaisesRegex(ValueError, "Ledger task IDs are immutable"):
+        with self.assertRaisesRegex(ValueError, "Ledger task identity and order are immutable"):
             state.apply_ledger_update(ledger, {"tasks": []}, "2026-07-16T01:00:00+00:00")
 
         self.assertEqual(original, json.dumps(ledger, sort_keys=True))
@@ -362,7 +384,203 @@ class ControllerStateContractTest(unittest.TestCase):
         ledger_path.write_text(json.dumps(self.ledger(), indent=2, sort_keys=True) + "\n")
         original = ledger_path.read_bytes()
 
-        with self.assertRaisesRegex(ValueError, "^Ledger task IDs are immutable$"):
+        with self.assertRaisesRegex(
+            ValueError, "^Ledger task identity and order are immutable$"
+        ):
             controller.update_ledger(run_dir, {"tasks": []})
 
         self.assertEqual(original, ledger_path.read_bytes())
+        with self.assertRaisesRegex(ValueError, "^Stale ledger revision"):
+            controller.update_ledger(run_dir, {}, expected_revision=0)
+        self.assertEqual(original, ledger_path.read_bytes())
+
+    def test_all_run_and_task_transitions_are_explicit(self):
+        state = load_controller_state()
+
+        for current, requested in product(state.RUN_STATES, repeat=2):
+            with self.subTest(kind="run", current=current, requested=requested):
+                if requested in state.ALLOWED_RUN_TRANSITIONS[current]:
+                    self.assertEqual(requested, state.transition_run(current, requested))
+                else:
+                    with self.assertRaisesRegex(ValueError, "not allowed"):
+                        state.transition_run(current, requested)
+
+        identity = {"run_id": "run-1", "task_id": "T1", "attempt_id": "attempt-001"}
+        for current, requested in product(state.TASK_STATES, repeat=2):
+            with self.subTest(kind="task", current=current, requested=requested):
+                kwargs = {}
+                if requested == "accepted":
+                    kwargs = {
+                        "closure_decision": {
+                            "accepted": True,
+                            "allowed_transitions": ["accepted"],
+                            "identity": identity,
+                        },
+                        "expected_identity": identity,
+                    }
+                if requested in state.ALLOWED_TASK_TRANSITIONS[current]:
+                    self.assertEqual(
+                        requested, state.transition_task(current, requested, **kwargs)
+                    )
+                else:
+                    with self.assertRaisesRegex(ValueError, "not allowed"):
+                        state.transition_task(current, requested, **kwargs)
+
+    def coherent_ledger(self, run_state):
+        ledger = self.ledger()
+        task = ledger["tasks"][0]
+        attempt_id = "attempt-001"
+        if run_state == "ready":
+            ledger["state"] = task["state"] = "ready"
+        elif run_state in {"running", "awaiting_inspection", "resumable", "finalizing"}:
+            ledger["state"] = run_state
+            ledger["selected_task_id"] = "T1"
+            task["attempt_ids"] = [attempt_id]
+            if run_state == "running":
+                task["state"] = "running"
+                ledger["active_attempt_id"] = attempt_id
+            else:
+                task["state"] = (
+                    "awaiting_inspection" if run_state == "finalizing" else run_state
+                )
+                ledger["last_closure_path"] = "closure/attempt-001.json"
+            if run_state == "finalizing":
+                ledger["last_verification_path"] = "verification/attempt-001.json"
+                ledger["last_decision_path"] = "decisions/attempt-001.json"
+                ledger["active_operation_path"] = "operations/T1-accept.json"
+        elif run_state == "stopped":
+            ledger["state"] = task["state"] = "stopped"
+        return ledger
+
+    def test_one_coherent_ledger_validates_for_every_run_state(self):
+        state = load_controller_state()
+
+        for run_state in state.RUN_STATES:
+            with self.subTest(run_state=run_state):
+                state.validate_ledger(self.coherent_ledger(run_state))
+
+    def test_state_coherence_rejects_missing_or_mismatched_ownership_and_references(self):
+        state = load_controller_state()
+        cases = []
+
+        running = self.coherent_ledger("running")
+        running["selected_task_id"] = "missing"
+        cases.append((running, "Selected task is missing"))
+        running = self.coherent_ledger("running")
+        running["tasks"][0]["state"] = "resumable"
+        cases.append((running, "Selected task state"))
+        running = self.coherent_ledger("running")
+        running["active_attempt_id"] = "attempt-002"
+        cases.append((running, "latest selected task attempt"))
+
+        duplicate = self.coherent_ledger("running")
+        other = json.loads(json.dumps(duplicate["tasks"][0]))
+        other.update({"id": "T2", "title": "Second", "brief_path": "tasks/T2.md"})
+        duplicate["tasks"].append(other)
+        cases.append((duplicate, "owned by more than one task"))
+
+        awaiting = self.coherent_ledger("awaiting_inspection")
+        awaiting["last_closure_path"] = None
+        cases.append((awaiting, "requires last_closure_path"))
+        awaiting = self.coherent_ledger("awaiting_inspection")
+        awaiting["last_decision_path"] = "decisions/attempt-001.json"
+        cases.append((awaiting, "requires last_verification_path"))
+
+        ready = self.coherent_ledger("ready")
+        ready["tasks"][0]["state"] = "initialized"
+        cases.append((ready, "at least one ready unfinished task"))
+        resumable = self.coherent_ledger("resumable")
+        resumable["tasks"][0]["attempt_ids"] = []
+        cases.append((resumable, "selected attempt"))
+        finalizing = self.coherent_ledger("finalizing")
+        finalizing["tasks"][0]["state"] = "accepted"
+        cases.append((finalizing, "must remain awaiting_inspection"))
+        finalizing = self.coherent_ledger("finalizing")
+        finalizing["active_operation_path"] = None
+        cases.append((finalizing, "requires active_operation_path"))
+
+        for ledger, message in cases:
+            with self.subTest(message=message):
+                with self.assertRaisesRegex(ValueError, message):
+                    state.validate_ledger(ledger)
+
+    def test_dependency_readiness_uses_manifest_completions_and_accepted_tasks(self):
+        state = load_controller_state()
+        tasks = [
+            dict(self.ledger()["tasks"][0], id="T1", state="accepted"),
+            dict(
+                self.ledger()["tasks"][0], id="T2", title="Second",
+                brief_path="tasks/T2.md", dependencies=["T1", "external"],
+                state="initialized",
+            ),
+        ]
+        completed = ["external"]
+
+        self.assertEqual(["T2"], state.dependency_ready_task_ids(tasks, completed))
+        marked = state.mark_ready_tasks(tasks, completed)
+        self.assertEqual(["accepted", "ready"], [task["state"] for task in marked])
+        self.assertEqual(["external"], completed)
+        self.assertEqual("initialized", tasks[1]["state"])
+
+        ledger = self.ledger()
+        ledger.update({"state": "ready", "completed_task_ids": completed, "tasks": marked})
+        policy = self.policy()
+        policy["task_ids"] = ["T1", "T2"]
+        self.assertEqual("T2", state.select_task(ledger, policy)["id"])
+
+    def test_stale_or_authority_changing_updates_leave_input_unchanged(self):
+        state = load_controller_state()
+        authorities = (
+            ("tasks", lambda value: value.reverse()),
+            ("title", lambda value: value.__setitem__("title", "Changed")),
+            ("dependencies", lambda value: value.__setitem__("dependencies", ["other"])),
+            ("allowed_paths", lambda value: value.__setitem__("allowed_paths", ["other.txt"])),
+            ("required_checks", lambda value: value.__setitem__("required_checks", ["other"])),
+        )
+        base = self.ledger()
+        second = dict(base["tasks"][0], id="T2", title="Second", brief_path="tasks/T2.md")
+        base["tasks"].append(second)
+
+        for name, mutate in authorities:
+            ledger = json.loads(json.dumps(base))
+            original = json.dumps(ledger, sort_keys=True)
+            tasks = json.loads(json.dumps(ledger["tasks"]))
+            mutate(tasks if name == "tasks" else tasks[0])
+            with self.subTest(authority=name):
+                with self.assertRaisesRegex(ValueError, "immutable"):
+                    state.apply_ledger_update(
+                        ledger, {"tasks": tasks}, "later", expected_revision=1
+                    )
+                self.assertEqual(original, json.dumps(ledger, sort_keys=True))
+
+        ledger = self.ledger()
+        original = json.dumps(ledger, sort_keys=True)
+        with self.assertRaisesRegex(ValueError, "Stale ledger revision"):
+            state.apply_ledger_update(
+                ledger, {}, "later", expected_revision=0
+            )
+        self.assertEqual(original, json.dumps(ledger, sort_keys=True))
+        with self.assertRaisesRegex(ValueError, "revision is controller-managed"):
+            state.apply_ledger_update(
+                ledger, {"revision": 10}, "later", expected_revision=1
+            )
+        self.assertEqual(original, json.dumps(ledger, sort_keys=True))
+
+        ledger = self.ledger()
+        original = json.dumps(ledger, sort_keys=True)
+        with self.assertRaisesRegex(ValueError, "completed_task_ids are immutable"):
+            state.apply_ledger_update(
+                ledger, {"completed_task_ids": ["external"]}, "later",
+                expected_revision=1,
+            )
+        self.assertEqual(original, json.dumps(ledger, sort_keys=True))
+
+        running = self.coherent_ledger("running")
+        original = json.dumps(running, sort_keys=True)
+        tasks = json.loads(json.dumps(running["tasks"]))
+        tasks[0]["attempt_ids"] = []
+        with self.assertRaisesRegex(ValueError, "attempt history is append-only"):
+            state.apply_ledger_update(
+                running, {"tasks": tasks}, "later", expected_revision=1
+            )
+        self.assertEqual(original, json.dumps(running, sort_keys=True))

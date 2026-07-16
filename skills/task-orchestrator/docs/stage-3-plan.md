@@ -1,6 +1,6 @@
 # Task Orchestrator: Stage 3 Master Plan
 
-Status: planning baseline; Stage 2 is assumed complete for this plan
+Status: S3-01 through S3-03 complete; S3-04 through S3-08 reviewed and ready by dependency
 Date: 2026-07-16
 Parent direction: [direction.md](direction.md)
 Stage 2 contract: [stage-2-plan.md](stage-2-plan.md)
@@ -28,7 +28,9 @@ Stage 3 work may start only when all of the following are true:
   one fake worker, and publish an immutable Stage 2 closure packet.
 - The Stage 2 ledger and closure packet contain the task, attempt, prompt,
   policy, manifest, baseline, HEAD, index, adapter, and evidence identities
-  needed by Stage 3.
+  needed by Stage 3. The one explicit addition is S3-08's exact canonical
+  post-worker status digest for newly produced closures; an older closure
+  lacking it is rejected rather than rewritten.
 - Focused controller and worker tests pass.
 - No unresolved Stage 2 defect is being silently moved into a Stage 3 task.
 
@@ -59,33 +61,34 @@ work to Stage 2 instead of expanding the selected Stage 3 task.
 - An accepted task returns the run to `ready` or terminal `stopped`; it never
   auto-launches the next task.
 
-## Brief architecture assessment
+## Architecture assessment after S3-01 through S3-03
 
 The responsibility boundaries in [direction.md](direction.md) remain sound:
 controller policy is separate from worker transport, evidence is independent
 from worker claims, and commits belong to controller finalization.
 
-The current file shape will not scale safely through Stage 3 without a small
-refactor:
+The first three tasks established the intended small functional split:
 
-- `scripts/controller.py` is already about 1,466 lines.
-- `_cli_run_next()` combines persisted-input validation, Git integrity checks,
-  task selection, prompt/attempt creation, transport invocation, result
-  validation, closure evidence, decision construction, and ledger mutation.
-- Git commands and record/state rules are repeated as raw dictionaries and
-  subprocess calls, while the Stage 3 `inspect`, `recover`, `accept`, and commit
-  paths need the same boundaries.
-- `tests/test_controller.py` is similarly monolithic, making it expensive for a
-  small-context agent to identify the contract it is changing.
+- S3-01 adopted the macOS `/usr/bin/sandbox-exec` pathname-scoped verification
+  boundary. S3-06 still owns the exact syntactic meaning of dependency-install
+  denial, and S3-07 must move the proven invocation into production code.
+- S3-02 moved pure policy, manifest, transition, selection, attempt, and ledger
+  rules into `controller_state.py` while retaining controller compatibility
+  names.
+- S3-03, including its S3-03A/S3-03B corrections, moved Git execution and raw
+  observations into `controller_git.py`. Policy interpretation remains in the
+  controller.
 
-The smallest beneficial target shape is:
+`controller.py` is now about 691 lines rather than the pre-refactor estimate of
+1,466. Do not perform another general extraction before implementing S3-04
+through S3-08. The smallest sufficient target shape is:
 
 ```text
 scripts/
-  controller.py              # CLI parsing and use-case orchestration
+  controller.py              # CLI/use cases and one per-run command lock
   controller_state.py        # pure validators, transitions, identities, records
-  controller_git.py          # Git snapshots, comparisons, and commit mechanics
-  verification_runner.py     # chosen permission-bounded command boundary
+  controller_git.py          # Git snapshots, comparisons, later commit mechanics
+  verification_runner.py     # pure command plan plus sandboxed execution
   codex_worker.py             # Codex CLI transport and process lifecycle
 tests/
   test_controller.py         # command/use-case integration coverage
@@ -97,10 +100,20 @@ tests/
 
 This is a functional split, not a new framework. Keep public CLI commands and
 existing importable controller functions compatible. Do not add classes,
-dependency injection machinery, a top-level package, or generalized storage/
-workflow abstractions. Extract only the two demonstrated boundaries in tasks
-S3-02 and S3-03; `verification_runner.py` is added only after S3-01 proves its
-enforcement mechanism.
+dependency injection machinery, a top-level package, `controller_records.py`,
+or generalized storage/workflow abstractions. S3-06 creates the pure planning
+portion of `verification_runner.py`; S3-07 adds execution to that same module.
+
+Every ledger/artifact mutation phase for an existing run must hold one
+non-blocking per-run controller lock and use the expected ledger revision.
+Ledger revision checks and atomic replacement do not by themselves prevent two
+controller processes from both acting on the same revision. `run-next` may
+release the lock only after the running attempt is durable, then reacquire it
+and revalidate the exact state/revision before terminal reconciliation; this
+allows the later explicit `stop` command to act on a live owned worker without
+allowing a second launch. Other commands keep the lock whenever releasing it
+would leave an unrecorded side effect. The lock is local single-host
+enforcement; a distributed lock is out of scope.
 
 ## Durable Stage 3 records
 
@@ -118,23 +131,51 @@ the Stage 2 closure packet:
       turn-001.*
       turn-002.*
   closure/
-    attempt-001.json
+    attempt-001.json                       # immutable Stage 2 turn-001 closure
+    attempt-001.turn-002.json              # later turn-qualified closures
     attempt-001.*
   verification/
-    attempt-001.json
-    attempt-001.command-001.stdout.log
-    attempt-001.command-001.stderr.log
+    attempt-001.turn-001.execution.json
+    attempt-001.turn-001.json
+    attempt-001.turn-001.command-001.stdout.log
+    attempt-001.turn-001.command-001.stderr.log
   decisions/
-    attempt-001.json
+    attempt-001.turn-001.json
   operations/
     T1-accept.json
 ```
 
-Every reference is repository- or run-directory-contained as appropriate and
-digest-bound. Existing attempt, turn, closure, verification, and decision bytes
-are never overwritten or deleted. A finalization operation may advance through
-validated compare-and-swap state updates, but its prepared intent and completed
-effect evidence are immutable once recorded.
+The existing unqualified Stage 2 closure is treated as turn 1 only after its
+attempt and `turn-001` artifacts validate; it is never renamed. Every new
+closure, verification, and decision record is turn-qualified so a same-thread
+resume cannot collide with earlier evidence.
+
+Use one acyclic identity chain rather than one self-referential "complete"
+identity:
+
+1. attempt/turn identity binds run, task, attempt, turn, policy, manifest,
+   prompt, and selected-task baseline;
+2. closure identity adds the exact post-worker HEAD, index tree, and canonical
+   status-map digest plus the Stage 2 evidence digest;
+3. a command-execution record references the closure identity and binds the
+   immutable command outcomes/logs produced by `verification_runner.py`;
+4. a verification record references that execution-record digest and adds the
+   exact pre/post-verification Git identities observed by `inspect`;
+5. a decision references the immutable verification-record digest; and
+6. an acceptance operation references the immutable decision-record digest.
+
+A record never contains its own digest. Every reference is repository- or
+run-directory-contained as appropriate and digest-bound by its consumer.
+Existing attempt, turn, closure, verification, and decision bytes are never
+overwritten or deleted.
+
+Separate-file publication is intentionally not described as atomic. Writers
+publish one record exclusively, then publish the dependent record, then update
+ledger references while holding the run lock. A rerun validates and reuses an
+exact existing record, or stops on a mismatch; it never reruns an already
+recorded verification or overwrites a contradictory record. A finalization
+operation may advance through validated state updates, but its prepared intent
+and completed-effect evidence remain immutable.
 
 ## Task execution contract
 
@@ -157,20 +198,21 @@ destructive Git cleanup, installed/cached skill edits, or user-work rollback.
 
 ## Task index and dependency graph
 
-The core path is ordered to keep each task independently reviewable. S3-01 may
-run before or alongside the behavior-preserving refactors, but agents sharing a
-working tree still execute sequentially.
+The core path is ordered to keep each task independently reviewable. S3-01
+through S3-03 and their corrective work are complete. S3-04 and S3-06 are now
+independently dependency-ready; S3-05 follows S3-04, and both branches converge
+at S3-07. Agents sharing a working tree still execute sequentially.
 
 | ID | Task | Depends on | Exit summary |
 |---|---|---|---|
 | S3-01 | [Prove the verification sandbox boundary](stage-3-tasks/S3-01-verification-sandbox-proof.md) | Stage 2 | Supported mechanism is recorded and locally proven, or Stage 3 is blocked without policy weakening |
 | S3-02 | [Extract pure controller state](stage-3-tasks/S3-02-extract-controller-state.md) | Stage 2 | Pure state/validation code is isolated with unchanged behavior |
 | S3-03 | [Extract controller Git observations](stage-3-tasks/S3-03-extract-controller-git.md) | S3-02 | Git observation/evidence code is isolated with unchanged behavior |
-| S3-04 | [Extend the Stage 3 state model](stage-3-tasks/S3-04-stage-3-state-model.md) | S3-02 | Run/task transitions and ledger coherence are executable contracts |
-| S3-05 | [Add immutable record and identity contracts](stage-3-tasks/S3-05-record-and-identity-contracts.md) | S3-04 | Verification, decision, and operation records reject stale/mismatched data |
-| S3-06 | [Build the authorized verification command plan](stage-3-tasks/S3-06-verification-command-plan.md) | S3-05 | Required checks are safely parsed, deduplicated, sourced, and gap-aware |
+| S3-04 | [Extend the Stage 3 state model](stage-3-tasks/S3-04-stage-3-state-model.md) | S3-02 | Run/task transitions, ledger coherence, repeated selection, and single-command ownership are executable contracts |
+| S3-05 | [Add immutable record and identity contracts](stage-3-tasks/S3-05-record-and-identity-contracts.md) | S3-04 | Acyclic verification, decision, and operation records reject stale/mismatched data |
+| S3-06 | [Build the authorized verification command plan](stage-3-tasks/S3-06-verification-command-plan.md) | S3-01, S3-02 | Checks are safely parsed, normalized, deduplicated, sourced, and gap-aware, or unenforceable v1 semantics stop the stage |
 | S3-07 | [Implement the sandboxed verification executor](stage-3-tasks/S3-07-verification-executor.md) | S3-01, S3-05, S3-06 | Commands run sequentially within policy and produce immutable logs/results |
-| S3-08 | [Implement inspection and closure decisions](stage-3-tasks/S3-08-inspect-and-decide.md) | S3-03, S3-07 | `inspect` publishes immutable verification and decision records |
+| S3-08 | [Implement inspection and closure decisions](stage-3-tasks/S3-08-inspect-and-decide.md) | S3-03 including S3-03A/S3-03B, S3-07 | `inspect` binds exact worktree identity and idempotently publishes verification, decision, and ledger references |
 | S3-09 | [Reconcile running attempts and stop safely](stage-3-tasks/S3-09-recover-running-and-stop.md) | S3-04, S3-05 | Recovery proves process absence and maps terminal outcomes without guessing |
 | S3-10 | [Implement same-thread resume](stage-3-tasks/S3-10-same-thread-resume.md) | S3-09 | `resume` appends one immutable turn without changing authority |
 | S3-11 | [Prepare acceptance with side effects off](stage-3-tasks/S3-11-acceptance-operation.md) | S3-08, S3-09, S3-10 | `accept` journals intent and records that no optional effect is required without accepting yet |
@@ -181,18 +223,32 @@ working tree still execute sequentially.
 | S3-15 | [Reconcile interrupted finalization](stage-3-tasks/S3-15-finalization-recovery.md) | S3-14 | Prepared operations recover idempotently or stop on ambiguous mutation |
 | S3-16 | [Close Stage 3](stage-3-tasks/S3-16-stage-3-closure.md) | S3-12, S3-15 | Full local evidence and truthful Stage 3 handoff are complete |
 
-```text
-S3-01 -----------------------------> S3-07
-S3-02 -> S3-03 --------------------> S3-08
-   |       |                            |
-   +-> S3-04 -> S3-05 -> S3-06 -> S3-07
-          |        |                    |
-          +------> S3-09 -> S3-10 ------+
-                                        v
-                                      S3-11 -> S3-12 --+
-S3-03 -> S3-13A -> S3-13B -> S3-14 -> S3-15 ---------+-> S3-16
-                                      ^
-                                      +---- S3-12
+```mermaid
+graph LR
+  S301[S3-01] --> S306[S3-06]
+  S301 --> S307[S3-07]
+  S302[S3-02] --> S303[S3-03]
+  S302 --> S304[S3-04]
+  S304 --> S305[S3-05]
+  S305 --> S307
+  S306 --> S307
+  S303 --> S308[S3-08]
+  S307 --> S308
+  S304 --> S309[S3-09]
+  S305 --> S309
+  S309 --> S310[S3-10]
+  S308 --> S311[S3-11]
+  S309 --> S311
+  S310 --> S311
+  S311 --> S312[S3-12]
+  S303 --> S313A[S3-13A]
+  S305 --> S313A
+  S313A --> S313B[S3-13B]
+  S312 --> S314[S3-14]
+  S313B --> S314
+  S314 --> S315[S3-15]
+  S312 --> S316[S3-16]
+  S315 --> S316
 ```
 
 ## Conditional human-tracker extension
@@ -216,7 +272,11 @@ operation.
 |---|---|
 | Verification escapes write/network policy | S3-01, S3-07 |
 | Shell syntax or unpersisted environment changes authority | S3-06 |
+| Dependency-install denial is broader than enforceable argv rules | S3-06 stop condition or explicit v1 contract |
+| Concurrent controller processes both mutate one ledger revision | S3-04 |
 | Stale or unrelated evidence authorizes acceptance | S3-05, S3-08, S3-11 |
+| Equal-looking Git summaries hide changed worktree bytes | S3-08 exact canonical status digest |
+| Crash between verification, decision, and ledger publication reruns work or contradicts evidence | S3-08 |
 | Worker claims become proof | S3-08 |
 | Live or ambiguous worker is resumed | S3-09, S3-10 |
 | Earlier turns or attempts are overwritten | S3-05, S3-10 |
@@ -249,10 +309,18 @@ Stop and ask the user if:
 
 - S3-01 cannot enforce the persisted permission envelope with an available
   approved mechanism;
+- `dependency_install: false` cannot be given one explicit, testable version 1
+  command-plan meaning without claiming semantic enforcement that argv
+  inspection cannot provide;
 - a Stage 3 behavior requires changing version 1 policy/manifest semantics;
 - a legitimate verification command requires shell syntax or unpersisted
   environment state;
 - semantic review is required before its actor and interface are approved;
+- the Stage 2 closure cannot bind exact post-worker HEAD, index, and canonical
+  status identity without changing newly produced closure evidence; existing
+  incomplete closure artifacts must never be rewritten;
+- single-run controller ownership cannot be enforced with the supported local
+  standard-library mechanism;
 - exact-path commit cannot preserve unrelated staged/index/worktree state;
 - recovery cannot distinguish intended side effects from external mutation;
 - tracker mutation is requested without S3-T1;

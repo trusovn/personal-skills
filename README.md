@@ -26,6 +26,7 @@ Current source skills:
 - `senior-code-review`
 - `session-handoff`
 - `skill-creator`
+- `task-brief-designer`
 - `task-orchestrator`
 - `testing-discipline`
 

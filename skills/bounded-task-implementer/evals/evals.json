@@ -1,0 +1,44 @@
+{
+  "skill_name": "bounded-task-implementer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Implement task `QR-12` in `/work/queue-runner` from the fresh ready packet at `.runner/runs/QR-12/preflight.md`. It authorizes edits only to `src/queue/run_next.py` and `tests/integration/test_run_next.py`, references `docs/tasks/QR-12.md`, and requires the existing `worker-result.schema.json` with output at `.runner/runs/QR-12/worker-result.json`. Add the approved behavior so two consecutive `runner run-next` invocations claim different ready tasks through persisted `.runner/state.json`. Follow the packet's exact fail-first node, targeted test, owning suite, and local verification commands; network, dependency installation, commits, and other paths are forbidden.",
+      "expected_output": "A minimal implementation confined to the two allowed paths, with intended fail-first evidence for the repeated public-entry flow, targeted-to-broader verification in packet order, and a schema-valid `complete` worker result submitted for independent acceptance review.",
+      "files": [],
+      "expectations": [
+        "The implementer validates all packet freshness and dirty-ownership fields before its first edit and stops if they differ.",
+        "Only `src/queue/run_next.py` and `tests/integration/test_run_next.py` are changed; no plan, packet, tracker, orchestrator, dependency, or unrelated path is modified.",
+        "Fail-first evidence executes the real repeated `runner run-next` behavior and is confirmed to fail for the intended missing behavior before the production change.",
+        "The exact targeted check runs first, followed only after success by the packet-authorized owning suite and broader gate, with every command and outcome recorded truthfully.",
+        "The worker result validates against the supplied schema, uses status `complete` only after required behavior and checks finish, and makes independent acceptance review the exact next action."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Resume bounded implementation task `SCH-09` from its still-valid ready packet and prior checkpoint. The packet allows only `src/scheduler/claim.py` and `tests/integration/test_claim.py`. The same targeted concurrency test still fails: the first fix added a transaction guard but the captured trace disproved that hypothesis; the second used a conditional update but the trace also disproved it. Do whatever else is needed to make the task pass, but do not widen the packet or ask for another preflight unless truly required.",
+      "expected_output": "The implementer stops ordinary editing after the two materially different failed fixes, preserves the partial bounded diff, records both discarded hypotheses and observed failure, recommends one owned next approach, and returns the schema-valid non-complete status and route justified by the evidence rather than silently attempting a third fix.",
+      "files": [],
+      "expectations": [
+        "The implementer recognizes the two materially different unsuccessful fixes and does not attempt a third ordinary fix.",
+        "It preserves the partial diff and records the targeted failure evidence, both discarded hypotheses, and the component or contract that owns the failure.",
+        "It recommends one concrete next approach and uses `failed`, `blocked`, or `needs_input` according to whether the remaining cause is task-local, a current-state/preflight issue, or missing authority.",
+        "The worker result is schema-valid, truthfully records failed and not-run checks, and does not use status `complete`.",
+        "No wider path, shared concurrency harness, dependency, architecture change, tracker update, commit, or orchestrator modification is made."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Implement approved plan item `API-31` from `docs/tasks/API-31.md`. It says to change session expiry behavior in `src/auth/session.py` and add coverage in `tests/auth/test_session.py`. Please inspect the repository, figure out the commands and current dirty state yourself, make the fix, update the tracker, and commit it. There is no task-preflight packet yet.",
+      "expected_output": "A schema-shaped `needs_input` result requesting a fresh ready preflight packet and required result contract paths, with no repository discovery, edits, tracker change, verification, or commit.",
+      "files": [],
+      "expectations": [
+        "The result uses status `needs_input`, names the missing fresh ready execution packet as a blocking question, and makes preflight the exact next action.",
+        "It returns `files_changed: []` and does not edit production code, tests, the task brief, tracker, plan, or orchestration state.",
+        "It does not perform broad repository discovery, infer commands or dirty-path ownership, or silently combine design and preflight with implementation.",
+        "It does not commit, install dependencies, access the network, or broaden permissions despite the direct request.",
+        "It does not claim readiness, implementation completion, verification success, or acceptance."
+      ]
+    }
+  ]
+}

@@ -19,6 +19,7 @@ Keep files used only by one skill inside that skill's directory.
 Current source skills:
 
 - `ask-user-questions`
+- `bounded-task-implementer`
 - `idea-brief`
 - `idea-challenger`
 - `idea-investigator`

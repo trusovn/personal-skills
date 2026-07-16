@@ -3,22 +3,23 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Preflight task brief `docs/tasks/QR-12.md` in `/work/queue-runner` and write the packet to `/work/queue-runner/.runner/runs/QR-12/preflight.md`. The brief is `ready_for_preflight`, dependency `QR-11` is complete in `.runner/tracker.json`, and run policy `local-medium-v1` permits cheap local tests but no network or commits. The brief cites the existing helper `tests/helpers/queue_state.py` and candidate test `test_second_selection` in `tests/integration/test_run_next.py`; this repository requires `uv run pytest`, and the parametrized node id contains spaces and square brackets. Resolve the real helper interface and exact invocation from the tree, run only the authorized targeted baseline, and do not edit repository files.",
+      "prompt": "First run `python3 evals/files/setup_fixture.py queue-ready` to create the supplied real Git fixture. Preflight task brief `docs/tasks/QR-12.md` in `/work/queue-runner` and write the packet outside the repository at `/work/task-runs/QR-12/preflight.md`. Dependency `QR-11` is complete in `.runner/tracker.json`, and run policy `/work/task-runs/policies/local-medium-v1.json` permits cheap local tests but no network or commits. The brief cites helper `tests/helpers/queue_state.py` and candidate test `test_second_selection` in `tests/integration/test_run_next.py`; this repository requires `uv run pytest`, and the parametrized node id contains spaces and square brackets. Resolve the real helper interface and exact invocation from the tree, run only the authorized targeted baseline, and do not edit repository files.",
       "expected_output": "A fresh `ready` packet that records all baseline and policy digests, confirms the helper and AC oracle, and supplies the exact quoted copy-pasteable pytest node invocation with working directory, environment, expected signal, and truthful baseline result.",
-      "files": [],
+      "files": ["evals/files/setup_fixture.py"],
       "expectations": [
         "The packet uses exactly status `ready` only after confirming the brief, dependency, dirty baseline, helper interface, entry point, oracle, and unchanged freshness fields.",
         "The targeted command is fully copy-pasteable and correctly quotes or escapes the exact parametrized pytest node id rather than naming a test class or command family.",
         "The command record includes working directory, required environment, purpose, expected signal, cost/authorization, whether it ran, and its truthful result.",
         "The packet records the brief, dependency source, applicable instructions, run policy, HEAD, exact Git status, and required content digests.",
+        "The packet records that its external runtime path is status-neutral and confirms unchanged repository state after writing the packet.",
         "The output does not edit source, tests, helpers, tracker state, task-orchestrator, or dependencies."
       ]
     },
     {
       "id": 2,
-      "prompt": "Run task-preflight for `/work/scheduler/docs/tasks/SCH-09.md` and save its packet under `/work/scheduler/.runs/SCH-09/preflight.md`. The brief is `ready_for_preflight` and requires deterministic proof that two workers cannot claim the same job. It says the believed-existing helper is `tests/helpers/concurrent_claims.py`, but current tree inspection shows that path and any equivalent process/barrier helper are absent. All dependencies are complete and the repository is otherwise clean. Preflight is read-only: do not create the helper or add it to implementation scope.",
+      "prompt": "First run `python3 evals/files/setup_fixture.py scheduler-missing` to create the supplied real Git fixture. Run task-preflight for `/work/scheduler/docs/tasks/SCH-09.md` and save its packet outside the repository at `/work/task-runs/SCH-09/preflight.md`, using `/work/task-runs/policies/local-medium-v1.json`. The brief requires deterministic proof that two workers cannot claim the same job and cites believed-existing helper `tests/helpers/concurrent_claims.py`, but the fixture intentionally contains no such path or equivalent process/barrier helper. All dependencies are complete and the repository is otherwise clean. Preflight is read-only: do not create the helper or add it to implementation scope.",
       "expected_output": "A `blocked` packet that proves the required concurrency capability is absent, identifies the owning design/prerequisite route, and refuses to create the helper or tell the implementer to discover it.",
-      "files": [],
+      "files": ["evals/files/setup_fixture.py"],
       "expectations": [
         "The packet uses exactly status `blocked` and states that implementation must not begin.",
         "It records exact searches or path evidence showing the required concurrency helper and a supported equivalent are absent.",
@@ -29,15 +30,28 @@
     },
     {
       "id": 3,
-      "prompt": "Preflight `/work/api/docs/tasks/API-31.md` for implementation. The brief is `ready_for_preflight` and allows edits to `src/auth/session.py` and `tests/auth/test_session.py`. Before preflight, `git status --short` already shows ` M src/auth/session.py`; its current SHA-256 differs from HEAD because the user is working on an unrelated token-refresh change, and the run policy does not authorize merging with user work. Dependencies, helper paths, and commands otherwise resolve. Write durable preflight evidence, but preserve the user's file and do not ask the implementer to work around it.",
-      "expected_output": "A `blocked` packet that captures the exact dirty entry and content digest, classifies it as overlapping user-owned work on an allowed path, preserves the file, and names the smallest route needed before a fresh preflight.",
-      "files": [],
+      "prompt": "First run `python3 evals/files/setup_fixture.py api-overlap` to create the supplied real Git fixture. Preflight `/work/api/docs/tasks/API-31.md` and write durable evidence outside the repository at `/work/task-runs/API-31/preflight.md`, using `/work/task-runs/policies/local-medium-v1.json`. The allowed path `src/auth/session.py` has a real `MM` user change: staged bytes and later unstaged bytes differ, and the policy does not authorize merging with user work. Dependencies and commands otherwise resolve. Preserve the user's index and worktree content and do not ask the implementer to work around it.",
+      "expected_output": "A `blocked` packet that captures the exact dirty entry plus separate index/worktree digests, classifies it as overlapping user-owned work on an allowed path, preserves both states, and names the smallest route needed before a fresh preflight.",
+      "files": ["evals/files/setup_fixture.py"],
       "expectations": [
         "The packet uses exactly status `blocked` and does not treat otherwise-valid commands or dependencies as sufficient for readiness.",
-        "It preserves the exact `git status --short` entry and records the dirty path's lowercase SHA-256 digest and user ownership evidence.",
+        "It preserves the exact `git status --short` entry and records separate lowercase SHA-256 index-blob and worktree digests plus user ownership evidence.",
         "It identifies that an allowed implementation path overlaps pre-existing user work under the supplied run policy.",
         "It names a smallest next action owned by the user or orchestrator and requires a fresh preflight after the overlap is resolved or explicitly authorized.",
         "It does not modify, stash, reset, overwrite, commit, or claim ownership of the user's change."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "First run `python3 evals/files/setup_fixture.py queue-ready` to create the supplied clean real Git fixture. Preflight `/work/queue-runner/docs/tasks/QR-12.md`, but the requested packet path is `/work/queue-runner/.runner/runs/QR-12/preflight.md`. That path is inside the repository, is not tracked, and is not Git-ignored. No external fallback output path is authorized. Preserve repository state and report the exact route needed before readiness can be reconsidered.",
+      "expected_output": "Blocked packet content returned without writing the unsafe in-repository path, explaining that the packet would stale its own baseline and requesting an external or proved ignored/status-neutral runtime path before fresh preflight.",
+      "files": ["evals/files/setup_fixture.py"],
+      "expectations": [
+        "Preflight checks packet-path neutrality before writing and recognizes the non-ignored in-repository path as unsafe.",
+        "It does not create `.runner/runs/QR-12/preflight.md` or otherwise change `git status --short`.",
+        "It does not use status `ready`; blocked content names the missing safe runtime path and the owner of that input.",
+        "It requires a fresh preflight after an external or proved ignored/status-neutral path is supplied.",
+        "It does not edit `.gitignore`, source, tests, task artifacts, tracker state, or policy to make the path appear safe."
       ]
     }
   ]

@@ -22,6 +22,12 @@ Require:
 - run policy, or explicit permission, commit, verification, and stop policy;
 - durable run-directory path for the output packet.
 
+Runtime artifacts should be outside the repository. An in-repository run
+directory is eligible only when it is already untracked, Git-ignored, and
+proved status-neutral for the packet path before readiness checks begin. A
+tracked or merely untracked, non-ignored run path is not authorized because
+writing the packet would invalidate its own baseline.
+
 Use `UNKNOWN` only while inspecting. If an input remains missing, the brief has
 another status, or the run directory is not authorized, produce a `blocked`
 packet naming the missing evidence, owner, and smallest next action. Do not
@@ -51,61 +57,74 @@ permission to weaken the task contract.
    authority needed to interpret the contract, the dependency source, and the
    run policy. Confirm the brief status is `ready_for_preflight`; do not silently
    reinterpret or repair it.
-2. Capture the freshness baseline before other checks:
+2. Resolve the durable packet path before other checks. If it is inside the
+   repository, prove with Git path evidence that the path is untracked,
+   ignored, and status-neutral. Do not write a readiness packet to an unsafe
+   path. When no authorized external or proved-neutral path exists, return
+   blocked content inline and request a safe runtime path.
+3. Capture the freshness baseline before other checks:
    - exact brief path and lowercase SHA-256 digest of its bytes;
    - current `HEAD`, or `unborn` when no commit exists;
    - exact `git status --short` output;
-   - lowercase SHA-256 content digests for every pre-existing modified, staged,
-     or untracked path, recording missing/deleted paths explicitly;
+   - for every pre-existing modified, staged, or untracked path, separate
+     lowercase SHA-256 digests of the index blob and worktree bytes wherever
+     each exists; record `absent`, `deleted`, or `not_applicable` explicitly
+     rather than collapsing both views into one path digest;
    - dependency status plus the path and digest of its authoritative source;
    - every applicable instruction file plus its digest; and
    - run-policy identifier plus the path and digest of each policy source.
    Add task-specific environment or tool fingerprints when executability
    depends on facts outside Git.
-3. Confirm dependency state, entry criteria, allowed paths, ownership
+4. Confirm dependency state, entry criteria, allowed paths, ownership
    boundaries, permission envelope, and commit policy. Separate pre-existing
    user work from task-owned future changes. A dirty allowed path with unknown
    or user ownership is an overlap; do not assume the implementer can merge it.
-4. Resolve every cited file, public entry point, precedent, helper, fixture,
+5. Resolve every cited file, public entry point, precedent, helper, fixture,
    schema, and candidate command against the current tree. Record exact paths
    and interfaces. An absent required capability is a blocker, not new
    implementation scope.
-5. Perform the brief's task-specific legacy-assumption searches. Record exact
+6. Perform the brief's task-specific legacy-assumption searches. Record exact
    relevant locations and what each finding means for implementation. Findings
    may expose a defective brief, but preflight does not redesign it.
-6. For every acceptance criterion, confirm an executable oracle at the named
+7. For every acceptance criterion, confirm an executable oracle at the named
    real boundary. Use `testing-discipline` when available to assess oracle
    independence, decisive boundary coverage, negative evidence, repeated or
    recovery flows, and determinism. It does not own the readiness verdict. If
    unavailable, apply those five checks locally without copying a general test
    strategy into the packet.
-7. Use `repo-foundation` when available to confirm existing test/helper
+8. Use `repo-foundation` when available to confirm existing test/helper
    placement and canonical command ownership. It may identify repository
    convention but does not authorize a new helper or repair a missing command.
    If unavailable, follow cited local precedent and block on material placement
    uncertainty.
-8. Resolve exact targeted and broader commands. For each command record the
+9. Resolve exact targeted and broader commands. For each command record the
    copy-pasteable text, working directory, required environment, purpose,
    expected signal, cost class, authorization requirement, whether it ran, and
    its truthful result. Do not leave command families, placeholders, or syntax
    discovery to the implementer.
-9. Run only authorized cheap, local, non-destructive baseline checks. Start with
+10. Run only authorized cheap, local, non-destructive baseline checks. Start with
    the narrowest relevant check; broaden only after it passes and when the
    policy permits. Record output sufficient to distinguish a passing baseline,
    expected fail-first behavior, environment failure, and product failure.
-10. Re-read the brief bytes and recapture `HEAD`, `git status --short`, dirty-path
-    content digests, dependency source, instruction files, policy sources, and
-    any task-specific fingerprints. Any unexplained change makes the packet
-    stale. Compare incidental command artifacts with the recorded baseline.
-11. Read `references/execution-packet-template.md`, write exactly one packet in
-    the authorized run directory, and assign `ready` only when every ready
-    criterion below is proved.
+11. Re-read the brief bytes and recapture `HEAD`, `git status --short`, each
+    dirty path's separate index/worktree state and digest, dependency source,
+    instruction files, policy sources, and task-specific fingerprints. Any
+    unexplained change makes the packet stale. Compare incidental command
+    artifacts with the recorded baseline.
+12. Read `references/execution-packet-template.md` and write exactly one packet
+    in the safe authorized run directory. Recapture `HEAD`, exact short status,
+    and every index/worktree fingerprint after the write. Assign `ready` only
+    when the packet write was status-neutral and every ready criterion below is
+    proved. If finalizing the packet changes repository state, the packet is
+    blocked and must be moved to a safe runtime path before fresh preflight.
 
 ## Ready criteria
 
 Return `ready` only when:
 
 - the brief is `ready_for_preflight` and stayed byte-for-byte unchanged;
+- the packet path is outside the repository or proved ignored and
+  status-neutral before and after the write;
 - dependencies and entry criteria are true;
 - repository state is explained and no dirty-path ownership overlaps the task;
 - all required paths, public entry points, helpers, and oracles exist;
@@ -152,7 +171,8 @@ implementation, or approve implementation as part of normal preflight.
 ## Definition of done
 
 - The packet is independently usable without this conversation.
-- Every freshness field is recorded and unchanged at packet creation.
+- Every freshness field, including separate index/worktree states, is recorded
+  and unchanged after packet creation.
 - Every AC has an executable, task-appropriate oracle at its decisive boundary.
 - Commands are exact, scoped, authorized, and truthful about baseline results.
 - Scope, dirty ownership, dependencies, permissions, gaps, and routes are

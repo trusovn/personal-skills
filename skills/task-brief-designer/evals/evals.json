@@ -3,9 +3,9 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "In `/work/queue-runner`, turn approved plan item `docs/stage-3-plan.md#S3-04` into an executable brief at `docs/stage-3-tasks/S3-04.md`. The approved behavior adds `run-next`: the command selects the next ready task, records it as running, and later invocations continue selecting remaining ready tasks. Existing unit ACs mention only selecting one task from a static queue. The public entry point is `runner run-next`; state is persisted in `.runner/state.json`. Do brief design only—do not certify the current tree or edit implementation files.",
+      "prompt": "First run `python3 evals/files/setup_fixture.py queue-runner` to stage the supplied authority fixture at `/work/queue-runner`. Then turn approved plan item `docs/stage-3-plan.md#S3-04` into an executable brief at `docs/stage-3-tasks/S3-04.md`. The approved behavior adds `run-next`: the command selects the next ready task, records it as running, and later invocations continue selecting remaining ready tasks. Existing unit ACs mention only selecting one task from a static queue. The public entry point is `runner run-next`; state is persisted in `.runner/state.json`. Do brief design only—do not certify the current tree or edit implementation files.",
       "expected_output": "A ready-for-preflight task brief that preserves the approved lifecycle behavior and adds real public-entry evidence covering the first invocation, its persisted state change, and a second invocation, with negative/unchanged-state evidence and provisional preflight checks.",
-      "files": [],
+      "files": ["evals/files/setup_fixture.py"],
       "expectations": [
         "The artifact uses status `ready_for_preflight` without claiming repository readiness or passing commands.",
         "The AC execution matrix invokes the real `runner run-next` entry point rather than relying only on a pure selection-function test.",
@@ -16,9 +16,9 @@
     },
     {
       "id": 2,
-      "prompt": "Design task brief `SBX-07` from approved section `docs/verification-plan.md#deny-child-process-tree`. The requirement is to prove that a verification runner terminates a command and every descendant process at timeout on macOS and Linux. The repo has ordinary unit-test fixtures, but nobody knows whether the sandbox permits deterministic process-tree control or inspection. The implementation task must remain small, and we do not want a shared harness invented inside it.",
+      "prompt": "First run `python3 evals/files/setup_fixture.py process-tree` to stage the supplied authority fixture at `/work/verification-runner`. In that repository, design task brief `SBX-07` from approved section `docs/verification-plan.md#deny-child-process-tree`. The requirement is to prove that a verification runner terminates a command and every descendant process at timeout on macOS and Linux. The repo has ordinary unit-test fixtures, but nobody knows whether the sandbox permits deterministic process-tree control or inspection. The implementation task must remain small, and we do not want a shared harness invented inside it.",
       "expected_output": "A primary task brief plus a separate prerequisite evaluation/proof brief for uncertain process-control feasibility. The primary task is not executable until that prerequisite resolves the enforcement method; no reusable helper is silently assigned to the implementer.",
-      "files": [],
+      "files": ["evals/files/setup_fixture.py"],
       "expectations": [
         "The verification-capability inventory classifies deterministic process-tree enforcement as uncertain feasibility.",
         "The output creates a separate prerequisite evaluation/proof brief rather than hiding process-control invention in the main implementation task.",

@@ -55,7 +55,7 @@ own result.
 |---|---|---|---|
 | `HEAD` | `<SHA or unborn>` | `<SHA or unborn>` | `<expected task state \| unexplained change>` |
 | Exact `git status --short` | `<verbatim baseline or clean>` | `<verbatim current snapshot or clean>` | `<task-owned, pre-existing user, runtime, or unexplained>` |
-| Dirty path digests/states | `<path and lowercase SHA-256 or deletion>` | `<current digest/state>` | `<ownership and separability>` |
+| Dirty path index/worktree digests/states | `<path, index sha256/state, worktree sha256/state>` | `<current index and worktree sha256/state>` | `<ownership, separability, and exact mismatch>` |
 | Task-owned paths | `<packet allowed paths>` | `<scoped diff and worker files_changed>` | `<in scope \| unauthorized/missing>` |
 | Runtime artifacts | `<packet-declared paths>` | `<observed paths>` | `<authorized/disposition>` |
 | Authority and policy | `<brief, instructions, dependency, policy digests>` | `<current comparison>` | `<unchanged \| exact invalidation>` |

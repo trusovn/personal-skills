@@ -9,7 +9,7 @@
 | Producing stage | `task-preflight` |
 | Created at | `<ISO-8601 timestamp with timezone>` |
 | Repository root | `<absolute path>` |
-| Durable packet path | `<absolute or repository-relative path>` |
+| Durable packet path | `<absolute path outside repository, or proved ignored/status-neutral path>` |
 | Task brief | `<exact path>` |
 
 `ready` means the packet is fresh and executable under the recorded policy.
@@ -34,15 +34,18 @@ Use lowercase SHA-256 digests of file bytes.
 |---|---|
 | `HEAD` | `<commit SHA \| unborn>` |
 | Exact `git status --short` | `<verbatim snapshot, or clean>` |
-| Baseline recaptured at completion | `<unchanged \| changed with exact evidence>` |
+| Baseline recaptured after packet write | `<unchanged \| changed with exact evidence>` |
+| Packet-path neutrality | `<outside repository \| ignored and status-neutral before/after write \| unsafe>` |
 | Incidental check artifacts | `<paths and disposition, or none>` |
 
-| Status entry / path | Content SHA-256 or state | Ownership | Task overlap | Evidence / disposition |
-|---|---|---|---|---|
-| `<verbatim status entry and path>` | `<sha256 \| missing/deleted>` | `<user/task/tool/UNKNOWN>` | `yes \| no` | `<source and required route>` |
+| Status entry / path | Index blob SHA-256 or state | Worktree SHA-256 or state | Ownership | Task overlap | Evidence / disposition |
+|---|---|---|---|---|---|
+| `<verbatim status entry and path>` | `<sha256 \| absent \| deleted \| not_applicable>` | `<sha256 \| absent \| deleted \| not_applicable>` | `<user/task/tool/UNKNOWN>` | `yes \| no` | `<source and required route>` |
 
 For renames, staged/unstaged combinations, and deletions, preserve the exact Git
-status entry and record every involved path or explicit missing state.
+status entry and record every involved path or explicit missing state. For an
+`MM` path, record different index and worktree digests even when the short
+status text remains unchanged.
 
 ## 4. Entry criteria and dependency evidence
 
@@ -111,8 +114,9 @@ placeholder, guessed syntax, or unauthorized required operation.
 | `<condition or none>` | `<path, digest, status, or command result>` | `<blocks \| authorized residual gap>` | `<owner>` | `<bounded action>` |
 
 - Stop before the first edit if any recorded digest, `HEAD`, Git status entry,
-  dirty-path digest, dependency source, instruction source, run-policy source,
-  or required environment fingerprint changed without explanation.
+  index state/digest, worktree state/digest, dependency source, instruction
+  source, run-policy source, or required environment fingerprint changed
+  without explanation.
 - Stop on dirty overlap, scope widening, missing authority/helper/oracle,
   undeclared infrastructure, or an unapproved required check.
 - Route contract defects to `task-brief-designer`; route stale/current-state
@@ -122,8 +126,9 @@ placeholder, guessed syntax, or unauthorized required operation.
 
 For `ready` only:
 
-1. Re-read the listed instructions and compare every freshness value before the
-   first edit. Route any unexplained change back to `task-preflight`.
+1. Re-read the listed instructions and compare every freshness value, including
+   each dirty path's separate index and worktree state/digest, before the first
+   edit. Route any unexplained change back to `task-preflight`.
 2. Change only the confirmed allowed paths and preserve all pre-existing user
    work. Do not create undeclared shared infrastructure or widen scope.
 3. Establish the highest-risk fail-first evidence from the AC plan, implement

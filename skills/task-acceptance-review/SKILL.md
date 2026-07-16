@@ -59,8 +59,9 @@ prevents a truthful verdict.
    needed to interpret the acceptance contract. Confirm task IDs, paths,
    digests, artifact statuses, permissions, and result status agree.
 2. Reconstruct exact review scope from the preflight baseline to current state:
-   - compare `HEAD`, exact `git status --short`, and recorded dirty-path
-     digests or deletion states;
+   - compare `HEAD`, exact `git status --short`, and every recorded dirty path's
+     separate index-blob and worktree digest or explicit absence/deletion
+     state;
    - identify task-owned changes, pre-existing user work, runtime artifacts,
      and unexplained changes separately;
    - compare task-owned paths with the packet's allowed paths and the worker
@@ -68,7 +69,9 @@ prevents a truthful verdict.
    - treat unexplained overlap, changed authority, or an inseparable baseline
      as `INCONCLUSIVE`, not as permission to review a guessed diff.
    Expected changes attributed to the same bounded implementation thread do not
-   alone invalidate the packet.
+   alone invalidate the packet. A changed pre-existing index blob is not an
+   expected implementation change merely because short status and worktree
+   bytes still match.
 3. Apply `senior-code-review` when available to the scoped diff. Reuse its risk
    map, end-to-end tracing, candidate-finding validation, severity rules, and
    read-only judgment. This skill retains task-artifact traceability and the

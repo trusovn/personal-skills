@@ -62,13 +62,15 @@ live checks unless the supplied policy explicitly authorizes that action.
    - task-brief bytes and lowercase SHA-256 digest;
    - `HEAD`, or `unborn`;
    - exact `git status --short` snapshot;
-   - content digests or recorded deletion state for every pre-existing modified,
-     staged, or untracked path;
+   - separate lowercase SHA-256 index-blob and worktree digests for every
+     pre-existing modified, staged, or untracked path, including each recorded
+     `absent`, `deleted`, or `not_applicable` state;
    - dependency source and status digest;
    - applicable instruction and run-policy digests; and
    - task-specific environment or tool fingerprints.
-   Any unexplained difference makes the packet stale. Stop without editing and
-   route to `task-preflight`.
+   Any unexplained difference, including a changed index blob hidden by the
+   same short-status text and unchanged worktree bytes, makes the packet stale.
+   Stop without editing and route to `task-preflight`.
 3. On a resumed correction, preserve the partial diff and validate against the
    prior implementation checkpoint. Changes already attributed to this same
    implementation thread are expected and do not alone stale the packet;

@@ -6,7 +6,6 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -30,6 +29,14 @@ _state_module = importlib.util.module_from_spec(_state_spec)
 assert _state_spec.loader is not None
 _state_spec.loader.exec_module(_state_module)
 
+_git_spec = importlib.util.spec_from_file_location(
+    "task_orchestrator_controller_git",
+    Path(__file__).with_name("controller_git.py"),
+)
+_git_module = importlib.util.module_from_spec(_git_spec)
+assert _git_spec.loader is not None
+_git_spec.loader.exec_module(_git_module)
+
 # Compatibility imports: pure state rules live in controller_state.py.
 ATTEMPT_REQUIRED_FIELDS = _state_module.ATTEMPT_REQUIRED_FIELDS
 ALLOWED_TASK_TRANSITIONS = _state_module.ALLOWED_TASK_TRANSITIONS
@@ -46,12 +53,9 @@ validate_task_manifest = _state_module.validate_task_manifest
 select_task = _state_module.select_task
 _validate_ledger = _state_module.validate_ledger
 
-
-def atomic_write_text(path: Path, value: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
-    temporary.write_text(value)
-    temporary.replace(path)
+# Compatibility imports: Git observations live in controller_git.py.
+capture_git_status = _git_module.capture_git_status
+capture_initial_baseline = _git_module.capture_initial_baseline
 
 
 def persist_run_policy(path: Path, policy: dict[str, Any]) -> str:
@@ -87,36 +91,6 @@ def render_worker_prompt(
             "",
         )
     )
-
-
-def capture_git_status(repository: Path) -> dict[str, str]:
-    result = subprocess.run(
-        ["git", "-C", str(repository), "status", "--porcelain=v1", "-z", "--untracked-files=all"],
-        check=True,
-        capture_output=True,
-    )
-    entries = result.stdout.decode(errors="surrogateescape").split("\0")
-    status: dict[str, str] = {}
-    index = 0
-    while index < len(entries):
-        entry = entries[index]
-        if not entry:
-            index += 1
-            continue
-        code = entry[:2]
-        path = entry[3:]
-        worktree_path = repository / path
-        if worktree_path.is_symlink():
-            content = str(worktree_path.readlink()).encode()
-        elif worktree_path.is_file():
-            content = worktree_path.read_bytes()
-        else:
-            content = b"<missing>"
-        status[path] = f"{code}:{hashlib.sha256(content).hexdigest()}"
-        if "R" in code or "C" in code:
-            index += 1
-        index += 1
-    return status
 
 
 def decide_closure(
@@ -243,27 +217,6 @@ def create_attempt(run_dir: Path, record: dict[str, Any]) -> Path:
 # ── Manifest validation ──────────────────────────────────────────────
 
 
-# ── Git baseline ─────────────────────────────────────────────────────
-
-
-def capture_initial_baseline(repository: Path) -> dict[str, Any]:
-    """Capture HEAD OID, porcelain status, and untracked paths."""
-    head_result = subprocess.run(
-        ["git", "-C", str(repository), "rev-parse", "HEAD"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    head_oid = head_result.stdout.strip()
-    if not head_oid:
-        raise ValueError("Repository has no HEAD (unborn repository)")
-    status = capture_git_status(repository)
-    return {
-        "head_oid": head_oid,
-        "status": status,
-    }
-
-
 # ── Run initialization ────────────────────────────────────────────────
 
 
@@ -281,13 +234,7 @@ def init_run(
     # Resolve and verify repository is Git top-level
     resolved_repo = repository.resolve()
     try:
-        top_result = subprocess.run(
-            ["git", "-C", str(resolved_repo), "rev-parse", "--show-toplevel"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        actual_top = Path(top_result.stdout.strip()).resolve()
+        actual_top = _git_module.repository_top_level(resolved_repo)
         if actual_top != resolved_repo:
             raise ValueError(
                 f"Provided repository {resolved_repo} is not the Git top-level "
@@ -470,12 +417,7 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     initial_baseline = json.loads(
         (run_dir / "baselines" / ledger["initial_baseline_path"]).read_text()
     )
-    current_head = subprocess.run(
-        ["git", "-C", str(repo), "rev-parse", "HEAD"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    current_head = _git_module.capture_head(repo)
     if current_head != initial_baseline["head_oid"]:
         raise ValueError(
             f"HEAD has changed since initialization: {current_head} != {initial_baseline['head_oid']}"
@@ -511,25 +453,8 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     task = select_task(ledger, policy)
 
     # Capture task baseline
-    task_baseline = capture_git_status(repo)
     task_baseline_ref = "task-001.json"
-    task_head = subprocess.run(
-        ["git", "-C", str(repo), "rev-parse", "HEAD"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    task_index_tree = subprocess.run(
-        ["git", "-C", str(repo), "write-tree"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    task_baseline_data = {
-        "head_oid": task_head,
-        "index_tree": task_index_tree,
-        "status": task_baseline,
-    }
+    task_baseline_data = _git_module.capture_task_baseline(repo)
     task_baseline_digest = sha256_text(canonical_json(task_baseline_data))
     atomic_write_json(run_dir / "baselines" / task_baseline_ref, task_baseline_data)
 
@@ -632,7 +557,6 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
         return stop_active_attempt("Invalid or non-terminal adapter state")
 
     # Collect closure evidence
-    current_status = capture_git_status(repo)
     task_baseline = json.loads(
         (run_dir / "baselines" / task_baseline_ref).read_text()
     )
@@ -664,145 +588,23 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     ):
         return stop_active_attempt("Adapter result and terminal state do not match")
 
-    closure_dir = run_dir / "closure"
-    closure_dir.mkdir(exist_ok=True)
-
-    # Compute full Git evidence
-    head_before = task_baseline["head_oid"]
-    head_after = subprocess.run(
-        ["git", "-C", str(repo), "rev-parse", "HEAD"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    staged_result = subprocess.run(
-        ["git", "-C", str(repo), "diff", "--cached", "--name-status"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    unstaged_result = subprocess.run(
-        ["git", "-C", str(repo), "diff", "--name-status"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    staged_stat_result = subprocess.run(
-        ["git", "-C", str(repo), "diff", "--cached", "--stat"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    unstaged_stat_result = subprocess.run(
-        ["git", "-C", str(repo), "diff", "--stat"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    untracked_result = subprocess.run(
-        ["git", "-C", str(repo), "ls-files", "--others", "--exclude-standard", "-z"],
-        check=True,
-        capture_output=True,
-    )
-    untracked_paths = sorted(
-        path
-        for path in untracked_result.stdout.decode(errors="surrogateescape").split("\0")
-        if path
-    )
-    task_patch_result = subprocess.run(
-        [
-            "git", "-C", str(repo), "diff", "--binary", head_before, "--",
-            *task["allowed_paths"],
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    task_patch = task_patch_result.stdout
-    for untracked_path in sorted(set(untracked_paths) & set(task["allowed_paths"])):
-        untracked_patch = subprocess.run(
-            [
-                "git", "-C", str(repo), "diff", "--no-index", "--binary", "--",
-                os.devnull, untracked_path,
-            ],
-            capture_output=True,
-            text=True,
-        )
-        if untracked_patch.returncode not in {0, 1}:
-            raise ValueError(
-                f"Could not capture patch for untracked allowed path {untracked_path}"
-            )
-        task_patch += untracked_patch.stdout
-    # Compute index tree identity for reconciliation
-    index_tree = subprocess.run(
-        ["git", "-C", str(repo), "write-tree"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-
-    artifact_contents = {
-        "staged_name_status": staged_result.stdout,
-        "unstaged_name_status": unstaged_result.stdout,
-        "staged_stat": staged_stat_result.stdout,
-        "unstaged_stat": unstaged_stat_result.stdout,
-        "task_patch": task_patch,
-    }
-    artifact_paths = {
-        "staged_name_status": closure_dir / f"{attempt_id}.staged.name-status.txt",
-        "unstaged_name_status": closure_dir / f"{attempt_id}.unstaged.name-status.txt",
-        "staged_stat": closure_dir / f"{attempt_id}.staged.stat.txt",
-        "unstaged_stat": closure_dir / f"{attempt_id}.unstaged.stat.txt",
-        "task_patch": closure_dir / f"{attempt_id}.diff.patch",
-    }
-    artifact_digests: dict[str, str] = {}
-    for name, content in artifact_contents.items():
-        atomic_write_text(artifact_paths[name], content)
-        artifact_digests[name] = sha256_text(content)
-
-    staged_digest = artifact_digests["staged_name_status"]
-    unstaged_digest = artifact_digests["unstaged_name_status"]
-    patch_digest = artifact_digests["task_patch"]
-    index_tree_digest = sha256_text(index_tree)
-    head_changed = head_before != head_after
-    index_changed = task_baseline["index_tree"] != index_tree
-    mechanical_violations = []
-    if head_changed:
-        mechanical_violations.append("worker changed HEAD despite commit prohibition")
-    if index_changed:
-        mechanical_violations.append("worker changed the Git index")
     adapter_state_digest = sha256_text(canonical_json(adapter_state))
-    evidence_record = {
-        "policy_sha256": ledger["policy_sha256"],
-        "manifest_sha256": ledger["manifest_sha256"],
-        "baseline_sha256": task_baseline_digest,
-        "prompt_sha256": attempt_record["prompt_sha256"],
-        "head_before": head_before,
-        "head_after": head_after,
-        "index_tree_before": task_baseline["index_tree"],
-        "index_tree_after": index_tree,
-        "artifact_digests": artifact_digests,
-        "untracked_paths": untracked_paths,
-        "adapter_state_digest": adapter_state_digest,
-    }
-    evidence_digest = sha256_text(canonical_json(evidence_record))
-    baseline_status = task_baseline["status"]
-    current_paths = set(current_status)
-    baseline_paths = set(baseline_status)
-    allowed_paths = set(task["allowed_paths"])
-    allowed_changed_paths = sorted(
-        path
-        for path in current_paths
-        if path in allowed_paths
-        and (path not in baseline_status or current_status[path] != baseline_status[path])
+    git_evidence = _git_module.capture_closure_evidence(
+        repository=repo,
+        run_dir=run_dir,
+        attempt_id=attempt_id,
+        task_baseline=task_baseline,
+        task_baseline_digest=task_baseline_digest,
+        allowed_paths=task["allowed_paths"],
+        policy_sha256=ledger["policy_sha256"],
+        manifest_sha256=ledger["manifest_sha256"],
+        prompt_sha256=attempt_record["prompt_sha256"],
+        adapter_state_digest=adapter_state_digest,
     )
-    unexpected_paths = sorted(current_paths - baseline_paths - allowed_paths)
-    disappeared_preexisting_paths = sorted(baseline_paths - current_paths)
-    modified_preexisting_paths = sorted(
-        path
-        for path in baseline_paths & current_paths
-        if baseline_status[path] != current_status[path]
-    )
+    current_status = git_evidence["current_status"]
+    closure_git_fields = git_evidence["closure_fields"]
+    mechanical_violations = git_evidence["mechanical_violations"]
+    evidence_digest = closure_git_fields["evidence_digest"]
 
     # Build the complete closure packet
     closure_packet = {
@@ -813,28 +615,7 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
         "manifest_sha256": ledger["manifest_sha256"],
         "baseline_sha256": task_baseline_digest,
         "prompt_sha256": attempt_record.get("prompt_sha256"),
-        "head_before": head_before,
-        "head_after": head_after,
-        "index_tree": index_tree,
-        "index_tree_digest": index_tree_digest,
-        "staged_changes": staged_result.stdout.strip(),
-        "staged_digest": staged_digest,
-        "unstaged_changes": unstaged_result.stdout.strip(),
-        "unstaged_digest": unstaged_digest,
-        "untracked_paths": untracked_paths,
-        "task_patch": task_patch,
-        "task_patch_digest": patch_digest,
-        "staged_stat_digest": artifact_digests["staged_stat"],
-        "unstaged_stat_digest": artifact_digests["unstaged_stat"],
-        "evidence_digest": evidence_digest,
-        "adapter_state_digest": adapter_state_digest,
-        "evidence_artifacts": {
-            name: {
-                "path": str(path.relative_to(run_dir)),
-                "sha256": artifact_digests[name],
-            }
-            for name, path in artifact_paths.items()
-        },
+        **closure_git_fields,
         "worker_claims": {
             "status": worker_result.get("status") if worker_result else None,
             "result_path": output.get("result_path"),
@@ -845,22 +626,6 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
             "state_path": str(state_path),
             "effective_command": adapter_state.get("effective_command"),
             "result": worker_result,
-        },
-        "controller_observations": {
-            "head_changed": head_changed,
-            "index_changed": index_changed,
-            "mechanical_violations": mechanical_violations,
-            "allowed_changed_paths": allowed_changed_paths,
-            "unexpected_paths": unexpected_paths,
-            "disappeared_preexisting_paths": disappeared_preexisting_paths,
-            "modified_preexisting_paths": modified_preexisting_paths,
-            "staged_changes": staged_result.stdout.strip(),
-            "staged_digest": staged_digest,
-            "unstaged_changes": unstaged_result.stdout.strip(),
-            "unstaged_digest": unstaged_digest,
-            "untracked_paths": untracked_paths,
-            "index_tree": index_tree,
-            "index_tree_digest": index_tree_digest,
         },
         "controller_verification": "not_collected",
     }
@@ -884,7 +649,7 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
         closure["reasons"].extend(mechanical_violations)
 
     closure_packet.update(closure)
-    closure_json_path = closure_dir / f"{attempt_id}.json"
+    closure_json_path = run_dir / "closure" / f"{attempt_id}.json"
     atomic_write_json(closure_json_path, closure_packet)
 
     awaiting_tasks = [dict(entry) for entry in ledger["tasks"]]

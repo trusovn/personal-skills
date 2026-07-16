@@ -1,47 +1,86 @@
 # S3-03 Result: Controller Git Observation Extraction
 
-Status: blocked; returned to Stage 2
+Status: complete
 Date: 2026-07-16
 
 ## Outcome
 
-Stopped before extraction because the required pre-edit unusual-path
-characterization exposed an existing Stage 2 closure-evidence gap.
+Extracted Stage 2 Git command execution, parsing, snapshots, comparison data,
+task-scoped patch capture, and closure text-artifact publication from
+`scripts/controller.py` into `scripts/controller_git.py`. `controller.py`
+retains compatibility aliases for `capture_git_status` and
+`capture_initial_baseline`, and continues to own worker launch, closure
+decisions, ledger mutation, and CLI transitions.
 
-`capture_git_status()` preserves spaces, leading dashes, tabs, newlines, and
-shell metacharacters as exact path identities by using NUL-delimited Git output
-and `surrogateescape`. The closure path instead parses newline-delimited
-`git ls-files --others --exclude-standard` text. Git quotes tab and newline
-paths in that output, so the parsed `untracked_paths` values no longer equal the
-allowed paths. Those allowed untracked files are consequently omitted from the
-task-scoped patch.
+Git operations now owned by `controller_git.py`:
 
-The controlled shell-metacharacter path remained literal and created no side
-effect. This macOS host rejected creation of a filename containing a non-UTF-8
-byte with `EILSEQ`, so that case is unsupported by the host and produced no
-controller compatibility result.
+- repository top-level and HEAD resolution;
+- index-tree and porcelain-v1 status snapshots;
+- initial and selected-task baseline construction;
+- staged and unstaged name-status/stat observations;
+- NUL-delimited untracked-path parsing;
+- allowed-path binary task patches, including allowed untracked files;
+- changed-path classifications and HEAD/index mechanical violations; and
+- immutable closure text artifacts and their evidence digests.
 
-Per S3-03's entry criteria and AC-07, this gap must be corrected and
-characterized in Stage 2 before the behavior-preserving extraction proceeds.
-No production or test files were changed, and no `controller_git.py` module was
-created.
+No commit creation or publication mechanics were added.
+
+This completion supersedes the earlier blocked result in this file. Before the
+restart, the Stage 2 closure path had been corrected to use NUL-delimited
+untracked-path output; the required pre-edit controller and unusual-path
+characterizations passed, so the prior Stage 2 blocker was no longer present.
+
+## Acceptance evidence
+
+- Stage 2 controller compatibility tests preserve closure JSON fields,
+  artifacts, digests, fake-worker `run-next` behavior, and CLI transitions.
+- Temporary-Git tests cover tracked, staged, unstaged, untracked, deleted,
+  renamed, unchanged pre-existing dirty, modified pre-existing dirty, and
+  disappeared pre-existing dirty paths.
+- Exact status values, artifact content, and SHA-256 values are checked against
+  independent test oracles.
+- Unexpected and pre-existing dirty content is classified and excluded from
+  the allowed-path patch in the characterized mixed-change scenario.
+- Spaces, a leading dash, tabs, newlines, shell metacharacters, and a raw
+  non-UTF-8 Git path retain literal identity under the existing
+  surrogate-escape strategy. Shell metacharacters produce no side effect.
+- A nonzero Git command raises before the closure artifact directory is
+  published.
+- A controlled monkeypatch proves `run-next` calls the extracted task-baseline
+  boundary and would fail if it bypassed `controller_git.py`.
+- Task-scoped inspection confirms `controller.py` contains no Git argv or Git
+  parsing implementation; its remaining subprocess call launches the worker
+  adapter.
 
 ## Verification
 
-- `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest skills/task-orchestrator/tests/test_controller.py`
+- Pre-edit:
+  `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest skills/task-orchestrator/tests/test_controller.py`
   — 39 tests passed.
-- `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/task-orchestrator/tests -p 'test_*.py'`
-  — 73 tests passed with local loopback permission. The sandboxed run reached
-  72 passing tests before the pre-existing verification-runner capability test
-  was denied permission to bind loopback.
-- Focused temporary-Git characterization — status identities were exact, but
-  closure parsing returned `"tab\\tname.txt"` and `"line\\nname.txt"` as quoted
-  strings instead of the original paths. The shell-metacharacter control had no
-  side effect.
+- Pre-edit aggregate:
+  `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/task-orchestrator/tests -p 'test_*.py'`
+  — 73 tests passed with the local loopback permission required by the existing
+  sandbox-capability test.
+- Test-first demonstration: the new Git-boundary suite failed because
+  `controller_git.py` and controller wiring did not yet exist.
+- Final Git boundary:
+  `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest skills/task-orchestrator/tests/test_controller_git.py`
+  — 6 tests passed.
+- Final controller:
+  `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest skills/task-orchestrator/tests/test_controller.py`
+  — 39 tests passed.
+- Final aggregate:
+  `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/task-orchestrator/tests -p 'test_*.py'`
+  — 79 tests passed with the same local loopback permission.
+- Parsed all 4 task-orchestrator JSON assets with the standard library.
+- Parsed the 3 changed Python files with `ast.parse` without generating
+  bytecode.
+- `git diff --check` passed; equivalent no-index checks passed for the new
+  untracked task files.
 
-## Required next action
+## Residual risk
 
-Return to Stage 2 and change closure untracked-path collection to the
-established NUL-delimited byte-safe strategy, add pre/post regression evidence
-for task-patch inclusion and exact identity, and re-close Stage 2. Then restart
-S3-03 from its pre-edit gates.
+No known S3-03 behavior gap. The non-UTF-8 characterization exercises raw Git
+path identity through the index because the execution sandbox rejects direct
+creation of a non-UTF-8 filesystem pathname. Commit mechanics remain deferred
+to S3-13.

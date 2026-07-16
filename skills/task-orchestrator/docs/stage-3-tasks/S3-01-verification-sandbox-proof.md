@@ -4,6 +4,13 @@ Status: ready after Stage 2
 Depends on: Stage 2 exit contract
 Blocks: S3-07
 
+```yaml
+agent_tier: strong
+reasoning: high
+review: immediate
+estimated_budget: 30 tool calls / 90 minutes / 100k context
+```
+
 ## Outcome
 
 Select and prove one local, non-model mechanism that can execute controller
@@ -43,28 +50,65 @@ permission into a warning.
 
 1. Map each policy value to a concrete runner configuration and identify any
    value the mechanism cannot enforce.
-2. Prove a normal authorized command can run.
-3. Prove an out-of-root write is denied and creates no file.
-4. Prove a network connection attempt is denied when `network` is false.
-5. State how `read-only`, `workspace-write`, writable roots, and
+2. Establish local controls before testing denials: prove the selected
+   out-of-root temporary directory is host-writable and a local loopback
+   listener is reachable without the corresponding restriction. Do not use an
+   external network endpoint.
+3. Prove a normal authorized command and an in-root `workspace-write` command
+   can run with their expected side effects.
+4. Prove `read-only` denies a write to an otherwise writable root and
+   `workspace-write` denies an out-of-root write, with no denied file created.
+5. Prove the loopback connection succeeds with `network: true` and the same
+   connection is denied with `network: false`.
+6. State how `read-only`, `workspace-write`, writable roots, and
    `danger-full-access` are represented and fail closed when unsupported.
-6. State that dependency-install denial also needs S3-06 executable/argument
+   Exercise `danger-full-access` only in an isolated temporary directory and
+   only when its separate authorization is present; reject it before launch
+   otherwise.
+7. State that dependency-install denial also needs S3-06 executable/argument
    preflight; a filesystem/network sandbox alone is not semantic proof.
-7. Record supported platforms, exact invocation shape, cleanup behavior, and
+8. Record supported platforms, exact invocation shape, cleanup behavior, and
    the decision to adopt or reject the mechanism.
+
+## Required test evidence
+
+Positive cases:
+
+- The unrestricted control write and loopback connection succeed, proving the
+  denial probes are capable of observing a side effect on this host.
+- An authorized command runs; `workspace-write` writes inside each configured
+  root; `network: true` reaches only the local loopback fixture.
+- Authorized `danger-full-access`, if supported, writes to the isolated control
+  path and cleans it up.
+
+Negative cases:
+
+- `read-only` cannot write to a control-proven writable root.
+- `workspace-write` cannot write to a control-proven writable path outside all
+  configured roots, and no file appears there.
+- `network: false` cannot reach the same control-proven loopback listener.
+- Unsupported modes, missing writable-root enforcement, and unauthorized
+  `danger-full-access` are rejected before command execution.
+
+The fixture must fail if the mechanism is replaced by an unrestricted process
+or if a control probe cannot demonstrate that its side effect is otherwise
+possible.
 
 ## Acceptance criteria
 
 - **AC-01:** The decision names one exact mechanism and contains no placeholder
   or unverified claim.
-- **AC-02:** A deterministic local proof passes for an allowed command.
+- **AC-02:** Deterministic local controls prove the write and loopback probes can
+  succeed, and positive proofs pass for every supported permission mode.
 - **AC-03:** Deterministic proofs show both out-of-root write and denied-network
-  attempts fail without their side effects occurring.
+  attempts fail without their side effects occurring; `read-only` also denies
+  a write to an otherwise writable configured root.
 - **AC-04:** Every version 1 sandbox/network/writable-root value is mapped or
-  explicitly rejected before execution.
+  exercised by the positive/negative matrix or explicitly rejected before
+  execution.
 - **AC-05:** Unsupported hosts or configurations fail closed.
-- **AC-06:** No dependency, network access, model call, or production command is
-  added.
+- **AC-06:** No dependency, external network access, model call, or production
+  command is added.
 
 ## Verification
 

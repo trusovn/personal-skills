@@ -187,6 +187,7 @@ Do not silently decide these during Stage 1:
 - whether arbitrary Markdown task lists must be normalized and confirmed before a run;
 - whether the long-term transport is CLI, SDK, or MCP-backed;
 - whether parallel worktrees are ever worth supporting.
+- adding metrics geathering as per templates [execution-brief-pilot-measurement.md](execution-brief-pilot-measurement.md) and [execution-brief-template.md](execution-brief-template.md)
 
 ## Rejected shortcuts
 

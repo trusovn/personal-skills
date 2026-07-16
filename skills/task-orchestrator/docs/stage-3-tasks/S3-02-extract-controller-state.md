@@ -4,6 +4,13 @@ Status: ready after Stage 2
 Depends on: Stage 2 exit contract
 Blocks: S3-03, S3-04
 
+```yaml
+agent_tier: standard
+reasoning: medium
+review: milestone
+estimated_budget: 30 tool calls / 90 minutes / 100k context
+```
+
 ## Outcome
 
 Move the already-pure validation, transition, digest, and ledger-record logic
@@ -40,14 +47,45 @@ semantics. Do not create classes or a package hierarchy.
 ## Work
 
 1. Establish the passing controller-test baseline.
-2. Extract canonical JSON/digest helpers, run-policy and manifest validation,
+2. Before moving code, characterize representative successful outputs and
+   rejected inputs for every boundary being moved. Record exact canonical
+   JSON/digest outputs and exception type/message where those are part of the
+   current behavior.
+3. Extract canonical JSON/digest helpers, run-policy and manifest validation,
    pure transition/selection rules, attempt-record validation, and ledger
    validation/update rules that do not execute Git or a worker.
-3. Keep atomic persistence ownership explicit; do not create a generalized
+4. Keep atomic persistence ownership explicit; do not create a generalized
    storage abstraction.
-4. Re-export names from `controller.py` where existing tests/callers use them.
-5. Move focused pure tests into `test_controller_state.py`; keep command-flow
+5. Re-export names from `controller.py` where existing tests/callers use them.
+6. Move focused pure tests into `test_controller_state.py`; keep command-flow
    integration tests in `test_controller.py`.
+
+## Required test evidence
+
+Positive cases:
+
+- Representative valid policy and manifest fixtures validate through
+  `controller_state.py` and through retained `controller.py` compatibility
+  names.
+- Valid selection and transition cases return the same values as the
+  pre-extraction characterization.
+- Canonical JSON, digest, attempt-record, and ledger fixtures retain exact
+  expected values or bytes where persistence depends on them.
+
+Negative cases:
+
+- Representative missing, unknown, duplicate, and wrong-type policy/manifest
+  fields remain rejected.
+- Invalid graph/path inputs, unavailable task selection, invalid transitions,
+  stale closure identity, malformed attempt records, and incoherent ledger
+  updates retain the characterized exception type/message; rejected ledger
+  updates leave persisted ledger bytes unchanged.
+- A direct-import test must fail if `controller_state.py` falls back to the old
+  implementations in `controller.py`; compatibility imports may point from
+  `controller.py` to `controller_state.py`, never the reverse.
+
+Structural non-duplication in AC-03 is confirmed by task-scoped diff inspection;
+do not replace it with a brittle line-count assertion.
 
 ## Acceptance criteria
 
@@ -59,10 +97,19 @@ semantics. Do not create classes or a package hierarchy.
 - **AC-04:** Existing persisted JSON and digest values are byte/semantically
   compatible as applicable.
 - **AC-05:** No speculative abstraction or adjacent cleanup is introduced.
+- **AC-06:** Positive and negative characterization cases produce the same
+  observable results before and after extraction.
 
 ## Verification
 
-Run the same owning suite before and after:
+Before editing, establish the baseline with the existing owning suite:
+
+```text
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest skills/task-orchestrator/tests/test_controller.py
+```
+
+After extraction, run the new focused suite first, then the unchanged command
+and integration coverage:
 
 ```text
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest skills/task-orchestrator/tests/test_controller_state.py

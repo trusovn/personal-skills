@@ -358,8 +358,10 @@ def select_task(ledger: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any
             dependency in completed for dependency in task.get("dependencies", [])
         ):
             return dict(task)
-    ready = [task["id"] for task in ledger["tasks"] if task["state"] == "ready"]
-    raise ValueError(f"No dependency-ready tasks found. Completed: {sorted(completed)}. Task IDs: {[task['id'] for task in ledger['tasks']]}. Ready: {ready}")
+    raise ValueError(
+        f"No ready tasks found. Completed: {sorted(completed)}. "
+        f"Task IDs: {[task['id'] for task in ledger['tasks']]}"
+    )
 
 
 def validate_ledger(ledger: dict[str, Any]) -> None:
@@ -367,8 +369,8 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
         "version", "run_id", "repository", "created_at", "updated_at", "revision", "policy_path",
         "policy_sha256", "manifest_path", "manifest_sha256", "initial_baseline_path",
         "initial_baseline_digest", "completed_task_ids", "state", "selected_task_id",
-        "active_attempt_id", "last_closure_path", "last_verification_path",
-        "last_decision_path", "active_operation_path", "tasks",
+        "active_attempt_id", "last_closure_path", "tasks",
+        "last_verification_path", "last_decision_path", "active_operation_path",
     )
     missing = [field for field in required if field not in ledger]
     if missing:
@@ -377,15 +379,22 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
         raise ValueError(f"Invalid ledger state: {ledger['state']}")
     if type(ledger["revision"]) is not int or ledger["revision"] < 1:
         raise ValueError("Ledger revision must be a positive integer")
-    _validate_str_array(ledger["completed_task_ids"], "completed_task_ids", allow_empty=True)
+    _validate_str_array(
+        ledger["completed_task_ids"], "completed_task_ids", allow_empty=True
+    )
     for field in (
         "last_closure_path", "last_verification_path", "last_decision_path",
         "active_operation_path",
     ):
         if ledger[field] is not None:
             _validate_str(ledger[field], field)
+    if ledger["last_verification_path"] and not ledger["last_closure_path"]:
+        raise ValueError("verification reference requires closure reference")
+    if ledger["last_decision_path"] and not ledger["last_verification_path"]:
+        raise ValueError("decision reference requires verification reference")
+    if ledger["active_operation_path"] and not ledger["last_decision_path"]:
+        raise ValueError("operation reference requires decision reference")
     task_ids: set[str] = set()
-    attempt_owners: dict[str, str] = {}
     selected_task = None
     for task in ledger["tasks"]:
         task_id = task.get("id")
@@ -397,143 +406,149 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
         attempts = task.get("attempt_ids")
         if not isinstance(attempts, list) or len(attempts) != len(set(attempts)):
             raise ValueError(f"Task {task_id} attempt IDs must be a unique array")
-        for attempt_id in attempts:
-            if attempt_id in attempt_owners:
-                raise ValueError(
-                    f"Attempt {attempt_id} is owned by more than one task"
-                )
-            attempt_owners[attempt_id] = task_id
         if task_id == ledger["selected_task_id"]:
             selected_task = task
+    attempt_owners: dict[str, str] = {}
+    for task in ledger["tasks"]:
+        for attempt_id in task["attempt_ids"]:
+            if attempt_id in attempt_owners:
+                raise ValueError("Attempt IDs must have exactly one task owner")
+            attempt_owners[attempt_id] = task["id"]
+    if ledger["selected_task_id"] is not None and selected_task is None:
+        raise ValueError("Selected task is missing from the ledger")
+    state = ledger["state"]
+    ownership_states = {"running", "awaiting_inspection", "resumable"}
+    if state == "stopped" and any(
+        task["state"] in ownership_states for task in ledger["tasks"]
+    ):
+        raise ValueError("'stopped' state cannot retain an active task state")
     if any(
-        task["state"] in {"running", "awaiting_inspection", "resumable"}
-        and task is not selected_task
+        task["state"] in ownership_states and task is not selected_task
         for task in ledger["tasks"]
     ):
         raise ValueError("Only the selected task may have an ownership-bearing state")
-    run_state = ledger["state"]
-    selected_id = ledger["selected_task_id"]
-    active_attempt_id = ledger["active_attempt_id"]
-    if selected_id is not None and selected_task is None:
-        raise ValueError("Selected task is missing from the ledger")
-    if run_state in {"initialized", "ready", "stopped"} and (
-        selected_id is not None or active_attempt_id is not None
-    ):
-        raise ValueError(f"'{run_state}' state must retain neither selected task nor current attempt")
-    if run_state in {"running", "resumable"}:
-        if selected_task is None or not active_attempt_id:
-            label = "active attempt" if run_state == "running" else "current attempt"
-            raise ValueError(f"'{run_state}' state requires one selected task and one {label}")
-        if selected_task["state"] != run_state:
-            raise ValueError("Selected task state must match the run state")
-        if active_attempt_id not in selected_task["attempt_ids"]:
-            raise ValueError("Active attempt must appear in the selected task history")
-        if selected_task["attempt_ids"][-1] != active_attempt_id:
-            raise ValueError("Current attempt must be the last selected task attempt")
-    if run_state == "awaiting_inspection":
-        if selected_task is None:
-            raise ValueError("'awaiting_inspection' requires selected_task_id")
-        if active_attempt_id is not None:
-            raise ValueError("'awaiting_inspection' must have no active_attempt_id")
-        if selected_task["state"] != run_state:
-            raise ValueError("Selected task state must match the run state")
-        if not selected_task["attempt_ids"]:
-            raise ValueError("'awaiting_inspection' requires a selected attempt")
-        if not ledger["last_closure_path"]:
-            raise ValueError("'awaiting_inspection' requires last_closure_path")
-    if run_state == "finalizing":
-        if selected_task is None or selected_task["state"] != "awaiting_inspection":
-            raise ValueError("'finalizing' requires one unaccepted selected task")
-        if not selected_task["attempt_ids"]:
-            raise ValueError("'finalizing' requires a selected attempt")
-        if active_attempt_id is not None:
-            raise ValueError("'finalizing' must have no active_attempt_id")
-        for field in (
+    if state in {"initialized", "ready", "stopped"}:
+        if ledger["selected_task_id"] is not None or ledger["active_attempt_id"] is not None:
+            raise ValueError(f"'{state}' state must have neither selected_task_id nor active_attempt_id")
+    if state == "initialized" and any(
+        ledger[field] is not None for field in (
             "last_closure_path", "last_verification_path", "last_decision_path",
             "active_operation_path",
-        ):
-            if not ledger[field]:
-                raise ValueError(f"'finalizing' requires {field}")
-    if run_state != "finalizing" and ledger["active_operation_path"] is not None:
-        raise ValueError("active_operation_path is incompatible with the run state")
-    if ledger["last_verification_path"] and not ledger["last_closure_path"]:
-        raise ValueError("last_verification_path requires last_closure_path")
-    if ledger["last_decision_path"] and not ledger["last_verification_path"]:
-        raise ValueError("last_decision_path requires last_verification_path")
-    accepted_ids = {task["id"] for task in ledger["tasks"] if task["state"] == "accepted"}
-    if run_state == "stopped" and any(
-        task["state"] in {"running", "awaiting_inspection", "resumable"}
-        for task in ledger["tasks"]
+        )
     ):
-        raise ValueError("'stopped' state cannot retain an active task state")
-    if not accepted_ids and run_state in {"initialized", "ready", "running"} and any(
-        ledger[field] is not None
-        for field in ("last_closure_path", "last_verification_path", "last_decision_path")
-    ):
-        raise ValueError("Closure, verification, or decision reference is incompatible with the run state")
-    completed = set(ledger["completed_task_ids"]) | accepted_ids
-    if run_state == "ready":
+        raise ValueError("'initialized' state requires null Stage 3 references")
+    if state == "ready":
+        completed = set(ledger["completed_task_ids"])
+        completed.update(
+            task["id"] for task in ledger["tasks"] if task["state"] == "accepted"
+        )
         ready_ids = {
-            task["id"] for task in ledger["tasks"]
-            if task["state"] == "ready"
+            task["id"] for task in ledger["tasks"] if task["state"] == "ready"
         }
-        expected_ready = {
+        expected_ready_ids = {
             task["id"] for task in ledger["tasks"]
             if task["state"] not in {"accepted", "stopped"}
-            and all(dependency in completed for dependency in task["dependencies"])
+            and all(
+                dependency in completed for dependency in task["dependencies"]
+            )
         }
-        if not ready_ids or ready_ids != expected_ready:
-            raise ValueError("'ready' state requires exactly the dependency-ready unfinished tasks")
+        if not ready_ids or ready_ids != expected_ready_ids:
+            raise ValueError(
+                "'ready' state requires exactly the dependency-ready unfinished tasks"
+            )
+    if state == "running":
+        if not ledger["selected_task_id"] or not ledger["active_attempt_id"]:
+            raise ValueError("'running' state requires both selected_task_id and active_attempt_id")
+        if selected_task["state"] != "running":
+            raise ValueError("Selected task must be running")
+        if attempt_owners.get(ledger["active_attempt_id"]) != selected_task["id"]:
+            raise ValueError("Active attempt must appear only in the selected task history")
+        if selected_task["attempt_ids"][-1] != ledger["active_attempt_id"]:
+            raise ValueError("Active attempt must be the latest selected task attempt")
+    if state in {"awaiting_inspection", "resumable", "finalizing"}:
+        if not ledger["selected_task_id"]:
+            raise ValueError(f"'{state}' requires selected_task_id")
+        if ledger["active_attempt_id"] is not None:
+            raise ValueError(f"'{state}' must have no active_attempt_id")
+        expected_task_state = "awaiting_inspection" if state == "finalizing" else state
+        if selected_task["state"] != expected_task_state:
+            raise ValueError(f"Selected task state is incoherent with '{state}'")
+        if not selected_task["attempt_ids"]:
+            raise ValueError(f"'{state}' requires a current attempt in task history")
+    if state in {"awaiting_inspection", "finalizing"} and not ledger["last_closure_path"]:
+        raise ValueError(f"'{state}' requires last_closure_path")
+    if state == "finalizing" and not all(
+        ledger[field] for field in (
+            "last_closure_path", "last_verification_path", "last_decision_path",
+            "active_operation_path",
+        )
+    ):
+        raise ValueError("'finalizing' requires closure, verification, decision, and operation references")
+    if state != "finalizing" and ledger["active_operation_path"] is not None:
+        raise ValueError("active_operation_path is only valid while finalizing")
 
 
 def apply_ledger_update(
     ledger: dict[str, Any], updater: dict[str, Any], updated_at: str, *,
-    expected_revision: int,
-    closure_decision: dict[str, Any] | None = None,
-    expected_identity: dict[str, str] | None = None,
+    expected_revision: int, closure_decision: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     next_ledger = json.loads(json.dumps(ledger))
     validate_ledger(next_ledger)
-    if next_ledger["revision"] != expected_revision:
+    if expected_revision != next_ledger["revision"]:
         raise ValueError(
-            f"Stale ledger revision: expected {expected_revision}, "
-            f"found {next_ledger['revision']}"
+            f"Expected ledger revision {expected_revision}, found {next_ledger['revision']}"
         )
+    if "revision" in updater:
+        raise ValueError("Ledger revision is controller-owned")
     previous_tasks = next_ledger["tasks"]
+    immutable_top_level = (
+        "version", "run_id", "repository", "created_at", "policy_path", "policy_sha256",
+        "manifest_path", "manifest_sha256", "initial_baseline_path",
+        "initial_baseline_digest", "completed_task_ids",
+    )
     next_ledger.update(updater)
     next_ledger["updated_at"] = updated_at
-    next_ledger["revision"] = expected_revision + 1
-    immutable_ledger_fields = (
-        "version", "run_id", "repository", "created_at", "policy_path",
-        "policy_sha256", "manifest_path", "manifest_sha256",
-        "initial_baseline_path", "initial_baseline_digest",
-    )
-    if any(next_ledger[field] != ledger[field] for field in immutable_ledger_fields):
-        raise ValueError("Ledger run identity and authority are immutable")
-    if next_ledger["completed_task_ids"] != ledger["completed_task_ids"]:
-        raise ValueError("Ledger completed_task_ids are immutable")
+    next_ledger["revision"] = ledger["revision"] + 1
+    validate_ledger(next_ledger)
+    if any(next_ledger[field] != ledger[field] for field in immutable_top_level):
+        raise ValueError("Ledger authority is immutable")
     next_tasks = next_ledger["tasks"]
     if [task["id"] for task in next_tasks] != [task["id"] for task in previous_tasks]:
-        if {task["id"] for task in next_tasks} == {task["id"] for task in previous_tasks}:
-            raise ValueError("Ledger task order is immutable")
         raise ValueError("Ledger task IDs are immutable")
     immutable_task_fields = (
         "id", "title", "brief_path", "dependencies", "allowed_paths", "required_checks",
     )
     for previous, current in zip(previous_tasks, next_tasks):
-        if any(previous[field] != current[field] for field in immutable_task_fields):
-            raise ValueError(f"Task {previous['id']} authority is immutable")
+        task_id = previous["id"]
+        if any(current[field] != previous[field] for field in immutable_task_fields):
+            raise ValueError(f"Task {task_id} authority is immutable")
         attempts = current["attempt_ids"]
-        if attempts[:len(previous["attempt_ids"])] != previous["attempt_ids"]:
-            raise ValueError(f"Task {previous['id']} attempt history is append-only")
-    validate_ledger(next_ledger)
-    for previous, current in zip(previous_tasks, next_tasks):
-        if current["state"] != previous["state"]:
-            transition_task(
-                previous["state"], current["state"],
-                closure_decision=closure_decision,
-                expected_identity=expected_identity,
+        if (
+            current["state"] == "accepted"
+            and previous["state"] != "accepted"
+            and attempts != previous["attempt_ids"]
+        ):
+            raise ValueError(
+                f"Task {task_id} acceptance cannot append or replace attempt history"
             )
+        if attempts[:len(previous["attempt_ids"])] != previous["attempt_ids"]:
+            raise ValueError(f"Task {task_id} attempt history is append-only")
     if next_ledger["state"] != ledger["state"]:
         transition_run(ledger["state"], next_ledger["state"])
+    for previous, current in zip(previous_tasks, next_tasks):
+        if current["state"] == previous["state"]:
+            continue
+        expected_identity = None
+        if current["state"] == "accepted":
+            if previous["attempt_ids"]:
+                expected_identity = {
+                    "run_id": ledger["run_id"],
+                    "task_id": previous["id"],
+                    "attempt_id": previous["attempt_ids"][-1],
+                }
+        transition_task(
+            previous["state"], current["state"],
+            closure_decision=closure_decision,
+            expected_identity=expected_identity,
+        )
     return next_ledger

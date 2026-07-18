@@ -288,13 +288,11 @@ def init_run(
         baseline_path = temp_dir / "baselines" / baseline_ref
         baseline_path.write_text(json.dumps(baseline_data, indent=2, sort_keys=True) + "\n")
 
+        # Build ledger
         completed = set(validated["completed_task_ids"])
-        task_entries = validated["task_entries"]
-        for task in task_entries:
+        for task in validated["task_entries"]:
             if all(dependency in completed for dependency in task["dependencies"]):
                 task["state"] = "ready"
-
-        # Build ledger
         ledger = {
             "version": 1,
             "run_id": policy["run_id"],
@@ -318,7 +316,7 @@ def init_run(
             "last_verification_path": None,
             "last_decision_path": None,
             "active_operation_path": None,
-            "tasks": task_entries,
+            "tasks": validated["task_entries"],
         }
         _validate_ledger(ledger)
         (temp_dir / "ledger.json").write_text(
@@ -358,21 +356,23 @@ def _now_iso() -> str:
 
 
 class RunCommandLock:
-    """One non-blocking, local controller lock for an existing run."""
+    """One non-blocking local lock for an existing run."""
 
     def __init__(self, run_dir: Path):
-        self.path = run_dir / ".controller.lock"
+        self.path = run_dir / "controller.lock"
         self.stream = None
 
     def acquire(self) -> None:
         if self.stream is not None:
             return
-        stream = self.path.open("a+b")
+        stream = self.path.open("a+")
         try:
             fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             stream.close()
-            raise ValueError(f"Another controller command owns run {self.path.parent}")
+            raise ValueError(
+                "Another controller command owns this run's mutation phase"
+            )
         self.stream = stream
 
     def release(self) -> None:
@@ -392,11 +392,13 @@ class RunCommandLock:
 
 def _update_ledger_locked(
     run_dir: Path, updater: dict[str, Any], *, expected_revision: int,
+    closure_decision: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     ledger_path = run_dir / "ledger.json"
     ledger = json.loads(ledger_path.read_text())
     ledger = _state_module.apply_ledger_update(
-        ledger, updater, _now_iso(), expected_revision=expected_revision
+        ledger, updater, _now_iso(), expected_revision=expected_revision,
+        closure_decision=closure_decision,
     )
     atomic_write_json(ledger_path, ledger)
     return ledger
@@ -404,12 +406,55 @@ def _update_ledger_locked(
 
 def update_ledger(
     run_dir: Path, updater: dict[str, Any], *, expected_revision: int,
+    closure_decision: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Lock, validate the expected revision, and atomically update the ledger."""
     with RunCommandLock(run_dir):
         return _update_ledger_locked(
-            run_dir, updater, expected_revision=expected_revision
+            run_dir, updater, expected_revision=expected_revision,
+            closure_decision=closure_decision,
         )
+
+
+def _validate_accepted_workspace(run_dir: Path, ledger: dict[str, Any]) -> None:
+    closure_ref = ledger["last_closure_path"]
+    candidates = []
+    for task in ledger["tasks"]:
+        if task["state"] != "accepted" or not task["attempt_ids"]:
+            continue
+        attempt_id = task["attempt_ids"][-1]
+        if closure_ref == f"closure/{attempt_id}.json":
+            candidates.append((task, attempt_id))
+    if len(candidates) != 1:
+        raise ValueError("Accepted workspace identity is missing or ambiguous")
+    task, attempt_id = candidates[0]
+    attempt_path = run_dir / "attempts" / attempt_id / "record.json"
+    if not attempt_path.is_file():
+        raise ValueError("Accepted attempt record is missing")
+    attempt = json.loads(attempt_path.read_text())
+    validate_attempt_record(attempt)
+    if attempt["task_id"] != task["id"]:
+        raise ValueError("Accepted attempt task identity mismatch")
+    if attempt["baseline_ref"] != ledger["selected_task_baseline_ref"]:
+        raise ValueError("Accepted attempt baseline reference mismatch")
+    if attempt.get("baseline_digest") != ledger["selected_task_baseline_digest"]:
+        raise ValueError("Accepted attempt baseline digest mismatch")
+    _git_module.validate_accepted_workspace(
+        repository=Path(ledger["repository"]).resolve(),
+        run_dir=run_dir,
+        task_baseline_ref=ledger["selected_task_baseline_ref"],
+        task_baseline_digest=ledger["selected_task_baseline_digest"],
+        closure_ref=closure_ref,
+        allowed_paths=task["allowed_paths"],
+        expected_identity={
+            "run_id": ledger["run_id"],
+            "task_id": task["id"],
+            "attempt_id": attempt_id,
+            "policy_sha256": ledger["policy_sha256"],
+            "manifest_sha256": ledger["manifest_sha256"],
+            "prompt_sha256": attempt["prompt_sha256"],
+        },
+    )
 
 
 # ── CLI entry points ─────────────────────────────────────────────────
@@ -456,98 +501,107 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     if args.timeout_seconds <= 0:
         raise ValueError("timeout must be greater than zero")
     run_dir = Path(args.run_dir).resolve()
-    with RunCommandLock(run_dir):
-        prepared = _prepare_run_next(args, run_dir)
-
-    result = subprocess.run(
-        prepared["adapter_invocation"], text=True, capture_output=True
-    )
-
-    with RunCommandLock(run_dir):
-        current_ledger = json.loads((run_dir / "ledger.json").read_text())
-        _validate_ledger(current_ledger)
-        if (
-            current_ledger["revision"] != prepared["running_revision"]
-            or current_ledger["state"] != "running"
-            or current_ledger["selected_task_id"] != prepared["task"]["id"]
-            or current_ledger["active_attempt_id"] != prepared["attempt_id"]
-        ):
-            raise ValueError("Run changed while the worker was active; terminal reconciliation rejected")
-        return _reconcile_run_next(
-            result=result, run_dir=run_dir, repo=prepared["repo"],
-            policy=prepared["policy"], ledger=current_ledger,
-            task=prepared["task"], attempt_dir=prepared["attempt_dir"],
-            attempt_id=prepared["attempt_id"],
-            attempt_record=prepared["attempt_record"],
-            task_baseline_ref=prepared["task_baseline_ref"],
-            task_baseline_digest=prepared["task_baseline_digest"],
-        )
-
-
-def _prepare_run_next(args: "argparse.Namespace", run_dir: Path) -> dict[str, Any]:  # type: ignore[name-defined]
-    ledger = json.loads((run_dir / "ledger.json").read_text())
+    lock = RunCommandLock(run_dir)
+    lock.acquire()
+    ledger_path = run_dir / "ledger.json"
+    ledger = json.loads(ledger_path.read_text())
     _validate_ledger(ledger)
     policy = json.loads((run_dir / "run-policy.json").read_text())
-    persisted_manifest = json.loads((run_dir / "task-manifest.json").read_text())
-    if sha256_text(canonical_json(policy)) != ledger["policy_sha256"]:
+    manifest = json.loads((run_dir / "task-manifest.json").read_text())
+
+    # Validate persisted digests
+    persisted_policy = json.loads((run_dir / "run-policy.json").read_text())
+    if sha256_text(canonical_json(persisted_policy)) != ledger["policy_sha256"]:
         raise ValueError("Persisted policy digest mismatch")
+    persisted_manifest = json.loads((run_dir / "task-manifest.json").read_text())
     if sha256_text(canonical_json(persisted_manifest)) != ledger["manifest_sha256"]:
         raise ValueError("Persisted manifest digest mismatch")
 
+    # Compare current Git state with the applicable controller-owned evidence.
     repo = Path(ledger["repository"]).resolve()
     initial_baseline = json.loads(
         (run_dir / "baselines" / ledger["initial_baseline_path"]).read_text()
     )
-    if not any(task["attempt_ids"] for task in ledger["tasks"]):
+    if any(task["state"] == "accepted" for task in ledger["tasks"]):
+        _validate_accepted_workspace(run_dir, ledger)
+    else:
         current_head = _git_module.capture_head(repo)
         if current_head != initial_baseline["head_oid"]:
             raise ValueError(
                 f"HEAD has changed since initialization: {current_head} != {initial_baseline['head_oid']}"
             )
         current_status = capture_git_status(repo)
-        if current_status != initial_baseline["status"]:
-            changed = sorted(set(current_status) ^ set(initial_baseline["status"]))
+        initial_status = initial_baseline["status"]
+        if current_status != initial_status:
+            changed = sorted(set(current_status) ^ set(initial_status))
             raise ValueError(
-                "Repository state has changed since initialization. "
+                f"Repository state has changed since initialization. "
                 f"Changed paths: {', '.join(changed)}"
             )
-    computed_baseline_digest = sha256_text(canonical_json(initial_baseline))
+
+    # Validate initial-baseline digest before proceeding
+    persisted_baseline_path = run_dir / "baselines" / ledger["initial_baseline_path"]
+    persisted_baseline_content = persisted_baseline_path.read_text()
+    computed_baseline_digest = sha256_text(canonical_json(json.loads(persisted_baseline_content)))
     if computed_baseline_digest != ledger["initial_baseline_digest"]:
         raise ValueError(
             f"Initial baseline digest mismatch: persisted={computed_baseline_digest}, "
             f"expected={ledger['initial_baseline_digest']}"
         )
 
-    task = select_task(ledger, policy)
+    # Preflight the exact Codex start command shape before any durable mutation.
     worker_script = Path(__file__).parents[1] / "scripts" / "codex_worker.py"
     _worker_module.preflight_codex(
-        args.codex_bin, repo, sandbox=policy["permissions"]["sandbox"],
+        args.codex_bin,
+        repo,
+        sandbox=policy["permissions"]["sandbox"],
     )
-    attempt_number = 1 + sum(len(task["attempt_ids"]) for task in ledger["tasks"])
+
+    # Selection is pure. Durable mutation begins only after exact preflight.
+    task = select_task(ledger, policy)
+
+    # Capture task baseline
+    attempt_number = 1
+    attempts_dir = run_dir / "attempts"
+    while (attempts_dir / f"attempt-{attempt_number:03d}").exists():
+        attempt_number += 1
     task_baseline_ref = f"task-{attempt_number:03d}.json"
     task_baseline_data = _git_module.capture_task_baseline(repo)
     task_baseline_digest = sha256_text(canonical_json(task_baseline_data))
     atomic_write_json(run_dir / "baselines" / task_baseline_ref, task_baseline_data)
+
+    # Build prompt
     prompt = render_worker_prompt(
-        task_id=task["id"], brief_path=task["brief_path"],
+        task_id=task["id"],
+        brief_path=task["brief_path"],
         task_instructions=f"Implement task {task['id']}: {task['title']}.\n"
-        f"Allowed paths: {task['allowed_paths']}\n"
-        f"Required checks: {task['required_checks']}\n"
-        f"Dependencies satisfied: {task['dependencies']}", policy=policy,
+                         f"Allowed paths: {task['allowed_paths']}\n"
+                         f"Required checks: {task['required_checks']}\n"
+                         f"Dependencies satisfied: {task['dependencies']}",
+        policy=policy,
     )
+
+    # Allocate attempt
     attempt_record = build_attempt_record(
-        task_id=task["id"], brief_path=task["brief_path"], prompt=prompt,
-        policy=policy, baseline_ref=task_baseline_ref,
+        task_id=task["id"],
+        brief_path=task["brief_path"],
+        prompt=prompt,
+        policy=policy,
+        baseline_ref=task_baseline_ref,
     )
     expected_attempt_dir = run_dir / "attempts" / f"attempt-{attempt_number:03d}"
     adapter_invocation = [
-        sys.executable, str(worker_script), "start", "--run-dir", str(expected_attempt_dir),
-        "--cwd", str(repo), "--prompt-file", str(expected_attempt_dir / "prompt.txt"),
-        "--codex-bin", args.codex_bin, "--timeout-seconds", str(args.timeout_seconds),
+        sys.executable, str(worker_script), "start",
+        "--run-dir", str(expected_attempt_dir),
+        "--cwd", str(repo),
+        "--prompt-file", str(expected_attempt_dir / "prompt.txt"),
+        "--codex-bin", args.codex_bin,
+        "--timeout-seconds", str(args.timeout_seconds),
         "--sandbox", policy["permissions"]["sandbox"],
     ]
     attempt_record.update({
-        "adapter_invocation": adapter_invocation, "codex_bin": args.codex_bin,
+        "adapter_invocation": adapter_invocation,
+        "codex_bin": args.codex_bin,
         "timeout_seconds": args.timeout_seconds,
         "effective_permission_envelope": policy["permissions"],
         "baseline_digest": task_baseline_digest,
@@ -555,31 +609,23 @@ def _prepare_run_next(args: "argparse.Namespace", run_dir: Path) -> dict[str, An
     attempt_dir = create_attempt(run_dir, attempt_record)
     attempt_id = attempt_dir.name
     if attempt_dir != expected_attempt_dir:
-        raise ValueError("Attempt allocation did not match ledger history")
+        raise ValueError("Attempt allocation changed during the owned mutation phase")
+
     running_tasks = [dict(entry) for entry in ledger["tasks"]]
     selected_task = next(entry for entry in running_tasks if entry["id"] == task["id"])
     selected_task["state"] = "running"
     selected_task["attempt_ids"] = [*selected_task["attempt_ids"], attempt_id]
-    running_ledger = _update_ledger_locked(run_dir, {
-        "state": "running", "selected_task_id": task["id"],
-        "active_attempt_id": attempt_id, "selected_task_baseline_ref": task_baseline_ref,
-        "selected_task_baseline_digest": task_baseline_digest, "tasks": running_tasks,
+    ledger = _update_ledger_locked(run_dir, {
+        "state": "running",
+        "selected_task_id": task["id"],
+        "active_attempt_id": attempt_id,
+        "selected_task_baseline_ref": task_baseline_ref,
+        "selected_task_baseline_digest": task_baseline_digest,
+        "tasks": running_tasks,
     }, expected_revision=ledger["revision"])
-    return {
-        "adapter_invocation": adapter_invocation, "running_revision": running_ledger["revision"],
-        "repo": repo, "policy": policy, "task": task, "attempt_dir": attempt_dir,
-        "attempt_id": attempt_id, "attempt_record": attempt_record,
-        "task_baseline_ref": task_baseline_ref,
-        "task_baseline_digest": task_baseline_digest,
-    }
+    running_revision = ledger["revision"]
+    lock.release()
 
-
-def _reconcile_run_next(
-    *, result: subprocess.CompletedProcess[str], run_dir: Path, repo: Path,
-    policy: dict[str, Any], ledger: dict[str, Any], task: dict[str, Any],
-    attempt_dir: Path, attempt_id: str, attempt_record: dict[str, Any],
-    task_baseline_ref: str, task_baseline_digest: str,
-) -> int:
     def stop_active_attempt(reason: str) -> int:
         print(reason, file=sys.stderr)
         stopped_tasks = [dict(entry) for entry in ledger["tasks"]]
@@ -590,7 +636,27 @@ def _reconcile_run_next(
             "active_attempt_id": None,
             "tasks": stopped_tasks,
         }, expected_revision=ledger["revision"])
+        lock.release()
         return 1
+
+    # Launch through worker adapter
+    result = subprocess.run(
+        adapter_invocation,
+        text=True,
+        capture_output=True,
+    )
+
+    lock.acquire()
+    current_ledger = json.loads(ledger_path.read_text())
+    if (
+        current_ledger["revision"] != running_revision
+        or current_ledger["state"] != "running"
+        or current_ledger["selected_task_id"] != task["id"]
+        or current_ledger["active_attempt_id"] != attempt_id
+    ):
+        lock.release()
+        raise ValueError("Run state changed while the worker was active; refusing stale reconciliation")
+    ledger = current_ledger
 
     if result.returncode != 0:
         return stop_active_attempt(f"Worker error: {result.stderr}")
@@ -729,6 +795,7 @@ def _reconcile_run_next(
         "last_closure_path": str(closure_json_path.relative_to(run_dir)),
         "tasks": awaiting_tasks,
     }, expected_revision=ledger["revision"])
+    lock.release()
 
     print(json.dumps({
         "status": "awaiting_inspection",

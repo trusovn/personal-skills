@@ -111,7 +111,52 @@ def process_tree() -> None:
     commit(root)
 
 
-SCENARIOS = {"queue-runner": queue_runner, "process-tree": process_tree}
+def existing_brief() -> None:
+    root = WORK / "api"
+    initialize(root)
+    write(root, "AGENTS.md", "# Fixture rules\n\nPreserve adequate task content. Edit planning artifacts only under `docs/tasks/`.")
+    write(
+        root,
+        "docs/tasks/API-31.md",
+        """
+        # API-31 — Reject expired sessions
+
+        Status: ready
+
+        ## Outcome
+
+        Reject an expired session without refreshing its token.
+
+        ## Authority and scope
+
+        Authority: approved issue API-31.
+        Allowed changes: `src/auth/session.py`, `tests/auth/test_session.py`.
+        Out of scope: token format changes, dependencies, network, and commits.
+
+        ## Acceptance criteria
+
+        - AC-01: an unexpired session remains valid.
+        - AC-02: an expired session is rejected and its token is unchanged.
+
+        ## Verification
+
+        Targeted: `python -m unittest tests.auth.test_session`.
+        Broader: `python -m unittest discover -s tests`.
+
+        ## Stops and handoff
+
+        Preserve user work and stop for ambiguous expiry semantics or wider
+        paths. Next action: guided implementation.
+        """,
+    )
+    commit(root)
+
+
+SCENARIOS = {
+    "queue-runner": queue_runner,
+    "process-tree": process_tree,
+    "existing-brief": existing_brief,
+}
 
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:
     raise SystemExit(f"usage: {sys.argv[0]} <{'|'.join(SCENARIOS)}>")

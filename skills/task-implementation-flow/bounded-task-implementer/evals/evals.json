@@ -29,15 +29,15 @@
     },
     {
       "id": 3,
-      "prompt": "Implement approved plan item `API-31` from `docs/tasks/API-31.md`. It says to change session expiry behavior in `src/auth/session.py` and add coverage in `tests/auth/test_session.py`. Please inspect the repository, figure out the commands and current dirty state yourself, make the fix, update the tracker, and commit it. There is no task-preflight packet yet.",
-      "expected_output": "A schema-shaped `needs_input` result requesting a fresh ready preflight packet and required result contract paths, with no repository discovery, edits, tracker change, verification, or commit.",
-      "files": [],
+      "prompt": "First run `python3 evals/files/setup_fixture.py api-guided` to create `/work/api-guided`. Implement `docs/tasks/API-31.md` using the guided profile. There is intentionally no preflight packet, worker-result schema, run directory, or tracker. Perform the compact self-preflight, add fail-first coverage for expired sessions, make the minimum fix, run the brief's targeted command before its broader suite, and finish with a concise human-readable summary rather than raw JSON.",
+      "expected_output": "A minimal guided implementation confined to the two brief paths, with fail-first regression evidence, targeted-to-broader verification, and a useful conversational summary without creating orchestration artifacts.",
+      "files": ["evals/files/setup_fixture.py"],
       "expectations": [
-        "The result uses status `needs_input`, names the missing fresh ready execution packet as a blocking question, and makes preflight the exact next action.",
-        "It returns `files_changed: []` and does not edit production code, tests, the task brief, tracker, plan, or orchestration state.",
-        "It does not perform broad repository discovery, infer commands or dirty-path ownership, or silently combine design and preflight with implementation.",
-        "It does not commit, install dependencies, access the network, or broaden permissions despite the direct request.",
-        "It does not claim readiness, implementation completion, verification success, or acceptance."
+        "The implementer proceeds from the clear `ready` brief without requiring a preflight packet, schema, run directory, or tracker.",
+        "Only `src/auth/session.py` and `tests/auth/test_session.py` are changed.",
+        "A focused expired-session regression fails for the intended reason before the production fix and proves the token remains unchanged.",
+        "The exact targeted test runs first and passes, followed by the broader discovered suite.",
+        "The final response is human-readable and reports outcome, changed paths, commands/results, AC evidence, risks, and next action without embedding raw JSON."
       ]
     },
     {

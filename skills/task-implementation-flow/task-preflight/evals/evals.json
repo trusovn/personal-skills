@@ -53,6 +53,19 @@
         "It requires a fresh preflight after an external or proved ignored/status-neutral path is supplied.",
         "It does not edit `.gitignore`, source, tests, task artifacts, tracker state, or policy to make the path appear safe."
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "First run `python3 evals/files/setup_fixture.py queue-guided` to create the clean fixture at `/work/queue-runner`. Perform a guided inline preflight for `docs/tasks/QR-12.md`; no packet path, run policy file, digest ledger, result schema, or durable artifact is requested. Confirm scope and ownership, resolve the targeted command and relevant helper, and assess whether the existing test actually proves the repeated public behavior. The allowed test file may be extended by implementation with fail-first coverage. Do not edit the repository.",
+      "expected_output": "A concise guided `ready` result that avoids high-assurance artifact requirements, identifies the existing test's oracle gap, and gives the implementer the exact targeted command plus the requirement to establish the missing repeated-flow fail-first evidence before production edits.",
+      "files": ["evals/files/setup_fixture.py"],
+      "expectations": [
+        "The result uses status `ready` because authority, scope, ownership, helper, command, and task-local test placement are sufficient for guided implementation.",
+        "It does not require or create an external packet, SHA-256 ledger, worker-result schema, run-policy artifact, or tracker handoff.",
+        "It resolves the exact targeted command and helper interface from the repository.",
+        "It states that the current passing test does not prove two public invocations and requires fail-first repeated-flow evidence before the production change.",
+        "It reports inline and does not edit source, tests, the brief, or repository state."
+      ]
     }
   ]
 }

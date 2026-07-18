@@ -239,10 +239,74 @@ def queue_restaged_stale() -> None:
     (root / "notes/local.md").write_bytes(worktree_bytes)
 
 
+def api_guided() -> None:
+    root = WORK / "api-guided"
+    initialize(root)
+    write(
+        root,
+        "AGENTS.md",
+        "# Fixture rules\n\nUse guided implementation. Preserve user work, add behavioral tests, and run targeted verification before the broader suite.",
+    )
+    write(
+        root,
+        "docs/tasks/API-31.md",
+        """
+        # API-31 — Reject expired sessions
+
+        Status: ready
+
+        ```yaml
+        agent_tier: standard
+        reasoning: medium
+        review: milestone
+        budget: 20 tool calls / 45 minutes / 60k context
+        ```
+
+        Outcome: reject expired sessions without changing their token.
+        Allowed changes: src/auth/session.py; tests/auth/test_session.py.
+        AC-01: an unexpired session remains valid.
+        AC-02: an expired session is rejected and its token remains unchanged.
+        Targeted: python -m unittest tests.auth.test_session
+        Broader: python -m unittest discover -s tests
+        No network, dependency installation, commits, or other repository writes.
+        """,
+    )
+    write(root, "src/__init__.py", "")
+    write(root, "src/auth/__init__.py", "")
+    write(
+        root,
+        "src/auth/session.py",
+        """
+        def is_valid(session, now):
+            return bool(session.get("token"))
+        """,
+    )
+    write(root, "tests/__init__.py", "")
+    write(root, "tests/auth/__init__.py", "")
+    write(
+        root,
+        "tests/auth/test_session.py",
+        """
+        import unittest
+
+        from src.auth.session import is_valid
+
+
+        class SessionTest(unittest.TestCase):
+            def test_unexpired_session_is_valid(self):
+                session = {"token": "abc", "expires_at": 20}
+                self.assertTrue(is_valid(session, now=10))
+        """,
+    )
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "fixture baseline")
+
+
 SCENARIOS = {
     "queue-task": queue_task,
     "scheduler-resume": scheduler_resume,
     "queue-restaged-stale": queue_restaged_stale,
+    "api-guided": api_guided,
 }
 
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:

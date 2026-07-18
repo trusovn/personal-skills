@@ -158,8 +158,23 @@ def api_overlap() -> None:
     (RUNS / "API-31").mkdir(parents=True, exist_ok=True)
 
 
+def queue_guided() -> None:
+    queue_ready()
+    root = WORK / "queue-runner"
+    brief = root / "docs/tasks/QR-12.md"
+    brief.write_text(
+        brief.read_text(encoding="utf-8").replace(
+            "Artifact status: ready_for_preflight", "Artifact status: ready"
+        ),
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "-C", str(root), "add", "docs/tasks/QR-12.md"], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "--amend", "-qm", "fixture baseline"], check=True)
+
+
 SCENARIOS = {
     "queue-ready": queue_ready,
+    "queue-guided": queue_guided,
     "scheduler-missing": scheduler_missing,
     "api-overlap": api_overlap,
 }

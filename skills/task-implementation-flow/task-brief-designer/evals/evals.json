@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "First run `python3 evals/files/setup_fixture.py queue-runner` to stage the supplied authority fixture at `/work/queue-runner`. Then turn approved plan item `docs/stage-3-plan.md#S3-04` into an executable brief at `docs/stage-3-tasks/S3-04.md`. The approved behavior adds `run-next`: the command selects the next ready task, records it as running, and later invocations continue selecting remaining ready tasks. Existing unit ACs mention only selecting one task from a static queue. The public entry point is `runner run-next`; state is persisted in `.runner/state.json`. Do brief design only—do not certify the current tree or edit implementation files.",
+      "prompt": "First run `python3 evals/files/setup_fixture.py queue-runner` to stage the supplied authority fixture at `/work/queue-runner`. Use the high-assurance profile to turn approved plan item `docs/stage-3-plan.md#S3-04` into an executable `ready_for_preflight` brief at `docs/stage-3-tasks/S3-04.md`. The approved behavior adds `run-next`: the command selects the next ready task, records it as running, and later invocations continue selecting remaining ready tasks. Existing unit ACs mention only selecting one task from a static queue. The public entry point is `runner run-next`; state is persisted in `.runner/state.json`. Do brief design only—do not certify the current tree or edit implementation files.",
       "expected_output": "A ready-for-preflight task brief that preserves the approved lifecycle behavior and adds real public-entry evidence covering the first invocation, its persisted state change, and a second invocation, with negative/unchanged-state evidence and provisional preflight checks.",
       "files": ["evals/files/setup_fixture.py"],
       "expectations": [
@@ -38,6 +38,19 @@
         "It names an owner and a smallest next action to produce or approve the missing authority.",
         "It does not fabricate acceptance criteria, allowed production paths, commands, or a ready-for-preflight claim.",
         "It does not implement code, inspect repository readiness, or modify an official plan."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "First run `python3 evals/files/setup_fixture.py existing-brief` to create `/work/api/docs/tasks/API-31.md`. Gap-check that existing task for ordinary guided implementation. It already has an outcome, scope, positive and negative ACs, targeted and broader commands, stops, and a next action. Add the standard `agent_tier`, `reasoning`, `review`, and `budget` metadata block with proportionate values, but do not rewrite adequate prose or add high-assurance ledgers, matrices, digests, packet requirements, or prerequisite tasks.",
+      "expected_output": "A surgical update that adds only the compact task metadata and confirms the existing brief is ready for guided implementation without replacing it with the full template.",
+      "files": ["evals/files/setup_fixture.py"],
+      "expectations": [
+        "The existing outcome, scope, ACs, commands, stops, and next action remain substantively unchanged.",
+        "The brief gains exactly the four standard metadata keys with a soft, proportionate budget.",
+        "The result keeps guided status `ready` and does not force a standalone preflight.",
+        "No knowledge ledger, AC execution matrix, digest inventory, durable packet contract, or prerequisite task is added.",
+        "Only `docs/tasks/API-31.md` is modified."
       ]
     }
   ]

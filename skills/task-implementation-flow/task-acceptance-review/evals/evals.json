@@ -52,6 +52,19 @@
         "It does not reset, restage, overwrite, or claim ownership of `notes/local.md` and does not review a guessed scoped diff as authoritative.",
         "Only the authorized external acceptance report is written."
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "First run `python3 evals/files/setup_fixture.py ledger-defects` to create the staged implementation in `/work/ledger-runner`. Perform a guided acceptance review of `docs/tasks/LED-04.md` against the current diff. There is no preflight packet, worker JSON, run policy, or report path; report inline and remain read-only. Do not rely on the happy-path test alone: independently exercise selected versus non-selected task states, zero/one/two active owners, latest-attempt ordering, exact ready-set behavior, stopped-parent/running-child coherence, boolean revisions, and string `completed_task_ids`.",
+      "expected_output": "A concise guided `CHANGES_REQUESTED` review that proceeds without orchestrator artifacts and locates the ledger validator's interacting-state and type-strictness defects with independent evidence.",
+      "files": ["evals/files/setup_fixture.py"],
+      "expectations": [
+        "The review proceeds in guided mode without requiring a preflight packet, worker result, digest ledger, policy file, or durable report path.",
+        "Independent probes demonstrate that a valid selected task can hide an invalid non-selected running task and that ready/stopped states accept incoherent sibling states.",
+        "The review checks exact cardinality and shows that the running state can admit more than one running task.",
+        "The review catches non-latest active attempts, inexact ready sets, boolean revisions, and string `completed_task_ids` as applicable defects.",
+        "The inline human-readable verdict is `CHANGES_REQUESTED`, contains concrete located findings and AC evidence, and requires a fresh review after correction without editing the repository."
+      ]
     }
   ]
 }

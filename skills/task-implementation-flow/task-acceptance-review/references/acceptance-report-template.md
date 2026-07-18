@@ -2,23 +2,25 @@
 
 | Field | Value |
 |---|---|
-| Task ID | `<stable ID>` |
-| Artifact status / verdict | `ACCEPT \| CHANGES_REQUESTED \| INCONCLUSIVE` |
+| Verdict | `ACCEPT | CHANGES_REQUESTED | INCONCLUSIVE` |
 | Producing stage | `task-acceptance-review` |
+| Review iteration | `<first review or correction number>` |
 | Created at | `<ISO-8601 timestamp with timezone>` |
 | Repository root | `<absolute path>` |
-| Durable report path | `<absolute or repository-relative runtime path>` |
+| Durable report path | `<authorized runtime path>` |
 | Task brief | `<exact path and preflight-recorded SHA-256>` |
 | Preflight packet | `<exact path>` |
-| Implementer result | `<exact path and status>` |
+| Implementer result | `<exact corrected/current path and status>` |
 | Run policy | `<identifier and path>` |
+
+This report applies only to the reviewed bytes and artifacts identified below.
+Any correction requires a new report and verdict.
 
 ## 1. Findings, ordered P0 through P3
 
-Use `No findings.` when no concrete defect exists. Do not manufacture findings
-to justify the review.
+Use `No findings.` when no concrete defect exists.
 
-### [P1] `<imperative, consequence-focused title>`
+### [P1] `<consequence-focused title>`
 
 | Field | Evidence |
 |---|---|
@@ -27,69 +29,71 @@ to justify the review.
 | Consequence | `<user, data, system, contract, or operational impact>` |
 | Evidence | `<trace, independent probe, command result, or code fact>` |
 | Affected AC | `<AC-ID>` |
-| Smallest corrective direction | `<bounded direction only; do not write the patch>` |
+| Smallest corrective direction | `<bounded direction; no patch>` |
 
 ## 2. AC evidence matrix
 
-| AC | Required invariant and oracle | Function/state/module evidence | Real public-entry and decisive-boundary evidence | Negative / unchanged-state evidence | Repeated / recovery evidence | Result and gap |
+| AC | Required invariant / oracle | Module evidence | Real entry point / decisive boundary | Negative / unchanged evidence | Repeated / recovery evidence | Result / gap |
 |---|---|---|---|---|---|---|
-| `<AC-ID>` | `<observable contract and independent oracle>` | `<evidence or N/A with reason>` | `<entry point, boundary, observed result>` | `<evidence>` | `<first occurrence + legitimate state change + next occurrence, or N/A with task-specific reason>` | `pass \| fail \| unverified — evidence/owner` |
+| `<AC-ID>` | `<observable contract>` | `<evidence or N/A>` | `<entry point, boundary, observed result>` | `<evidence>` | `<first state change + next occurrence, or N/A with reason>` | `pass | fail | unverified — owner/evidence` |
 
-Passing submitted tests or worker claims are not independent evidence until
-corroborated. Pure-function evidence is insufficient when the AC names a real
-workflow.
+Passing worker tests are submitted claims until independently corroborated.
 
-## 3. Independent probes and command results
+## 3. Adversarial state and evidence checks
 
-| ID | Exact command or probe | Working directory / environment | Purpose and ACs | Result and observed signal | Side effects / disposition | Independence or gap |
+Include only rows relevant to this task.
+
+| Invariant / claim | Cases exercised | Result and evidence |
+|---|---|---|
+| Selected versus non-selected state coherence | `<cross-product cases>` | `<result>` |
+| Exact cardinality | `<zero, one, and two owners/items>` | `<result>` |
+| Latest/current ordering | `<older, latest, missing, duplicated>` | `<result>` |
+| Exact ready/eligible set | `<missing, exact, extra>` | `<result>` |
+| Parent/child terminal coherence | `<running child under stopped/complete parent>` | `<result>` |
+| Persisted type strictness | `<boolean/int, string/collection, other relevant confusions>` | `<result>` |
+| Coherent tampering | `<related bytes and internal digests rewritten together>` | `<consistency-only, independently anchored, or defect>` |
+
+## 4. Independent probes and command results
+
+| ID | Exact command / probe | Working directory / environment | Purpose / ACs | Result and observed signal | Side effects / disposition | Independence / gap |
 |---|---|---|---|---|---|---|
-| `REV-01` | `<exact command or reproducible manual probe>` | `<absolute cwd; disposable state and required environment>` | `<claim corroborated>` | `<exit status and concise observation>` | `<none, or exact authorized runtime paths and cleanup>` | `<independent evidence, limitation, or reason not run>` |
+| `REV-01` | `<exact command or reproducible probe>` | `<cwd and disposable state>` | `<claim>` | `<exit and observation>` | `<none or paths/cleanup>` | `<independent evidence or limitation>` |
 
-Record required-but-unrun checks with their exact authorization, capability, or
-environment blocker. Never copy the worker's `passed` result as the reviewer's
-own result.
+Record required-but-unrun checks with the exact capability, permission, or
+environment blocker. Never copy a worker's `passed` label as reviewer evidence.
 
-## 4. Scope and baseline comparison
+## 5. Scope and baseline comparison
 
-| Item | Preflight baseline | Current state | Classification and evidence |
+| Item | Preflight baseline | Current reviewed state | Classification / evidence |
 |---|---|---|---|
-| `HEAD` | `<SHA or unborn>` | `<SHA or unborn>` | `<expected task state \| unexplained change>` |
-| Exact `git status --short` | `<verbatim baseline or clean>` | `<verbatim current snapshot or clean>` | `<task-owned, pre-existing user, runtime, or unexplained>` |
-| Dirty path index/worktree digests/states | `<path, index sha256/state, worktree sha256/state>` | `<current index and worktree sha256/state>` | `<ownership, separability, and exact mismatch>` |
-| Task-owned paths | `<packet allowed paths>` | `<scoped diff and worker files_changed>` | `<in scope \| unauthorized/missing>` |
-| Runtime artifacts | `<packet-declared paths>` | `<observed paths>` | `<authorized/disposition>` |
-| Authority and policy | `<brief, instructions, dependency, policy digests>` | `<current comparison>` | `<unchanged \| exact invalidation>` |
+| `HEAD` | `<SHA or unborn>` | `<SHA or unborn>` | `<expected or unexplained>` |
+| Exact `git status --short` | `<verbatim baseline or clean>` | `<verbatim current>` | `<task, user, runtime, unexplained>` |
+| Dirty path index/worktree identities | `<separate states/digests>` | `<separate states/digests>` | `<ownership/separability>` |
+| Task-owned paths | `<allowed paths>` | `<scoped diff and worker files_changed>` | `<in scope or mismatch>` |
+| Runtime artifacts | `<declared paths>` | `<observed paths>` | `<authorized/disposition>` |
+| Authority / policy / dependencies | `<recorded identities>` | `<current comparison>` | `<unchanged or invalidation>` |
 
-State the exact diff/range/files reviewed. Separate task changes from
-pre-existing user work; do not claim ownership of the latter.
+State the exact diff/range/files reviewed. Do not absorb pre-existing user work.
 
-## 5. Open questions
+## 6. Questions and residual risks
 
-- `<Only a question whose answer could change the verdict, severity, scope, or route; include owner and why evidence cannot resolve it.>`
-
-Use `None.` when no such question remains.
-
-## 6. Residual risks and unverified boundaries
-
-| Risk or boundary | Evidence / reason unverified | Blocking? | Owner / follow-up |
+| Question / risk | Evidence or reason unverified | Blocking? | Owner / follow-up |
 |---|---|---|---|
-| `<specific risk, skipped stronger check, or none>` | `<observed limit>` | `yes \| no` | `<owner and bounded action>` |
+| `<none or specific item>` | `<observed limit>` | `yes | no` | `<owner/action>` |
 
-Do not disguise a failed requirement as residual risk. Any gap that prevents a
-required AC or gate from being proved is blocking and requires `INCONCLUSIVE`
-unless an evidenced in-scope defect already requires `CHANGES_REQUESTED`.
+A failed required behavior is a finding, not residual risk. A missing required
+oracle is blocking and normally yields `INCONCLUSIVE`.
 
 ## 7. Verdict and next route
 
 | Field | Value |
 |---|---|
-| Verdict | `ACCEPT \| CHANGES_REQUESTED \| INCONCLUSIVE` |
-| Basis | `<findings, AC evidence, scope, commands, and questions that determine it>` |
-| Next owner | `<task-orchestrator \| same bounded-task-implementer thread \| task-preflight \| task-brief-designer \| user>` |
-| Exact next action | `<one smallest action; do not perform it during review>` |
+| Verdict | `ACCEPT | CHANGES_REQUESTED | INCONCLUSIVE` |
+| Basis | `<findings, evidence, scope, commands, questions>` |
+| Next owner | `<orchestrator, same implementer thread, preflight, brief designer, or user>` |
+| Exact next action | `<one smallest action>` |
 
-- `ACCEPT` routes only to `task-orchestrator` for any authorized advancement.
-- `CHANGES_REQUESTED` routes to the same implementer thread and requires a new
-  acceptance review after correction.
-- `INCONCLUSIVE` routes to the earlier stage or user who owns the stated
-  authority, freshness, capability, environment, or policy blocker.
+- `ACCEPT` may route to authorized advancement.
+- `CHANGES_REQUESTED` routes to correction followed by a fresh review.
+- `INCONCLUSIVE` routes to the owner of the authority, freshness, capability,
+  environment, permission, or scope blocker.

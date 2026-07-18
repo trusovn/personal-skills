@@ -284,11 +284,100 @@ def exporter_restaged_stale() -> None:
     (root / "notes/local.md").write_bytes(worktree_bytes)
 
 
+def ledger_defects() -> None:
+    root = WORK / "ledger-runner"
+    initialize(root)
+    write(
+        root,
+        "AGENTS.md",
+        "# Fixture rules\n\nReview is read-only. Use guided acceptance and report findings inline.",
+    )
+    write(
+        root,
+        "docs/tasks/LED-04.md",
+        """
+        # LED-04 — Enforce ledger coherence
+
+        Status: ready
+        Allowed paths: src/ledger/state.py; tests/test_state.py.
+        AC-01: a ready run has no running task and its ready set equals every
+        dependency-ready task.
+        AC-02: a running run has exactly one running selected task and its
+        active attempt is that task's latest attempt.
+        AC-03: a stopped run has no running task; revisions reject booleans;
+        completed_task_ids is an array.
+        Review: immediate.
+        """,
+    )
+    write(root, "src/__init__.py", "")
+    write(root, "src/ledger/__init__.py", "")
+    write(root, "src/ledger/state.py", "def validate_ledger(ledger):\n    raise NotImplementedError")
+    write(root, "tests/__init__.py", "")
+    write(root, "tests/test_state.py", "import unittest\n\nclass Placeholder(unittest.TestCase):\n    def test_placeholder(self):\n        self.assertTrue(True)")
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "review baseline")
+    write(
+        root,
+        "src/ledger/state.py",
+        """
+        def validate_ledger(ledger):
+            if not isinstance(ledger.get("revision"), int):
+                raise ValueError("revision")
+
+            tasks = ledger["tasks"]
+            selected_id = ledger.get("selected_task_id")
+            selected = next((task for task in tasks if task["id"] == selected_id), None)
+
+            if ledger["status"] == "ready":
+                if selected is not None and selected["status"] == "running":
+                    raise ValueError("selected task running")
+                if not any(task["status"] == "ready" for task in tasks):
+                    raise ValueError("no ready task")
+            elif ledger["status"] == "running":
+                if selected is None or selected["status"] != "running":
+                    raise ValueError("selected task not running")
+                if ledger.get("active_attempt_id") not in selected["attempt_ids"]:
+                    raise ValueError("unknown active attempt")
+            elif ledger["status"] == "stopped":
+                if selected is not None and selected["status"] == "running":
+                    raise ValueError("selected task running")
+
+            return True
+        """,
+    )
+    write(
+        root,
+        "tests/test_state.py",
+        """
+        import unittest
+
+        from src.ledger.state import validate_ledger
+
+
+        class LedgerTest(unittest.TestCase):
+            def test_valid_running_ledger(self):
+                ledger = {
+                    "revision": 2,
+                    "status": "running",
+                    "selected_task_id": "TASK-1",
+                    "active_attempt_id": "A-2",
+                    "completed_task_ids": [],
+                    "tasks": [
+                        {"id": "TASK-1", "status": "running", "attempt_ids": ["A-1", "A-2"]},
+                        {"id": "TASK-2", "status": "initialized", "attempt_ids": []},
+                    ],
+                }
+                self.assertTrue(validate_ledger(ledger))
+        """,
+    )
+
+
 SCENARIOS = {
     "queue-defect": queue_defect,
     "exporter-accept": exporter_accept,
     "scheduler-inconclusive": scheduler_inconclusive,
     "exporter-restaged-stale": exporter_restaged_stale,
+    "ledger-defects": ledger_defects,
 }
 
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:

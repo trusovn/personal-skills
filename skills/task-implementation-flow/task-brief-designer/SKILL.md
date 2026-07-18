@@ -1,154 +1,152 @@
 ---
 name: task-brief-designer
-description: Turn one bounded slice of an approved plan, specification, or task index into one or more implementation-ready Markdown task briefs for staged execution. Use when asked to define an executable task, split an approved plan item, prepare work for a medium-reasoning implementation agent, or repair a task contract after preflight/review exposes a design or scope defect. Do not use for raw ideas, feature specification, architecture invention, repository readiness checks, implementation, or acceptance review; when approved authority is missing, return a blocked_design brief instead of inventing it.
+description: Create, tighten, or gap-check one bounded implementation task from a user request, issue, approved plan, specification, or existing brief. Use when asked to make work implementation-ready, define acceptance criteria and verification, split a task, prepare an agent handoff, or repair a task contract. Prefer a lightweight delta over rewriting an adequate brief. Do not implement, certify current repository readiness, or invent unresolved product or architecture decisions.
 ---
 
 # Task Brief Designer
 
-Convert approved authority into a durable task contract that a separate
-preflight stage can verify. Own task decomposition and evidence design, not
-current repository readiness or implementation.
+Turn one bounded task into a clear, testable contract. Preserve useful existing
+material and add only what the implementer or reviewer needs.
 
 Repository and user instructions outrank this skill. Preserve existing user
 work and never claim ownership of it.
 
-## Required inputs
+## Choose the profile
 
-Require:
+Use `guided` by default. Use `high-assurance` only when the user requests it,
+an orchestrated artifact chain is already in use, or durable audit/freshness
+evidence is proportionate to security, migration, destructive-state,
+concurrency, multi-writer, or similar risk.
 
-- repository root and applicable instruction paths;
-- approved plan/specification/task-index path and exact section;
-- task ID or naming convention and known dependency state;
-- relevant approved design, ADR, test-plan, precedent, and completed dependency
-  summary paths;
-- known permission, commit, verification, and budget policy.
+### Guided
 
-Use `UNKNOWN` for facts that were not supplied or confirmed. If there is no
-approved authority for the requested behavior, produce a `blocked_design`
-artifact that names the missing decision, its owner, and the smallest next
-action. Do not turn a raw idea into an implementation contract.
+- Accept a user request, issue, plan section, specification, or existing brief
+  as authority.
+- If an existing task already has a clear outcome, bounded scope, acceptance
+  criteria, and useful verification, do not rewrite it. Return a concise gap
+  check or make only the requested/local missing additions.
+- Produce a compact `ready` brief when a durable artifact is useful. The
+  implementer may perform its own focused readiness check; standalone preflight
+  is optional.
 
-## Authority
+### High assurance
 
-You may:
+- Require exact authority, dependency, policy, and artifact paths.
+- Use the full template and status `ready_for_preflight` or `blocked_design`.
+- Design durable evidence, verification-capability disposition, and explicit
+  downstream handoffs for separate preflight and acceptance stages.
 
-- decide how to split an approved plan slice along independently verifiable
-  boundaries;
-- freeze decisions entailed by cited authority;
-- design acceptance evidence and classify verification dependencies;
-- perform limited read-only discovery to identify likely entry points,
-  precedents, allowed paths, legacy assumptions, and command candidates.
+Do not upgrade a routine task merely because a fuller template exists. If a
+guided task discovers a genuine high-assurance need, name the reason and the
+smallest additional artifact or decision required.
 
-Treat discovery findings as provisional inputs for preflight. Do not certify
-that paths, helpers, commands, dependency state, or tests are currently valid.
+## Minimum inputs
 
-Do not edit production code, tests, shared tools, the official master plan, or
-orchestration state. Do not choose product, architecture, compatibility, or
-permission policy not entailed by approved authority.
+Require enough information to identify:
+
+- the requested outcome and its authority;
+- repository or working context;
+- known scope, dependencies, and constraints; and
+- any existing task artifact that should be preserved.
+
+Use `UNKNOWN` for non-blocking facts that later repository inspection can
+resolve. Stop with `blocked_design` only when a missing product, architecture,
+compatibility, permission, or scope decision could materially change the task.
+Do not block merely because paths, command syntax, or current Git state still
+need focused discovery.
 
 ## Workflow
 
-1. Read applicable repository instructions, the exact approved slice, and only
-   the cited context needed to understand it. Link to authority instead of
-   copying large plan sections.
-2. State the one-sentence outcome and the authority that requires it. Separate
-   confirmed facts, frozen decisions, assumptions, and unresolved items.
-3. Check whether the slice is design-complete. If a product, architecture,
-   compatibility, scope, or authority decision remains, stop design work and
-   write a `blocked_design` brief routed to its owner.
-4. Split only when a boundary can be implemented and verified independently or
-   when the verification-capability rule requires prerequisite work. Avoid
-   decomposition that merely creates handoff overhead.
-5. Define exact allowed paths when authority permits. Mark uncertain path
-   candidates for preflight resolution. Name prohibited adjacent work, entry
-   criteria, dependencies, stop conditions, and handoff requirements.
-6. Translate every acceptance criterion into one AC execution-matrix row. For
-   workflow behavior, require the real public entry point and decisive boundary;
-   pure-function evidence alone is insufficient.
-7. For repeated, resumable, retried, recovered, paginated, or migrated behavior,
-   require a scenario that executes the first occurrence, applies its legitimate
-   state change, and executes the next occurrence. Use `N/A` only with a
-   task-specific reason.
-8. Perform a task-specific legacy-assumption sweep. Name entry points and search
-   terms for obsolete state literals, first/only-attempt assumptions, fixed
-   identifiers or paths, initial-baseline comparisons, old lifecycle guards,
-   and cleanup/compatibility behavior. Do not paste a generic checklist; use
-   `N/A` with a reason when the risk does not apply.
-9. Build a risk-to-evidence map using `testing-discipline` when available. Use it
-   for oracles, test levels, boundary evidence, fail-first proof, and
-   deterministic fixtures, while retaining decomposition and stage-status
-   authority here. If unavailable, apply those five principles locally without
-   recreating the full skill.
-10. Classify every verification dependency:
-    - keep a small one-use fixture inside an already allowed test file in this
-      implementation task;
-    - create a separate prerequisite implementation brief for a reusable
-      harness, canonical runner, or shared helper with multiple expected users;
-    - create a separate prerequisite evaluation/proof brief when enforcement or
-      feasibility is uncertain, including process control, sandboxing, or
-      network denial;
-    - cite a believed-existing helper for preflight to confirm exactly.
-11. Use `repo-foundation` when available to decide durable test/helper placement
-    and canonical command ownership. It does not decide task-specific evidence
-    or authorize infrastructure. If unavailable, follow cited repository
-    precedent and mark uncertain placement for preflight or design resolution.
-12. Name targeted and broader command candidates only when supported by local
-    authority. Label unresolved syntax explicitly for preflight; never claim a
-    command passed.
-13. Propose implementation/review effort, a budget checkpoint, the two-strike
-    stop rule, and escalation triggers proportionate to risk. Call out
-    concurrency, recovery, migrations, authorization, irreversible writes, and
-    ambiguous compatibility.
-14. Read `references/task-brief-template.md`, write the primary brief and any
-    prerequisite briefs, then verify that every required section is present and
-    every AC and verification capability has a disposition.
+1. Read applicable instructions, the task authority, and the existing brief if
+   present. Load only cited context needed to understand the task.
+2. State the smallest testable outcome. Separate confirmed requirements from
+   implementation choices and unresolved decisions.
+3. Run a delta check before drafting:
+   - outcome testable;
+   - allowed and prohibited scope clear enough to prevent adjacent work;
+   - dependencies and meaningful stop conditions known;
+   - acceptance criteria observable; and
+   - verification can exercise the decisive behavior.
+   Preserve adequate sections verbatim or by reference. Do not expand them for
+   template completeness.
+4. Split only when pieces can be implemented and verified independently, or
+   when a missing shared capability genuinely needs prerequisite work. Avoid
+   handoffs whose only result is more coordination.
+5. Define concise acceptance criteria. Include the positive behavior and the
+   most credible negative, unchanged-state, or failure behavior. For lifecycle
+   work—retry, resume, recovery, pagination, migration, repeated selection—name
+   the first legitimate state change and the next real occurrence.
+6. Map each material risk to the lowest reliable evidence. Use a public entry
+   point or real boundary when pure/unit evidence cannot prove wiring,
+   persistence, processes, filesystem behavior, database behavior,
+   concurrency, permissions, or compatibility.
+7. Name targeted and broader verification commands when authority or local
+   precedent supplies them. In guided mode, focused command discovery may stay
+   with the implementer. In high-assurance mode, unresolved required commands
+   go to preflight and must not be presented as passing.
+8. Add the task metadata block:
+
+   ```yaml
+   agent_tier: mechanical | standard | strong
+   reasoning: low | medium | high
+   review: mechanical | milestone | immediate
+   budget: <tool calls> / <time> / <context>
+   ```
+
+   Treat the budget as a soft checkpoint unless higher-priority instructions
+   explicitly make it a hard limit.
+9. Read `references/task-brief-template.md`. Use only the core sections for a
+   guided brief; add the high-assurance sections only for that profile.
+
+## Verification defaults carried by the brief
+
+The user should not need to repeat these instructions for every task:
+
+- For a bug, require a regression that fails for the intended reason before the
+  fix when feasible.
+- For changed behavior, prefer a focused test capable of rejecting the old or
+  faulty behavior.
+- Use the lowest reliable test level, adding a real-boundary check only when it
+  proves something lower-level evidence cannot.
+- Run the targeted check first, then the nearest owning suite, then only the
+  broader gate justified by blast radius and authorization.
+- Record skipped stronger checks and residual risk without presenting them as
+  passed evidence.
 
 ## Output contract
 
-Use the fixed headings and tables in
-`references/task-brief-template.md`. Every artifact must identify:
+For a gap check, report only:
 
-- task ID, repository root, producing stage, creation time, and artifact status;
-- authoritative inputs by path, plus facts, decisions, assumptions, and
-  unresolved items;
-- allowed and prohibited scope, dependencies, entry criteria, and stop routes;
-- one execution-matrix row per AC;
-- legacy-assumption, risk-to-evidence, and verification-capability results;
-- command candidates, effort/budget policy, and exact implementation and review
-  handoffs.
+- whether the existing task is usable;
+- concrete missing or contradictory items;
+- the smallest proposed edits; and
+- whether guided implementation may begin or high-assurance preflight is
+  warranted.
 
-Use exactly one artifact status:
+For a durable brief, use `references/task-brief-template.md` with one status:
 
-- `ready_for_preflight`: no unresolved design decision remains and every
-  required verification capability has a disposition. This is not a readiness
-  claim.
-- `blocked_design`: missing or ambiguous authority prevents an executable task
-  contract. Name the evidence, owner, and smallest next action.
+- `ready`: guided implementation may begin after a compact self-preflight;
+- `ready_for_preflight`: high-assurance design is complete but current
+  executability still requires preflight;
+- `blocked_design`: a material decision or authority gap prevents safe work.
 
-Produce one primary brief plus any prerequisite briefs required by the
-verification-capability rule. Durable task briefs may be committed only when
-the plan's normal workflow permits it. Never update an official master plan to
-record the result.
+Never update an official master plan merely to record completion of this
+design task.
 
-## Stop and routing rules
+## Boundaries and routing
 
-Stop and route to the user or authority owner when approved intent is absent or
-ambiguous. Route failed current-state assumptions, missing believed-existing
-helpers, invalid commands, dirty overlap, or stale inputs to `task-preflight`;
-do not repair them here unless they reveal a defective task contract. Route a
-request for wider paths or new shared infrastructure back through brief design
-and then preflight.
-
-Do not launch subagents, modify `task-orchestrator`, run live comparisons, or
-start implementation as part of normal execution.
+- Route current Git state, command resolution, dirty ownership, and current
+  dependency checks to a compact implementer self-preflight or standalone
+  `task-preflight`.
+- Route missing product or architecture authority to its owner or the user.
+- Route wider scope or new shared infrastructure back through brief design.
+- Do not implement, accept the result, update trackers, launch subagents, or
+  modify orchestration state.
 
 ## Definition of done
 
-- The primary artifact is independently understandable without this
-  conversation.
-- Every accepted requirement maps to observable positive and negative evidence
-  at the appropriate real boundary.
-- Repeated/lifecycle behavior proves the next occurrence when relevant.
-- Every verification capability has an explicit v1 disposition.
-- Scope, authority, effort, stops, and both downstream handoffs are explicit.
-- `ready_for_preflight` makes no claim about current repository executability.
+- The task is independently understandable without this conversation.
+- Every changed or added line in an existing brief closes a concrete gap.
+- Outcome, scope, ACs, evidence, metadata, stops, and next action are clear.
+- Guided briefs avoid high-assurance artifact ceremony unless risk justifies it.
+- High-assurance briefs preserve exact stage and evidence contracts.

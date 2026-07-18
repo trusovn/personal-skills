@@ -355,11 +355,45 @@ def _now_iso() -> str:
 # ── Ledger update helpers ─────────────────────────────────────────────
 
 
-def update_ledger(
+class RunCommandLock:
+    """One non-blocking local lock for an existing run."""
+
+    def __init__(self, run_dir: Path):
+        self.path = run_dir / "controller.lock"
+        self.stream = None
+
+    def acquire(self) -> None:
+        if self.stream is not None:
+            return
+        stream = self.path.open("a+")
+        try:
+            fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            stream.close()
+            raise ValueError(
+                "Another controller command owns this run's mutation phase"
+            )
+        self.stream = stream
+
+    def release(self) -> None:
+        if self.stream is None:
+            return
+        fcntl.flock(self.stream.fileno(), fcntl.LOCK_UN)
+        self.stream.close()
+        self.stream = None
+
+    def __enter__(self) -> "RunCommandLock":
+        self.acquire()
+        return self
+
+    def __exit__(self, *_args: object) -> None:
+        self.release()
+
+
+def _update_ledger_locked(
     run_dir: Path, updater: dict[str, Any], *, expected_revision: int,
     closure_decision: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Read, update, validate, and atomically write the ledger."""
     ledger_path = run_dir / "ledger.json"
     ledger = json.loads(ledger_path.read_text())
     ledger = _state_module.apply_ledger_update(
@@ -368,6 +402,18 @@ def update_ledger(
     )
     atomic_write_json(ledger_path, ledger)
     return ledger
+
+
+def update_ledger(
+    run_dir: Path, updater: dict[str, Any], *, expected_revision: int,
+    closure_decision: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Lock, validate the expected revision, and atomically update the ledger."""
+    with RunCommandLock(run_dir):
+        return _update_ledger_locked(
+            run_dir, updater, expected_revision=expected_revision,
+            closure_decision=closure_decision,
+        )
 
 
 def _validate_accepted_workspace(run_dir: Path, ledger: dict[str, Any]) -> None:
@@ -455,13 +501,8 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     if args.timeout_seconds <= 0:
         raise ValueError("timeout must be greater than zero")
     run_dir = Path(args.run_dir).resolve()
-    lock_path = run_dir / "controller.lock"
-    lock_stream = lock_path.open("a+")
-    try:
-        fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
-        lock_stream.close()
-        raise ValueError("Another controller owns this run's mutation phase")
+    lock = RunCommandLock(run_dir)
+    lock.acquire()
     ledger_path = run_dir / "ledger.json"
     ledger = json.loads(ledger_path.read_text())
     _validate_ledger(ledger)
@@ -574,7 +615,7 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     selected_task = next(entry for entry in running_tasks if entry["id"] == task["id"])
     selected_task["state"] = "running"
     selected_task["attempt_ids"] = [*selected_task["attempt_ids"], attempt_id]
-    ledger = update_ledger(run_dir, {
+    ledger = _update_ledger_locked(run_dir, {
         "state": "running",
         "selected_task_id": task["id"],
         "active_attempt_id": attempt_id,
@@ -583,21 +624,19 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
         "tasks": running_tasks,
     }, expected_revision=ledger["revision"])
     running_revision = ledger["revision"]
-    fcntl.flock(lock_stream.fileno(), fcntl.LOCK_UN)
-    lock_stream.close()
+    lock.release()
 
     def stop_active_attempt(reason: str) -> int:
         print(reason, file=sys.stderr)
         stopped_tasks = [dict(entry) for entry in ledger["tasks"]]
         next(entry for entry in stopped_tasks if entry["id"] == task["id"])["state"] = "stopped"
-        update_ledger(run_dir, {
+        _update_ledger_locked(run_dir, {
             "state": "stopped",
             "selected_task_id": None,
             "active_attempt_id": None,
             "tasks": stopped_tasks,
         }, expected_revision=ledger["revision"])
-        fcntl.flock(lock_stream.fileno(), fcntl.LOCK_UN)
-        lock_stream.close()
+        lock.release()
         return 1
 
     # Launch through worker adapter
@@ -607,12 +646,7 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
         capture_output=True,
     )
 
-    lock_stream = lock_path.open("a+")
-    try:
-        fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
-        lock_stream.close()
-        raise ValueError("Another controller owns this run's mutation phase")
+    lock.acquire()
     current_ledger = json.loads(ledger_path.read_text())
     if (
         current_ledger["revision"] != running_revision
@@ -620,8 +654,7 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
         or current_ledger["selected_task_id"] != task["id"]
         or current_ledger["active_attempt_id"] != attempt_id
     ):
-        fcntl.flock(lock_stream.fileno(), fcntl.LOCK_UN)
-        lock_stream.close()
+        lock.release()
         raise ValueError("Run state changed while the worker was active; refusing stale reconciliation")
     ledger = current_ledger
 
@@ -755,15 +788,14 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
 
     awaiting_tasks = [dict(entry) for entry in ledger["tasks"]]
     next(entry for entry in awaiting_tasks if entry["id"] == task["id"])["state"] = "awaiting_inspection"
-    update_ledger(run_dir, {
+    _update_ledger_locked(run_dir, {
         "state": "awaiting_inspection",
         "selected_task_id": task["id"],
         "active_attempt_id": None,
         "last_closure_path": str(closure_json_path.relative_to(run_dir)),
         "tasks": awaiting_tasks,
     }, expected_revision=ledger["revision"])
-    fcntl.flock(lock_stream.fileno(), fcntl.LOCK_UN)
-    lock_stream.close()
+    lock.release()
 
     print(json.dumps({
         "status": "awaiting_inspection",

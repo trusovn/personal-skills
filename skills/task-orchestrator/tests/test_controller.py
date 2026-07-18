@@ -991,16 +991,32 @@ class ControllerContractTest(unittest.TestCase):
             path.relative_to(run_dir) for path in (run_dir / "baselines").iterdir()
         )
 
-        # Run next with a non-existent adapter
-        run_result = subprocess.run(
-            [
-                sys.executable, str(CONTROLLER_PATH), "run-next",
-                "--run-dir", str(run_dir),
-                "--timeout-seconds", "10",
-                "--codex-bin", "/nonexistent/codex",
-            ],
+        run_next_command = [
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir),
+            "--timeout-seconds", "10",
+            "--codex-bin", "/nonexistent/codex",
+        ]
+        allowed_before = (self.repo / "allowed.txt").read_bytes()
+        (self.repo / "allowed.txt").write_text("initial drift\n")
+        drift_result = subprocess.run(
+            run_next_command,
             text=True,
             capture_output=True,
+        )
+        self.assertNotEqual(0, drift_result.returncode)
+        self.assertIn("Repository state has changed since initialization", drift_result.stderr)
+        self.assertEqual(ledger_before, ledger_path.read_bytes())
+        self.assertEqual(
+            baseline_paths_before,
+            sorted(path.relative_to(run_dir) for path in (run_dir / "baselines").iterdir()),
+        )
+        self.assertFalse((run_dir / "attempts").exists())
+        (self.repo / "allowed.txt").write_bytes(allowed_before)
+
+        # Run next with a non-existent adapter after restoring the exact baseline.
+        run_result = subprocess.run(
+            run_next_command, text=True, capture_output=True,
         )
         self.assertNotEqual(0, run_result.returncode)
         self.assertEqual(ledger_before, ledger_path.read_bytes())
@@ -1029,6 +1045,40 @@ class ControllerContractTest(unittest.TestCase):
         self.assertIn("greater than zero", invalid_timeout.stderr)
         self.assertEqual(ledger_before, ledger_path.read_bytes())
         self.assertFalse((run_dir / "attempts").exists())
+
+    def test_direct_update_ledger_obeys_run_lock(self):
+        controller = load_controller()
+        run_dir = self.root / "locked-run"
+        run_dir.mkdir()
+        ledger_path = run_dir / "ledger.json"
+        ledger_path.write_text("{}\n")
+        lock_path = run_dir / "controller.lock"
+        holder_code = (
+            "import fcntl, pathlib, sys; "
+            f"stream=pathlib.Path({str(lock_path)!r}).open('a+'); "
+            "fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB); "
+            "print('locked', flush=True); sys.stdin.readline(); "
+            "fcntl.flock(stream.fileno(), fcntl.LOCK_UN); stream.close()"
+        )
+        holder = subprocess.Popen(
+            [sys.executable, "-c", holder_code], text=True,
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        assert holder.stdout is not None
+        before = ledger_path.read_bytes()
+        try:
+            self.assertEqual("locked", holder.stdout.readline().strip())
+            with self.assertRaisesRegex(
+                ValueError, "Another controller command owns"
+            ):
+                controller.update_ledger(run_dir, {}, expected_revision=1)
+            self.assertEqual(before, ledger_path.read_bytes())
+        finally:
+            if holder.poll() is None:
+                assert holder.stdin is not None
+                holder.stdin.write("release\n")
+                holder.stdin.flush()
+            holder.communicate(timeout=5)
 
     def test_closure_rejects_worker_claimed_verification_without_controller_evidence(self):
         """decide_closure must not accept worker-claimed verification as independent proof."""
@@ -1348,11 +1398,28 @@ raise SystemExit(0)
         fake = self.write_fake_codex(
             created_paths=(), clean_mutation=True, task_id="T2",
         )
-        second = subprocess.run([
+        second_command = [
             sys.executable, str(CONTROLLER_PATH), "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(fake),
-        ], text=True, capture_output=True)
+        ]
+        accepted_bytes = (self.repo / "allowed.txt").read_bytes()
+        ledger_before_drift = (run_dir / "ledger.json").read_bytes()
+        baseline_paths_before_drift = sorted((run_dir / "baselines").iterdir())
+        attempt_paths_before_drift = sorted((run_dir / "attempts").iterdir())
+        invocation_log = self.root / "argv.json"
+        invocations_before_drift = invocation_log.read_bytes()
+        (self.repo / "allowed.txt").write_text("later ordinary drift\n")
+        drift = subprocess.run(second_command, text=True, capture_output=True)
+        self.assertNotEqual(0, drift.returncode)
+        self.assertIn("Repository bytes changed after acceptance", drift.stderr)
+        self.assertEqual(ledger_before_drift, (run_dir / "ledger.json").read_bytes())
+        self.assertEqual(baseline_paths_before_drift, sorted((run_dir / "baselines").iterdir()))
+        self.assertEqual(attempt_paths_before_drift, sorted((run_dir / "attempts").iterdir()))
+        self.assertEqual(invocations_before_drift, invocation_log.read_bytes())
+
+        (self.repo / "allowed.txt").write_bytes(accepted_bytes)
+        second = subprocess.run(second_command, text=True, capture_output=True)
         self.assertEqual(0, second.returncode, second.stderr)
         ledger = json.loads((run_dir / "ledger.json").read_text())
         self.assertEqual("T2", ledger["selected_task_id"])
@@ -1627,7 +1694,7 @@ raise SystemExit(0)
                 fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
                 stopped_tasks = [dict(entry) for entry in running["tasks"]]
                 stopped_tasks[0]["state"] = "stopped"
-                controller.update_ledger(run_dir, {
+                controller._update_ledger_locked(run_dir, {
                     "state": "stopped",
                     "selected_task_id": None,
                     "active_attempt_id": None,

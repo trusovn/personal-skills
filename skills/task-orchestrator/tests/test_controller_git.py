@@ -65,6 +65,89 @@ class ControllerGitTest(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
+    def test_accepted_workspace_requires_exact_git_and_evidence_bytes(self):
+        (self.repo / "dirty-unchanged.txt").write_text("pre-existing dirty\n")
+        baseline = self.git.capture_task_baseline(self.repo)
+        baseline_digest = sha256_text(self.git._canonical_json(baseline))
+        (self.repo / "allowed.txt").write_text("worker change\n")
+        run_dir = self.root / "accepted-run"
+        (run_dir / "baselines").mkdir(parents=True)
+        (run_dir / "baselines" / "task-001.json").write_text(json.dumps(baseline))
+        evidence = self.git.capture_closure_evidence(
+            repository=self.repo,
+            run_dir=run_dir,
+            attempt_id="attempt-001",
+            task_baseline=baseline,
+            task_baseline_digest=baseline_digest,
+            allowed_paths=["allowed.txt"],
+            policy_sha256="policy-digest",
+            manifest_sha256="manifest-digest",
+            prompt_sha256="prompt-digest",
+            adapter_state_digest="adapter-digest",
+        )
+        closure = {
+            "run_id": "run-1",
+            "task_id": "T1",
+            "attempt_id": "attempt-001",
+            "policy_sha256": "policy-digest",
+            "manifest_sha256": "manifest-digest",
+            "baseline_sha256": baseline_digest,
+            "prompt_sha256": "prompt-digest",
+            **evidence["closure_fields"],
+        }
+        closure["controller_observations"]["mechanical_violations"] = []
+        closure_path = run_dir / "closure" / "attempt-001.json"
+        closure_path.write_text(json.dumps(closure))
+        arguments = {
+            "repository": self.repo,
+            "run_dir": run_dir,
+            "task_baseline_ref": "task-001.json",
+            "task_baseline_digest": baseline_digest,
+            "closure_ref": "closure/attempt-001.json",
+            "allowed_paths": ["allowed.txt"],
+            "expected_identity": {
+                "run_id": "run-1",
+                "task_id": "T1",
+                "attempt_id": "attempt-001",
+                "policy_sha256": "policy-digest",
+                "manifest_sha256": "manifest-digest",
+                "prompt_sha256": "prompt-digest",
+            },
+        }
+        self.git.validate_accepted_workspace(**arguments)
+
+        (self.repo / "allowed.txt").write_text("later! change\n")
+        with self.assertRaisesRegex(ValueError, "bytes changed after acceptance"):
+            self.git.validate_accepted_workspace(**arguments)
+        (self.repo / "allowed.txt").write_text("worker change\n")
+
+        (self.repo / "dirty-unchanged.txt").write_text("external dirty edit\n")
+        with self.assertRaisesRegex(ValueError, "Pre-existing repository state"):
+            self.git.validate_accepted_workspace(**arguments)
+        (self.repo / "dirty-unchanged.txt").write_text("pre-existing dirty\n")
+
+        (self.repo / "unexpected.txt").write_text("unexpected\n")
+        with self.assertRaisesRegex(ValueError, "Unexpected repository path"):
+            self.git.validate_accepted_workspace(**arguments)
+        (self.repo / "unexpected.txt").unlink()
+
+        run_git(self.repo, "add", "allowed.txt")
+        with self.assertRaisesRegex(ValueError, "index changed after acceptance"):
+            self.git.validate_accepted_workspace(**arguments)
+        run_git(self.repo, "restore", "--staged", "allowed.txt")
+
+        patch_path = run_dir / closure["evidence_artifacts"]["task_patch"]["path"]
+        exact_patch = patch_path.read_text()
+        patch_path.write_text(exact_patch + "tamper\n")
+        with self.assertRaisesRegex(ValueError, "artifact digest mismatch"):
+            self.git.validate_accepted_workspace(**arguments)
+        patch_path.write_text(exact_patch)
+
+        run_git(self.repo, "add", "allowed.txt")
+        run_git(self.repo, "commit", "-qm", "external accepted-output commit")
+        with self.assertRaisesRegex(ValueError, "HEAD changed after acceptance"):
+            self.git.validate_accepted_workspace(**arguments)
+
     def test_snapshots_and_closure_artifacts_preserve_git_observations(self):
         (self.repo / "dirty-modified.txt").write_text("pre-existing dirty\n")
         (self.repo / "dirty-unchanged.txt").write_text("unchanged dirty\n")

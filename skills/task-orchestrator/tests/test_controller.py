@@ -1,9 +1,11 @@
+import fcntl
 import importlib.util
 import json
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 
 
@@ -456,8 +458,8 @@ class ControllerContractTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "unknown|unique"):
                     controller.validate_task_manifest(self.policy(), manifest, self.repo)
 
-    def test_init_run_creates_initialized_ledger_outside_repo(self):
-        """init_run must atomically create an initialized run directory."""
+    def test_init_run_creates_ready_ledger_outside_repo(self):
+        """init_run must atomically create a dependency-ready run directory."""
         controller = load_controller()
         run_dir = self.root / "runs" / "run-001"
         policy_path = self.root / "run-policy.json"
@@ -494,18 +496,22 @@ class ControllerContractTest(unittest.TestCase):
         )
 
         self.assertEqual("run-1", result["run_id"])
-        self.assertEqual("initialized", result["state"])
+        self.assertEqual("ready", result["state"])
         self.assertTrue((run_dir / "run-policy.json").exists())
         self.assertTrue((run_dir / "task-manifest.json").exists())
         self.assertTrue((run_dir / "ledger.json").exists())
         self.assertTrue((run_dir / "baselines" / "run-initial.json").exists())
         ledger = json.loads((run_dir / "ledger.json").read_text())
-        self.assertEqual("initialized", ledger["state"])
+        self.assertEqual("ready", ledger["state"])
         self.assertIsNone(ledger["selected_task_id"])
         self.assertIsNone(ledger["active_attempt_id"])
         self.assertEqual(1, len(ledger["tasks"]))
         self.assertEqual("T1", ledger["tasks"][0]["id"])
-        self.assertEqual("initialized", ledger["tasks"][0]["state"])
+        self.assertEqual("ready", ledger["tasks"][0]["state"])
+        self.assertIsNone(ledger["last_closure_path"])
+        self.assertIsNone(ledger["last_verification_path"])
+        self.assertIsNone(ledger["last_decision_path"])
+        self.assertIsNone(ledger["active_operation_path"])
 
     def test_init_run_rejects_incomplete_dependencies(self):
         """init_run must reject authorized tasks depending on incomplete external tasks."""
@@ -603,10 +609,14 @@ class ControllerContractTest(unittest.TestCase):
             "manifest_sha256": "def",
             "initial_baseline_path": "run-initial.json",
             "initial_baseline_digest": "ghi",
-            "state": "initialized",
+            "state": "ready",
             "selected_task_id": None,
             "active_attempt_id": None,
             "last_closure_path": None,
+            "last_verification_path": None,
+            "last_decision_path": None,
+            "active_operation_path": None,
+            "completed_task_ids": [],
             "tasks": [
                 {
                     "id": "T1",
@@ -615,7 +625,7 @@ class ControllerContractTest(unittest.TestCase):
                     "dependencies": ["T99"],
                     "allowed_paths": ["allowed.txt"],
                     "required_checks": [],
-                    "state": "initialized",
+                    "state": "ready",
                     "attempt_ids": [],
                 },
             ],
@@ -623,7 +633,7 @@ class ControllerContractTest(unittest.TestCase):
         policy = self.policy()
         with self.assertRaises(ValueError) as ctx:
             controller.select_task(ledger, policy)
-        self.assertIn("No dependency-ready tasks", ctx.exception.args[0])
+        self.assertIn("No ready tasks", ctx.exception.args[0])
 
     def test_init_run_replaces_no_existing_run_dir(self):
         """init_run must not replace an existing run directory."""
@@ -1195,15 +1205,37 @@ class ControllerIntegrationTest(unittest.TestCase):
             },
         }
 
-    def write_fake_codex(self, *, write_result=True, created_paths=("new.txt",)):
+    def write_fake_codex(
+        self, *, write_result=True, created_paths=("new.txt",),
+        preflight_ready=None, preflight_release=None,
+        worker_ready=None, worker_release=None, mutate_repository=True,
+        clean_mutation=False, task_id="T1",
+    ):
         """Write a fake codex that emits a thread and a valid result."""
         fake = self.root / "fake-codex"
+        preflight_ready_path = str(preflight_ready) if preflight_ready else None
+        preflight_release_path = str(preflight_release) if preflight_release else None
+        worker_ready_path = str(worker_ready) if worker_ready else None
+        worker_release_path = str(worker_release) if worker_release else None
+        result_files = ["allowed.txt", *created_paths] if mutate_repository else []
         fake.write_text(
             f"""#!/usr/bin/env python3
 import json
 from pathlib import Path
 import subprocess
 import sys
+import time
+
+def signal_and_wait(ready_value, release_value):
+    if ready_value is None:
+        return
+    Path(ready_value).write_text("ready\\n")
+    deadline = time.monotonic() + 10
+    release_path = Path(release_value)
+    while not release_path.exists():
+        if time.monotonic() >= deadline:
+            raise SystemExit("timed out waiting for test release")
+        time.sleep(0.01)
 
 args = sys.argv[1:]
 log_path = Path({str(self.root / 'argv.json')!r})
@@ -1211,25 +1243,29 @@ log = json.loads(log_path.read_text()) if log_path.exists() else []
 log.append(args)
 log_path.write_text(json.dumps(log))
 if "--help" in args:
+    signal_and_wait({preflight_ready_path!r}, {preflight_release_path!r})
     raise SystemExit(0)
-allowed = Path.cwd() / "allowed.txt"
-allowed.write_text("committed change\\n")
-subprocess.run(["git", "add", "allowed.txt"], check=True)
-subprocess.run(["git", "commit", "-qm", "unauthorized worker commit"], check=True)
-allowed.write_text("staged change\\n")
-subprocess.run(["git", "add", "allowed.txt"], check=True)
-allowed.write_text("worker change\\n")
-created_paths = {created_paths!r}
-for index, path in enumerate(created_paths):
-    Path.cwd().joinpath(path).write_text(f"untracked content {{index}}\\n")
+signal_and_wait({worker_ready_path!r}, {worker_release_path!r})
+if {mutate_repository!r}:
+    allowed = Path.cwd() / "allowed.txt"
+    if not {clean_mutation!r}:
+        allowed.write_text("committed change\\n")
+        subprocess.run(["git", "add", "allowed.txt"], check=True)
+        subprocess.run(["git", "commit", "-qm", "unauthorized worker commit"], check=True)
+        allowed.write_text("staged change\\n")
+        subprocess.run(["git", "add", "allowed.txt"], check=True)
+    allowed.write_text("worker change\\n")
+    created_paths = {created_paths!r}
+    for index, path in enumerate(created_paths):
+        Path.cwd().joinpath(path).write_text(f"untracked content {{index}}\\n")
 print(json.dumps({{"type": "thread.started", "thread_id": "thread-fake-001"}}), flush=True)
 if {write_result!r} and "-o" in args:
     result_path = Path(args[args.index("-o") + 1])
     result_path.write_text(json.dumps({{
         "status": "complete",
-        "task_id": "T1",
-        "summary": "Implemented task T1.",
-        "files_changed": ["allowed.txt", *created_paths],
+        "task_id": {task_id!r},
+        "summary": "Implemented task {task_id}.",
+        "files_changed": {result_files!r},
         "verification": [],
         "decisions": [],
         "questions": [],
@@ -1241,6 +1277,87 @@ raise SystemExit(0)
         )
         fake.chmod(0o755)
         return fake
+
+    def test_post_acceptance_run_next_launches_next_ready_task(self):
+        controller = load_controller()
+        run_dir = self.root / "runs" / "run-accepted-next"
+        policy_path = self.root / "run-policy.json"
+        manifest_path = self.root / "task-manifest.json"
+        policy = self.policy()
+        policy["task_ids"] = ["T1", "T2"]
+        controller.persist_run_policy(policy_path, policy)
+        (self.repo / "tasks").mkdir()
+        for task_id in ("T1", "T2"):
+            (self.repo / "tasks" / f"{task_id}.md").write_text(f"# {task_id}\n")
+        manifest_path.write_text(json.dumps({
+            "version": 1,
+            "manifest_id": "accepted-next",
+            "completed_task_ids": [],
+            "tasks": [
+                {
+                    "id": "T1", "title": "First", "brief_path": "tasks/T1.md",
+                    "dependencies": [], "allowed_paths": ["allowed.txt"],
+                    "required_checks": ["python3 -m unittest test_targeted"],
+                },
+                {
+                    "id": "T2", "title": "Second", "brief_path": "tasks/T2.md",
+                    "dependencies": ["T1"], "allowed_paths": ["allowed.txt"],
+                    "required_checks": ["python3 -m unittest test_targeted"],
+                },
+            ],
+        }, indent=2, sort_keys=True) + "\n")
+        init_result = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "init",
+            "--run-dir", str(run_dir), "--policy", str(policy_path),
+            "--manifest", str(manifest_path), "--repository", str(self.repo),
+        ], text=True, capture_output=True)
+        self.assertEqual(0, init_result.returncode, init_result.stderr)
+
+        fake = self.write_fake_codex(
+            created_paths=(), clean_mutation=True, task_id="T1",
+        )
+        first = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(fake),
+        ], text=True, capture_output=True)
+        self.assertEqual(0, first.returncode, first.stderr)
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        first_attempt = ledger["tasks"][0]["attempt_ids"][-1]
+        controller.update_ledger(run_dir, {
+            "state": "finalizing",
+            "last_verification_path": "verification/attempt-001.json",
+            "last_decision_path": "decisions/attempt-001.json",
+            "active_operation_path": "operations/T1-accept.json",
+        }, expected_revision=ledger["revision"])
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        released_tasks = [dict(task) for task in ledger["tasks"]]
+        released_tasks[0]["state"] = "accepted"
+        released_tasks[1]["state"] = "ready"
+        controller.update_ledger(run_dir, {
+            "state": "ready", "selected_task_id": None,
+            "active_operation_path": None, "tasks": released_tasks,
+        }, expected_revision=ledger["revision"], closure_decision={
+            "accepted": True,
+            "allowed_transitions": ["accepted"],
+            "identity": {
+                "run_id": "run-1", "task_id": "T1", "attempt_id": first_attempt,
+            },
+        })
+
+        fake = self.write_fake_codex(
+            created_paths=(), clean_mutation=True, task_id="T2",
+        )
+        second = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(fake),
+        ], text=True, capture_output=True)
+        self.assertEqual(0, second.returncode, second.stderr)
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual("T2", ledger["selected_task_id"])
+        self.assertEqual("awaiting_inspection", ledger["tasks"][1]["state"])
+        self.assertEqual(2, sum(len(task["attempt_ids"]) for task in ledger["tasks"]))
 
     def test_full_init_and_run_next_flow(self):
         """End-to-end: init + run-next with fake transport produces awaiting_inspection."""
@@ -1296,7 +1413,7 @@ raise SystemExit(0)
         self.assertEqual(0, init_result.returncode, init_result.stderr)
         init_data = json.loads(init_result.stdout)
         self.assertEqual("run-1", init_data["run_id"])
-        self.assertEqual("initialized", init_data["state"])
+        self.assertEqual("ready", init_data["state"])
 
         # Run next
         run_result = subprocess.run(
@@ -1421,10 +1538,117 @@ raise SystemExit(0)
         ledger_path = run_dir / "ledger.json"
         ledger_before = ledger_path.read_bytes()
         rewritten_tasks = [dict(entry) for entry in ledger["tasks"]]
-        rewritten_tasks[0]["attempt_ids"] = []
+        rewritten_tasks[0]["attempt_ids"] = ["attempt-002"]
         with self.assertRaisesRegex(ValueError, "append-only"):
-            controller.update_ledger(run_dir, {"tasks": rewritten_tasks})
+            controller.update_ledger(
+                run_dir, {"tasks": rewritten_tasks}, expected_revision=ledger["revision"]
+            )
         self.assertEqual(ledger_before, ledger_path.read_bytes())
+
+    def wait_for_path(self, path, process, timeout=5):
+        deadline = time.monotonic() + timeout
+        while not path.exists():
+            if process.poll() is not None:
+                stdout, stderr = process.communicate()
+                self.fail(
+                    f"controller exited before {path.name}: "
+                    f"stdout={stdout!r}, stderr={stderr!r}"
+                )
+            if time.monotonic() >= deadline:
+                self.fail(f"timed out waiting for {path}")
+            time.sleep(0.01)
+
+    def test_run_next_lock_and_stale_reconciliation_are_process_safe(self):
+        controller = load_controller()
+        run_dir = self.root / "runs" / "run-locked"
+        policy_path = self.root / "run-policy.json"
+        manifest_path = self.root / "task-manifest.json"
+        preflight_ready = self.root / "preflight-ready"
+        preflight_release = self.root / "preflight-release"
+        worker_ready = self.root / "worker-ready"
+        worker_release = self.root / "worker-release"
+        fake = self.write_fake_codex(
+            created_paths=(),
+            preflight_ready=preflight_ready,
+            preflight_release=preflight_release,
+            worker_ready=worker_ready,
+            worker_release=worker_release,
+            mutate_repository=False,
+        )
+        controller.persist_run_policy(policy_path, self.policy())
+        (self.repo / "tasks").mkdir()
+        (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        manifest_path.write_text(json.dumps({
+            "version": 1,
+            "manifest_id": "test-feature",
+            "completed_task_ids": [],
+            "tasks": [{
+                "id": "T1",
+                "title": "Test task",
+                "brief_path": "tasks/T1.md",
+                "dependencies": [],
+                "allowed_paths": ["allowed.txt"],
+                "required_checks": ["python3 -m unittest test_targeted"],
+            }],
+        }, indent=2, sort_keys=True) + "\n")
+        controller.init_run(run_dir, policy_path, manifest_path, self.repo)
+        command = [
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir),
+            "--timeout-seconds", "10",
+            "--codex-bin", str(fake),
+        ]
+        first = subprocess.Popen(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            self.wait_for_path(preflight_ready, first)
+            held_competitor = subprocess.run(command, text=True, capture_output=True)
+            self.assertNotEqual(0, held_competitor.returncode)
+            self.assertIn("owns this run's mutation phase", held_competitor.stderr)
+            self.assertFalse((run_dir / "attempts").exists())
+
+            preflight_release.write_text("release\n")
+            self.wait_for_path(worker_ready, first)
+            running = json.loads((run_dir / "ledger.json").read_text())
+            self.assertEqual("running", running["state"])
+            self.assertEqual(["attempt-001"], running["tasks"][0]["attempt_ids"])
+
+            running_competitor = subprocess.run(command, text=True, capture_output=True)
+            self.assertNotEqual(0, running_competitor.returncode)
+            self.assertIn("Cannot select task from state 'running'", running_competitor.stderr)
+            self.assertEqual(
+                ["attempt-001"],
+                json.loads((run_dir / "ledger.json").read_text())["tasks"][0]["attempt_ids"],
+            )
+            invocations = json.loads((self.root / "argv.json").read_text())
+            self.assertEqual(1, sum("--help" not in args for args in invocations))
+
+            lock_stream = (run_dir / "controller.lock").open("a+")
+            try:
+                fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                stopped_tasks = [dict(entry) for entry in running["tasks"]]
+                stopped_tasks[0]["state"] = "stopped"
+                controller.update_ledger(run_dir, {
+                    "state": "stopped",
+                    "selected_task_id": None,
+                    "active_attempt_id": None,
+                    "tasks": stopped_tasks,
+                }, expected_revision=running["revision"])
+            finally:
+                fcntl.flock(lock_stream.fileno(), fcntl.LOCK_UN)
+                lock_stream.close()
+            competing_bytes = (run_dir / "ledger.json").read_bytes()
+
+            worker_release.write_text("release\n")
+            stdout, stderr = first.communicate(timeout=15)
+            self.assertNotEqual(0, first.returncode, stdout)
+            self.assertIn("refusing stale reconciliation", stderr)
+            self.assertEqual(competing_bytes, (run_dir / "ledger.json").read_bytes())
+        finally:
+            preflight_release.touch()
+            worker_release.touch()
+            if first.poll() is None:
+                first.kill()
+                first.communicate()
 
     def test_run_next_stops_on_missing_terminal_result(self):
         controller = load_controller()

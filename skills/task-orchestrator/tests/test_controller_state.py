@@ -953,3 +953,493 @@ class ControllerStateContractTest(unittest.TestCase):
                 expected_revision=1,
             )
         self.assertEqual(original, json.dumps(ledger, sort_keys=True))
+
+
+class Stage3RecordContractTest(unittest.TestCase):
+    def identity(self):
+        return {
+            "run_id": "run-1",
+            "task_id": "T1",
+            "attempt_id": "attempt-001",
+            "turn": 1,
+            "policy_sha256": "1" * 64,
+            "manifest_sha256": "2" * 64,
+            "prompt_sha256": "3" * 64,
+            "selected_task_baseline_sha256": "4" * 64,
+        }
+
+    def closure_identity(self):
+        return {
+            "subject": self.identity(),
+            "stage2_git_evidence_sha256": "5" * 64,
+            "post_worker_head_oid": "a" * 40,
+            "post_worker_index_tree_oid": "b" * 40,
+            "post_worker_status_sha256": "6" * 64,
+        }
+
+    def command(self, command_id="command-001", role="targeted"):
+        return {
+            "id": command_id,
+            "argv": ["python3", "-m", "unittest"],
+            "sources": ["policy.targeted_checks[0]"],
+            "role": role,
+        }
+
+    def outcome(self, command_id="command-001", status="passed"):
+        exit_codes = {"passed": 0, "failed": 1, "timed_out": None, "not_run": None}
+        return {
+            "id": command_id,
+            "status": status,
+            "exit_code": exit_codes[status],
+            "started_at": "2026-07-18T10:00:00+00:00",
+            "ended_at": "2026-07-18T10:00:01+00:00",
+            "stdout_path": (
+                f"verification/attempt-001.turn-001.{command_id}.stdout.log"
+            ),
+            "stdout_sha256": "7" * 64,
+            "stderr_path": (
+                f"verification/attempt-001.turn-001.{command_id}.stderr.log"
+            ),
+            "stderr_sha256": "8" * 64,
+        }
+
+    def execution(self):
+        return {
+            "version": 1,
+            "closure_identity": self.closure_identity(),
+            "plan": [self.command()],
+            "outcomes": [self.outcome()],
+            "effective_envelope": {
+                "sandbox": "workspace-write",
+                "approval_policy": "never",
+                "network": False,
+                "dependency_install": False,
+                "writable_roots": ["/workspace"],
+            },
+            "started_at": "2026-07-18T10:00:00+00:00",
+            "ended_at": "2026-07-18T10:00:01+00:00",
+            "terminal_reason": "complete",
+            "authorized_gap": None,
+        }
+
+    def git_identity(self):
+        return {
+            "head_oid": "a" * 40,
+            "index_tree_oid": "b" * 40,
+            "status_sha256": "6" * 64,
+        }
+
+    def verification(self):
+        return {
+            "version": 1,
+            "closure_identity": self.closure_identity(),
+            "execution_path": "verification/attempt-001.turn-001.execution.json",
+            "execution_sha256": "9" * 64,
+            "pre_verification_git": self.git_identity(),
+            "post_verification_git": self.git_identity(),
+            "drift_findings": [],
+            "outcome": "passed",
+        }
+
+    def decision(self, accepted=True):
+        return {
+            "version": 1,
+            "closure_identity": self.closure_identity(),
+            "verification_path": "verification/attempt-001.turn-001.json",
+            "verification_sha256": "a" * 64,
+            "accepted": accepted,
+            "reasons": ["mechanical checks passed" if accepted else "verification failed"],
+            "allowed_actions": ["accept"] if accepted else ["resume", "stop"],
+            "allowed_transitions": ["accepted"] if accepted else ["resumable", "stopped"],
+            "gap_details": None,
+            "semantic_review": "not_collected",
+        }
+
+    def operation(self, state="prepared"):
+        evidence = []
+        if state in {"effects_complete", "complete"}:
+            evidence = [{
+                "effect_id": "commit",
+                "effect_type": "commit",
+                "outcome": "not_required",
+                "evidence_sha256": None,
+            }]
+        mismatch = None
+        if state == "mismatch":
+            mismatch = {"reason": "contradictory persisted effect", "evidence_sha256": "b" * 64}
+        return {
+            "version": 1,
+            "operation_id": "T1-accept",
+            "closure_identity": self.closure_identity(),
+            "decision_path": "decisions/attempt-001.turn-001.json",
+            "decision_sha256": "c" * 64,
+            "state": state,
+            "prepared_intent": {
+                "action": "accept",
+                "commit_mode": "off",
+                "tracker_mode": "off",
+            },
+            "effect_evidence": evidence,
+            "mismatch": mismatch,
+        }
+
+    def test_attempt_turn_identity_rejects_mismatched_turn(self):
+        state = load_controller_state()
+        expected = self.identity()
+        stale = dict(expected, turn=2)
+
+        with self.assertRaisesRegex(ValueError, "identity does not match expected subject"):
+            state.validate_attempt_turn_identity(stale, expected=expected)
+
+    def test_exact_identity_and_record_fixtures_validate(self):
+        state = load_controller_state()
+        subject = self.identity()
+        closure = self.closure_identity()
+        state.validate_attempt_turn_identity(subject, expected=subject)
+        state.validate_closure_identity(closure, expected_subject=subject)
+        state.validate_command_execution_record(
+            self.execution(), expected_closure_identity=closure
+        )
+
+        failed = self.execution()
+        failed["plan"].append({
+            **self.command("command-002", "repository_gate"),
+            "argv": ["make", "verify"],
+        })
+        failed["outcomes"] = [
+            self.outcome(status="failed"), self.outcome("command-002", "not_run")
+        ]
+        failed["terminal_reason"] = "command_failed"
+        state.validate_command_execution_record(failed, expected_closure_identity=closure)
+
+        authorized_gap = self.execution()
+        authorized_gap["outcomes"][0] = self.outcome(status="not_run")
+        authorized_gap["terminal_reason"] = "authorized_gap"
+        authorized_gap["authorized_gap"] = {
+            "reason": "repository gate unavailable",
+            "owner": "controller",
+            "follow_up": "run the gate before release",
+        }
+        state.validate_command_execution_record(
+            authorized_gap, expected_closure_identity=closure
+        )
+
+        state.validate_verification_record(
+            self.verification(), expected_closure_identity=closure,
+            expected_execution_sha256="9" * 64,
+        )
+        failed_verification = self.verification()
+        failed_verification["outcome"] = "failed"
+        failed_verification["drift_findings"] = ["tracked workspace drift"]
+        state.validate_verification_record(
+            failed_verification, expected_closure_identity=closure,
+            expected_execution_sha256="9" * 64,
+        )
+        for accepted in (True, False):
+            state.validate_closure_decision(
+                self.decision(accepted), expected_closure_identity=closure,
+                expected_verification_sha256="a" * 64,
+            )
+        for operation_state in ("prepared", "effects_complete", "complete", "mismatch"):
+            state.validate_finalization_operation(
+                self.operation(operation_state), expected_closure_identity=closure,
+                expected_decision_sha256="c" * 64,
+            )
+
+    def test_identity_fields_are_exact_canonical_and_input_preserving(self):
+        state = load_controller_state()
+        subject = self.identity()
+        closure = self.closure_identity()
+        original_subject = json.dumps(subject, sort_keys=True)
+        original_closure = json.dumps(closure, sort_keys=True)
+
+        for field in tuple(subject):
+            missing = dict(subject)
+            del missing[field]
+            with self.subTest(kind="missing", field=field), self.assertRaises(ValueError):
+                state.validate_attempt_turn_identity(missing)
+            changed = dict(subject)
+            changed[field] = 2 if field == "turn" else "changed"
+            with self.subTest(kind="changed", field=field), self.assertRaises(ValueError):
+                state.validate_attempt_turn_identity(changed, expected=subject)
+        with self.assertRaisesRegex(ValueError, "unknown fields"):
+            state.validate_attempt_turn_identity(dict(subject, own_sha256="f" * 64))
+        with self.assertRaisesRegex(ValueError, "positive integer"):
+            state.validate_attempt_turn_identity(dict(subject, turn=True))
+        with self.assertRaisesRegex(ValueError, "lowercase SHA-256"):
+            state.validate_attempt_turn_identity(dict(subject, policy_sha256="A" * 64))
+
+        for field in tuple(closure):
+            changed = json.loads(json.dumps(closure))
+            if field == "subject":
+                changed[field]["turn"] = 2
+            else:
+                changed[field] = "changed"
+            with self.subTest(kind="closure", field=field), self.assertRaises(ValueError):
+                state.validate_closure_identity(changed, expected_subject=subject)
+        self.assertEqual(original_subject, json.dumps(subject, sort_keys=True))
+        self.assertEqual(original_closure, json.dumps(closure, sort_keys=True))
+
+    def test_each_consuming_identity_link_rejects_stale_data(self):
+        state = load_controller_state()
+        closure = self.closure_identity()
+        subject_changes = {
+            "run_id": "run-2", "task_id": "T2", "attempt_id": "attempt-002",
+            "turn": 2, "policy_sha256": "0" * 64, "manifest_sha256": "0" * 64,
+            "prompt_sha256": "0" * 64,
+            "selected_task_baseline_sha256": "0" * 64,
+        }
+        for field, value in subject_changes.items():
+            stale = json.loads(json.dumps(closure))
+            stale["subject"][field] = value
+            execution = self.execution()
+            execution["closure_identity"] = stale
+            with self.subTest(field=field), self.assertRaisesRegex(
+                ValueError, "execution closure identity"
+            ):
+                state.validate_command_execution_record(
+                    execution, expected_closure_identity=closure
+                )
+        for field, value in (
+            ("stage2_git_evidence_sha256", "0" * 64),
+            ("post_worker_head_oid", "c" * 40),
+            ("post_worker_index_tree_oid", "d" * 40),
+            ("post_worker_status_sha256", "0" * 64),
+        ):
+            stale = json.loads(json.dumps(closure))
+            stale[field] = value
+            execution = self.execution()
+            execution["closure_identity"] = stale
+            with self.subTest(field=field), self.assertRaisesRegex(
+                ValueError, "execution closure identity"
+            ):
+                state.validate_command_execution_record(
+                    execution, expected_closure_identity=closure
+                )
+
+        verification = self.verification()
+        with self.assertRaisesRegex(ValueError, "execution digest"):
+            state.validate_verification_record(
+                verification, expected_closure_identity=closure,
+                expected_execution_sha256="0" * 64,
+            )
+        decision = self.decision()
+        with self.assertRaisesRegex(ValueError, "verification digest"):
+            state.validate_closure_decision(
+                decision, expected_closure_identity=closure,
+                expected_verification_sha256="0" * 64,
+            )
+        operation = self.operation()
+        with self.assertRaisesRegex(ValueError, "decision digest"):
+            state.validate_finalization_operation(
+                operation, expected_closure_identity=closure,
+                expected_decision_sha256="0" * 64,
+            )
+
+    def test_canonical_digests_bind_the_acyclic_chain(self):
+        state = load_controller_state()
+        closure = self.closure_identity()
+        execution = self.execution()
+        external_execution_json = json.dumps(
+            execution, sort_keys=True, separators=(",", ":")
+        )
+        self.assertEqual(external_execution_json, state.canonical_json(execution))
+        execution_digest = hashlib.sha256(external_execution_json.encode()).hexdigest()
+        verification = self.verification()
+        verification["execution_sha256"] = execution_digest
+        state.validate_verification_record(
+            verification, expected_closure_identity=closure,
+            expected_execution_sha256=execution_digest,
+        )
+        external_verification_json = json.dumps(
+            verification, sort_keys=True, separators=(",", ":")
+        )
+        verification_digest = hashlib.sha256(external_verification_json.encode()).hexdigest()
+        decision = self.decision()
+        decision["verification_sha256"] = verification_digest
+        state.validate_closure_decision(
+            decision, expected_closure_identity=closure,
+            expected_verification_sha256=verification_digest,
+        )
+        with self.assertRaisesRegex(ValueError, "unknown fields"):
+            state.validate_verification_record(
+                dict(verification, own_sha256="d" * 64),
+                expected_closure_identity=closure,
+                expected_execution_sha256=execution_digest,
+            )
+        with self.assertRaisesRegex(ValueError, "unknown fields"):
+            state.validate_closure_decision(
+                dict(decision, own_sha256="e" * 64),
+                expected_closure_identity=closure,
+                expected_verification_sha256=verification_digest,
+            )
+
+    def test_execution_rejects_duplicates_types_times_and_contradictions(self):
+        state = load_controller_state()
+        closure = self.closure_identity()
+        cases = []
+        record = self.execution()
+        record["plan"].append(dict(self.command(), id="command-002"))
+        record["outcomes"].append(self.outcome("command-002"))
+        cases.append(record)
+        record = self.execution()
+        record["outcomes"][0]["exit_code"] = True
+        cases.append(record)
+        record = self.execution()
+        record["outcomes"][0]["ended_at"] = "2026-07-18T09:00:00+00:00"
+        cases.append(record)
+        record = self.execution()
+        record["terminal_reason"] = "command_failed"
+        cases.append(record)
+        record = self.execution()
+        record["plan"].append({
+            **self.command("command-002", "repository_gate"),
+            "argv": ["make", "verify"],
+        })
+        record["outcomes"] = [
+            self.outcome(status="failed"), self.outcome("command-002", "passed")
+        ]
+        record["terminal_reason"] = "command_failed"
+        cases.append(record)
+        record = self.execution()
+        record["unknown"] = True
+        cases.append(record)
+        for index, record in enumerate(cases):
+            with self.subTest(index=index), self.assertRaises(ValueError):
+                state.validate_command_execution_record(
+                    record, expected_closure_identity=closure
+                )
+
+    def test_artifact_paths_are_exact_and_structurally_safe(self):
+        state = load_controller_state()
+        closure = self.closure_identity()
+        for invalid in (
+            "/verification/log", "verification/../log", "verification//log",
+            "verification/./log", "decisions/attempt-001.turn-001.execution.json",
+            "verification/attempt-002.turn-001.execution.json",
+            "verification/attempt-001.turn-002.execution.json",
+        ):
+            record = self.verification()
+            record["execution_path"] = invalid
+            with self.subTest(path=invalid), self.assertRaises(ValueError):
+                state.validate_verification_record(
+                    record, expected_closure_identity=closure,
+                    expected_execution_sha256="9" * 64,
+                )
+        decision = self.decision()
+        decision["verification_path"] = "decisions/attempt-001.turn-001.json"
+        with self.assertRaisesRegex(ValueError, "verification/"):
+            state.validate_closure_decision(
+                decision, expected_closure_identity=closure,
+                expected_verification_sha256="a" * 64,
+            )
+        execution = self.execution()
+        execution["outcomes"][0]["stdout_path"] = (
+            "decisions/attempt-001.turn-001.command-001.stdout.log"
+        )
+        with self.assertRaisesRegex(ValueError, "verification/"):
+            state.validate_command_execution_record(
+                execution, expected_closure_identity=closure
+            )
+
+    def test_decision_verdict_gap_and_semantic_review_are_consistent(self):
+        state = load_controller_state()
+        closure = self.closure_identity()
+        cases = []
+        record = self.decision()
+        record["accepted"] = 1
+        cases.append(record)
+        record = self.decision()
+        record["allowed_actions"] = ["stop"]
+        cases.append(record)
+        record = self.decision()
+        record["semantic_review"] = "passed"
+        cases.append(record)
+        record = self.decision(False)
+        record["allowed_transitions"].append("accepted")
+        cases.append(record)
+        record = self.decision(False)
+        record["allowed_actions"] = ["resume"]
+        record["allowed_transitions"] = ["stopped"]
+        cases.append(record)
+        for index, record in enumerate(cases):
+            with self.subTest(index=index), self.assertRaises(ValueError):
+                state.validate_closure_decision(
+                    record, expected_closure_identity=closure,
+                    expected_verification_sha256="a" * 64,
+                )
+
+    def test_operation_transitions_are_ordered_append_only_and_pure(self):
+        state = load_controller_state()
+        closure = self.closure_identity()
+        prepared = self.operation("prepared")
+        effects = self.operation("effects_complete")
+        complete = self.operation("complete")
+        original_prepared = json.dumps(prepared, sort_keys=True)
+        original_effects = json.dumps(effects, sort_keys=True)
+
+        updated = state.update_finalization_operation(
+            prepared, effects, expected_state="prepared",
+            expected_closure_identity=closure, expected_decision_sha256="c" * 64,
+        )
+        self.assertEqual(effects, updated)
+        completed = state.update_finalization_operation(
+            effects, complete, expected_state="effects_complete",
+            expected_closure_identity=closure, expected_decision_sha256="c" * 64,
+        )
+        self.assertEqual(complete, completed)
+        replayed = state.update_finalization_operation(
+            complete, complete, expected_state="complete",
+            expected_closure_identity=closure, expected_decision_sha256="c" * 64,
+        )
+        self.assertEqual(complete, replayed)
+        self.assertIsNot(complete, replayed)
+        self.assertEqual(original_prepared, json.dumps(prepared, sort_keys=True))
+        self.assertEqual(original_effects, json.dumps(effects, sort_keys=True))
+
+    def test_operation_rejects_skips_stale_updates_and_history_changes(self):
+        state = load_controller_state()
+        closure = self.closure_identity()
+        prepared = self.operation("prepared")
+        effects = self.operation("effects_complete")
+        complete = self.operation("complete")
+        cases = []
+        cases.append((prepared, complete, "prepared"))
+        cases.append((prepared, effects, "effects_complete"))
+        changed_intent = self.operation("effects_complete")
+        changed_intent["prepared_intent"]["commit_mode"] = "controller_exact_paths"
+        cases.append((prepared, changed_intent, "prepared"))
+        removed = self.operation("complete")
+        removed["effect_evidence"] = []
+        cases.append((effects, removed, "effects_complete"))
+        altered = self.operation("complete")
+        altered["effect_evidence"][0]["effect_id"] = "changed"
+        cases.append((effects, altered, "effects_complete"))
+        cases.append((complete, effects, "complete"))
+        for index, (current, proposed, expected_state) in enumerate(cases):
+            with self.subTest(index=index), self.assertRaises(ValueError):
+                state.update_finalization_operation(
+                    current, proposed, expected_state=expected_state,
+                    expected_closure_identity=closure,
+                    expected_decision_sha256="c" * 64,
+                )
+
+        mismatch = self.operation("mismatch")
+        updated = state.update_finalization_operation(
+            prepared, mismatch, expected_state="prepared",
+            expected_closure_identity=closure, expected_decision_sha256="c" * 64,
+        )
+        self.assertEqual("mismatch", updated["state"])
+        effects_mismatch = self.operation("mismatch")
+        effects_mismatch["effect_evidence"] = effects["effect_evidence"]
+        updated = state.update_finalization_operation(
+            effects, effects_mismatch, expected_state="effects_complete",
+            expected_closure_identity=closure, expected_decision_sha256="c" * 64,
+        )
+        self.assertEqual("mismatch", updated["state"])
+        with self.assertRaisesRegex(ValueError, "not allowed"):
+            state.update_finalization_operation(
+                mismatch, complete, expected_state="mismatch",
+                expected_closure_identity=closure,
+                expected_decision_sha256="c" * 64,
+            )

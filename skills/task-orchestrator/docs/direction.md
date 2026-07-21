@@ -2,6 +2,7 @@
 
 Status: agreed direction for the next design iteration
 Date: 2026-07-15
+MVP rebaseline: 2026-07-21
 
 ## Purpose
 
@@ -177,6 +178,84 @@ Stage 1 does not orchestrate a real task list, rewrite the skill, launch paid/li
 - After user approval, run one real Codex task without network or commits.
 - Compare closure evidence with the original skill baseline.
 - Expand to a short real task sequence only after the first pilot is accepted.
+
+## MVP rebaseline: local configurable task flow
+
+The Stage 3 mid-review showed that the controller has built useful mechanical
+boundaries but has not yet delivered the unattended implementation and
+correction loop that motivated the project. The remaining work is therefore
+reordered around an early local MVP. This section supersedes the Stage 3–5
+delivery order above where they conflict; the earlier sections remain as the
+design history and source of the invariants worth preserving.
+
+The governing high-level plan is
+[stage-3-mvp-rebaseline.md](stage-3-mvp-rebaseline.md). The evidence that led to
+the change is recorded in [stage-3-mid-review.md](stage-3-mid-review.md).
+
+### Revised product goal
+
+On one local development machine, accept an approved task document or manifest
+and execute a configurable sequential flow across its tasks with minimal
+babysitting. A normal reviewed flow should be able to:
+
+```text
+prepare task -> optional preflight -> implement -> verify -> optional review
+     ^                                                   |
+     +---------------- correct and resume <--------------+
+                                                         |
+                                             accept -> next task
+```
+
+Preflight, verification, and semantic review are selectable steps rather than
+hardcoded requirements. Their modes and actors are run configuration. The
+controller keeps the non-configurable safety invariants; a thin workflow runner
+interprets the configured step sequence and invokes the appropriate actor.
+
+### Local trust and safety model
+
+- The operator, local machine, repository, and external run directory are
+  trusted. Malicious third-party mutation is not a design target.
+- The relevant failures are LLM hallucination, accidental scope expansion,
+  overlapping workers, stale state, crashes, and incomplete recovery.
+- A real sandbox boundary, such as the current supported local mechanism or a
+  later Docker-backed sandbox, is the primary containment for worker commands.
+- Digests and immutable artifacts detect stale, contradictory, or accidentally
+  corrupted evidence. They are not a cryptographic security boundary and do
+  not require an externally anchored chain for the MVP.
+- The controller must not duplicate a general sandbox, package-manager policy,
+  or adversarial audit system in application code.
+
+### Revised architecture boundary
+
+Keep the deterministic controller for task ownership, persisted run state,
+process lifecycle, repository observations, and acceptance transitions. Add a
+small workflow layer with a closed set of supported step kinds and structured
+outcomes. A run profile may add, remove, reorder where valid, or change the
+level/actor of supported steps without a code change. Arbitrary plugins,
+unrestricted jumps, and a general workflow engine are beyond the MVP.
+
+The chosen workflow is persisted at run start so an implementation or review
+agent cannot silently alter its own process. The operator may change the flow
+between runs, or explicitly revise it at a safe task boundary. Such a revision
+is authority from the operator, not a worker recommendation.
+
+### Revised delivery order
+
+1. Close the bounded S3-08 correctness gap under the local trust model.
+2. Freeze the configurable flow-step and outcome contract.
+3. Complete safe recovery and same-thread correction/resume.
+4. Add optional preflight and semantic-review actors plus the review/fix loop.
+5. Add simple side-effect-free acceptance, dependency release, and an
+   `advance` loop that proceeds until completion or a genuine escalation.
+6. Add plan-to-manifest preparation and rewrite the skill around the runnable
+   controller/workflow interface.
+7. Run synthetic and real local pilots before implementing controller-owned
+   commits, tracker mutation, or more assurance machinery.
+
+Exact-path commits, tracker adapters, prepared external-side-effect journals,
+parallel worktrees, distributed coordination, malicious-tamper resistance, and
+a custom step plugin system are post-MVP work. They should be pulled forward
+only when a pilot demonstrates that they block practical use.
 
 ## Deferred decisions
 

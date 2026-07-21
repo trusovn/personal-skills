@@ -4,29 +4,20 @@ import os
 import importlib.util
 import json
 from pathlib import Path
+import shlex
+import signal
 import socket
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import unittest
+from unittest import mock
 
 
 SANDBOX_EXEC = Path("/usr/bin/sandbox-exec")
 RUNNER_PATH = Path(__file__).parents[1] / "scripts" / "verification_runner.py"
-REQUIRED_PERMISSION_KEYS = {
-    "sandbox",
-    "approval_policy",
-    "network",
-    "dependency_install",
-    "writable_roots",
-    "danger_full_access_authorized",
-}
-
-
-class UnsupportedSandbox(RuntimeError):
-    pass
-
-
 def load_verification_runner():
     spec = importlib.util.spec_from_file_location(
         "task_orchestrator_verification_runner", RUNNER_PATH
@@ -327,74 +318,12 @@ def _sandbox_invocation(
     platform=sys.platform,
     sandbox_executable=SANDBOX_EXEC,
 ):
-    if platform != "darwin":
-        raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
-    if (
-        Path(sandbox_executable) != SANDBOX_EXEC
-        or not SANDBOX_EXEC.is_file()
-        or not os.access(SANDBOX_EXEC, os.X_OK)
-    ):
-        raise UnsupportedSandbox("the exact /usr/bin/sandbox-exec mechanism is unavailable")
-    if not argv:
-        raise UnsupportedSandbox("verification argv must not be empty")
-    if set(permissions) != REQUIRED_PERMISSION_KEYS:
-        raise UnsupportedSandbox("the complete version 1 permission envelope is required")
-    if permissions["approval_policy"] != "never":
-        raise UnsupportedSandbox("verification cannot request approval while running")
-    if type(permissions["network"]) is not bool:
-        raise UnsupportedSandbox("network must be boolean")
-    if type(permissions["dependency_install"]) is not bool:
-        raise UnsupportedSandbox("dependency_install must be boolean")
-    if type(permissions["danger_full_access_authorized"]) is not bool:
-        raise UnsupportedSandbox("danger_full_access_authorized must be boolean")
-
-    sandbox = permissions["sandbox"]
-    if sandbox not in {"read-only", "workspace-write", "danger-full-access"}:
-        raise UnsupportedSandbox(f"unsupported sandbox mode: {sandbox!r}")
-    if sandbox == "danger-full-access" and not permissions["danger_full_access_authorized"]:
-        raise UnsupportedSandbox("danger-full-access lacks separate authorization")
-
-    roots = permissions["writable_roots"]
-    if not isinstance(roots, list) or any(not isinstance(root, str) or not root for root in roots):
-        raise UnsupportedSandbox("writable_roots must be a list of non-empty paths")
-    normalized_roots = []
-    for root in roots:
-        path = Path(root)
-        if not path.is_absolute() or not path.is_dir():
-            raise UnsupportedSandbox("every writable root must be an existing absolute directory")
-        normalized = Path(os.path.realpath(path))
-        if normalized == Path("/"):
-            raise UnsupportedSandbox("workspace-write cannot use the filesystem root")
-        if normalized not in normalized_roots:
-            normalized_roots.append(normalized)
-
-    profile = ["(version 1)", "(allow default)"]
-    definitions = []
-    if not permissions["network"]:
-        profile.append("(deny network*)")
-
-    if sandbox == "read-only":
-        profile.append("(deny file-write*)")
-    elif sandbox == "workspace-write":
-        if not normalized_roots:
-            profile.append("(deny file-write*)")
-        else:
-            exclusions = []
-            for index, root in enumerate(normalized_roots):
-                name = f"WRITABLE_ROOT_{index}"
-                definitions.extend(["-D", f"{name}={root}"])
-                exclusions.append(f'(require-not (subpath (param "{name}")))')
-            profile.append(
-                "(deny file-write* (require-all " + " ".join(exclusions) + "))"
-            )
-
-    return [
-        str(SANDBOX_EXEC),
-        *definitions,
-        "-p",
-        " ".join(profile),
-        *map(str, argv),
-    ]
+    return load_verification_runner().build_sandbox_invocation(
+        argv,
+        permissions,
+        platform=platform,
+        sandbox_executable=sandbox_executable,
+    )
 
 
 def _run(argv, permissions):
@@ -534,19 +463,29 @@ class VerificationSandboxFailClosedTests(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
+    def test_production_builds_the_adopted_sandbox_invocation(self):
+        runner = load_verification_runner()
+        permissions = _permissions("read-only", [], network=False)
+
+        invocation = runner.build_sandbox_invocation(
+            ["/usr/bin/true"], permissions
+        )
+
+        self.assertEqual(invocation, _sandbox_invocation(["/usr/bin/true"], permissions))
+
     def test_unsupported_host_is_rejected(self):
         permissions = _permissions("read-only", [], network=False)
-        with self.assertRaisesRegex(UnsupportedSandbox, "only on macOS"):
+        with self.assertRaisesRegex(RuntimeError, "only on macOS"):
             _sandbox_invocation(["/usr/bin/true"], permissions, platform="linux")
 
     def test_unsupported_mode_is_rejected(self):
         permissions = _permissions("unknown", [], network=False)
-        with self.assertRaisesRegex(UnsupportedSandbox, "unsupported sandbox mode"):
+        with self.assertRaisesRegex(RuntimeError, "unsupported sandbox mode"):
             _sandbox_invocation(["/usr/bin/true"], permissions)
 
     def test_substituted_unrestricted_runner_is_rejected(self):
         permissions = _permissions("read-only", [], network=False)
-        with self.assertRaisesRegex(UnsupportedSandbox, "exact /usr/bin/sandbox-exec"):
+        with self.assertRaisesRegex(RuntimeError, "exact /usr/bin/sandbox-exec"):
             _sandbox_invocation(
                 ["/usr/bin/true"],
                 permissions,
@@ -556,21 +495,434 @@ class VerificationSandboxFailClosedTests(unittest.TestCase):
     def test_missing_writable_root_enforcement_is_rejected(self):
         missing = self.root / "missing"
         permissions = _permissions("workspace-write", [missing], network=False)
-        with self.assertRaisesRegex(UnsupportedSandbox, "existing absolute directory"):
+        with self.assertRaisesRegex(RuntimeError, "existing absolute directory"):
             _sandbox_invocation(["/usr/bin/true"], permissions)
 
     def test_unauthorized_danger_full_access_is_rejected_before_launch(self):
         marker = self.root / "must-not-run"
         permissions = _permissions("danger-full-access", [], network=False)
-        with self.assertRaisesRegex(UnsupportedSandbox, "lacks separate authorization"):
+        with self.assertRaisesRegex(RuntimeError, "lacks separate authorization"):
             _run(["/usr/bin/touch", marker], permissions)
         self.assertFalse(marker.exists())
 
     def test_incomplete_permission_envelope_is_rejected(self):
         permissions = _permissions("read-only", [], network=False)
         permissions.pop("network")
-        with self.assertRaisesRegex(UnsupportedSandbox, "complete version 1"):
+        with self.assertRaisesRegex(RuntimeError, "complete version 1"):
             _sandbox_invocation(["/usr/bin/true"], permissions)
+
+
+class VerificationProcessGroupCleanupTests(unittest.TestCase):
+    def test_group_exit_race_does_not_leak_permission_error(self):
+        runner = load_verification_runner()
+        process = mock.Mock(pid=43210)
+        signal_calls = []
+        sigkill_attempts = 0
+
+        def group_exit_race(process_group_id, signum):
+            nonlocal sigkill_attempts
+            signal_calls.append((process_group_id, signum))
+            if signum == signal.SIGKILL:
+                sigkill_attempts += 1
+                if sigkill_attempts == 1:
+                    raise PermissionError(1, "Operation not permitted")
+                raise ProcessLookupError
+            if signum == 0 and sigkill_attempts:
+                raise ProcessLookupError
+
+        with mock.patch.object(runner.os, "killpg", side_effect=group_exit_race):
+            runner._terminate_process_group(process)
+
+        permission_error_index = signal_calls.index((process.pid, signal.SIGKILL))
+        self.assertIn((process.pid, 0), signal_calls[permission_error_index + 1:])
+
+
+@unittest.skipUnless(
+    sys.platform == "darwin" and SANDBOX_EXEC.is_file(),
+    "the adopted executor requires macOS /usr/bin/sandbox-exec",
+)
+class VerificationExecutorLocalProcessTests(unittest.TestCase):
+    def setUp(self):
+        self.runner = load_verification_runner()
+        self.temporary = tempfile.TemporaryDirectory(prefix="task-orchestrator-executor-")
+        self.base = Path(self.temporary.name).resolve()
+        self.repository = self.base / "repository"
+        self.run_directory = self.base / "run"
+        self.verification_directory = self.run_directory / "verification"
+        self.repository.mkdir()
+        self.verification_directory.mkdir(parents=True)
+        self.permissions = _permissions(
+            "workspace-write", [self.repository], network=False
+        )
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def closure_identity(self):
+        return {
+            "subject": {
+                "run_id": "run-1",
+                "task_id": "T1",
+                "attempt_id": "attempt-001",
+                "turn": 1,
+                "policy_sha256": "1" * 64,
+                "manifest_sha256": "2" * 64,
+                "prompt_sha256": "3" * 64,
+                "selected_task_baseline_sha256": "4" * 64,
+            },
+            "stage2_git_evidence_sha256": "5" * 64,
+            "post_worker_head_oid": "a" * 40,
+            "post_worker_index_tree_oid": "b" * 40,
+            "post_worker_status_sha256": "6" * 64,
+        }
+
+    def command(self, script):
+        return shlex.join([sys.executable, "-I", "-c", script])
+
+    def plan(self, *commands, repository_gate=None, gap=None):
+        return self.runner.build_verification_plan(
+            {"required_checks": list(commands)},
+            {
+                "verification": {
+                    "targeted_checks": [],
+                    "repository_gate": repository_gate,
+                    "authorized_gap": gap,
+                },
+                "permissions": {"dependency_install": False},
+            },
+        )
+
+    def execute(self, plan, **overrides):
+        arguments = {
+            "plan": plan,
+            "repository_cwd": self.repository,
+            "permissions": self.permissions,
+            "timeout_seconds": 2,
+            "run_directory": self.run_directory,
+            "execution_path": "verification/attempt-001.turn-001.execution.json",
+            "closure_identity": self.closure_identity(),
+        }
+        arguments.update(overrides)
+        return self.runner.execute_verification_plan(**arguments)
+
+    def assert_pid_absent(self, pid):
+        deadline = time.monotonic() + 2
+        while time.monotonic() < deadline:
+            try:
+                os.kill(pid, 0)
+            except ProcessLookupError:
+                return
+            threading.Event().wait(0.01)
+        self.fail(f"process {pid} remained alive")
+
+    def test_two_commands_publish_exact_binary_logs_and_valid_record(self):
+        marker = self.repository / "order"
+        first = self.command(
+            f"import os; from pathlib import Path; "
+            f"Path({str(marker)!r}).write_bytes(b'1'); os.write(1,b'\\xff\\x00')"
+        )
+        second = self.command(
+            f"import os; from pathlib import Path; p=Path({str(marker)!r}); "
+            f"assert p.read_bytes()==b'1'; p.write_bytes(b'12'); os.write(2,b'\\x80')"
+        )
+
+        record, digest = self.execute(self.plan(first, second))
+
+        self.assertEqual(marker.read_bytes(), b"12")
+        self.assertEqual(record["terminal_reason"], "complete")
+        self.assertEqual([item["status"] for item in record["outcomes"]], ["passed", "passed"])
+        expected_streams = ((b"\xff\x00", b""), (b"", b"\x80"))
+        for outcome, (stdout, stderr) in zip(record["outcomes"], expected_streams):
+            self.assertEqual((self.run_directory / outcome["stdout_path"]).read_bytes(), stdout)
+            self.assertEqual((self.run_directory / outcome["stderr_path"]).read_bytes(), stderr)
+            self.assertEqual(outcome["stdout_sha256"], hashlib.sha256(stdout).hexdigest())
+            self.assertEqual(outcome["stderr_sha256"], hashlib.sha256(stderr).hexdigest())
+            self.assertEqual(outcome["effective_argv"][0], str(SANDBOX_EXEC))
+        record_bytes = (
+            self.verification_directory / "attempt-001.turn-001.execution.json"
+        ).read_bytes()
+        self.assertEqual(json.loads(record_bytes), record)
+        self.assertEqual(hashlib.sha256(record_bytes).hexdigest(), digest)
+        self.assertEqual(record["effective_envelope"], self.permissions)
+
+    def test_repository_gate_failure_records_the_exact_authorized_gap(self):
+        gap = {"reason": "legacy failure", "owner": "tools", "follow_up": "T2"}
+        plan = self.plan(repository_gate="/usr/bin/false", gap=gap)
+
+        record, _ = self.execute(plan)
+
+        self.assertEqual(record["terminal_reason"], "authorized_gap")
+        self.assertEqual(record["authorized_gap"], gap)
+        self.assertEqual(record["outcomes"][0]["status"], "authorized_gap")
+        self.assertNotEqual(record["outcomes"][0]["exit_code"], 0)
+
+    def test_later_preflight_failure_runs_nothing_and_creates_no_artifact(self):
+        marker = self.repository / "must-not-run"
+        first = self.command(f"from pathlib import Path; Path({str(marker)!r}).touch()")
+        plan = self.plan(first, "executable-that-does-not-exist --version")
+
+        with self.assertRaisesRegex(RuntimeError, "not resolvable"):
+            self.execute(plan)
+
+        self.assertFalse(marker.exists())
+        self.assertEqual(list(self.verification_directory.iterdir()), [])
+
+    def test_targeted_failure_prevents_the_later_command(self):
+        marker = self.repository / "must-not-run"
+        later = self.command(f"from pathlib import Path; Path({str(marker)!r}).touch()")
+
+        record, _ = self.execute(self.plan("/usr/bin/false", later))
+
+        self.assertEqual(record["terminal_reason"], "command_failed")
+        self.assertEqual(len(record["outcomes"]), 1)
+        self.assertEqual(record["outcomes"][0]["status"], "failed")
+        self.assertFalse(marker.exists())
+        self.assertFalse((
+            self.verification_directory
+            / "attempt-001.turn-001.command-002.stdout.log"
+        ).exists())
+
+    def test_timeout_terminates_the_owned_child_and_grandchild(self):
+        pids = self.repository / "pids"
+        grandchild = "import time; time.sleep(60)"
+        script = (
+            "import os,subprocess,sys,time; from pathlib import Path; "
+            f"child=subprocess.Popen([sys.executable,'-I','-c',{grandchild!r}]); "
+            f"Path({str(pids)!r}).write_text(str(os.getpid())+' '+str(child.pid)); "
+            "time.sleep(60)"
+        )
+
+        record, _ = self.execute(self.plan(self.command(script)), timeout_seconds=0.25)
+
+        self.assertEqual(record["terminal_reason"], "timed_out")
+        self.assertEqual(record["outcomes"][0]["status"], "timed_out")
+        parent_pid, child_pid = map(int, pids.read_text().split())
+        self.assert_pid_absent(parent_pid)
+        self.assert_pid_absent(child_pid)
+
+    def test_timeout_kills_a_grandchild_that_ignores_sigterm(self):
+        pids = self.repository / "signal-resistant-pids"
+        child_log = self.repository / "signal-resistant-child.log"
+        grandchild = "import time; time.sleep(60)"
+        script = (
+            "import os,signal,subprocess,sys,time; from pathlib import Path; "
+            f"sink=open({str(child_log)!r},'wb'); "
+            f"child=subprocess.Popen([sys.executable,'-I','-c',{grandchild!r}],"
+            "stdout=sink,stderr=sink,"
+            "preexec_fn=lambda:signal.signal(signal.SIGTERM,signal.SIG_IGN)); "
+            "sink.close(); "
+            f"Path({str(pids)!r}).write_text(str(os.getpid())+' '+str(child.pid)); "
+            "time.sleep(60)"
+        )
+
+        record, _ = self.execute(self.plan(self.command(script)), timeout_seconds=0.25)
+
+        self.assertEqual(
+            record["terminal_reason"],
+            "timed_out",
+            (self.run_directory / record["outcomes"][0]["stderr_path"]).read_text(),
+        )
+        self.assertEqual(record["outcomes"][0]["status"], "timed_out")
+        parent_pid, child_pid = map(int, pids.read_text().split())
+        try:
+            self.assert_pid_absent(parent_pid)
+            self.assert_pid_absent(child_pid)
+        finally:
+            for pid in (parent_pid, child_pid):
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+
+    def test_exited_parent_with_open_descendant_pipe_cleans_up_process_group(self):
+        pids = self.repository / "inherited-pipe-pids"
+        grandchild = "import time; time.sleep(60)"
+        script = (
+            "import os,subprocess,sys; from pathlib import Path; "
+            f"child=subprocess.Popen([sys.executable,'-I','-c',{grandchild!r}]); "
+            f"Path({str(pids)!r}).write_text(str(os.getpid())+' '+str(child.pid))"
+        )
+        watchdog_cleanup_required = threading.Event()
+        observed_pids = []
+
+        def clean_up_if_runner_does_not():
+            deadline = time.monotonic() + 2
+            while not pids.exists() and time.monotonic() < deadline:
+                threading.Event().wait(0.01)
+            if not pids.exists():
+                return
+            parent_pid, child_pid = map(int, pids.read_text().split())
+            observed_pids.extend((parent_pid, child_pid))
+            deadline = time.monotonic() + 3
+            while time.monotonic() < deadline:
+                try:
+                    os.kill(child_pid, 0)
+                except ProcessLookupError:
+                    return
+                threading.Event().wait(0.01)
+            watchdog_cleanup_required.set()
+            try:
+                os.killpg(parent_pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+
+        watchdog = threading.Thread(target=clean_up_if_runner_does_not)
+        watchdog.start()
+        try:
+            try:
+                self.execute(self.plan(self.command(script)), timeout_seconds=2)
+            except RuntimeError:
+                pass
+        finally:
+            watchdog.join(timeout=6)
+            for pid in observed_pids:
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+
+        self.assertFalse(
+            watchdog_cleanup_required.is_set(),
+            "the runner left a grandchild alive after its group leader exited",
+        )
+
+    def test_external_interruption_terminates_the_process_group(self):
+        ready = self.repository / "ready"
+        script = (
+            "import os,time; from pathlib import Path; "
+            f"Path({str(ready)!r}).write_text(str(os.getpid())); time.sleep(60)"
+        )
+        interrupted = threading.Event()
+        watcher_done = threading.Event()
+
+        def interrupt_when_started():
+            while not ready.exists() and not watcher_done.wait(0.01):
+                pass
+            if ready.exists():
+                interrupted.set()
+
+        watcher = threading.Thread(target=interrupt_when_started)
+        watcher.start()
+        try:
+            record, _ = self.execute(
+                self.plan(self.command(script)), interruption_event=interrupted
+            )
+        finally:
+            watcher_done.set()
+            watcher.join(timeout=1)
+
+        self.assertEqual(record["terminal_reason"], "interrupted")
+        self.assertEqual(record["outcomes"][0]["status"], "interrupted")
+        self.assert_pid_absent(int(ready.read_text()))
+
+    def test_existing_log_collision_is_rejected_without_overwrite_or_execution(self):
+        existing = (
+            self.verification_directory
+            / "attempt-001.turn-001.command-002.stdout.log"
+        )
+        existing.write_bytes(b"owned")
+        marker = self.repository / "must-not-run"
+        command = self.command(f"from pathlib import Path; Path({str(marker)!r}).touch()")
+
+        with self.assertRaisesRegex(FileExistsError, "already exists"):
+            self.execute(self.plan(command, "/usr/bin/true"))
+
+        self.assertEqual(existing.read_bytes(), b"owned")
+        self.assertFalse(marker.exists())
+        self.assertFalse((
+            self.verification_directory / "attempt-001.turn-001.execution.json"
+        ).exists())
+
+    def test_existing_record_is_rejected_without_overwrite(self):
+        record_path = (
+            self.verification_directory / "attempt-001.turn-001.execution.json"
+        )
+        record_path.write_bytes(b"owned")
+
+        with self.assertRaisesRegex(FileExistsError, "already exists"):
+            self.execute(self.plan("/usr/bin/true"))
+
+        self.assertEqual(record_path.read_bytes(), b"owned")
+        self.assertEqual(
+            sorted(path.name for path in self.verification_directory.iterdir()),
+            ["attempt-001.turn-001.execution.json"],
+        )
+
+    def test_log_write_failure_cannot_publish_a_complete_record(self):
+        stdout_path = (
+            self.verification_directory
+            / "attempt-001.turn-001.command-001.stdout.log"
+        )
+        original_open = Path.open
+
+        class FailingWriter:
+            def __init__(self, wrapped):
+                self.wrapped = wrapped
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                self.wrapped.close()
+
+            def write(self, value):
+                raise OSError("injected log failure")
+
+            def flush(self):
+                self.wrapped.flush()
+
+            def fileno(self):
+                return self.wrapped.fileno()
+
+        def fail_target(path, mode="r", *args, **kwargs):
+            opened = original_open(path, mode, *args, **kwargs)
+            if path == stdout_path and mode == "xb":
+                return FailingWriter(opened)
+            return opened
+
+        command = self.command("import os; os.write(1,b'output')")
+        with mock.patch.object(Path, "open", fail_target):
+            with self.assertRaisesRegex(RuntimeError, "log streaming failed"):
+                self.execute(self.plan(command))
+
+        self.assertFalse((
+            self.verification_directory / "attempt-001.turn-001.execution.json"
+        ).exists())
+
+    def test_changed_executable_is_rejected_before_launch(self):
+        plan = self.plan("/usr/bin/true")
+        original = self.runner._resolve_executable
+        calls = 0
+
+        def changed_on_recheck(argv, cwd):
+            nonlocal calls
+            calls += 1
+            resolved, fingerprint = original(argv, cwd)
+            if calls == 2:
+                fingerprint = (*fingerprint[:-1], "0" * 64)
+            return resolved, fingerprint
+
+        with mock.patch.object(self.runner, "_resolve_executable", changed_on_recheck):
+            with self.assertRaisesRegex(RuntimeError, "changed before launch"):
+                self.execute(plan)
+
+        self.assertFalse((
+            self.verification_directory / "attempt-001.turn-001.execution.json"
+        ).exists())
+
+    def test_invalid_identity_timeout_and_artifact_escape_fail_before_artifacts(self):
+        plan = self.plan("/usr/bin/true")
+        invalid_identity = self.closure_identity()
+        invalid_identity["subject"]["turn"] = 0
+        cases = (
+            {"closure_identity": invalid_identity},
+            {"timeout_seconds": 0},
+            {"execution_path": "verification/../escape.execution.json"},
+        )
+        for overrides in cases:
+            with self.subTest(overrides=overrides), self.assertRaises((ValueError, RuntimeError)):
+                self.execute(plan, **overrides)
+            self.assertEqual(list(self.verification_directory.iterdir()), [])
 
 
 if __name__ == "__main__":

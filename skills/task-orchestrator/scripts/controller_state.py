@@ -193,19 +193,23 @@ def validate_command_execution_record(
         raise ValueError("execution.plan command IDs must be unique")
     if len(command_identities) != len(set(command_identities)):
         raise ValueError("execution.plan normalized command identities must be unique")
-    if not isinstance(record["outcomes"], list) or len(record["outcomes"]) != len(plan_ids):
-        raise ValueError("execution.outcomes must correspond exactly to the plan")
+    if (
+        not isinstance(record["outcomes"], list)
+        or not record["outcomes"]
+        or len(record["outcomes"]) > len(plan_ids)
+    ):
+        raise ValueError("execution.outcomes must be a non-empty plan prefix")
     statuses = []
     for index, outcome in enumerate(record["outcomes"]):
         required_outcome = (
             "id", "status", "exit_code", "started_at", "ended_at", "stdout_path",
-            "stdout_sha256", "stderr_path", "stderr_sha256",
+            "stdout_sha256", "stderr_path", "stderr_sha256", "effective_argv",
         )
         _validate_exact_object(outcome, required_outcome, "execution outcome")
         if outcome["id"] != plan_ids[index]:
             raise ValueError("execution outcomes must preserve plan identity and order")
         status = outcome["status"]
-        if status not in {"passed", "failed", "timed_out", "not_run"}:
+        if status not in {"passed", "failed", "timed_out", "interrupted", "authorized_gap"}:
             raise ValueError("execution outcome status is invalid")
         statuses.append(status)
         exit_code = outcome["exit_code"]
@@ -213,8 +217,11 @@ def validate_command_execution_record(
             raise ValueError("passed execution outcome requires exit_code 0")
         if status == "failed" and (type(exit_code) is not int or exit_code == 0):
             raise ValueError("failed execution outcome requires a nonzero exit_code")
-        if status in {"timed_out", "not_run"} and exit_code is not None:
+        if status == "authorized_gap" and (type(exit_code) is not int or exit_code == 0):
+            raise ValueError("authorized_gap outcome requires a nonzero exit_code")
+        if status in {"timed_out", "interrupted"} and exit_code is not None:
             raise ValueError(f"{status} execution outcome requires null exit_code")
+        _validate_str_array(outcome["effective_argv"], "execution outcome effective_argv")
         _validate_time_range(outcome["started_at"], outcome["ended_at"], "execution outcome")
         stem = _turn_stem(record["closure_identity"])
         for stream in ("stdout", "stderr"):
@@ -227,7 +234,10 @@ def validate_command_execution_record(
     envelope = record["effective_envelope"]
     _validate_exact_object(
         envelope,
-        ("sandbox", "approval_policy", "network", "dependency_install", "writable_roots"),
+        (
+            "sandbox", "approval_policy", "network", "dependency_install",
+            "writable_roots", "danger_full_access_authorized",
+        ),
         "execution.effective_envelope",
     )
     if envelope["sandbox"] not in {"read-only", "workspace-write", "danger-full-access"}:
@@ -238,13 +248,24 @@ def validate_command_execution_record(
     _validate_bool(
         envelope["dependency_install"], "execution.effective_envelope.dependency_install"
     )
+    _validate_bool(
+        envelope["danger_full_access_authorized"],
+        "execution.effective_envelope.danger_full_access_authorized",
+    )
+    if (
+        envelope["sandbox"] == "danger-full-access"
+        and not envelope["danger_full_access_authorized"]
+    ):
+        raise ValueError("execution danger-full-access lacks separate authorization")
     _validate_str_array(
         envelope["writable_roots"], "execution.effective_envelope.writable_roots",
         allow_empty=True,
     )
     _validate_time_range(record["started_at"], record["ended_at"], "execution")
     reason = record["terminal_reason"]
-    if reason not in {"complete", "command_failed", "timed_out", "authorized_gap"}:
+    if reason not in {
+        "complete", "command_failed", "timed_out", "interrupted", "authorized_gap",
+    }:
         raise ValueError("execution.terminal_reason is invalid")
     if record["authorized_gap"] is not None:
         _validate_authorized_gap(record["authorized_gap"], "execution.authorized_gap")
@@ -252,19 +273,17 @@ def validate_command_execution_record(
         "complete": None,
         "command_failed": "failed",
         "timed_out": "timed_out",
-        "authorized_gap": "not_run",
+        "interrupted": "interrupted",
+        "authorized_gap": "authorized_gap",
     }[reason]
     if reason == "complete":
-        statuses_match_reason = all(status == "passed" for status in statuses)
-    else:
-        first_terminal = next(
-            (index for index, status in enumerate(statuses) if status != "passed"),
-            None,
-        )
         statuses_match_reason = (
-            first_terminal is not None
-            and statuses[first_terminal] == terminal_status
-            and all(status == "not_run" for status in statuses[first_terminal + 1:])
+            len(statuses) == len(plan_ids) and all(status == "passed" for status in statuses)
+        )
+    else:
+        statuses_match_reason = (
+            statuses[-1] == terminal_status
+            and all(status == "passed" for status in statuses[:-1])
         )
     if (
         not statuses_match_reason

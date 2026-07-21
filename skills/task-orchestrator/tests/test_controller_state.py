@@ -986,13 +986,17 @@ class Stage3RecordContractTest(unittest.TestCase):
         }
 
     def outcome(self, command_id="command-001", status="passed"):
-        exit_codes = {"passed": 0, "failed": 1, "timed_out": None, "not_run": None}
+        exit_codes = {
+            "passed": 0, "failed": 1, "timed_out": None,
+            "interrupted": None, "authorized_gap": 1,
+        }
         return {
             "id": command_id,
             "status": status,
             "exit_code": exit_codes[status],
             "started_at": "2026-07-18T10:00:00+00:00",
             "ended_at": "2026-07-18T10:00:01+00:00",
+            "effective_argv": ["/usr/bin/sandbox-exec", "/usr/bin/python3"],
             "stdout_path": (
                 f"verification/attempt-001.turn-001.{command_id}.stdout.log"
             ),
@@ -1015,6 +1019,7 @@ class Stage3RecordContractTest(unittest.TestCase):
                 "network": False,
                 "dependency_install": False,
                 "writable_roots": ["/workspace"],
+                "danger_full_access_authorized": False,
             },
             "started_at": "2026-07-18T10:00:00+00:00",
             "ended_at": "2026-07-18T10:00:01+00:00",
@@ -1106,14 +1111,12 @@ class Stage3RecordContractTest(unittest.TestCase):
             **self.command("command-002", "repository_gate"),
             "argv": ["make", "verify"],
         })
-        failed["outcomes"] = [
-            self.outcome(status="failed"), self.outcome("command-002", "not_run")
-        ]
+        failed["outcomes"] = [self.outcome(status="failed")]
         failed["terminal_reason"] = "command_failed"
         state.validate_command_execution_record(failed, expected_closure_identity=closure)
 
         authorized_gap = self.execution()
-        authorized_gap["outcomes"][0] = self.outcome(status="not_run")
+        authorized_gap["outcomes"][0] = self.outcome(status="authorized_gap")
         authorized_gap["terminal_reason"] = "authorized_gap"
         authorized_gap["authorized_gap"] = {
             "reason": "repository gate unavailable",

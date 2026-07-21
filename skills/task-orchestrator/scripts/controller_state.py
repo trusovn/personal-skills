@@ -660,6 +660,10 @@ def validate_attempt_record(record: dict[str, Any]) -> None:
     for field in ATTEMPT_REQUIRED_FIELDS:
         if field not in record:
             raise ValueError(f"Attempt record is missing {field}")
+    if record["transport"] != "codex-cli":
+        raise ValueError("Attempt record transport must be codex-cli")
+    if record["model"] is not None:
+        raise ValueError("Attempt record model must be null")
 
 
 def build_attempt_record(*, task_id: str, brief_path: str, prompt: str, policy: dict[str, Any],

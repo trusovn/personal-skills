@@ -1,6 +1,6 @@
 # S3-08 Result: Inspection and Closure Decisions
 
-Status: implementation complete; acceptance review requested changes that are deferred
+Status: complete; fresh guided acceptance review passed
 Date: 2026-07-21
 
 The first guided acceptance pass found and corrected one AC-01 issue: a fresh
@@ -12,7 +12,11 @@ before consulting the final records. Both are corrected and covered by
 regressions. A subsequent review found that a coherent non-`task_id` result and
 closure rewrite could still reach verification because neither file's exact
 bytes had an independent anchor. The ledger now anchors the closure digest, and
-the anchored closure binds the exact worker-result digest.
+the anchored closure binds the exact worker-result digest. The final deferred
+issue is now corrected: newly produced closure evidence also binds the exact
+attempt-record bytes, and inspection validates the fixed transport/model
+contract before verification. A fresh guided acceptance review passed the
+focused and aggregate behavioral gates with no findings.
 
 ## Outcome
 
@@ -45,7 +49,8 @@ digest and is denied without command execution or run-file mutation.
 
 `inspect` validates, in order, the ledger and state; policy and manifest bytes
 and digests; repository and selected-task authority; selected-task baseline;
-attempt record and both prompt copies; adapter and terminal state; exact
+the exact attempt-record bytes anchored by the closure, its fixed
+`codex-cli`/null-model contract, and both prompt copies; adapter and terminal state; exact
 structured-worker-result bytes including its selected-task identity; the exact
 closure bytes anchored by the ledger; closure identity and worker claims; every
 closure artifact and digest; the Stage 2 evidence digest; and the complete
@@ -102,23 +107,20 @@ command while still rejecting later workspace changes.
 
 The pre-existing untracked `.gitignore` was not read, edited, removed, or added.
 
-## Known issues
+## Acceptance correction
 
-- **AC-02 attempt-record integrity is incomplete.** Inspection checks selected
-  attempt fields but does not validate or cryptographically bind the complete
-  `attempts/attempt-001/record.json`. An independent acceptance probe changed
-  its `model` field to `tampered-model`; verification still reached
-  `execute_verification_plan` instead of failing closed. A future correction
-  must bind or validate every immutable attempt-record field before command
-  execution and add regression coverage for this tamper case.
-- **The recorded verification counts below are stale.** The fresh acceptance
-  review ran 59 controller tests and 157 aggregate tests, rather than the
-  previously recorded 58 and 156. All of those tests passed, but the passing
-  suite does not cover the attempt-record tamper above.
+The deferred AC-02 issue is resolved. Newly produced Stage 2 closures contain
+`attempt_record_sha256`, computed from the exact immutable record bytes and
+covered by the ledger-anchored closure digest. Inspection requires that digest
+to match before verification, so any coherent or isolated attempt-record byte
+change fails closed. It also rejects a non-`codex-cli` transport or non-null
+model at the state-contract boundary. The regression changes `model` to
+`tampered-model` and proves zero executor calls, no execution record, and
+byte-identical run evidence after rejection. Historical closures without the
+new binding fail closed rather than being upgraded.
 
-These issues produced a `CHANGES_REQUESTED` acceptance verdict on 2026-07-21
-and are intentionally deferred. S3-08 must receive a fresh acceptance review
-after they are corrected.
+A fresh guided acceptance review on 2026-07-21 returned `ACCEPT` with no
+findings.
 
 ## Test-first and verification evidence
 
@@ -137,22 +139,23 @@ zero verification execution plus unchanged run bytes.
 - `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest skills/task-orchestrator/tests/test_controller_git.py`
   — passed, 13 tests.
 - `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest skills/task-orchestrator/tests/test_controller.py`
-  — passed, 59 tests in the fresh acceptance review.
+  — passed, 60 tests in the fresh acceptance review.
 - `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest skills/task-orchestrator/tests/test_controller_state.py`
-  — passed, 36 tests.
+  — passed, 37 tests.
 - `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest skills/task-orchestrator/tests/test_verification_runner.py`
   — passed, 34 tests.
 - `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/task-orchestrator/tests -p 'test_*.py'`
-  — passed, 157 tests in the fresh acceptance review.
+  — passed, 159 tests in the fresh acceptance review.
+- `git diff --check` — passed after the result update.
 
 ## Acceptance criteria
 
 - **AC-01:** satisfied by state, timeout, and lock rejection with zero executor
   calls and byte preservation.
-- **AC-02:** not fully satisfied. The ledger-anchored closure digest,
-  closure-bound worker-result digest, worker-result task identity check, and
-  historical unanchored-closure rejection are present, but the complete
-  attempt record is not bound or validated before verification execution.
+- **AC-02:** satisfied. The ledger-anchored closure binds the exact attempt
+  record and worker result bytes; state validation rejects the known immutable
+  transport/model tamper; historical unanchored closures and all identity
+  mismatches fail before verification.
 - **AC-03:** satisfied because decisions consume only the controller execution
   record, never worker-reported checks.
 - **AC-04:** satisfied by targeted failure, closure observation, question/risk,
@@ -178,6 +181,5 @@ single-host and depends on the existing advisory run lock. Verification can
 legitimately leave repository drift on failure; the immutable verification and
 decision record that drift and deny acceptance but do not roll it back.
 
-No lifecycle action returned by a decision was performed. The corrected bytes
-require a fresh acceptance review before S3-08 advances to its dependent
-planning boundary; this task did not start S3-11.
+No lifecycle action returned by a decision was performed. The fresh acceptance
+review found no remaining S3-08 blocker; this task did not start S3-11.

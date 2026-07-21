@@ -2244,6 +2244,37 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
             },
         )
 
+    def test_attempt_record_model_tamper_stops_before_verification(self):
+        controller, run_dir = self.create_clean_inspection_run()
+        attempt_path = run_dir / "attempts/attempt-001/record.json"
+        attempt = json.loads(attempt_path.read_text())
+        attempt["model"] = "tampered-model"
+        attempt_path.write_text(json.dumps(attempt, indent=2, sort_keys=True) + "\n")
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("tampered attempt record reached verification"),
+        ) as execute:
+            with self.assertRaises(ValueError):
+                controller.inspect_run(run_dir, 10)
+
+        execute.assert_not_called()
+        self.assertFalse(
+            (run_dir / "verification/attempt-001.turn-001.execution.json").exists()
+        )
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+
     def test_repository_gate_only_authorized_gap_can_still_offer_accept(self):
         gap = {
             "reason": "Known repository-only failure",

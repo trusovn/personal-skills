@@ -603,7 +603,8 @@ def _load_inspection_authority(
         raise ValueError("Selected task baseline digest mismatch")
 
     attempt_dir = run_dir / "attempts" / attempt_id
-    attempt = json.loads((attempt_dir / "record.json").read_text())
+    attempt_record_bytes = (attempt_dir / "record.json").read_bytes()
+    attempt = json.loads(attempt_record_bytes)
     validate_attempt_record(attempt)
     prompt = (attempt_dir / "prompt.txt").read_text()
     durable_prompt = attempt_dir / "turn-001.prompt.txt"
@@ -658,6 +659,7 @@ def _load_inspection_authority(
         "manifest_sha256": ledger["manifest_sha256"],
         "baseline_sha256": baseline_digest,
         "prompt_sha256": attempt["prompt_sha256"],
+        "attempt_record_sha256": _sha256_bytes(attempt_record_bytes),
     }
     if any(closure.get(field) != value for field, value in expected_top.items()):
         raise ValueError("Closure identity field mismatch")
@@ -1371,6 +1373,9 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
         "manifest_sha256": ledger["manifest_sha256"],
         "baseline_sha256": task_baseline_digest,
         "prompt_sha256": attempt_record.get("prompt_sha256"),
+        "attempt_record_sha256": _sha256_bytes(
+            (attempt_dir / "record.json").read_bytes()
+        ),
         **closure_git_fields,
         "worker_claims": {
             "status": worker_result.get("status") if worker_result else None,

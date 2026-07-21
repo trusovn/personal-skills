@@ -356,6 +356,20 @@ class ControllerStateContractTest(unittest.TestCase):
             )
         self.assertEqual(original, json.dumps(ledger, sort_keys=True))
 
+    def test_attempt_record_rejects_tampered_model(self):
+        state = load_controller_state()
+        attempt = state.build_attempt_record(
+            task_id="T1",
+            brief_path="tasks/T1.md",
+            prompt="implement T1",
+            policy=self.policy(),
+            baseline_ref="task-001.json",
+        )
+        attempt["model"] = "tampered-model"
+
+        with self.assertRaises(ValueError):
+            state.validate_attempt_record(attempt)
+
     def test_invalid_ledger_update_leaves_input_unchanged(self):
         state = load_controller_state()
         ledger = self.ledger()

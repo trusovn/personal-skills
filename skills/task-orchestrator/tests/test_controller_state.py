@@ -103,6 +103,7 @@ class ControllerStateContractTest(unittest.TestCase):
             "selected_task_id": None,
             "active_attempt_id": None,
             "last_closure_path": None,
+            "last_closure_sha256": None,
             "last_verification_path": None,
             "last_decision_path": None,
             "active_operation_path": None,
@@ -421,6 +422,7 @@ class ControllerStateContractTest(unittest.TestCase):
         finalizing.update({
             "state": "finalizing", "selected_task_id": "T1",
             "last_closure_path": "closure/attempt-001.json",
+            "last_closure_sha256": "a" * 64,
             "last_verification_path": "verification/attempt-001.json",
             "last_decision_path": "decisions/attempt-001.json",
             "active_operation_path": "operations/T1-accept.json",
@@ -472,6 +474,7 @@ class ControllerStateContractTest(unittest.TestCase):
         ledger.update({
             "state": "finalizing", "selected_task_id": "T1",
             "last_closure_path": "closure/attempt-001.json",
+            "last_closure_sha256": "a" * 64,
             "last_verification_path": "verification/attempt-001.json",
             "last_decision_path": "decisions/attempt-001.json",
             "active_operation_path": "operations/T1-accept.json",
@@ -589,6 +592,7 @@ class ControllerStateContractTest(unittest.TestCase):
         ledger.update({
             "state": "awaiting_inspection", "active_attempt_id": None,
             "last_closure_path": "closure/attempt-001.json",
+            "last_closure_sha256": "a" * 64,
         })
         ledger["tasks"][0]["state"] = "awaiting_inspection"
         state.validate_ledger(ledger)
@@ -614,6 +618,7 @@ class ControllerStateContractTest(unittest.TestCase):
             ledger.update({
                 "state": "finalizing", "selected_task_id": "T1",
                 "last_closure_path": "closure/attempt-001.json",
+                "last_closure_sha256": "a" * 64,
                 "last_verification_path": "verification/attempt-001.json",
                 "last_decision_path": "decisions/attempt-001.json",
                 "active_operation_path": "operations/T1-accept.json",
@@ -646,6 +651,16 @@ class ControllerStateContractTest(unittest.TestCase):
         state.validate_ledger(nullable)
         self.assertTrue(all(nullable[field] is None for field in reference_fields))
 
+        invalid_digest = finalizing_ledger()
+        invalid_digest["last_closure_sha256"] = "not-a-digest"
+        with self.assertRaisesRegex(ValueError, "last_closure_sha256"):
+            state.validate_ledger(invalid_digest)
+
+        unpaired_digest = self.ledger()
+        unpaired_digest["last_closure_sha256"] = "a" * 64
+        with self.assertRaisesRegex(ValueError, "closure reference"):
+            state.validate_ledger(unpaired_digest)
+
     def test_stage_3_ledger_coherence_rejects_each_critical_corruption(self):
         state = load_controller_state()
 
@@ -668,6 +683,7 @@ class ControllerStateContractTest(unittest.TestCase):
                 "state": "awaiting_inspection",
                 "active_attempt_id": None,
                 "last_closure_path": "closure/attempt-001.json",
+                "last_closure_sha256": "a" * 64,
             })
             ledger["tasks"][0]["state"] = "awaiting_inspection"
             return ledger

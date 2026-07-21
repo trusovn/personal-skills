@@ -65,6 +65,20 @@ class ControllerGitTest(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
+    def test_workspace_identity_hashes_same_path_same_size_content(self):
+        (self.repo / "allowed.txt").write_text("worker change\n")
+        first = self.git.capture_workspace_identity(self.repo)
+        self.assertEqual(
+            {"head_oid", "index_tree_oid", "status_sha256"}, set(first)
+        )
+
+        (self.repo / "allowed.txt").write_text("drifted bytes\n")
+        second = self.git.capture_workspace_identity(self.repo)
+
+        self.assertEqual(first["head_oid"], second["head_oid"])
+        self.assertEqual(first["index_tree_oid"], second["index_tree_oid"])
+        self.assertNotEqual(first["status_sha256"], second["status_sha256"])
+
     def test_accepted_workspace_requires_exact_git_and_evidence_bytes(self):
         (self.repo / "dirty-unchanged.txt").write_text("pre-existing dirty\n")
         baseline = self.git.capture_task_baseline(self.repo)

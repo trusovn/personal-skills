@@ -841,6 +841,11 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
     ):
         if ledger[field] is not None:
             _validate_str(ledger[field], field)
+    closure_sha256 = ledger.get("last_closure_sha256")
+    if closure_sha256 is not None:
+        _validate_sha256(closure_sha256, "last_closure_sha256")
+    if bool(ledger["last_closure_path"]) != bool(closure_sha256):
+        raise ValueError("closure reference requires an exact closure digest")
     if ledger["last_verification_path"] and not ledger["last_closure_path"]:
         raise ValueError("verification reference requires closure reference")
     if ledger["last_decision_path"] and not ledger["last_verification_path"]:

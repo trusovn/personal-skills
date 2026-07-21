@@ -93,6 +93,15 @@ def capture_git_status(repository: Path) -> dict[str, str]:
     return status
 
 
+def capture_workspace_identity(repository: Path) -> dict[str, str]:
+    """Return the exact Git identity used across the inspection boundary."""
+    return {
+        "head_oid": capture_head(repository),
+        "index_tree_oid": capture_index_tree(repository),
+        "status_sha256": _sha256_text(_canonical_json(capture_git_status(repository))),
+    }
+
+
 def capture_initial_baseline(repository: Path) -> dict[str, Any]:
     return {
         "head_oid": capture_head(repository),
@@ -184,6 +193,7 @@ def capture_closure_evidence(
     ).stdout
     untracked_paths = sorted(path for path in _decode(untracked_output).split("\0") if path)
     index_tree = capture_index_tree(repository)
+    post_worker_status_sha256 = _sha256_text(_canonical_json(current_status))
 
     artifact_contents = _capture_closure_artifacts(
         repository,
@@ -226,6 +236,7 @@ def capture_closure_evidence(
         "artifact_digests": artifact_digests,
         "untracked_paths": untracked_paths,
         "adapter_state_digest": adapter_state_digest,
+        "post_worker_status_sha256": post_worker_status_sha256,
     }
     evidence_digest = _sha256_text(_canonical_json(evidence_record))
     baseline_status = task_baseline["status"]
@@ -262,6 +273,7 @@ def capture_closure_evidence(
         "unstaged_stat_digest": artifact_digests["unstaged_stat"],
         "evidence_digest": evidence_digest,
         "adapter_state_digest": adapter_state_digest,
+        "post_worker_status_sha256": post_worker_status_sha256,
         "evidence_artifacts": {
             name: {
                 "path": str(path.relative_to(run_dir)),
@@ -400,6 +412,7 @@ def validate_accepted_workspace(
         "artifact_digests": artifact_digests,
         "untracked_paths": closure.get("untracked_paths"),
         "adapter_state_digest": closure.get("adapter_state_digest"),
+        "post_worker_status_sha256": closure.get("post_worker_status_sha256"),
     }
     if closure.get("evidence_digest") != _sha256_text(_canonical_json(evidence_record)):
         raise ValueError("Accepted closure evidence digest mismatch")

@@ -7,6 +7,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 
 CONTROLLER_PATH = Path(__file__).parents[1] / "scripts" / "controller.py"
@@ -1760,3 +1761,721 @@ raise SystemExit(0)
         self.assertEqual("stopped", ledger["tasks"][0]["state"])
         self.assertEqual(["attempt-001"], ledger["tasks"][0]["attempt_ids"])
         self.assertFalse((run_dir / "closure").exists())
+
+
+class ControllerInspectionIntegrationTest(unittest.TestCase):
+    setUp = ControllerIntegrationTest.setUp
+    tearDown = ControllerIntegrationTest.tearDown
+    policy = ControllerIntegrationTest.policy
+    write_fake_codex = ControllerIntegrationTest.write_fake_codex
+
+    def create_clean_inspection_run(
+        self, *, targeted="/usr/bin/true", repository_gate=None, authorized_gap=None,
+        stop_overrides=None,
+    ):
+        controller = load_controller()
+        run_dir = self.root / "runs" / "run-clean-inspect"
+        policy_path = self.root / "run-policy.json"
+        manifest_path = self.root / "task-manifest.json"
+        policy = self.policy()
+        policy["verification"]["targeted_checks"] = [targeted]
+        policy["verification"]["repository_gate"] = repository_gate
+        policy["verification"]["authorized_gap"] = authorized_gap
+        policy["stop_policy"].update(stop_overrides or {})
+        controller.persist_run_policy(policy_path, policy)
+        (self.repo / "tasks").mkdir()
+        (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        manifest_path.write_text(json.dumps({
+            "version": 1,
+            "manifest_id": "clean-inspect",
+            "completed_task_ids": [],
+            "tasks": [{
+                "id": "T1",
+                "title": "Test task",
+                "brief_path": "tasks/T1.md",
+                "dependencies": [],
+                "allowed_paths": ["allowed.txt"],
+                "required_checks": [targeted],
+            }],
+        }, indent=2, sort_keys=True) + "\n")
+        controller.init_run(run_dir, policy_path, manifest_path, self.repo)
+        fake = self.write_fake_codex(created_paths=(), clean_mutation=True)
+        result = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(fake),
+        ], text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        return controller, run_dir
+
+    def test_inspect_rejects_preexisting_decision_before_execution_or_publication(self):
+        controller, run_dir = self.create_clean_inspection_run()
+        execution_path = run_dir / "verification/attempt-001.turn-001.execution.json"
+        verification_path = run_dir / "verification/attempt-001.turn-001.json"
+        decision_path = run_dir / "decisions/attempt-001.turn-001.json"
+        decision_path.write_bytes(b"{}\n")
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError(
+                "pre-existing contradictory decision reached verification execution"
+            ),
+        ) as execute:
+            with self.assertRaises(ValueError):
+                controller.inspect_run(run_dir, 10)
+
+        execute.assert_not_called()
+        self.assertFalse(execution_path.exists())
+        self.assertFalse(verification_path.exists())
+        self.assertEqual(b"{}\n", decision_path.read_bytes())
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+
+    def test_inspect_rejects_same_path_same_size_preverification_drift_without_execution(self):
+        controller = load_controller()
+        run_dir = self.root / "runs" / "run-inspect-drift"
+        policy_path = self.root / "run-policy.json"
+        manifest_path = self.root / "task-manifest.json"
+        marker_path = self.repo / "verification-executed"
+        verifier = self.repo / "verify-marker"
+        verifier.write_text(
+            "#!/bin/sh\nprintf executed > verification-executed\n"
+        )
+        verifier.chmod(0o755)
+        subprocess.run(["git", "-C", str(self.repo), "add", "verify-marker"], check=True)
+        subprocess.run(
+            ["git", "-C", str(self.repo), "commit", "-qm", "add verifier"], check=True
+        )
+
+        policy = self.policy()
+        policy["verification"]["targeted_checks"] = ["./verify-marker"]
+        policy["verification"]["repository_gate"] = None
+        controller.persist_run_policy(policy_path, policy)
+        (self.repo / "tasks").mkdir()
+        (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        manifest_path.write_text(json.dumps({
+            "version": 1,
+            "manifest_id": "inspect-drift",
+            "completed_task_ids": [],
+            "tasks": [{
+                "id": "T1",
+                "title": "Test task",
+                "brief_path": "tasks/T1.md",
+                "dependencies": [],
+                "allowed_paths": ["allowed.txt"],
+                "required_checks": ["./verify-marker"],
+            }],
+        }, indent=2, sort_keys=True) + "\n")
+        controller.init_run(run_dir, policy_path, manifest_path, self.repo)
+        fake = self.write_fake_codex(created_paths=(), clean_mutation=True)
+        run_result = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(fake),
+        ], text=True, capture_output=True)
+        self.assertEqual(0, run_result.returncode, run_result.stderr)
+
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*")
+            if path.is_file()
+        }
+        self.assertEqual(14, len((self.repo / "allowed.txt").read_bytes()))
+        (self.repo / "allowed.txt").write_text("drifted bytes\n")
+
+        inspection = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "inspect",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+        ], text=True, capture_output=True)
+
+        self.assertNotEqual(0, inspection.returncode)
+        self.assertIn("Workspace identity changed before verification", inspection.stderr)
+        self.assertFalse(marker_path.exists())
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*")
+                if path.is_file()
+            },
+        )
+
+    def test_inspect_reuses_execution_after_crash_and_publishes_accepting_decision(self):
+        controller, run_dir = self.create_clean_inspection_run()
+        ledger_before = json.loads((run_dir / "ledger.json").read_text())
+        closure = json.loads((run_dir / ledger_before["last_closure_path"]).read_text())
+        self.assertEqual(closure["head_after"], closure["head_before"])
+        self.assertEqual(closure["index_tree"], closure["controller_observations"]["index_tree"])
+        self.assertRegex(closure["post_worker_status_sha256"], r"^[0-9a-f]{64}$")
+
+        original_capture = controller._git_module.capture_workspace_identity
+        capture_count = 0
+
+        def fail_after_execution(repository):
+            nonlocal capture_count
+            capture_count += 1
+            if capture_count == 2:
+                raise RuntimeError("injected crash after execution publication")
+            return original_capture(repository)
+
+        with mock.patch.object(
+            controller._git_module,
+            "capture_workspace_identity",
+            side_effect=fail_after_execution,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "injected crash"):
+                controller.inspect_run(run_dir, 10)
+
+        execution_path = run_dir / "verification/attempt-001.turn-001.execution.json"
+        self.assertTrue(execution_path.is_file())
+        self.assertFalse((run_dir / "verification/attempt-001.turn-001.json").exists())
+        self.assertFalse((run_dir / "decisions/attempt-001.turn-001.json").exists())
+        self.assertEqual(
+            ledger_before,
+            json.loads((run_dir / "ledger.json").read_text()),
+        )
+        execution_bytes = execution_path.read_bytes()
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("verification command was rerun"),
+        ):
+            result = controller.inspect_run(run_dir, 10)
+
+        self.assertTrue(result["accepted"])
+        self.assertEqual(["accept", "stop"], result["allowed_actions"])
+        self.assertEqual(execution_bytes, execution_path.read_bytes())
+        verification = json.loads(Path(result["verification_path"]).read_text())
+        decision = json.loads(Path(result["decision_path"]).read_text())
+        self.assertEqual("passed", verification["outcome"])
+        self.assertEqual([], verification["drift_findings"])
+        self.assertTrue(decision["accepted"])
+        self.assertEqual("not_collected", decision["semantic_review"])
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual("awaiting_inspection", ledger["state"])
+        self.assertEqual("awaiting_inspection", ledger["tasks"][0]["state"])
+        self.assertEqual(
+            "verification/attempt-001.turn-001.json",
+            ledger["last_verification_path"],
+        )
+        self.assertEqual(
+            "decisions/attempt-001.turn-001.json",
+            ledger["last_decision_path"],
+        )
+
+        completed_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*")
+            if path.is_file()
+        }
+        replay = controller.inspect_run(run_dir, 10)
+        self.assertTrue(replay["accepted"])
+        self.assertEqual(
+            completed_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*")
+                if path.is_file()
+            },
+        )
+
+    def test_inspect_recovers_after_execution_drift_and_crash_before_final_record(self):
+        verifier = self.repo / "verify-drift"
+        verifier.write_text(
+            "#!/bin/sh\nprintf 'verification drift\\n' > allowed.txt\n"
+        )
+        verifier.chmod(0o755)
+        subprocess.run(["git", "-C", str(self.repo), "add", "verify-drift"], check=True)
+        subprocess.run(
+            ["git", "-C", str(self.repo), "commit", "-qm", "add drift verifier"],
+            check=True,
+        )
+        controller, run_dir = self.create_clean_inspection_run(
+            targeted="./verify-drift"
+        )
+        original_capture = controller._git_module.capture_workspace_identity
+        capture_count = 0
+
+        def fail_after_execution(repository):
+            nonlocal capture_count
+            capture_count += 1
+            if capture_count == 2:
+                raise RuntimeError("injected crash after drift execution")
+            return original_capture(repository)
+
+        with mock.patch.object(
+            controller._git_module,
+            "capture_workspace_identity",
+            side_effect=fail_after_execution,
+        ), mock.patch.object(
+            controller._verification_module,
+            "build_sandbox_invocation",
+            side_effect=lambda argv, permissions: list(argv),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "injected crash after drift"):
+                controller.inspect_run(run_dir, 10)
+
+        execution_path = run_dir / "verification/attempt-001.turn-001.execution.json"
+        self.assertTrue(execution_path.is_file())
+        self.assertFalse((run_dir / "verification/attempt-001.turn-001.json").exists())
+        execution_bytes = execution_path.read_bytes()
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("verification command was rerun"),
+        ):
+            result = controller.inspect_run(run_dir, 10)
+
+        self.assertFalse(result["accepted"])
+        self.assertEqual(execution_bytes, execution_path.read_bytes())
+        verification = json.loads(Path(result["verification_path"]).read_text())
+        self.assertEqual("failed", verification["outcome"])
+        self.assertEqual(
+            ["verification changed workspace content or paths"],
+            verification["drift_findings"],
+        )
+        decision = json.loads(Path(result["decision_path"]).read_text())
+        self.assertEqual(["stop"], decision["allowed_actions"])
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual("awaiting_inspection", ledger["state"])
+        self.assertEqual(
+            "verification/attempt-001.turn-001.json",
+            ledger["last_verification_path"],
+        )
+        self.assertEqual(
+            "decisions/attempt-001.turn-001.json",
+            ledger["last_decision_path"],
+        )
+
+    def test_inspect_rejects_historical_unanchored_closure(self):
+        controller, run_dir = self.create_clean_inspection_run()
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        closure_path = run_dir / ledger["last_closure_path"]
+        closure = json.loads(closure_path.read_text())
+        closure.pop("post_worker_status_sha256")
+        evidence_record = {
+            "policy_sha256": closure["policy_sha256"],
+            "manifest_sha256": closure["manifest_sha256"],
+            "baseline_sha256": closure["baseline_sha256"],
+            "prompt_sha256": closure["prompt_sha256"],
+            "head_before": closure["head_before"],
+            "head_after": closure["head_after"],
+            "index_tree_before": json.loads(
+                (run_dir / "baselines/task-001.json").read_text()
+            )["index_tree"],
+            "index_tree_after": closure["index_tree"],
+            "artifact_digests": {
+                name: artifact["sha256"]
+                for name, artifact in closure["evidence_artifacts"].items()
+            },
+            "untracked_paths": closure["untracked_paths"],
+            "adapter_state_digest": closure["adapter_state_digest"],
+        }
+        closure["evidence_digest"] = controller.sha256_text(
+            controller.canonical_json(evidence_record)
+        )
+        closure["identity"]["evidence_digest"] = closure["evidence_digest"]
+        closure_path.write_text(json.dumps(closure, indent=2, sort_keys=True) + "\n")
+        ledger.pop("last_closure_sha256")
+        (run_dir / "ledger.json").write_text(
+            json.dumps(ledger, indent=2, sort_keys=True) + "\n"
+        )
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("historical closure reached execution"),
+        ):
+            with self.assertRaisesRegex(ValueError, "exact closure digest"):
+                controller.inspect_run(run_dir, 10)
+
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+
+    def test_worker_result_task_identity_tamper_stops_before_verification(self):
+        controller, run_dir = self.create_clean_inspection_run()
+        result_path = run_dir / "attempts/attempt-001/turn-001.result.json"
+        worker_result = json.loads(result_path.read_text())
+        worker_result["task_id"] = "TAMPERED"
+        result_path.write_text(json.dumps(worker_result, indent=2, sort_keys=True) + "\n")
+
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        closure_path = run_dir / ledger["last_closure_path"]
+        closure = json.loads(closure_path.read_text())
+        closure["worker_claims"]["result"] = worker_result
+        closure_path.write_text(json.dumps(closure, indent=2, sort_keys=True) + "\n")
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("tampered worker result reached verification"),
+        ):
+            with self.assertRaisesRegex(ValueError, "worker result task id"):
+                controller.inspect_run(run_dir, 10)
+
+        self.assertFalse(
+            (run_dir / "verification/attempt-001.turn-001.execution.json").exists()
+        )
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+
+    def test_coherent_worker_result_tamper_stops_before_verification(self):
+        controller, run_dir = self.create_clean_inspection_run()
+        result_path = run_dir / "attempts/attempt-001/turn-001.result.json"
+        worker_result = json.loads(result_path.read_text())
+        worker_result["summary"] = "coherently tampered"
+        result_path.write_text(json.dumps(worker_result, indent=2, sort_keys=True) + "\n")
+
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        closure_path = run_dir / ledger["last_closure_path"]
+        closure = json.loads(closure_path.read_text())
+        closure["worker_claims"]["result"] = worker_result
+        closure_path.write_text(json.dumps(closure, indent=2, sort_keys=True) + "\n")
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("tampered worker result reached verification"),
+        ):
+            with self.assertRaises(ValueError):
+                controller.inspect_run(run_dir, 10)
+
+        self.assertFalse(
+            (run_dir / "verification/attempt-001.turn-001.execution.json").exists()
+        )
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+
+    def test_semantically_equal_worker_result_rewrite_stops_before_verification(self):
+        controller, run_dir = self.create_clean_inspection_run()
+        result_path = run_dir / "attempts/attempt-001/turn-001.result.json"
+        worker_result = json.loads(result_path.read_text())
+        result_path.write_text(json.dumps(worker_result, sort_keys=True) + "\n")
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("rewritten worker result reached verification"),
+        ):
+            with self.assertRaisesRegex(ValueError, "Worker result bytes"):
+                controller.inspect_run(run_dir, 10)
+
+        self.assertFalse(
+            (run_dir / "verification/attempt-001.turn-001.execution.json").exists()
+        )
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+
+    def test_attempt_record_prompt_tamper_stops_before_verification(self):
+        controller, run_dir = self.create_clean_inspection_run()
+        attempt_path = run_dir / "attempts/attempt-001/record.json"
+        attempt = json.loads(attempt_path.read_text())
+        attempt["prompt"] = "tampered embedded prompt"
+        attempt_path.write_text(json.dumps(attempt, indent=2, sort_keys=True) + "\n")
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("tampered attempt prompt reached verification"),
+        ):
+            with self.assertRaisesRegex(ValueError, "prompt"):
+                controller.inspect_run(run_dir, 10)
+
+        self.assertFalse(
+            (run_dir / "verification/attempt-001.turn-001.execution.json").exists()
+        )
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+
+    def test_repository_gate_only_authorized_gap_can_still_offer_accept(self):
+        gap = {
+            "reason": "Known repository-only failure",
+            "owner": "test-owner",
+            "follow_up": "Resolve after this bounded task",
+        }
+        controller, run_dir = self.create_clean_inspection_run(
+            repository_gate="/usr/bin/false", authorized_gap=gap,
+        )
+
+        result = controller.inspect_run(run_dir, 10)
+
+        self.assertTrue(result["accepted"])
+        decision = json.loads(Path(result["decision_path"]).read_text())
+        execution = json.loads(
+            (run_dir / "verification/attempt-001.turn-001.execution.json").read_text()
+        )
+        self.assertEqual("authorized_gap", execution["terminal_reason"])
+        self.assertEqual(gap, decision["gap_details"])
+        self.assertEqual(["accept", "stop"], decision["allowed_actions"])
+
+    def test_authorized_gap_cannot_excuse_a_targeted_failure(self):
+        gap = {
+            "reason": "Repository exception",
+            "owner": "test-owner",
+            "follow_up": "Resolve later",
+        }
+        controller, run_dir = self.create_clean_inspection_run(
+            targeted="/usr/bin/false",
+            repository_gate="/usr/bin/false",
+            authorized_gap=gap,
+        )
+
+        result = controller.inspect_run(run_dir, 10)
+
+        self.assertFalse(result["accepted"])
+        decision = json.loads(Path(result["decision_path"]).read_text())
+        execution = json.loads(
+            (run_dir / "verification/attempt-001.turn-001.execution.json").read_text()
+        )
+        self.assertEqual("command_failed", execution["terminal_reason"])
+        self.assertIsNone(decision["gap_details"])
+        self.assertEqual(["stop"], decision["allowed_actions"])
+        self.assertTrue(any("targeted verification" in reason for reason in decision["reasons"]))
+
+    def test_verifier_created_content_drift_is_recorded_and_denies_accept(self):
+        verifier = self.repo / "verify-drift"
+        verifier.write_text(
+            "#!/bin/sh\nprintf 'verification drift\\n' > allowed.txt\n"
+        )
+        verifier.chmod(0o755)
+        subprocess.run(["git", "-C", str(self.repo), "add", "verify-drift"], check=True)
+        subprocess.run(
+            ["git", "-C", str(self.repo), "commit", "-qm", "add drift verifier"],
+            check=True,
+        )
+        controller, run_dir = self.create_clean_inspection_run(
+            targeted="./verify-drift"
+        )
+
+        result = controller.inspect_run(run_dir, 10)
+
+        self.assertFalse(result["accepted"])
+        verification = json.loads(Path(result["verification_path"]).read_text())
+        decision = json.loads(Path(result["decision_path"]).read_text())
+        self.assertEqual("failed", verification["outcome"])
+        self.assertEqual(
+            ["verification changed workspace content or paths"],
+            verification["drift_findings"],
+        )
+        self.assertNotIn("accept", decision["allowed_actions"])
+        self.assertEqual(["stop"], decision["allowed_actions"])
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual("awaiting_inspection", ledger["state"])
+        self.assertEqual("awaiting_inspection", ledger["tasks"][0]["state"])
+
+    def test_verifier_created_drift_replay_reuses_published_records(self):
+        verifier = self.repo / "verify-drift"
+        verifier.write_text(
+            "#!/bin/sh\nprintf 'verification drift\\n' > allowed.txt\n"
+        )
+        verifier.chmod(0o755)
+        subprocess.run(["git", "-C", str(self.repo), "add", "verify-drift"], check=True)
+        subprocess.run(
+            ["git", "-C", str(self.repo), "commit", "-qm", "add drift verifier"],
+            check=True,
+        )
+        controller, run_dir = self.create_clean_inspection_run(
+            targeted="./verify-drift"
+        )
+        first = controller.inspect_run(run_dir, 10)
+        self.assertFalse(first["accepted"])
+        completed_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("verification command was rerun"),
+        ):
+            replay = controller.inspect_run(run_dir, 10)
+
+        self.assertEqual(first, replay)
+        self.assertEqual(
+            completed_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+
+    def test_failed_verification_offers_resume_only_when_policy_escalates(self):
+        controller, run_dir = self.create_clean_inspection_run(
+            targeted="/usr/bin/false",
+            stop_overrides={"on_failed": "escalate"},
+        )
+
+        result = controller.inspect_run(run_dir, 10)
+
+        self.assertFalse(result["accepted"])
+        decision = json.loads(Path(result["decision_path"]).read_text())
+        self.assertEqual(["resume", "stop"], decision["allowed_actions"])
+        self.assertEqual(["resumable", "stopped"], decision["allowed_transitions"])
+
+    def test_invalid_timeout_lock_contention_and_wrong_state_do_not_execute_or_mutate(self):
+        controller, run_dir = self.create_clean_inspection_run()
+
+        def snapshot():
+            return {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            }
+
+        original = snapshot()
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("rejected inspect reached execution"),
+        ):
+            with self.assertRaisesRegex(ValueError, "timeout"):
+                controller.inspect_run(run_dir, 0)
+        self.assertEqual(original, snapshot())
+
+        lock_stream = (run_dir / "controller.lock").open("a+")
+        try:
+            fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            with self.assertRaisesRegex(ValueError, "owns this run's mutation phase"):
+                controller.inspect_run(run_dir, 10)
+        finally:
+            fcntl.flock(lock_stream.fileno(), fcntl.LOCK_UN)
+            lock_stream.close()
+        self.assertEqual(original, snapshot())
+
+        ledger_path = run_dir / "ledger.json"
+        ledger = json.loads(ledger_path.read_text())
+        ledger["state"] = "ready"
+        ledger["selected_task_id"] = None
+        ledger["tasks"][0]["state"] = "ready"
+        ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
+        wrong_state = snapshot()
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("wrong state reached execution"),
+        ):
+            with self.assertRaisesRegex(ValueError, "awaiting_inspection"):
+                controller.inspect_run(run_dir, 10)
+        self.assertEqual(wrong_state, snapshot())
+
+    def test_inspect_replay_rejects_nonfinite_timeout(self):
+        controller, run_dir = self.create_clean_inspection_run()
+        with mock.patch.object(
+            controller._verification_module,
+            "build_sandbox_invocation",
+            side_effect=lambda argv, permissions: list(argv),
+        ):
+            controller.inspect_run(run_dir, 10)
+        completed_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+
+        for invalid_timeout in (float("nan"), float("inf")):
+            with self.subTest(timeout=invalid_timeout):
+                with self.assertRaises(ValueError):
+                    controller.inspect_run(run_dir, invalid_timeout)
+                self.assertEqual(
+                    completed_bytes,
+                    {
+                        path.relative_to(run_dir): path.read_bytes()
+                        for path in run_dir.rglob("*") if path.is_file()
+                    },
+                )
+
+    def test_ready_run_rejection_does_not_create_the_controller_lock(self):
+        controller = load_controller()
+        run_dir = self.root / "runs" / "ready-run"
+        policy_path = self.root / "ready-policy.json"
+        manifest_path = self.root / "ready-manifest.json"
+        policy = self.policy()
+        policy["verification"]["targeted_checks"] = ["/usr/bin/true"]
+        policy["verification"]["repository_gate"] = None
+        controller.persist_run_policy(policy_path, policy)
+        (self.repo / "tasks").mkdir()
+        (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        manifest_path.write_text(json.dumps({
+            "version": 1,
+            "manifest_id": "ready-rejection",
+            "completed_task_ids": [],
+            "tasks": [{
+                "id": "T1", "title": "Test task", "brief_path": "tasks/T1.md",
+                "dependencies": [], "allowed_paths": ["allowed.txt"],
+                "required_checks": ["/usr/bin/true"],
+            }],
+        }, indent=2, sort_keys=True) + "\n")
+        controller.init_run(run_dir, policy_path, manifest_path, self.repo)
+        before = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+        self.assertFalse((run_dir / "controller.lock").exists())
+
+        with self.assertRaisesRegex(ValueError, "awaiting_inspection"):
+            controller.inspect_run(run_dir, 10)
+
+        self.assertFalse((run_dir / "controller.lock").exists())
+        self.assertEqual(
+            before,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )

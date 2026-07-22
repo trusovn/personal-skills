@@ -136,3 +136,19 @@ or an explicitly narrower threat model.
 
 Every `CHANGES_REQUESTED` correction requires a fresh acceptance review. A
 previous verdict never applies to corrected bytes.
+
+## Recommended agent session usage for context reuse
+
+- Keep the implementer session alive.
+- Run review in a separate, independent session.
+- Feed the reviewer’s complete findings and failing tests back to the implementer session.
+- Run final acceptance in a new reviewer session.
+
+If the implementer session becomes very long or confused, start a fresh correction session using the reviewer’s concise findings and tests. Context reuse is an optimization, not a requirement.
+
+### A practical heuristic for the implementer context
+
+  - Below 50%: normally resume the implementer.
+  - 50–70%: resume for one focused correction if the session stayed clean.
+  - Above 70%: prefer a fresh correction session with the findings and tests.
+  - At any percentage: restart if the agent repeats work, relies on stale state, confuses roles, or loses track of findings.

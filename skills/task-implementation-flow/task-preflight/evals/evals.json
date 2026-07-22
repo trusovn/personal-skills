@@ -57,14 +57,30 @@
     {
       "id": 5,
       "prompt": "First run `python3 evals/files/setup_fixture.py queue-guided` to create the clean fixture at `/work/queue-runner`. Perform a guided inline preflight for `docs/tasks/QR-12.md`; no packet path, run policy file, digest ledger, result schema, or durable artifact is requested. Confirm scope and ownership, resolve the targeted command and relevant helper, and assess whether the existing test actually proves the repeated public behavior. The allowed test file may be extended by implementation with fail-first coverage. Do not edit the repository.",
-      "expected_output": "A concise guided `ready` result that avoids high-assurance artifact requirements, identifies the existing test's oracle gap, and gives the implementer the exact targeted command plus the requirement to establish the missing repeated-flow fail-first evidence before production edits.",
+      "expected_output": "A concise guided `ready` result with `standalone_preflight_value: material` that avoids high-assurance artifact requirements, identifies the exact uncertainty resolved as the existing test's repeated-public-flow oracle gap, and gives the implementer the exact targeted command plus the requirement to establish the missing repeated-flow fail-first evidence before production edits.",
       "files": ["evals/files/setup_fixture.py"],
       "expectations": [
-        "The result uses status `ready` because authority, scope, ownership, helper, command, and task-local test placement are sufficient for guided implementation.",
+        "The result uses status `ready` and labels `standalone_preflight_value: material` because inspection resolves a real readiness uncertainty: the existing passing test does not prove two public invocations.",
         "It does not require or create an external packet, SHA-256 ledger, worker-result schema, run-policy artifact, or tracker handoff.",
         "It resolves the exact targeted command and helper interface from the repository.",
-        "It states that the current passing test does not prove two public invocations and requires fail-first repeated-flow evidence before the production change.",
+        "It states that the exact uncertainty resolved is the current passing test's failure to prove two public invocations and requires fail-first repeated-flow evidence before the production change.",
+        "It states that standalone preflight added enough value to recommend it for the next materially similar oracle-uncertain task.",
         "It reports inline and does not edit source, tests, the brief, or repository state."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "First run `python3 evals/files/setup_fixture.py api-routine` to create the supplied clean fixture at `/work/api-routine`. Perform a guided inline preflight for `docs/tasks/API-07.md`; no durable packet, run-policy file, digest ledger, result schema, or high-assurance artifact is requested. The brief recommends preflight to confirm its local test command, but re-evaluate that route against current repository state. Resolve ownership, the exact targeted command, and its observable validity oracle without editing the repository or running a broad test baseline. Return a compact handoff for a separate implementer session.",
+      "expected_output": "A concise guided `ready` result with `standalone_preflight_value: marginal`, one copyable implementer handoff containing the clean ownership result, exact targeted unittest command and direct oracle, confirmed local capability, explicit implementation stops (none beyond the bounded scope), and the exact next action. It recommends implementer self-preflight for the next similar routine task.",
+      "files": ["evals/files/setup_fixture.py"],
+      "expectations": [
+        "The result uses exactly status `ready` and labels `standalone_preflight_value: marginal` because current authority, scope, clean ownership, dependencies, command, and direct oracle are routine.",
+        "It fulfills the direct preflight request by inspecting applicable instructions, confirming the exact allowed paths and clean Git ownership, and resolving `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.auth.test_session.SessionTest.test_unexpired_session_is_valid` with working directory and observable true-result oracle.",
+        "It re-evaluates the brief's readiness route against current facts instead of treating the recommendation as proof that preflight is material.",
+        "It contains one compact `Implementer handoff` block with the resolved deltas, confirmed local capability, explicit implementation stops (none beyond the bounded scope), and the exact next action without repeating the task's outcome and acceptance prose.",
+        "It does not run a broad or aggregate test baseline and does not require or create a packet, digest ledger, result schema, policy artifact, or other high-assurance paperwork.",
+        "It states that standalone preflight added only marginal value and recommends `bounded-task-implementer` self-preflight for the next materially similar task.",
+        "It does not merely assert that the paths are obvious: it reports the clean ownership evidence and the exact available, bytecode-neutral command/oracle, and it does not edit source, tests, the brief, or repository state."
       ]
     }
   ]

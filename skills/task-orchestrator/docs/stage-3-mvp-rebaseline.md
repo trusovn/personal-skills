@@ -2,8 +2,8 @@
 
 Status: governing high-level plan for the remaining Stage 3 work
 Date: 2026-07-21
-Historical plan: [stage-3-plan.md](stage-3-plan.md)
-Mid-stage evidence: [stage-3-mid-review.md](stage-3-mid-review.md)
+Historical plan: [stage-3-plan.md](history/stage-3-plan.md)
+Mid-stage evidence: [stage-3-mid-review.md](history/stage-3-mid-review.md)
 Parent direction: [direction.md](direction.md)
 
 ## Purpose of this document
@@ -215,6 +215,8 @@ The following are high-level implementation increments, not executable task
 briefs. Separate task-design sessions should translate them into updated or new
 briefs with focused acceptance criteria.
 
+<!-- Historic - already done:
+
 ### MVP-1 — Close the inspection correctness gap
 
 Goal: make the current S3-08 inspection boundary internally coherent under the
@@ -228,7 +230,7 @@ trusted-local-run model.
 - Obtain a fresh acceptance review for the bounded correction.
 
 Evaluation: the current tampered-model probe fails before verification; clean
-inspection and replay continue to pass; no new trust-chain abstraction appears.
+inspection and replay continue to pass; no new trust-chain abstraction appears. -->
 
 ### MVP-2 — Freeze the configurable flow contract
 

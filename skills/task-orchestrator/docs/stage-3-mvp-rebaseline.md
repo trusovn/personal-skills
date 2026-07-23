@@ -444,3 +444,14 @@ Stop task actualization or implementation if:
 
 When one of these occurs, preserve the evidence, update this high-level plan or
 its successor, and only then actualize the affected task briefs.
+
+## Suggested assurance level
+
+  | Increment | Recommended treatment |
+  |---|---|
+  | MVP-2 flow contract | Guided, strong reasoning, immediate independent review |
+  | MVP-3 recovery/resume | High assurance because process ownership, recovery, and duplicate-launch prevention are central |
+  | MVP-4 actor adapters/review loop | Guided by default; escalate if process/thread recovery is modified |
+  | MVP-5 atomic acceptance/release | High assurance for atomic state, replay, and exact dependency readiness |
+  | MVP-6 preparation/interface | Guided, with ambiguity and permission stop cases |
+  | MVP-7 pilots | Follow the rebaseline’s evaluation ladder; this is milestone verification, not another design framework |

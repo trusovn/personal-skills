@@ -8,84 +8,165 @@ The MVP succeeds when agents developing `task-implementation-flow` skills have
 one discoverable command that stages portable fixtures and launches selected
 evals against Codex with inspectable outputs.
 
-## Consider after the MVP is used
+## Evidence from initial use
 
-### 1. Migrate the remaining task-implementation-flow evals
+The MVP has now been used for current-skill and baseline comparisons across
+multiple `task-implementation-flow` skills. It successfully exposed prompt
+leakage, invalid fixture oracles, missing output-contract fields, premature
+broad gates, and runtime portability problems that static checks did not find.
 
-Add structured `execution` metadata to:
+The same use also exposed avoidable cost and evidence-quality gaps:
 
-- `bounded-task-implementer`;
-- `task-preflight`; and
-- `task-acceptance-review`.
+- interrupted or targeted follow-up work could not safely resume into an
+  existing suite;
+- agents repeated model-backed runs or fragmented one review across many output
+  directories;
+- missing baseline runs could still be summarized as proof that old behavior
+  was rejected;
+- undeclared `python` versus `python3` assumptions caused false blockers,
+  inconsistent substitutions, and external `PATH` shims;
+- source identity, effective model configuration, duration, and cost had to be
+  reconstructed manually;
+- buffered progress caused repeated empty polling while sequential suites ran;
+  and
+- semantic grading remained manual and did not produce the existing
+  benchmark/viewer contract.
 
-Do this incrementally when each skill is next developed. Avoid a bulk rewrite
-until the pilot schema has survived real use.
+Use this evidence to prioritize freshness, invalid-run prevention, selective
+reuse, and durable grading before adding more execution throughput.
 
-### 2. Connect runs to grading and the existing viewer
+## Near-term plan
 
-Translate runner results into the workspace layout consumed by the existing
-grader, benchmark aggregator, and eval viewer. Prefer deterministic checks for
-files and structured output, with a fresh semantic grader only where prose
-expectations require judgment.
+Implement the near-term work as bounded follow-on tasks. Keep execution,
+grading, and acceptance as separate responsibilities.
 
-Do not allow an executor's successful exit or self-claim to become a passing
-grade.
+### 1. `SC-EVAL-02`: reliable, freshness-aware execution
 
-### 3. Add resumability and selective reruns
+#### Add a read-only eval doctor
 
-Persist a suite manifest that can skip completed eval/configuration pairs and
-rerun only failures. Add this when interrupted suites remain a recurring
-problem after the runner reduces agent-level tool calls.
+Provide a preflight mode that performs no model-backed invocation. It should
+validate selected evals, structured execution metadata, setup, resolved
+workspaces, declared outputs, current and baseline skill paths, and output
+directory state.
 
-### 4. Add repetitions and variance reporting
-
-Support multiple runs per configuration and feed their results into
-`aggregate_benchmark.py`. Keep a single run as the cheap default; repetitions
-are useful only when stochastic variance affects a decision.
-
-### 5. Capture richer diagnostics on demand
-
-Optional diagnostics could include:
-
-- Codex JSONL events or a fuller transcript;
-- duration and token usage;
-- exact skill/source digests;
-- generated patch files; and
-- detailed fixture and CLI environment metadata.
-
-Do not make these mandatory until a concrete debugging, comparison, or
-freshness use case needs them.
-
-### 6. Add an eval doctor
-
-A read-only check could flag:
+Flag:
 
 - setup commands embedded in user prompts;
 - absolute `/work` assumptions;
-- unknown placeholders or escaping workspaces;
-- unavailable commands;
-- missing declared outputs; and
-- expectations that cannot be inspected from preserved artifacts.
+- unknown placeholders or paths escaping the run directory;
+- unavailable declared runtime commands;
+- current and baseline skills that are byte-identical;
+- missing declared outputs or expectations that cannot be inspected from
+  preserved evidence; and
+- likely prompt-answer leakage.
 
-Prompt-answer leakage and assertion quality still require judgment; treat any
-heuristic warning as review guidance, not a failure verdict.
+Treat prompt-leakage and assertion-quality findings as warnings for human
+judgment, not automatic failures. Prefer explicit runtime requirements over
+parsing commands from prompt prose. Fixture setup must make required commands
+portable; do not rely on session-local `PATH` shims.
 
-### 7. Add controlled concurrency
+#### Add a suite manifest, resume, and selective reruns
 
-Parallel execution may reduce wall-clock time for independent evals, but it
-also complicates approval, logs, resource use, and fixture isolation. Add it
-only after sequential execution is stable.
+Persist one suite manifest with:
 
-### 8. Consider provider adapters
+- selected eval IDs and configurations;
+- current skill, baseline skill, eval-definition, and relevant fixture/setup
+  digests;
+- requested model and reasoning configuration plus effective values when they
+  are observable;
+- runner and Codex versions;
+- per-eval/configuration state such as `pending`, `running`, `completed`,
+  `failed`, `graded`, or `stale`; and
+- start time, end time, and duration.
+
+Support resuming a suite, rerunning only failed or explicitly selected rows,
+and safely adding untouched rows to the same suite. Reuse a result only when
+its complete freshness key still matches. Mark results stale when relevant
+skill, eval, fixture, model, reasoning, or runner identity changes. Never
+silently overwrite unknown or stale evidence.
+
+#### Make comparison requirements explicit
+
+Allow an eval or suite to declare that prior-behavior comparison is required.
+When required, demand a baseline skill or an explicit recorded reason for
+omitting it. A summary must not claim that old behavior was rejected without
+matching baseline evidence.
+
+Run baselines only for evals whose acceptance claims require comparison. This
+preserves discrimination evidence without paying for unrelated baseline rows.
+
+#### Capture cheap reproducibility evidence
+
+Record source/configuration digests, Git identity when available, duration, and
+output size without requiring another model call. Capture token usage when the
+executor exposes it reliably. Keep full event transcripts and generated patch
+files optional.
+
+Flush suite and per-eval progress immediately, including elapsed time. This
+does not reduce model tokens, but it avoids empty polling and makes long
+sequential runs operable.
+
+### 2. `SC-EVAL-03`: deterministic-first grading and review
+
+Translate behavioral-runner results into the existing grader, benchmark
+aggregator, and eval-viewer workspace contract.
+
+Grade in this order:
+
+1. deterministic checks for files, exact fields, Git paths, command ordering,
+   hashes, and unchanged-state evidence;
+2. one grouped semantic grading pass per eval only for expectations that
+   genuinely require judgment; and
+3. human or fresh acceptance review for consequential release decisions.
+
+Produce durable `grading.json` evidence with the required `text`, `passed`, and
+`evidence` fields, then support `aggregate_benchmark.py` and
+`eval-viewer/generate_review.py` without manual directory reconstruction.
+Never convert executor success or a model's self-claim into a passing grade.
+
+### 3. `SC-EVAL-04`: small controlled concurrency
+
+Add bounded parallel execution only after manifests, freshness checks,
+resumability, and progress reporting are stable. Keep sequential execution as
+the default and begin with a small explicit worker limit. Preserve isolated
+workspaces, deterministic result paths, readable progress, approval behavior,
+and aggregate failure reporting.
+
+Concurrency reduces wall-clock time, not model-token cost. Do not use it to
+mask invalid fixtures, weak expectations, or missing comparison evidence.
+
+## Deferred work
+
+### Migrate the remaining eval definitions
+
+`bounded-task-implementer` and `task-acceptance-review` now use structured
+execution metadata. `task-preflight` remains to be migrated; do it after
+`SC-EVAL-02` so its evals inherit doctor, freshness, and resume behavior.
+Continue to migrate incrementally rather than through a bulk schema rewrite.
+
+### Add repetitions and variance reporting
+
+Support multiple runs per configuration and feed their results into
+`aggregate_benchmark.py` only when a narrow decision is sensitive to stochastic
+variance. Keep one run as the default. Repetitions multiply model cost and do
+not repair prompt leakage, invalid fixtures, or missing baselines.
+
+### Capture expensive diagnostics on demand
+
+Consider optional Codex JSONL events, fuller transcripts, generated patches,
+and detailed environment metadata when a concrete debugging case needs them.
+Do not make them mandatory suite output.
+
+### Consider provider adapters
 
 If the same behavioral workflow is needed for another agent runtime, extract a
 small executor boundary after the second real provider exists. Do not design a
 provider framework in advance.
 
-### 9. Promote the runner to repository-level tooling if ownership changes
+### Promote the runner to repository-level tooling if ownership changes
 
-Keep the MVP under `skills/skill-creator/scripts/`. If the command later serves
-CI or non-skill workflows, consider moving testable CLI code to a repository
+Keep the runner under `skills/skill-creator/scripts/`. If it later serves CI or
+non-skill workflows, consider moving testable CLI code to a repository
 `tools/skill-eval/` package while leaving `skill-creator` as a consumer.
 
 ## Explicitly not a goal

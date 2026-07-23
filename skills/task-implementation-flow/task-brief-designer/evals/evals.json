@@ -17,12 +17,12 @@
     {
       "id": 2,
       "prompt": "First run `python3 evals/files/setup_fixture.py process-tree` to stage the supplied authority fixture at `/work/verification-runner`. In that repository, design task brief `SBX-07` from approved section `docs/verification-plan.md#deny-child-process-tree`. The requirement is to prove that a verification runner terminates a command and every descendant process at timeout on macOS and Linux. The repo has ordinary unit-test fixtures, but nobody knows whether the sandbox permits deterministic process-tree control or inspection. The implementation task must remain small, and we do not want a shared harness invented inside it.",
-      "expected_output": "A primary task brief plus a separate prerequisite evaluation/proof brief for uncertain process-control feasibility. The primary task is not executable until that prerequisite resolves the enforcement method; no reusable helper is silently assigned to the implementer.",
+      "expected_output": "A separate prerequisite evaluation/proof brief for uncertain process-control feasibility plus a `blocked_design` primary task that records the proof as a dependency. The primary task is not executable until the proof resolves the enforcement method; ordinary readiness preflight is not used as a substitute and no reusable helper is silently assigned to the implementer.",
       "files": ["evals/files/setup_fixture.py"],
       "expectations": [
         "The verification-capability inventory classifies deterministic process-tree enforcement as uncertain feasibility.",
         "The output creates a separate prerequisite evaluation/proof brief rather than hiding process-control invention in the main implementation task.",
-        "The primary brief records the prerequisite dependency and does not imply preflight or implementation can discover around it.",
+        "The primary brief uses `blocked_design`, records the prerequisite dependency, and does not imply standalone preflight or implementation can discover around it.",
         "The evidence design covers the real process boundary, timeout behavior, descendant survival as negative evidence, and platform-specific uncertainty.",
         "The output does not add a script, shared harness, production code, or orchestrator integration."
       ]
@@ -37,20 +37,39 @@
         "It identifies missing approved product behavior, safety boundaries, and architecture authority rather than choosing them.",
         "It names an owner and a smallest next action to produce or approve the missing authority.",
         "It does not fabricate acceptance criteria, allowed production paths, commands, or a ready-for-preflight claim.",
+        "After selecting `blocked_design`, it omits launch metadata, readiness routing, proposed architecture, implementation work items, finite-risk coverage, verification obligations, and implementation handoff language.",
         "It does not implement code, inspect repository readiness, or modify an official plan."
       ]
     },
     {
       "id": 4,
-      "prompt": "First run `python3 evals/files/setup_fixture.py existing-brief` to create `/work/api/docs/tasks/API-31.md`. Gap-check that existing task for ordinary guided implementation. It already has an outcome, scope, positive and negative ACs, targeted and broader commands, stops, and a next action. Add the standard `agent_tier`, `reasoning`, `review`, and `budget` metadata block with proportionate values, but do not rewrite adequate prose or add high-assurance ledgers, matrices, digests, packet requirements, or prerequisite tasks.",
-      "expected_output": "A surgical update that adds only the compact task metadata and confirms the existing brief is ready for guided implementation without replacing it with the full template.",
+      "prompt": "First run `python3 evals/files/setup_fixture.py existing-brief` to create `/work/api/docs/tasks/API-31.md`. Gap-check that existing task for ordinary guided implementation. It already has an outcome, scope, positive and negative ACs, targeted and broader commands, stops, and a next action. Its authority explicitly calls for an economical standard-agent, medium-reasoning launch profile and immediate fresh acceptance review. Add the standard `agent_tier`, `reasoning`, `review`, and `budget` metadata block plus the proportionate readiness route, but do not rewrite adequate prose or add high-assurance ledgers, matrices, digests, packet requirements, or prerequisite tasks.",
+      "expected_output": "A surgical update that adds truthful intended launch guidance and the implementer self-preflight route, preserves guided implementation as the next action, and explicitly requires fresh independent acceptance review immediately after implementation without replacing the brief with the full template.",
       "files": ["evals/files/setup_fixture.py"],
       "expectations": [
         "The existing outcome, scope, ACs, commands, stops, and next action remain substantively unchanged.",
-        "The brief gains exactly the four standard metadata keys with a soft, proportionate budget.",
-        "The result keeps guided status `ready` and does not force a standalone preflight.",
+        "The brief gains exactly the four standard metadata keys with `agent_tier: standard`, `reasoning: medium`, `review: immediate`, and a soft, proportionate budget; it does not default to generic `reasoning: high` guidance or claim to observe hidden runtime configuration.",
+        "The result keeps guided status `ready`, recommends `implementer self-preflight`, adds no route metadata key, and does not force standalone preflight.",
+        "The handoff preserves guided implementation as the next action and explicitly requires fresh independent acceptance review immediately after implementation or correction; a generic implementation next action alone or same-session self-review semantics fails this expectation.",
         "No knowledge ledger, AC execution matrix, digest inventory, durable packet contract, or prerequisite task is added.",
         "Only `docs/tasks/API-31.md` is modified."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "First run `python3 evals/files/setup_fixture.py finite-risk-matrix` to stage the approved authority at `/work/evidence-flow`. Create the guided implementation brief `docs/tasks/EVD-12.md` from `docs/evidence-plan.md#EVD-12`. The existing test covers only one complete happy path. Preserve the approved scope and do task design only.",
+      "expected_output": "A compact guided brief whose optional finite-risk table enumerates all approved persisted evidence families, publication stages and legal prefixes, and contradictory orphan states; uses the public resume boundary and pre-side-effect rejection/reuse oracle; separates implementation from independent-review evidence; assigns the final fresh reviewer as aggregate-gate owner; and recommends standalone guided preflight with the named observer-capability uncertainty.",
+      "files": ["evals/files/setup_fixture.py"],
+      "expectations": [
+        "One finite-risk coverage table uses exactly the six semantic columns `Invariant`, `Material dimensions/cases`, `Decisive oracle/boundary`, `Implementation evidence`, `Independent review probe`, and `Gate owner`; it does not substitute a smaller requirements table or move any of those fields exclusively into prose or the verification section.",
+        "Within that six-field table, the material-dimensions cells explicitly include policy, manifest, attempt record, structured result, and closure rather than collapsing them into `each persisted artifact`.",
+        "Within that six-field table, the material-dimensions cells explicitly include execution, verification, decision, and ledger; all five legal publication prefixes; and every named contradictory orphan state rather than collapsing them into `every publication boundary` or generic recovery prose.",
+        "Within each applicable table row, the decisive-oracle cell exercises `evidence-runner resume --state <path>` and distinguishes pre-side-effect rejection of tampered or contradictory state from byte reuse plus only-next-stage publication for legal prefixes.",
+        "Within each table row, implementation evidence is separate from a distinct fresh independent-review probe and does not treat implementer self-checks as acceptance.",
+        "Within each table row, gate ownership names the responsible stage; the final fresh reviewer owns the aggregate suite after targeted correction evidence is green, and the brief does not require that aggregate gate while targeted evidence remains red.",
+        "The readiness route is `standalone guided preflight` with the concrete missing deterministic observer for pre-write and pre-process rejection; it is human-readable guidance and not a new metadata key.",
+        "The brief does not invent unrelated generic corruption, fuzz, platform, performance, Cartesian-product, high-assurance ledger, or shared-harness requirements.",
+        "The output writes only `docs/tasks/EVD-12.md` and does not implement code, tests, dependencies, or orchestrator state."
       ]
     }
   ]

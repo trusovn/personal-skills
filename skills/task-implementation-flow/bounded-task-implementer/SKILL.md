@@ -62,26 +62,31 @@ mode.
    the request and state them briefly. Include the positive behavior and the
    most credible failure, unchanged-state, compatibility, or lifecycle case.
    Do not invent a materially ambiguous requirement.
-4. Choose the lowest reliable evidence:
+4. When the authority supplies a finite high-risk matrix or named universal
+   cases, map every row or case to existing or planned evidence before editing.
+   Keep this concise for guided work and do not expand it into a generic risk
+   inventory. Make omitted, unchecked, or blocked rows visible in the final AC
+   evidence.
+5. Choose the lowest reliable evidence:
    - reproduce a bug before fixing it when feasible;
    - for new behavior, add or update a focused test that could reject the old or
      faulty behavior;
    - cross the real boundary only where lower-level evidence cannot prove
      wiring, persistence, filesystem/database/process behavior, concurrency,
      recovery, authorization, or another material risk.
-5. Implement the minimum code and test change. Match local style and do not
+6. Implement the minimum code and test change. Match local style and do not
    create shared infrastructure, dependencies, or public contracts unless the
    task authorizes them.
-6. Verify progressively: run the changed/targeted test first, then the nearest
+7. Verify progressively: run the changed/targeted test first, then the nearest
    owning suite, then only the broader gate justified by blast radius. Ask
    before slow, flaky, privileged, destructive, live, networked, or otherwise
    expensive checks unless already authorized.
-7. Inspect the final diff and status. Confirm every changed path belongs to the
+8. Inspect the final diff and status. Confirm every changed path belongs to the
    task, user work remains separable, and temporary artifacts created by this
    run are handled safely.
-8. Return the guided human-readable result described below. Review is required
-   when task metadata says `immediate`, the user requested it, or risk warrants
-   independent corroboration.
+9. Return the guided human-readable result described below and apply the review
+   handoff rules. Review is required when task metadata says `immediate`, the
+   user requested it, or risk warrants independent corroboration.
 
 ## High-assurance additions
 
@@ -102,6 +107,93 @@ Treat the packet as the discovery and permission boundary:
 On a same-thread `CHANGES_REQUESTED` correction, preserve the bounded partial
 diff and apply only in-scope findings. Changed contract, scope, helpers,
 dependencies, permissions, or authority route through the owning earlier stage.
+
+## Correct at the invariant level
+
+For each reviewer finding, state the broken invariant before editing. Enumerate
+only credible sibling cases already implied by that invariant, the task
+contract, or an explicit finite matrix. Preserve the reviewer regression and
+make the smallest correction that protects the invariant instead of adding a
+field-specific, input-specific, or interleaving-specific exception. When
+several explicit values share one oracle, prefer a local table-driven or
+parameterized test over a reusable test framework.
+
+When a prior review supplies a coverage ledger, consume it completely and
+preserve every row identity and status. Prior passes are navigation context,
+not acceptance evidence for corrected bytes; leave unchecked and blocked rows
+for the fresh reviewer.
+
+Before any correction edit, write a concise row-to-evidence map for the complete
+supplied ledger. Include every row identity exactly once with its prior status,
+planned implementation evidence or navigation use, and next owner. Map failed
+rows to reviewer regressions and planned correction evidence; map unchecked or
+blocked rows to explicit fresh-review coverage; keep prior passes as navigation
+context only. This is a pre-edit gate: do not modify production or test bytes
+until the map is complete, and do not silently omit rows that implementation
+will not exercise.
+
+The correction handoff must carry:
+
+- the authoritative brief reference and preceding verdict;
+- the complete coverage ledger and complete findings;
+- the current scoped diff and reviewer reproducer commands;
+- correction evidence attached to the failed rows, separately from reviewer
+  row status;
+- the broad-gate decision and owner; and
+- every remaining unchecked or blocked row.
+
+Run reviewer regressions first and the nearest owning suite after they pass.
+Determine broad-gate ownership from the authority before editing. When it
+assigns a final reviewer, leave that reviewer's aggregate decision untouched.
+Run a broader or aggregate gate during correction only when the authority or
+blast radius assigns it to implementation, or when no final reviewer is
+assigned to own it. Report it only as implementation evidence. Never replace
+implementation checks with an acceptance pass.
+
+### Correction handoff format
+
+For guided correction work, use this explicit final structure. Preserve the
+labels and fill every field from the supplied review state; do not replace an
+exact authority path or command with prose such as “the task” or “the reviewer
+regression passed.”
+
+```markdown
+Implemented: READY_FOR_REVIEW
+
+- Authority: <exact authoritative brief path>
+- Preceding verdict: <verdict>
+- Complete findings and invariant: <findings and broken invariant>
+- Current scoped diff: <changed paths and concise diff summary>
+- Coverage ledger:
+  - <row identity> — prior status: <status>; implementation evidence: <evidence or none>; next owner/status: <owner and unchanged reviewer status>
+- Reviewer reproducer: `<exact command>` — <implementation outcome>
+- Owning suite: `<exact command>` — <implementation outcome>
+- Broad/aggregate gate: <exact command, run-or-skipped decision, reason, and owner>
+- Remaining reviewer coverage: <unchecked or blocked rows, or none>
+- Next: fresh `task-acceptance-review`
+```
+
+Report implementation outcomes separately from reviewer row status. Do not
+mark a row accepted, passed, or checked for the corrected bytes unless a fresh
+reviewer does so in a separate invocation.
+
+## Preserve review provenance
+
+`review: immediate` means finish implementation checks, emit the handoff, and
+end the implementer invocation at `READY_FOR_REVIEW`. Here, "route" means name
+a fresh `task-acceptance-review` as the next owner; it does not mean invoke or
+manage that review. A same-session self-check is useful when labeled as
+implementation evidence, and its defects may be fixed, but it is not an
+independent review.
+
+Loading, quoting, or following `task-acceptance-review` in the current session
+does not reset provenance. If the current session authored any production bytes
+under review, it must not emit `ACCEPT` or describe those bytes as independently
+reviewed. Do not load the review skill, spawn or delegate to a reviewer, wait
+for a verdict, run reviewer-owned gates, or continue after the handoff in this
+invocation. Reviewer availability does not change the stop: the caller or
+coordinator starts the fresh review separately. Never degrade to same-session
+acceptance.
 
 ## Stops and budget behavior
 
@@ -126,17 +218,21 @@ context boundary prevents reliable completion.
 Return a concise human-readable summary, not raw JSON:
 
 ```markdown
-Implemented: <outcome or non-complete status>
+Implemented: <outcome, READY_FOR_REVIEW, or non-complete status>
 
 - Changed: <paths or none>
 - Verified: <exact commands and results>
 - AC evidence: <concise mapping>
 - Residual risks / skipped checks: <none or specifics>
-- Next: <review, user decision, fresh preflight, or complete>
+- Next: <fresh task-acceptance-review, user decision, fresh preflight, or complete>
 ```
 
 Omit empty bullets when prose is clearer. Link to created artifacts rather than
-embedding their serialized contents.
+embedding their serialized contents. For guided `review: immediate` work, use
+`READY_FOR_REVIEW` as the submission state and exactly name a fresh
+`task-acceptance-review` as next owner, then end the response without a review
+verdict. Retain the existing human result semantics for milestone or no-review
+work.
 
 ### Machine-contracted invocation
 
@@ -152,13 +248,15 @@ transport metadata unless the supplied schema explicitly requires that text.
 For the existing worker-result schema:
 
 - `status`: `complete`, `needs_input`, `blocked`, or `failed`; `complete` is a
-  submission, not acceptance.
+  submission, not acceptance. Keep `complete` for successful immediate-review
+  submissions; do not add `READY_FOR_REVIEW` or invent a machine field.
 - `files_changed`: task-owned repository-relative paths only.
 - `verification`: every run or required-but-unrun command with exact outcome.
 - `decisions`: local reversible task choices only.
 - `questions`: unresolved input/authority issues and whether they block.
 - `risks`: residual gaps or skipped stronger evidence.
-- `next_action`: one exact route.
+- `next_action`: one exact route. For immediate review, route to a fresh
+  `task-acceptance-review`.
 
 ## Boundaries and routing
 
@@ -166,8 +264,9 @@ For the existing worker-result schema:
   re-check is needed.
 - Missing product/architecture authority or wider scope routes to the user or
   `task-brief-designer`.
-- Completed work routes to `task-acceptance-review` when independent review is
-  requested or required; otherwise return it to the user.
+- Completed work routes to a fresh `task-acceptance-review` when independent
+  review is requested or required; this invocation ends with the handoff and
+  the next owner is started separately. Otherwise return it to the user.
 - Do not approve your own work, update an official plan/tracker, commit/push,
   install dependencies, use the network, launch subagents, or modify
   orchestration state unless explicitly authorized.

@@ -302,11 +302,219 @@ def api_guided() -> None:
     git(root, "commit", "-qm", "fixture baseline")
 
 
+def api_immediate() -> None:
+    root = WORK / "api-immediate"
+    initialize(root)
+    write(
+        root,
+        "AGENTS.md",
+        "# Fixture rules\n\nUse guided implementation. Preserve user work, add behavioral tests, and run the exact targeted command before the owning suite.",
+    )
+    write(
+        root,
+        "docs/tasks/API-32.md",
+        """
+        # API-32 — Reject expired sessions
+
+        Status: ready
+
+        ```yaml
+        agent_tier: standard
+        reasoning: medium
+        review: immediate
+        budget: 20 tool calls / 45 minutes / 60k context
+        ```
+
+        Outcome: reject expired sessions without changing their token.
+        Allowed changes: src/auth/session.py; tests/auth/test_session.py.
+        AC-01: an unexpired session remains valid.
+        AC-02: an expired session is rejected and its token remains unchanged.
+        Targeted: python -m unittest tests.auth.test_session.SessionTest.test_expired_session_is_invalid
+        Owning: python -m unittest tests.auth.test_session
+        No network, dependency installation, commits, machine result schema, or other repository writes.
+        After implementation checks, hand the current bytes to a fresh acceptance reviewer.
+        """,
+    )
+    write(root, "src/__init__.py", "")
+    write(root, "src/auth/__init__.py", "")
+    write(
+        root,
+        "src/auth/session.py",
+        """
+        def is_valid(session, now):
+            return bool(session.get("token"))
+        """,
+    )
+    write(root, "tests/__init__.py", "")
+    write(root, "tests/auth/__init__.py", "")
+    write(
+        root,
+        "tests/auth/test_session.py",
+        """
+        import unittest
+
+        from src.auth.session import is_valid
+
+
+        class SessionTest(unittest.TestCase):
+            def test_unexpired_session_is_valid(self):
+                session = {"token": "abc", "expires_at": 20}
+                self.assertTrue(is_valid(session, now=10))
+
+            def test_expired_session_is_invalid(self):
+                session = {"token": "abc", "expires_at": 10}
+                self.assertFalse(is_valid(session, now=10))
+                self.assertEqual(session["token"], "abc")
+        """,
+    )
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "fixture baseline")
+
+
+def record_correction() -> None:
+    root = WORK / "result-record"
+    initialize(root)
+    write(
+        root,
+        "AGENTS.md",
+        "# Fixture rules\n\nEdit only task-authorized paths. Preserve reviewer regressions and correction handoff state. A fresh reviewer owns final acceptance.",
+    )
+    original = {
+        "task_id": "REC-44",
+        "summary": "validated result",
+        "files_changed": ["src/result_integrity.py"],
+    }
+    body = json.dumps(original, sort_keys=True, separators=(",", ":")).encode()
+    original["content_digest"] = sha(body)
+    exact_bytes = (
+        json.dumps(original, sort_keys=True, separators=(",", ":")) + "\n"
+    ).encode()
+    write(
+        root,
+        "docs/tasks/REC-44.md",
+        """
+        # REC-44 — Bind the complete result record
+
+        Status: ready
+
+        ```yaml
+        agent_tier: strong
+        reasoning: high
+        review: immediate
+        budget: 18 tool calls / 40 minutes / 50k context
+        ```
+
+        This is a correction after `CHANGES_REQUESTED`.
+        Outcome: accept a result only when all exact serialized bytes match the independently anchored digest in `authority/result.sha256`.
+        Invariant: every result byte is bound; equality of one demonstrated field or internal consistency is insufficient.
+        Allowed changes: src/result_integrity.py; tests/test_record_integrity.py.
+        Reviewer regression: python -m unittest tests.test_record_integrity.RecordIntegrityTest.test_coherent_mutation_is_rejected
+        Owning suite: python -m unittest tests.test_record_integrity
+        Aggregate gate: python -m unittest discover -s tests
+        Gate ownership: skip the aggregate during correction; the assigned fresh reviewer owns any final aggregate decision.
+        Required sibling evidence: add at least one other field mutation or semantically equivalent byte rewrite using the same exact-byte oracle.
+        No network, dependency installation, commits, or other repository writes.
+        """,
+    )
+    write(root, "authority/result.json", exact_bytes.decode())
+    write(root, "authority/result.sha256", sha(exact_bytes))
+    write(root, "src/__init__.py", "")
+    write(
+        root,
+        "src/result_integrity.py",
+        """
+        import json
+
+
+        def is_anchored_result(result_bytes, anchor_digest):
+            result = json.loads(result_bytes)
+            return result.get("task_id") == "REC-44"
+        """,
+    )
+    write(root, "tests/__init__.py", "")
+    write(
+        root,
+        "tests/test_record_integrity.py",
+        """
+        import hashlib
+        import json
+        from pathlib import Path
+        import unittest
+
+        from src.result_integrity import is_anchored_result
+
+
+        ROOT = Path(__file__).parents[1]
+        ORIGINAL_BYTES = (ROOT / "authority/result.json").read_bytes()
+        ANCHOR_DIGEST = (ROOT / "authority/result.sha256").read_text().strip()
+
+
+        def serialize_coherently(result):
+            body = {
+                key: value
+                for key, value in result.items()
+                if key != "content_digest"
+            }
+            result["content_digest"] = hashlib.sha256(
+                json.dumps(
+                    body, sort_keys=True, separators=(",", ":")
+                ).encode()
+            ).hexdigest()
+            return (
+                json.dumps(result, sort_keys=True, separators=(",", ":"))
+                + "\\n"
+            ).encode()
+
+
+        class RecordIntegrityTest(unittest.TestCase):
+            def test_original_record_is_accepted(self):
+                self.assertTrue(
+                    is_anchored_result(ORIGINAL_BYTES, ANCHOR_DIGEST)
+                )
+        """,
+    )
+    write(
+        root,
+        "docs/reviews/REC-44-review.md",
+        """
+        # REC-44 acceptance review
+
+        Authoritative brief: docs/tasks/REC-44.md
+        Preceding verdict: CHANGES_REQUESTED
+        Complete finding: the validator checks only `task_id`, so coherent changes to other bytes are accepted.
+        Reviewer reproducer: python -m unittest tests.test_record_integrity.RecordIntegrityTest.test_coherent_mutation_is_rejected
+        Owning suite: python -m unittest tests.test_record_integrity
+        Broad-gate decision: skip aggregate during correction; the assigned fresh reviewer owns the final aggregate decision.
+
+        Coverage ledger:
+        - ROW-EXACT-BYTES — failed — coherent summary mutation was accepted.
+        - ROW-REPLAY-BOUNDARY — unchecked — fresh reviewer must evaluate; implementer must not claim a verdict.
+        """,
+    )
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "fixture baseline")
+    test_path = root / "tests/test_record_integrity.py"
+    current = test_path.read_text(encoding="utf-8")
+    reviewer_regression = (
+        "\n\n"
+        "    def test_coherent_mutation_is_rejected(self):\n"
+        "        mutated = json.loads(ORIGINAL_BYTES)\n"
+        '        mutated["summary"] = "coherently changed summary"\n'
+        "        mutated_bytes = serialize_coherently(mutated)\n"
+        "        self.assertFalse(\n"
+        "            is_anchored_result(mutated_bytes, ANCHOR_DIGEST)\n"
+        "        )\n"
+    )
+    test_path.write_text(current.rstrip() + reviewer_regression, encoding="utf-8")
+
+
 SCENARIOS = {
     "queue-task": queue_task,
     "scheduler-resume": scheduler_resume,
     "queue-restaged-stale": queue_restaged_stale,
     "api-guided": api_guided,
+    "api-immediate": api_immediate,
+    "record-correction": record_correction,
 }
 
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:

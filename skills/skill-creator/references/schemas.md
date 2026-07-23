@@ -17,6 +17,16 @@ Defines the evals for a skill. Located at `evals/evals.json` within the skill di
       "prompt": "User's example prompt",
       "expected_output": "Description of expected result",
       "files": ["evals/files/sample1.pdf"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "sample"],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/sample"
+      },
       "expectations": [
         "The output includes X",
         "The skill used script Y"
@@ -32,6 +42,16 @@ Defines the evals for a skill. Located at `evals/evals.json` within the skill di
 - `evals[].prompt`: The task to execute
 - `evals[].expected_output`: Human-readable description of success
 - `evals[].files`: Optional list of input file paths (relative to skill root)
+- `evals[].execution`: Optional behavioral-run setup metadata. Omit it to use
+  a fresh empty workspace.
+- `evals[].execution.setup.command`: Required non-empty argument array when
+  `setup` is present. This is executed directly, not through a shell.
+- `evals[].execution.setup.cwd`: Optional working directory relative to the
+  evaluated/current skill root; defaults to `.`.
+- `evals[].execution.setup.env`: Optional string environment variables.
+  Values may contain the single `{run_root}` placeholder.
+- `evals[].execution.workspace`: Required when `setup` is present. It must
+  resolve inside `{run_root}` and name the workspace created by setup.
 - `evals[].expectations`: List of verifiable statements
 
 ---

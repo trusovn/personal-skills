@@ -190,7 +190,11 @@ design history and source of the invariants worth preserving.
 
 The governing high-level plan is
 [stage-3-mvp-rebaseline.md](stage-3-mvp-rebaseline.md). The evidence that led to
-the change is recorded in [stage-3-mid-review.md](stage-3-mid-review.md).
+the change is recorded in
+[stage-3-mid-review.md](history/stage-3-mid-review.md). Deferred
+information-architecture work that should inform later task actualization is
+recorded in
+[stage-3-retrieval-surface-follow-up.md](stage-3-retrieval-surface-follow-up.md).
 
 ### Revised product goal
 

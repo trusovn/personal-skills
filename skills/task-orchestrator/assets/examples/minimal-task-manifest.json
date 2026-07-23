@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "manifest_id": "example-manifest",
+  "completed_task_ids": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Implement one bounded task",
+      "brief_path": "tasks/T1.md",
+      "dependencies": [],
+      "allowed_paths": [
+        "src/example.py",
+        "tests/test_example.py"
+      ],
+      "required_checks": [
+        "python3 -m unittest tests.test_example"
+      ]
+    }
+  ]
+}

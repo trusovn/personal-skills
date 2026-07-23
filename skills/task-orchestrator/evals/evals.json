@@ -3,41 +3,82 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Work through `docs/web-manager-tasks.md` starting at task 14. Each task has its own brief. Use my local model as the supervisor and `codex exec` as the implementation worker. Per-task commits are authorized, but do not push, install dependencies, or use the network. I don't want to babysit normal implementation choices.",
-      "expected_output": "A sequential orchestration run that snapshots the dirty tree, selects only the next ready task, launches a resumable structured Codex worker, inspects its result and task-scoped diff, applies only policy-bounded judgment, verifies, commits task-scoped paths, updates progress, and moves to the next task without reading full transcripts.",
-      "files": [],
+      "prompt": "I already have an operator-confirmed run policy and normalized task manifest for one bounded task. Commit, network, and dependency installation are off. Start the run with the task-orchestrator as it exists today, and tell me where the durable evidence will live.",
+      "expected_output": "The agent follows the current one-hop operator reference, initializes the external run directory through controller.py, launches exactly one task through run-next, and describes inspect as the next current command without claiming automatic acceptance or advance.",
+      "files": [
+        "assets/examples/minimal-run-policy.json",
+        "assets/examples/minimal-task-manifest.json"
+      ],
       "expectations": [
-        "The orchestrator establishes the explicit commit and permission policy before dispatch.",
-        "It launches exactly one bounded task at a time and does not combine adjacent task briefs.",
-        "It persists and reuses the Codex thread ID for clarification or interruption recovery.",
-        "It reads structured worker results and task-scoped diffs by default, not full transcripts.",
-        "It stages only task-scoped paths rather than using blanket git staging.",
-        "It does not push, install dependencies, or use the network."
+        "It uses scripts/controller.py init and scripts/controller.py run-next rather than invoking scripts/codex_worker.py directly.",
+        "It confirms the run directory is outside the repository and the repository, task scope, verification, permissions, and stop policy are explicit.",
+        "It treats commit mode as off and does not grant network or dependency installation.",
+        "It identifies controller records in the external run directory as durable evidence.",
+        "It does not claim that the current controller automatically accepts, releases, or advances the task."
       ]
     },
     {
       "id": 2,
-      "prompt": "The worker for task 14 stopped to ask whether a canonical YAML change should be a unified diff string or transport-neutral before/after strings. The approved plan explicitly says the preview model is transport-independent. The worker recommends before/after strings. Decide if you can, then continue the same worker session.",
-      "expected_output": "The orchestrator recognizes that the recommendation is directly entailed by the transport-independence constraint, records the bounded decision, and resumes the recorded worker thread with a concise follow-up instead of launching a new session.",
+      "prompt": "The current controller run was interrupted after recording a worker attempt. Continue the same worker thread safely and do not lose the partial diff.",
+      "expected_output": "The agent retrieves the current recovery limitation, inspects controller and process evidence, refuses to relaunch or directly resume through the transport adapter, and reports that safe reconciliation and same-thread recovery belong to MVP-3.",
       "files": [],
       "expectations": [
-        "The decision is justified from the authoritative transport-independence constraint.",
-        "The orchestrator records the decision and its reasoning.",
-        "It resumes the exact recorded thread ID rather than starting the task again.",
-        "The follow-up contains the decision without replaying the full task or transcript."
+        "It inspects the ledger, attempt record, process identity, Git state, and any structured result before proposing another launch.",
+        "It does not call scripts/codex_worker.py resume or codex exec resume as a public recovery path.",
+        "It distinguishes a live, absent, and ambiguous prior process and never launches over a live or ambiguous one.",
+        "It states that the current public controller has no safe stop or resume command.",
+        "It routes the missing behavior to the current Stage 3 MVP-3 plan rather than docs/history/."
       ]
     },
     {
       "id": 3,
-      "prompt": "Our SDD feature folder has final `tasks.json`, task markdown, tracker, spec, SAD, ADRs, and test plan. I want a cheap local Qwen process to supervise Codex workers through the remaining tasks so I can leave it running. Use the SDD artifacts, but avoid having two orchestration engines fighting each other.",
-      "expected_output": "A plan to use the generic task orchestrator as the sole execution engine, reading the SDD DAG and one task's cited artifacts at a time, preserving SDD TDD/gate semantics, and not wrapping or invoking the whole-feature sdd-implement engine.",
+      "prompt": "I need to change task-orchestrator Git drift detection. Identify the owning implementation and the narrowest tests I should read and run before editing. Do not modify files yet.",
+      "expected_output": "The agent uses the architecture map to select controller_git.py and test_controller_git.py, adds controller integration coverage only if the public flow changes, and avoids historical task briefs.",
       "files": [],
       "expectations": [
-        "The orchestrator treats tasks.json and the tracker as authoritative queue state.",
-        "It loads only the selected task and cited upstream sections rather than every artifact and transcript.",
-        "It preserves the selected task's RED, GREEN, REFACTOR, and GATE requirements.",
-        "It explicitly avoids nesting the generic supervisor around whole-feature sdd-implement.",
-        "It escalates unresolved SDD contract or architecture decisions instead of inventing them."
+        "It identifies scripts/controller_git.py as the primary owner of Git status, identity, scope, and drift evidence.",
+        "It identifies tests/test_controller_git.py as the primary targeted suite.",
+        "It includes tests/test_controller.py only when the public command or cross-module controller flow is affected.",
+        "It gives the exact targeted unittest command from references/architecture-map.md.",
+        "It does not use docs/history/ as current implementation authority."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Before you start a run, show me the shortest current path from approved JSON inputs to the first inspected task. I want only commands that are implemented now.",
+      "expected_output": "A concise init, run-next, and inspect route sourced from the current operator guide, with current limitations stated separately.",
+      "files": [],
+      "expectations": [
+        "It reads the current-information index or operator guide.",
+        "It lists scripts/controller.py init, run-next, and inspect in order.",
+        "It does not present codex_worker.py as an operator command.",
+        "It calls a positive inspect result mechanical eligibility rather than semantic acceptance.",
+        "It avoids docs/history/ unless historical evidence is explicitly requested."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Which document is authoritative for the remaining Stage 3 MVP work, and which documents should I avoid loading while I create new task briefs?",
+      "expected_output": "The agent identifies the Stage 3 MVP rebaseline as the governing current plan, uses the retrieval follow-up for deferred information-architecture work, and treats docs/history as opt-in evidence.",
+      "files": [],
+      "expectations": [
+        "It identifies docs/stage-3-mvp-rebaseline.md as the governing high-level plan.",
+        "It identifies docs/stage-3-retrieval-surface-follow-up.md as a planning companion rather than a runtime contract.",
+        "It treats docs/history/ as non-authoritative and avoids loading completed task briefs by default.",
+        "It distinguishes current operator references from the current plan and historical evidence."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Our feature folder has an approved plan and task briefs but no normalized task-orchestrator manifest. Can the current skill prepare and run everything unattended now?",
+      "expected_output": "The agent truthfully reports that plan preparation and the unattended runner are unfinished MVP-6 work and does not fabricate a current command or silently normalize ambiguous authority.",
+      "files": [],
+      "expectations": [
+        "It states that current code requires an already normalized, operator-confirmed manifest and run policy.",
+        "It does not claim that plan-to-manifest preparation or automatic advance exists.",
+        "It routes the missing preparation and thin operator interface to MVP-6.",
+        "It does not silently infer scope, dependencies, permissions, or verification authority.",
+        "It does not fall back to the historical prompt-only supervisor workflow."
       ]
     }
   ]

@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "run_id": "example-run",
+  "repository": "/absolute/path/to/repository",
+  "task_ids": [
+    "T1"
+  ],
+  "verification": {
+    "targeted_checks": [
+      "python3 -m unittest tests.test_example"
+    ],
+    "repository_gate": null,
+    "authorized_gap": null
+  },
+  "permissions": {
+    "sandbox": "workspace-write",
+    "approval_policy": "never",
+    "network": false,
+    "dependency_install": false,
+    "writable_roots": [
+      "/absolute/path/to/repository"
+    ],
+    "danger_full_access_authorized": false
+  },
+  "commit_policy": {
+    "mode": "off"
+  },
+  "stop_policy": {
+    "on_blocked": "stop",
+    "on_failed": "stop",
+    "on_needs_input": "escalate",
+    "on_unexpected_changes": "stop"
+  }
+}

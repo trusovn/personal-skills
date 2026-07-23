@@ -21,7 +21,7 @@ machine-readable results.
 | Skill | Use it for | Skip it when |
 |---|---|---|
 | `task-brief-designer` | Create or tighten a bounded task contract. It defaults to a delta check when a useful brief already exists. | The user request already gives an unambiguous outcome, scope, and acceptance criteria for a small task. |
-| `task-preflight` | Check readiness, ownership, commands, and decisive evidence before implementation. | A routine task can perform the same compact self-check inside the implementer. |
+| `task-preflight` | Check readiness, ownership, commands, and decisive evidence when dirty ownership, dependencies, environment, permissions, helpers, fixtures, real-boundary capability, or a durable handoff creates material uncertainty. | A routine guided task can perform the same compact self-check inside the implementer. |
 | `bounded-task-implementer` | Implement one bounded task with risk-based tests, progressive verification, and a useful handoff. | The request is planning, review-only, or too ambiguous to implement safely. |
 | `task-acceptance-review` | Independently assess the scoped result and return `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`. | The task does not need independent review under its metadata or risk. |
 
@@ -35,13 +35,13 @@ existing request or brief
         ↓
 fill only meaningful contract gaps
         ↓
-compact readiness/self-preflight
+implementer self-preflight
         ↓
 implement + risk-based tests + progressive verification
         ↓
 human-readable result
         ↓
-review when metadata or risk calls for it
+fresh-session acceptance review when metadata or risk calls for it
 ```
 
 Guided mode carries these defaults so the user does not need to repeat them:
@@ -58,11 +58,30 @@ Guided mode carries these defaults so the user does not need to repeat them:
 5. Run the targeted check first, then the nearest owning suite, then only the
    broader gate justified by blast radius and authorization.
 6. Finish with a concise human summary: outcome, changed files, verification,
-   residual risks, and next action.
+   residual risks, and next action. When independent review is required, end at
+   `READY_FOR_REVIEW` and route the completed bytes to a fresh reviewer.
 
 The brief designer and standalone preflight are optional in guided mode. Use
 them when they reduce ambiguity or risk; do not create artifacts merely to
 satisfy the diagram.
+
+### When standalone preflight adds value
+
+Use the implementer's compact self-preflight for routine guided work. Use
+standalone `task-preflight` when a separate readiness pass can resolve a named
+material uncertainty, such as:
+
+- dirty or multi-writer ownership;
+- a required environment, permission, dependency, helper, or fixture;
+- real-boundary capability or an unresolved command and observable oracle; or
+- a durable handoff between sessions.
+
+A directly requested standalone preflight still returns a truthful readiness
+result even when its incremental value is marginal. It should stay compact,
+avoid broad baseline work without a named readiness reason, and recommend
+implementer self-preflight for the next materially similar task. Explicit
+high-assurance and orchestrated flows continue to require standalone
+preflight.
 
 ## High-assurance profile
 
@@ -113,14 +132,22 @@ budget: 30 tool calls / 90 minutes / 100k context
 - `budget`: a soft checkpoint unless the user or repository explicitly calls it
   a hard limit.
 
-Metadata guides execution; it does not replace the task's outcome, scope,
-acceptance criteria, or verification commands.
+`agent_tier`, `reasoning`, and `review` are intended launch guidance, not claims
+about the eventual runtime configuration. Authors should choose the economical
+values the task actually calls for. `review: immediate` means an immediate
+handoff after implementation or correction to a fresh independent reviewer; it
+never instructs the implementer to accept its own work. Metadata does not
+replace the task's outcome, scope, acceptance criteria, or verification
+commands.
 
 ## Review rules worth keeping
 
 Independent review should spend effort where implementation evidence is most
 likely to be misleading:
 
+- account for every explicit finite task row and selected material risk
+  dimension, keeping blocked or unchecked areas visible without promising to
+  find every latent defect;
 - exercise the real public path when unit evidence can miss wiring;
 - for repeated or recovered behavior, perform the first state change and the
   next real occurrence;
@@ -134,8 +161,43 @@ A digest stored beside mutable bytes proves internal consistency, not
 immutability. Claims of immutability require an independently protected anchor
 or an explicitly narrower threat model.
 
+Independence is based on session authorship. Loading another skill, quoting its
+instructions, or changing roles in the same session does not reset provenance.
+A session that authored reviewed production bytes may perform a labeled
+`SELF_CHECK_ONLY` and fix defects it finds, but it cannot issue an independent
+verdict. Only a fresh reviewer may return `ACCEPT`, `CHANGES_REQUESTED`, or
+`INCONCLUSIVE` for those bytes.
+
 Every `CHANGES_REQUESTED` correction requires a fresh acceptance review. A
 previous verdict never applies to corrected bytes.
+
+### Verification gate ownership
+
+- Initial implementer: fail-first evidence, targeted checks, the nearest owning
+  suite, and a broader gate only when authority or blast radius justifies it.
+- Discovery reviewer: targeted adversarial probes first; after a decisive
+  failure, skip the broad gate unless it has a distinct authorized diagnostic
+  purpose.
+- Correction implementer: reviewer regressions followed by the nearest owning
+  suite; leave an assigned final reviewer's aggregate gate untouched.
+- Fresh final reviewer: rerun reviewer regressions, complete the finite review
+  ledger against corrected bytes, and run one justified aggregate gate after
+  adversarial evidence is clean.
+
+### Optional tests-only reproducer
+
+After fixing and reporting an independent `CHANGES_REQUESTED` verdict, the
+reviewer may add a failing test only when the current user or exact review
+invocation explicitly authorizes `tests_only_reproducer` and names the exact
+writable test file or bounded test area. Task scope, `review: immediate`, or an
+allowed test path is not write permission.
+
+The reviewer must not change production code, shared test infrastructure,
+dependencies, plans, or result artifacts, and must not stage or commit the
+test. It must prove the focused intended failure and report status and diff side
+effects. The verdict remains `CHANGES_REQUESTED`, and corrected production
+bytes always require a fresh reviewer; the reproducer-writing session cannot
+accept them.
 
 ## Recommended agent session usage for context reuse
 

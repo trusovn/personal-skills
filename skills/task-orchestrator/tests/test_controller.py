@@ -1,6 +1,8 @@
 import fcntl
+import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -19,6 +21,57 @@ def load_controller():
     assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
+
+
+def canonical_bytes(value):
+    return (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode()
+
+
+def sha256_bytes(value):
+    return hashlib.sha256(value).hexdigest()
+
+
+def flow_profile(profile="fast-local"):
+    steps = {
+        "fast-local": [
+            {"kind": "implement", "role": "implementer", "mode": "standard"},
+            {"kind": "verify", "role": "verifier", "mode": "targeted"},
+            {"kind": "accept", "role": "controller", "mode": "off"},
+        ],
+        "reviewed": [
+            {"kind": "preflight", "role": "preflight", "mode": "light"},
+            {"kind": "implement", "role": "implementer", "mode": "standard"},
+            {"kind": "verify", "role": "verifier", "mode": "targeted"},
+            {
+                "kind": "semantic_review",
+                "role": "semantic_reviewer",
+                "mode": "standard",
+            },
+            {"kind": "accept", "role": "controller", "mode": "off"},
+        ],
+    }[profile]
+    return {
+        "version": 1,
+        "profile": profile,
+        "steps": steps,
+        "actor_levels": {
+            "light": {"model": "gpt-5.6-sol", "reasoning": "low"},
+            "standard": {"model": "gpt-5.6-sol", "reasoning": "medium"},
+            "strong": {"model": "gpt-5.6-sol", "reasoning": "high"},
+        },
+        "implementation_session_reuse_threshold": 0.5,
+        "correction": {"enabled": profile == "reviewed", "limit": 2},
+        "routes": {
+            "blocked": "stop",
+            "failed": "stop",
+            "needs_input": "escalate",
+            "unexpected_changes": "stop",
+            "inconclusive": "escalate",
+            "corrections_exhausted": "escalate",
+            "permission_expansion": "stop",
+            "plan_or_architecture_question": "escalate",
+        },
+    }
 
 
 class ControllerContractTest(unittest.TestCase):
@@ -66,6 +119,7 @@ class ControllerContractTest(unittest.TestCase):
                 "on_needs_input": "escalate",
                 "on_unexpected_changes": "stop",
             },
+            "flow": flow_profile(),
         }
 
     def complete_result(self):
@@ -210,6 +264,11 @@ class ControllerContractTest(unittest.TestCase):
             brief_path="tasks/T1.md",
             prompt="first prompt",
             policy=self.policy(),
+            flow=self.policy()["flow"],
+            flow_revision=1,
+            flow_sha256=controller.sha256_text(
+                controller.canonical_json(self.policy()["flow"]) + "\n"
+            ),
             baseline_ref="baseline-1.json",
         )
         first = controller.create_attempt(run_dir, record)
@@ -222,6 +281,11 @@ class ControllerContractTest(unittest.TestCase):
             brief_path="tasks/T1.md",
             prompt="retry prompt",
             policy=self.policy(),
+            flow=self.policy()["flow"],
+            flow_revision=1,
+            flow_sha256=controller.sha256_text(
+                controller.canonical_json(self.policy()["flow"]) + "\n"
+            ),
             baseline_ref="baseline-1.json",
         )
         second = controller.create_attempt(run_dir, retry_record)
@@ -513,6 +577,12 @@ class ControllerContractTest(unittest.TestCase):
         self.assertIsNone(ledger["last_verification_path"])
         self.assertIsNone(ledger["last_decision_path"])
         self.assertIsNone(ledger["active_operation_path"])
+        self.assertEqual(1, ledger["flow_revision"])
+        self.assertEqual("flows/flow-001.json", ledger["flow_path"])
+        self.assertEqual(
+            sha256_bytes((run_dir / ledger["flow_path"]).read_bytes()),
+            ledger["flow_sha256"],
+        )
 
     def test_init_run_rejects_incomplete_dependencies(self):
         """init_run must reject authorized tasks depending on incomplete external tasks."""
@@ -604,6 +674,9 @@ class ControllerContractTest(unittest.TestCase):
             "created_at": "2026-07-16T00:00:00+00:00",
             "updated_at": "2026-07-16T00:00:00+00:00",
             "revision": 1,
+            "flow_revision": 1,
+            "flow_path": "flows/flow-001.json",
+            "flow_sha256": "a" * 64,
             "policy_path": "run-policy.json",
             "policy_sha256": "abc",
             "manifest_path": "task-manifest.json",
@@ -1254,6 +1327,7 @@ class ControllerIntegrationTest(unittest.TestCase):
                 "on_needs_input": "escalate",
                 "on_unexpected_changes": "stop",
             },
+            "flow": flow_profile(),
         }
 
     def write_fake_codex(
@@ -1329,6 +1403,360 @@ raise SystemExit(0)
         fake.chmod(0o755)
         return fake
 
+    def create_initialized_run(self, *, flow=None, name="run-flow"):
+        controller = load_controller()
+        run_dir = self.root / "runs" / name
+        policy_path = self.root / f"{name}-policy.json"
+        manifest_path = self.root / f"{name}-manifest.json"
+        policy = self.policy()
+        if flow is not None:
+            policy["flow"] = flow
+        controller.persist_run_policy(policy_path, policy)
+        (self.repo / "tasks").mkdir(exist_ok=True)
+        (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        manifest_path.write_text(json.dumps({
+            "version": 1,
+            "manifest_id": "flow-boundary",
+            "completed_task_ids": [],
+            "tasks": [{
+                "id": "T1",
+                "title": "Test task",
+                "brief_path": "tasks/T1.md",
+                "dependencies": [],
+                "allowed_paths": ["allowed.txt"],
+                "required_checks": ["python3 -m unittest test_targeted"],
+            }],
+        }, indent=2, sort_keys=True) + "\n")
+        controller.init_run(run_dir, policy_path, manifest_path, self.repo)
+        return controller, run_dir
+
+    def test_pending_preflight_persists_cursor_without_launching_worker(self):
+        reviewed = flow_profile("reviewed")
+        controller, run_dir = self.create_initialized_run(flow=reviewed)
+        repository_before = controller.capture_git_status(self.repo)
+        missing_worker = self.root / "must-not-launch"
+
+        result = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(missing_worker),
+        ], text=True, capture_output=True)
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual({
+            "status": "pending",
+            "task_id": "T1",
+            "current_step": "preflight",
+            "reason": "no MVP adapter owns the current flow step",
+        }, json.loads(result.stdout))
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual("ready", ledger["state"])
+        self.assertEqual("T1", ledger["selected_task_id"])
+        self.assertEqual("preflight", ledger["current_step"])
+        self.assertEqual(0, ledger["correction_cycle"])
+        self.assertFalse((run_dir / "attempts").exists())
+        self.assertFalse((self.root / "argv.json").exists())
+        self.assertEqual(repository_before, controller.capture_git_status(self.repo))
+
+        ledger_bytes = (run_dir / "ledger.json").read_bytes()
+        repeated = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(missing_worker),
+        ], text=True, capture_output=True)
+        self.assertEqual(0, repeated.returncode, repeated.stderr)
+        self.assertEqual(ledger_bytes, (run_dir / "ledger.json").read_bytes())
+        self.assertFalse((run_dir / "attempts").exists())
+
+    def test_flow_revision_is_immutable_noop_and_rejected_during_owned_work(self):
+        controller, run_dir = self.create_initialized_run()
+        first_path = run_dir / "flows/flow-001.json"
+        first_bytes = first_path.read_bytes()
+        reviewed_path = self.root / "reviewed-flow.json"
+        reviewed_path.write_text(
+            json.dumps(flow_profile("reviewed"), indent=2, sort_keys=True) + "\n"
+        )
+        fast_path = self.root / "fast-flow.json"
+        fast_path.write_text(
+            json.dumps(flow_profile(), indent=2, sort_keys=True) + "\n"
+        )
+
+        revised = controller.revise_flow(run_dir, reviewed_path)
+
+        self.assertEqual("revised", revised["status"])
+        self.assertEqual(2, revised["flow_revision"])
+        self.assertEqual(first_bytes, first_path.read_bytes())
+        second_path = run_dir / "flows/flow-002.json"
+        second_bytes = second_path.read_bytes()
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual(2, ledger["flow_revision"])
+        self.assertEqual("flows/flow-002.json", ledger["flow_path"])
+        self.assertEqual(sha256_bytes(second_bytes), ledger["flow_sha256"])
+
+        ledger_bytes = (run_dir / "ledger.json").read_bytes()
+        unchanged = controller.revise_flow(run_dir, reviewed_path)
+        self.assertEqual("unchanged", unchanged["status"])
+        self.assertEqual(ledger_bytes, (run_dir / "ledger.json").read_bytes())
+        self.assertEqual(
+            ["flow-001.json", "flow-002.json"],
+            sorted(path.name for path in (run_dir / "flows").iterdir()),
+        )
+
+        with mock.patch.object(
+            controller,
+            "_write_flow_pointer",
+            side_effect=RuntimeError("injected pointer pre-commit failure"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "pre-commit"):
+                controller.revise_flow(run_dir, fast_path)
+        self.assertEqual(ledger_bytes, (run_dir / "ledger.json").read_bytes())
+        self.assertEqual(
+            "reviewed",
+            controller._load_flow_authority(run_dir, ledger)["profile"],
+        )
+        self.assertTrue((run_dir / "flows/flow-003.json").is_file())
+
+        write_flow_pointer = controller._write_flow_pointer
+
+        def write_flow_pointer_then_fail(*args, **kwargs):
+            write_flow_pointer(*args, **kwargs)
+            raise RuntimeError("injected pointer publication failure")
+
+        with mock.patch.object(
+            controller,
+            "_write_flow_pointer",
+            side_effect=write_flow_pointer_then_fail,
+        ):
+            committed = controller.revise_flow(run_dir, fast_path)
+        self.assertEqual("revised", committed["status"])
+        self.assertEqual(3, committed["flow_revision"])
+        committed_ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual(3, committed_ledger["flow_revision"])
+        self.assertEqual(
+            "fast-local",
+            controller._load_flow_authority(run_dir, committed_ledger)["profile"],
+        )
+
+        restored = controller.revise_flow(run_dir, reviewed_path)
+        self.assertEqual(4, restored["flow_revision"])
+
+        pending = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(self.root / "must-not-launch"),
+        ], text=True, capture_output=True)
+        self.assertEqual(0, pending.returncode, pending.stderr)
+        owned_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+        with self.assertRaisesRegex(ValueError, "safe task boundary"):
+            controller.revise_flow(run_dir, fast_path)
+        self.assertEqual(
+            owned_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+        self.assertEqual(first_bytes, first_path.read_bytes())
+        self.assertEqual(second_bytes, second_path.read_bytes())
+
+    def test_flow_revision_publication_is_atomic_across_process_exit(self):
+        controller, run_dir = self.create_initialized_run()
+        revised_flow = flow_profile("reviewed")
+        revised_path = self.root / "interrupted-flow.json"
+        revised_path.write_text(
+            json.dumps(revised_flow, indent=2, sort_keys=True) + "\n"
+        )
+
+        child = os.fork()
+        if child == 0:
+            with mock.patch.object(
+                controller,
+                "_write_flow_pointer",
+                side_effect=lambda *_, **__: os._exit(23),
+            ):
+                controller.revise_flow(run_dir, revised_path)
+            os._exit(24)
+
+        waited, status = os.waitpid(child, 0)
+        self.assertEqual(child, waited)
+        self.assertEqual(23, os.waitstatus_to_exitcode(status))
+
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        try:
+            current = controller._load_flow_authority(run_dir, ledger)
+        except ValueError as error:
+            self.fail(f"flow revision exposed split authority: {error}")
+        self.assertEqual("fast-local", current["profile"])
+        self.assertEqual(1, ledger["flow_revision"])
+
+        resumed = controller.revise_flow(run_dir, revised_path)
+        self.assertEqual(2, resumed["flow_revision"])
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual(
+            "reviewed",
+            controller._load_flow_authority(run_dir, ledger)["profile"],
+        )
+
+    def test_tampered_flow_fails_before_worker_preflight_or_run_mutation(self):
+        controller, run_dir = self.create_initialized_run()
+        flow_path = run_dir / "flows/flow-001.json"
+        tampered = json.loads(flow_path.read_text())
+        tampered["profile"] = "coherently-tampered"
+        flow_path.write_text(json.dumps(tampered, separators=(",", ":")) + "\n")
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+        repository_before = controller.capture_git_status(self.repo)
+
+        result = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(self.root / "must-not-launch"),
+        ], text=True, capture_output=True)
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertTrue(
+            any(
+                marker in result.stderr
+                for marker in ("canonical", "digest")
+            ),
+            result.stderr,
+        )
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+        self.assertFalse((run_dir / "attempts").exists())
+        self.assertFalse((self.root / "argv.json").exists())
+        self.assertEqual(repository_before, controller.capture_git_status(self.repo))
+
+    def test_impossible_correction_cycle_fails_before_worker_preflight(self):
+        controller, run_dir = self.create_initialized_run(
+            flow=flow_profile("reviewed")
+        )
+        ledger_path = run_dir / "ledger.json"
+        ledger = json.loads(ledger_path.read_text())
+        for current_step, correction_cycle in (
+            ("implement", 1),
+            ("correction", 0),
+            ("correction", 3),
+            ("semantic_review", 3),
+            ("accept", 3),
+        ):
+            with self.subTest(
+                current_step=current_step,
+                correction_cycle=correction_cycle,
+            ):
+                invalid = json.loads(json.dumps(ledger))
+                invalid.update({
+                    "selected_task_id": "T1",
+                    "current_step": current_step,
+                    "correction_cycle": correction_cycle,
+                })
+                with self.assertRaisesRegex(ValueError, "correction cycle"):
+                    controller._load_flow_authority(run_dir, invalid)
+
+        ledger.update({
+            "selected_task_id": "T1",
+            "current_step": "implement",
+            "correction_cycle": 3,
+        })
+        ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+        repository_before = controller.capture_git_status(self.repo)
+        fake = self.write_fake_codex(created_paths=(), mutate_repository=False)
+
+        result = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(fake),
+        ], text=True, capture_output=True)
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("correction cycle", result.stderr)
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+        self.assertFalse((run_dir / "attempts").exists())
+        self.assertFalse((self.root / "argv.json").exists())
+        self.assertEqual(repository_before, controller.capture_git_status(self.repo))
+
+    def test_coherent_flow_history_truncation_fails_before_worker_preflight(self):
+        controller, run_dir = self.create_initialized_run()
+        current = flow_profile()
+        current["profile"] = "strong-current"
+        current["steps"][0]["mode"] = "strong"
+        current_path = self.root / "strong-current.json"
+        current_path.write_text(json.dumps(current, indent=2, sort_keys=True) + "\n")
+        controller.revise_flow(run_dir, current_path)
+
+        (run_dir / "flows/flow-002.json").unlink()
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+        repository_before = controller.capture_git_status(self.repo)
+        fake = self.write_fake_codex(created_paths=(), mutate_repository=False)
+
+        result = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(fake),
+        ], text=True, capture_output=True)
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+        self.assertFalse((run_dir / "attempts").exists())
+        self.assertFalse((self.root / "argv.json").exists())
+        self.assertEqual(repository_before, controller.capture_git_status(self.repo))
+
+    def test_revised_flow_controls_implementation_actor_selection(self):
+        controller, run_dir = self.create_initialized_run()
+        revised_flow = flow_profile()
+        revised_flow["profile"] = "strong-implementation"
+        revised_flow["steps"][0]["mode"] = "strong"
+        revised_path = self.root / "strong-implementation-flow.json"
+        revised_path.write_text(
+            json.dumps(revised_flow, indent=2, sort_keys=True) + "\n"
+        )
+        controller.revise_flow(run_dir, revised_path)
+        fake = self.write_fake_codex(created_paths=(), mutate_repository=False)
+
+        result = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(fake),
+        ], text=True, capture_output=True)
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        attempt = json.loads(
+            (run_dir / "attempts/attempt-001/record.json").read_text()
+        )
+        self.assertEqual(
+            ("gpt-5.6-sol", "high"),
+            (attempt["model"], attempt["effort"]),
+        )
+
     def test_post_acceptance_run_next_launches_next_ready_task(self):
         controller = load_controller()
         run_dir = self.root / "runs" / "run-accepted-next"
@@ -1387,14 +1815,15 @@ raise SystemExit(0)
         released_tasks[1]["state"] = "ready"
         controller.update_ledger(run_dir, {
             "state": "ready", "selected_task_id": None,
-            "active_operation_path": None, "tasks": released_tasks,
+            "active_operation_path": None, "current_step": None,
+            "correction_cycle": 0, "tasks": released_tasks,
         }, expected_revision=ledger["revision"], closure_decision={
             "accepted": True,
             "allowed_transitions": ["accepted"],
             "identity": {
                 "run_id": "run-1", "task_id": "T1", "attempt_id": first_attempt,
             },
-        })
+        }, cursor_action="task_boundary")
 
         fake = self.write_fake_codex(
             created_paths=(), clean_mutation=True, task_id="T2",
@@ -1699,8 +2128,11 @@ raise SystemExit(0)
                     "state": "stopped",
                     "selected_task_id": None,
                     "active_attempt_id": None,
+                    "current_step": None,
+                    "correction_cycle": 0,
                     "tasks": stopped_tasks,
-                }, expected_revision=running["revision"])
+                }, expected_revision=running["revision"],
+                    cursor_action="task_boundary")
             finally:
                 fcntl.flock(lock_stream.fileno(), fcntl.LOCK_UN)
                 lock_stream.close()
@@ -1771,7 +2203,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
 
     def create_clean_inspection_run(
         self, *, targeted="/usr/bin/true", repository_gate=None, authorized_gap=None,
-        stop_overrides=None,
+        stop_overrides=None, flow=None,
     ):
         controller = load_controller()
         run_dir = self.root / "runs" / "run-clean-inspect"
@@ -1782,6 +2214,8 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
         policy["verification"]["repository_gate"] = repository_gate
         policy["verification"]["authorized_gap"] = authorized_gap
         policy["stop_policy"].update(stop_overrides or {})
+        if flow is not None:
+            policy["flow"] = flow
         controller.persist_run_policy(policy_path, policy)
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
@@ -1807,6 +2241,180 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
         ], text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)
         return controller, run_dir
+
+    def test_verify_off_inspection_keeps_mechanical_boundary_and_runs_zero_commands(self):
+        verify_off = flow_profile()
+        verify_off["profile"] = "verify-off"
+        verify_off["steps"] = [
+            step for step in verify_off["steps"] if step["kind"] != "verify"
+        ]
+        controller, run_dir = self.create_clean_inspection_run(flow=verify_off)
+        original_inspection = controller._validate_closure_observations
+
+        with mock.patch.object(
+            controller,
+            "_validate_closure_observations",
+            wraps=original_inspection,
+        ) as mechanical_inspection, mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("verify-off reached command execution"),
+        ) as execute:
+            result = controller.inspect_run(run_dir, 10)
+
+        mechanical_inspection.assert_called_once()
+        execute.assert_not_called()
+        self.assertTrue(result["accepted"])
+        execution = json.loads(
+            (run_dir / "verification/attempt-001.turn-001.execution.json").read_text()
+        )
+        verification = json.loads(Path(result["verification_path"]).read_text())
+        decision = json.loads(Path(result["decision_path"]).read_text())
+        self.assertEqual([], execution["plan"])
+        self.assertEqual([], execution["outcomes"])
+        self.assertEqual("omitted_by_policy", execution["terminal_reason"])
+        self.assertEqual("omitted_by_policy", verification["outcome"])
+        self.assertEqual(["mechanical checks passed"], decision["reasons"])
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual("accept", ledger["current_step"])
+
+    def test_targeted_verification_excludes_configured_repository_gate(self):
+        targeted = flow_profile()
+        targeted["steps"][1]["mode"] = "targeted"
+        controller, run_dir = self.create_clean_inspection_run(
+            targeted="/usr/bin/true",
+            repository_gate="/usr/bin/false",
+            flow=targeted,
+        )
+
+        class ExpectedPlan(Exception):
+            pass
+
+        def inspect_plan(*, plan, **_kwargs):
+            self.assertEqual(
+                [["/usr/bin/true"]],
+                [command["argv"] for command in plan["commands"]],
+            )
+            self.assertEqual(
+                [["task_required", "policy_targeted"]],
+                [command["roles"] for command in plan["commands"]],
+            )
+            raise ExpectedPlan
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=inspect_plan,
+        ):
+            with self.assertRaises(ExpectedPlan):
+                controller.inspect_run(run_dir, 10)
+
+    def test_repository_gate_mode_requires_persisted_repository_gate(self):
+        with_gate = flow_profile()
+        with_gate["steps"][1]["mode"] = "targeted_plus_repository_gate"
+        controller, run_dir = self.create_clean_inspection_run(
+            repository_gate=None,
+            flow=with_gate,
+        )
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("invalid verification mode reached execution"),
+        ) as execute:
+            with self.assertRaisesRegex(ValueError, "repository gate"):
+                controller.inspect_run(run_dir, 10)
+
+        execute.assert_not_called()
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
+
+    def test_inspect_keeps_pending_semantic_review_non_accepting(self):
+        pending_review = flow_profile("reviewed")
+        pending_review["profile"] = "review-only"
+        pending_review["steps"] = [
+            step for step in pending_review["steps"]
+            if step["kind"] not in {"preflight", "verify"}
+        ]
+        controller, run_dir = self.create_clean_inspection_run(
+            flow=pending_review
+        )
+
+        result = controller.inspect_run(run_dir, 10)
+
+        decision = json.loads(Path(result["decision_path"]).read_text())
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        self.assertEqual("semantic_review", ledger["current_step"])
+        self.assertFalse(
+            result["accepted"],
+            "mechanical eligibility crossed a pending semantic-review boundary",
+        )
+        self.assertNotIn("accept", result["allowed_actions"])
+        self.assertFalse(decision["accepted"])
+        self.assertNotIn("accepted", decision["allowed_transitions"])
+        self.assertEqual("not_collected", decision["semantic_review"])
+
+    def test_durable_adapter_command_actor_mismatch_fails_before_inspection(self):
+        controller, run_dir = self.create_clean_inspection_run()
+        attempt_dir = run_dir / "attempts/attempt-001"
+        state_path = attempt_dir / "state.json"
+        terminal_path = attempt_dir / "turn-001.result.state.json"
+        state = json.loads(state_path.read_text())
+        state["effective_command"] = [
+            'model_reasoning_effort="high"'
+            if item == 'model_reasoning_effort="medium"' else item
+            for item in state["effective_command"]
+        ]
+        state_bytes = (
+            json.dumps(state, indent=2, sort_keys=True) + "\n"
+        ).encode()
+        state_path.write_bytes(state_bytes)
+        terminal_path.write_bytes(state_bytes)
+
+        ledger_path = run_dir / "ledger.json"
+        ledger = json.loads(ledger_path.read_text())
+        closure_path = run_dir / ledger["last_closure_path"]
+        closure = json.loads(closure_path.read_text())
+        closure["adapter_state_digest"] = controller.sha256_text(
+            controller.canonical_json(state)
+        )
+        closure["worker_claims"]["effective_command"] = state["effective_command"]
+        closure_bytes = (
+            json.dumps(closure, indent=2, sort_keys=True) + "\n"
+        ).encode()
+        closure_path.write_bytes(closure_bytes)
+        ledger["last_closure_sha256"] = sha256_bytes(closure_bytes)
+        ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
+        run_bytes = {
+            path.relative_to(run_dir): path.read_bytes()
+            for path in run_dir.rglob("*") if path.is_file()
+        }
+
+        with mock.patch.object(
+            controller._verification_module,
+            "execute_verification_plan",
+            side_effect=AssertionError("actor mismatch reached verification"),
+        ) as execute:
+            with self.assertRaisesRegex(ValueError, "adapter command actor"):
+                controller.inspect_run(run_dir, 10)
+
+        execute.assert_not_called()
+        self.assertEqual(
+            run_bytes,
+            {
+                path.relative_to(run_dir): path.read_bytes()
+                for path in run_dir.rglob("*") if path.is_file()
+            },
+        )
 
     def test_inspect_rejects_preexisting_decision_before_execution_or_publication(self):
         controller, run_dir = self.create_clean_inspection_run()
@@ -2281,8 +2889,11 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
             "owner": "test-owner",
             "follow_up": "Resolve after this bounded task",
         }
+        with_gate = flow_profile()
+        with_gate["steps"][1]["mode"] = "targeted_plus_repository_gate"
         controller, run_dir = self.create_clean_inspection_run(
             repository_gate="/usr/bin/false", authorized_gap=gap,
+            flow=with_gate,
         )
 
         result = controller.inspect_run(run_dir, 10)
@@ -2302,10 +2913,13 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
             "owner": "test-owner",
             "follow_up": "Resolve later",
         }
+        with_gate = flow_profile()
+        with_gate["steps"][1]["mode"] = "targeted_plus_repository_gate"
         controller, run_dir = self.create_clean_inspection_run(
             targeted="/usr/bin/false",
             repository_gate="/usr/bin/false",
             authorized_gap=gap,
+            flow=with_gate,
         )
 
         result = controller.inspect_run(run_dir, 10)

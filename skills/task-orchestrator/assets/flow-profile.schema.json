@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:task-orchestrator:flow-profile:v1",
+  "title": "Task Orchestrator MVP Flow Profile",
+  "type": "object",
+  "required": [
+    "version",
+    "profile",
+    "steps",
+    "actor_levels",
+    "implementation_session_reuse_threshold",
+    "correction",
+    "routes"
+  ],
+  "properties": {
+    "version": {"const": 1},
+    "profile": {"type": "string", "minLength": 1},
+    "steps": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 5,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["kind", "role", "mode"],
+            "properties": {
+              "kind": {"const": "preflight"},
+              "role": {"const": "preflight"},
+              "mode": {"enum": ["light", "standard", "strong"]}
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["kind", "role", "mode"],
+            "properties": {
+              "kind": {"const": "implement"},
+              "role": {"const": "implementer"},
+              "mode": {"enum": ["light", "standard", "strong"]}
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["kind", "role", "mode"],
+            "properties": {
+              "kind": {"const": "verify"},
+              "role": {"const": "verifier"},
+              "mode": {
+                "enum": ["targeted", "targeted_plus_repository_gate"]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["kind", "role", "mode"],
+            "properties": {
+              "kind": {"const": "semantic_review"},
+              "role": {"const": "semantic_reviewer"},
+              "mode": {"enum": ["standard", "strong"]}
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["kind", "role", "mode"],
+            "properties": {
+              "kind": {"const": "accept"},
+              "role": {"const": "controller"},
+              "mode": {"const": "off"}
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "actor_levels": {
+      "const": {
+        "light": {"model": "gpt-5.6-sol", "reasoning": "low"},
+        "standard": {"model": "gpt-5.6-sol", "reasoning": "medium"},
+        "strong": {"model": "gpt-5.6-sol", "reasoning": "high"}
+      }
+    },
+    "implementation_session_reuse_threshold": {"const": 0.5},
+    "correction": {
+      "type": "object",
+      "required": ["enabled", "limit"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "limit": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "routes": {
+      "type": "object",
+      "required": [
+        "blocked",
+        "failed",
+        "needs_input",
+        "unexpected_changes",
+        "inconclusive",
+        "corrections_exhausted",
+        "permission_expansion",
+        "plan_or_architecture_question"
+      ],
+      "additionalProperties": {"enum": ["stop", "escalate"]}
+    }
+  },
+  "additionalProperties": false
+}

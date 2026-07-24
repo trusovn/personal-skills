@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:task-orchestrator:step-outcome:v1",
+  "title": "Task Orchestrator Step Outcome",
+  "type": "object",
+  "required": [
+    "version",
+    "subject",
+    "result",
+    "evidence_status",
+    "artifact_refs",
+    "payload"
+  ],
+  "properties": {
+    "version": {"const": 1},
+    "subject": {"$ref": "handoff.schema.json#/$defs/subject"},
+    "result": {
+      "type": ["string", "null"],
+      "enum": [
+        "ready",
+        "blocked",
+        "needs_input",
+        "complete",
+        "failed",
+        "mechanically_eligible",
+        "findings",
+        "ACCEPT",
+        "CHANGES_REQUESTED",
+        "INCONCLUSIVE",
+        "task_accepted",
+        null
+      ]
+    },
+    "evidence_status": {"enum": ["reported", "omitted_by_policy"]},
+    "artifact_refs": {
+      "type": "array",
+      "items": {"$ref": "handoff.schema.json#/$defs/reference"}
+    },
+    "payload": {
+      "type": "object",
+      "required": ["version", "reference"],
+      "properties": {
+        "version": {"const": 1},
+        "reference": {
+          "oneOf": [
+            {"$ref": "handoff.schema.json#/$defs/reference"},
+            {"type": "null"}
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

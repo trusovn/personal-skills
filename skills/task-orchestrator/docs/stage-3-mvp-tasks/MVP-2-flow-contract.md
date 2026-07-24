@@ -35,13 +35,13 @@ workflow execution loop.
 
 | Item | Contract |
 |---|---|
-| Authority | [Stage 3 MVP task-actualization map](../stage-3-mvp-task-actualization-map.md), `MVP-2` row and boundary adjustment; [Stage 3 MVP rebaseline](../stage-3-mvp-rebaseline.md), “Configurable workflow model,” “MVP-2,” Gate 1, deferred work, and stop/replan conditions |
+| Authority | [Stage 3 MVP task-actualization map](../stage-3-mvp-task-actualization-map.md), `MVP-2` row and boundary adjustment; [Stage 3 MVP rebaseline](../stage-3-mvp-rebaseline.md), “Configurable workflow model,” “MVP-2,” Gate 1, deferred work, and stop/replan conditions; user-approved single-user trust boundary on 2026-07-24 |
 | Repository root | `/Users/mtrusov/work/skill-sources/personal-skills` |
 | Dependencies | `S3-08` foundation accepted; see [S3-08 result](../history/stage-3-tasks/S3-08-result.md). No new prerequisite task. |
-| Allowed changes | `skills/task-orchestrator/scripts/controller_state.py`; `skills/task-orchestrator/scripts/controller.py` only for flow persistence, validation, cursor wiring, safe-boundary revision, and pre-launch enforcement; `skills/task-orchestrator/assets/run-policy.schema.json`; existing examples that must adopt the new contract; the smallest new flow, handoff, outcome, and profile schema/example files under `skills/task-orchestrator/assets/`; `skills/task-orchestrator/tests/test_controller_state.py`; `skills/task-orchestrator/tests/test_controller.py`; `skills/task-orchestrator/tests/test_retrieval_surface.py` only when needed to validate new current examples; and `skills/task-orchestrator/docs/stage-3-mvp-tasks/MVP-2-result.md` |
+| Allowed changes | `skills/task-orchestrator/scripts/controller_state.py`; `skills/task-orchestrator/scripts/controller.py` only for flow persistence, validation, cursor wiring, safe-boundary revision, and pre-launch enforcement; `skills/task-orchestrator/assets/run-policy.schema.json`; existing examples that must adopt the new contract; the smallest new flow, handoff, outcome, and profile schema/example files under `skills/task-orchestrator/assets/`; `skills/task-orchestrator/tests/test_controller_state.py`; `skills/task-orchestrator/tests/test_controller.py`; `skills/task-orchestrator/tests/test_controller_git.py` only to preserve existing Git wiring coverage while retaining `reviewed` as the default; `skills/task-orchestrator/tests/test_retrieval_surface.py` only when needed to validate new current examples; and `skills/task-orchestrator/docs/stage-3-mvp-tasks/MVP-2-result.md` |
 | Read-only context | [Architecture map](../../references/architecture-map.md); `skills/task-orchestrator/docs/controller-contract.md`; `skills/task-orchestrator/docs/stage-3-retrieval-surface-follow-up.md`; accepted S3-01–S3-08 results; owning source and tests named above |
-| Out of scope | Concrete preflight or semantic-review actor selection; actor launch adapters; recovery, stop, resume, correction execution, fresh-session routing, semantic-review execution, acceptance, dependency release, automatic advance, plan preparation, skill/operator-guide rewrites, commit or tracker behavior, migration of pre-MVP run directories, arbitrary step kinds, plugins, a general workflow engine, and unrelated source or test reorganization |
-| Assumptions / unresolved decisions | No material design decision is open. The implementation may choose the smallest JSON layout and the smallest explicit controller-owned flow-revision surface. Whether the initial flow is embedded in the run policy or digest-referenced from it is an implementation choice, provided there is one canonical authority, immutable history, and exact digest validation. |
+| Out of scope | Concrete preflight or semantic-review actor selection; actor launch adapters; recovery, stop, resume, correction execution, fresh-session routing, semantic-review execution, acceptance, dependency release, automatic advance, plan preparation, skill/operator-guide rewrites, commit or tracker behavior, migration of pre-MVP run directories, arbitrary step kinds, plugins, a general workflow engine, unrelated source or test reorganization, deliberate coherent rewriting of all controller state by the trusted local user, controller-source compromise, and host compromise |
+| Assumptions / unresolved decisions | The local user, controller process, and controller-owned run directory are trusted. LLM/actor outputs and requested transitions are fallible, untrusted data. The implementation must use the smallest single controller-owned current-flow pointer and write-once revision records; it does not need an external authority directory, protected key, signature, independent trust store, or cryptographic defense against the trusted user rewriting every related record coherently. |
 
 The current retrieval documentation remains transitional. Do not update
 `SKILL.md`, the operator guide, or the architecture map to advertise a runnable
@@ -58,10 +58,13 @@ Required work:
    profile steps. S3-08 mechanical inspection of records, repository identity,
    and allowed scope remains always on; omitting `verify` disables configured
    test-command execution, not that controller inspection.
-2. Represent the selected profile as immutable run authority. Bind the exact
-   initial flow bytes or canonical content to the run and validate the same
-   authority on every existing public path that could otherwise launch or
-   inspect an actor. Do not create two mutable sources of flow truth.
+2. Represent the selected profile as controller-owned run authority. Bind the
+   exact initial flow bytes or canonical content to one current-flow pointer in
+   the run state and validate that authority on every existing public path that
+   could otherwise launch or inspect an actor. Revision records are write-once
+   through supported controller operations. Do not create a second authority
+   store or attempt to defend against the trusted local user coherently
+   rewriting the complete run state.
 3. Supply data-defined `fast local`, default `reviewed`, and `strong local`
    profiles. A custom profile may omit supported optional steps or change a
    supported level without a production-code edit, but it may not introduce a
@@ -124,10 +127,12 @@ Required work:
    mutation.
 9. Permit flow revision only through an explicit operator action while the run
    is at a safe task boundary: `ready`, with no selected task, active attempt,
-   or active operation. Publish a new immutable revision and atomically point
-   controller state at it; preserve prior revision bytes. Reject revision
-   during every ownership-bearing or terminal state, reject in-place rewrite,
-   and reject any purported flow change carried by actor output or handoff.
+   or active operation. Publish a new write-once revision and atomically point
+   the single controller-owned run-state pointer at it; preserve prior revision
+   bytes during supported controller operation. Reject revision during every
+   ownership-bearing or terminal state, reject in-place rewrite through the
+   controller API, and reject any purported flow change carried by actor output
+   or handoff.
 10. Add focused behavior tests before implementation, then record exact
     commands, results, chosen serialization, revision publication sequence,
     cursor lifecycle, and residual risks in
@@ -145,17 +150,20 @@ Required work:
   non-finite/negative/wrong-type correction limit, an unbounded backward route,
   a configurable context threshold, and any actor mapping that contradicts the
   frozen model/reasoning mapping.
-- **AC-03:** Invalid, stale, tampered, or digest-mismatched flow authority fails
-  before worker preflight or launch and leaves the run directory, ledger, flow
-  revisions, and repository unchanged. Defensive validation prevents direct
-  `run-next` or `inspect` use from bypassing initialization checks.
-- **AC-04:** Initial flow authority and every explicit revision are immutable
-  and digest-bound. A revision succeeds only at the exact safe boundary,
-  preserves the prior record, changes no task/scope/permission authority, and
-  becomes the sole current revision in one controller-owned state update.
-  Repeating the same requested revision is a byte-identical no-op with no new
-  revision or ledger write, never an in-place rewrite or ambiguous partial
-  state.
+- **AC-03:** Invalid, stale, internally inconsistent, actor-proposed, or
+  digest-mismatched flow authority fails before worker preflight or launch and
+  leaves the run directory, ledger, flow revisions, and repository unchanged.
+  Defensive validation prevents direct `run-next` or `inspect` use from
+  bypassing initialization checks. Deliberate same-user rewriting of the flow
+  and every controller-owned pointer/digest consistently is not a supported
+  detection case.
+- **AC-04:** Initial flow authority and every explicit revision are write-once
+  and digest-bound through supported controller operations. A revision succeeds
+  only at the exact safe boundary, preserves the prior record, changes no
+  task/scope/permission authority, and becomes the sole current revision in one
+  atomic controller-owned run-state update. Repeating the same requested
+  revision is a byte-identical no-op with no new revision or ledger write,
+  never an API-level in-place rewrite or ambiguous partial state.
 - **AC-05:** Cursor state is coherent with the selected task and current flow.
   Task selection establishes the first enabled step at cycle zero; the first
   authorized correction increments to cycle one; fresh re-review retains that
@@ -184,7 +192,7 @@ Required work:
 |---|---|---|---|---|---|
 | A profile can express only the closed MVP phase order. | `preflight` absent/light/standard/strong; required `implement`; `verify` absent/targeted/targeted-plus-repository-gate; `semantic_review` absent/standard/strong; one terminal side-effect-free `accept`; duplicates, reordered phases, unknown steps/modes. | Runtime validation of real JSON followed by public initialization; invalid input creates no runnable actor state. | Fail-first valid-profile test plus exhaustive table-driven validator cases and public-init denials. | Construct a custom supported profile and one adversarial profile with a valid-looking unknown/reordered step; corroborate zero launch. | Implementer owns focused validator/init evidence; fresh reviewer owns the adversarial probe. |
 | Every backward route is bounded and policy-owned. | Correction disabled; finite limit zero; first correction; fresh re-review; next correction; exact exhaustion; wrong-type/negative/unbounded limit; stop versus escalate. | Pure transition oracle plus persisted ledger bytes at the controller state boundary. | Table-driven lifecycle test carrying the first legitimate change and next real occurrence through the exact limit. | Attempt a caller-supplied cycle jump and one correction beyond the limit; compare persisted bytes before/after. | Implementer owns transition coverage; fresh reviewer owns mutation-denial corroboration. |
-| Flow authority never changes from an actor or during owned work. | Initial flow; explicit same/different revision at `ready`; running, awaiting-inspection, resumable, finalizing, and stopped denial; in-place tamper; actor/handoff-proposed flow. | Public controller revision boundary, immutable revision bytes, current digest reference, and zero worker calls. | Safe-boundary revision integration test and denial tests for every non-safe state and source. | Tamper an old revision and try a coherent ledger/reference rewrite before `run-next`; require fail-closed behavior. | Implementer owns publication/replay cases; fresh reviewer owns coherent-tamper probe. |
+| Flow authority never changes from an actor or during owned work. | Initial flow; explicit same/different revision at `ready`; running, awaiting-inspection, resumable, finalizing, and stopped denial; inconsistent or stale persisted evidence; actor/handoff-proposed flow. Deliberate coherent rewriting by the trusted local user is excluded. | Public controller revision boundary, write-once revision bytes, one current run-state digest reference, and zero worker calls. | Safe-boundary revision integration test and denial tests for every non-safe state and actor-controlled source. | Corrupt one persisted revision without updating the controller-owned pointer, then inject a flow or permission change through an actor envelope; require fail-closed behavior and zero launch. | Implementer owns publication/replay cases; fresh reviewer owns inconsistent-state and authority-injection probes. |
 | The cursor describes the only profile step that existing commands may perform, while mandatory mechanical inspection is never disabled. | No selected task/null; selection/first enabled step; implementation; verify enabled/omitted; pending preflight/review/accept; task-boundary reset; cycle zero/one/next/exhausted. | Persisted ledger plus fake-worker/executor markers at `run-next`/`inspect`; wrong actor is never invoked, and verify omission suppresses commands but not S3-08 inspection. | Pure cursor tests and public integration tests for fast, verify-off, and reviewed/strong pending-step cases. | Start from a coherent-looking cursor/flow mismatch, then a verify-off run; prove zero wrong-adapter calls and complete mechanical inspection. | Implementer owns cursor and existing-command cases; fresh reviewer owns mismatch and verify-off probes. |
 | Frozen actor selection and session threshold cannot drift by profile. | Light/standard/strong mappings; review excludes light; exactly 50%; omitted, 49.9%, 50%, 50.1%, null/unavailable as envelope values for later routing. | Runtime-resolved contract values and strict validators; no adapter launch is needed for this task. | Exact mapping/threshold cases that reject alternative model, reasoning, or threshold authority. | Supply semantically equivalent but non-canonical threshold/mapping encodings and verify rejection or one documented canonicalization. | Implementer owns the mapping matrix; fresh reviewer checks alternate encodings. |
 | Structured records carry evidence, not authority. | Every supported step outcome; wrong-step outcome; run/task/flow/step/cycle/role mismatch; safe run-relative reference; traversal/absolute path; transcript reference versus copied transcript; omitted versus passed. | Runtime envelope validator operating on real JSON fixtures and exact subject identity. | Positive fixture per step and focused negative identity/path/authority cases. | Change one identity link and add a flow/permission field coherently; require rejection without state mutation. | Implementer owns fixture/validator evidence; fresh reviewer owns coherent authority-injection probe. |

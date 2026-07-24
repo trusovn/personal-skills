@@ -27,6 +27,12 @@ class RetrievalSurfaceTest(unittest.TestCase):
             "references/architecture-map.md",
             "assets/examples/minimal-run-policy.json",
             "assets/examples/minimal-task-manifest.json",
+            "assets/examples/fast-local-flow.json",
+            "assets/examples/reviewed-flow.json",
+            "assets/examples/strong-local-flow.json",
+            "assets/flow-profile.schema.json",
+            "assets/handoff.schema.json",
+            "assets/step-outcome.schema.json",
             "docs/stage-3-retrieval-surface-follow-up.md",
         )
 
@@ -82,6 +88,13 @@ class RetrievalSurfaceTest(unittest.TestCase):
             policy["permissions"]["writable_roots"] = [str(repository)]
 
             controller_state.validate_run_policy(policy)
+            for name in ("fast-local", "reviewed", "strong-local"):
+                flow = json.loads(
+                    (
+                        SKILL_ROOT / "assets" / "examples" / f"{name}-flow.json"
+                    ).read_text()
+                )
+                controller_state.validate_flow_profile(flow)
             validated = controller_state.validate_task_manifest(
                 policy, manifest, repository
             )

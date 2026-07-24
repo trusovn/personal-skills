@@ -23,6 +23,7 @@
       "uniqueItems": true,
       "items": { "type": "string", "minLength": 1 }
     },
+    "flow": { "$ref": "flow-profile.schema.json" },
     "verification": {
       "type": "object",
       "required": ["targeted_checks", "repository_gate", "authorized_gap"],

@@ -1,0 +1,32 @@
+{
+  "actor_levels": {
+    "light": {"model": "gpt-5.6-sol", "reasoning": "low"},
+    "standard": {"model": "gpt-5.6-sol", "reasoning": "medium"},
+    "strong": {"model": "gpt-5.6-sol", "reasoning": "high"}
+  },
+  "correction": {"enabled": true, "limit": 2},
+  "implementation_session_reuse_threshold": 0.5,
+  "profile": "reviewed",
+  "routes": {
+    "blocked": "stop",
+    "corrections_exhausted": "escalate",
+    "failed": "stop",
+    "inconclusive": "escalate",
+    "needs_input": "escalate",
+    "permission_expansion": "stop",
+    "plan_or_architecture_question": "escalate",
+    "unexpected_changes": "stop"
+  },
+  "steps": [
+    {"kind": "preflight", "mode": "light", "role": "preflight"},
+    {"kind": "implement", "mode": "standard", "role": "implementer"},
+    {"kind": "verify", "mode": "targeted", "role": "verifier"},
+    {
+      "kind": "semantic_review",
+      "mode": "standard",
+      "role": "semantic_reviewer"
+    },
+    {"kind": "accept", "mode": "off", "role": "controller"}
+  ],
+  "version": 1
+}

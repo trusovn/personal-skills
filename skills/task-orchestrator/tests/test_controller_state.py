@@ -67,6 +67,65 @@ class ControllerStateContractTest(unittest.TestCase):
                 "on_needs_input": "escalate",
                 "on_unexpected_changes": "stop",
             },
+            "flow": self.flow("fast-local"),
+        }
+
+    def flow(self, profile="reviewed"):
+        levels = {
+            "light": {"model": "gpt-5.6-sol", "reasoning": "low"},
+            "standard": {"model": "gpt-5.6-sol", "reasoning": "medium"},
+            "strong": {"model": "gpt-5.6-sol", "reasoning": "high"},
+        }
+        steps = {
+            "fast-local": [
+                {"kind": "implement", "role": "implementer", "mode": "standard"},
+                {"kind": "verify", "role": "verifier", "mode": "targeted"},
+                {"kind": "accept", "role": "controller", "mode": "off"},
+            ],
+            "reviewed": [
+                {"kind": "preflight", "role": "preflight", "mode": "light"},
+                {"kind": "implement", "role": "implementer", "mode": "standard"},
+                {"kind": "verify", "role": "verifier", "mode": "targeted"},
+                {
+                    "kind": "semantic_review",
+                    "role": "semantic_reviewer",
+                    "mode": "standard",
+                },
+                {"kind": "accept", "role": "controller", "mode": "off"},
+            ],
+            "strong-local": [
+                {"kind": "preflight", "role": "preflight", "mode": "strong"},
+                {"kind": "implement", "role": "implementer", "mode": "strong"},
+                {
+                    "kind": "verify",
+                    "role": "verifier",
+                    "mode": "targeted_plus_repository_gate",
+                },
+                {
+                    "kind": "semantic_review",
+                    "role": "semantic_reviewer",
+                    "mode": "strong",
+                },
+                {"kind": "accept", "role": "controller", "mode": "off"},
+            ],
+        }[profile]
+        return {
+            "version": 1,
+            "profile": profile,
+            "steps": steps,
+            "actor_levels": levels,
+            "implementation_session_reuse_threshold": 0.5,
+            "correction": {"enabled": profile != "fast-local", "limit": 2},
+            "routes": {
+                "blocked": "stop",
+                "failed": "stop",
+                "needs_input": "escalate",
+                "unexpected_changes": "stop",
+                "inconclusive": "escalate",
+                "corrections_exhausted": "escalate",
+                "permission_expansion": "stop",
+                "plan_or_architecture_question": "escalate",
+            },
         }
 
     def manifest(self):
@@ -92,6 +151,9 @@ class ControllerStateContractTest(unittest.TestCase):
             "created_at": "2026-07-16T00:00:00+00:00",
             "updated_at": "2026-07-16T00:00:00+00:00",
             "revision": 1,
+            "flow_revision": 1,
+            "flow_path": "flows/flow-001.json",
+            "flow_sha256": "a" * 64,
             "policy_path": "run-policy.json",
             "policy_sha256": "abc",
             "manifest_path": "task-manifest.json",
@@ -107,6 +169,8 @@ class ControllerStateContractTest(unittest.TestCase):
             "last_verification_path": None,
             "last_decision_path": None,
             "active_operation_path": None,
+            "current_step": None,
+            "correction_cycle": 0,
             "tasks": [{
                 "id": "T1",
                 "title": "Test task",
@@ -164,6 +228,10 @@ class ControllerStateContractTest(unittest.TestCase):
         )
         record = state.build_attempt_record(
             task_id="T1", brief_path="tasks/T1.md", prompt="prompt", policy=policy,
+            flow=policy["flow"], flow_revision=1,
+            flow_sha256=state.sha256_text(
+                state.canonical_json(policy["flow"]) + "\n"
+            ),
             baseline_ref="run-initial.json",
         )
         self.assertEqual(hashlib.sha256(b"prompt").hexdigest(), record["prompt_sha256"])
@@ -180,13 +248,182 @@ class ControllerStateContractTest(unittest.TestCase):
             "policy_sha256": hashlib.sha256(
                 state.canonical_json(policy).encode()
             ).hexdigest(),
+            "flow_revision": 1,
+            "flow_sha256": state.sha256_text(
+                state.canonical_json(policy["flow"]) + "\n"
+            ),
             "transport": "codex-cli",
-            "model": None,
+            "model": "gpt-5.6-sol",
+            "effort": "medium",
             "sandbox": "workspace-write",
             "approval_policy": "never",
             "network": False,
             "writable_roots": [str(self.repository)],
         }, record)
+
+    def test_versioned_workflow_profiles_and_cursor(self):
+        state = load_controller_state()
+
+        for profile in ("fast-local", "reviewed", "strong-local"):
+            with self.subTest(profile=profile):
+                flow = json.loads(json.dumps(self.flow(profile)))
+                state.validate_flow_profile(flow)
+                self.assertEqual(
+                    flow,
+                    state.resolve_flow_profile(dict(self.policy(), flow=flow)),
+                )
+
+        custom = self.flow("reviewed")
+        custom["profile"] = "custom"
+        custom["steps"] = [
+            step for step in custom["steps"] if step["kind"] != "preflight"
+        ]
+        custom["steps"][1]["mode"] = "targeted_plus_repository_gate"
+        state.validate_flow_profile(custom)
+
+        cursor = state.transition_flow_cursor(
+            custom, {"current_step": None, "correction_cycle": 0}, "select"
+        )
+        self.assertEqual(
+            {"current_step": "implement", "correction_cycle": 0}, cursor
+        )
+        cursor = state.transition_flow_cursor(custom, cursor, "advance")
+        self.assertEqual("verify", cursor["current_step"])
+        cursor = state.transition_flow_cursor(custom, cursor, "advance")
+        self.assertEqual("semantic_review", cursor["current_step"])
+        cursor = state.transition_flow_cursor(
+            custom, cursor, "begin_correction",
+            result="CHANGES_REQUESTED",
+        )
+        self.assertEqual(
+            {"current_step": "correction", "correction_cycle": 1}, cursor
+        )
+        cursor = state.transition_flow_cursor(custom, cursor, "complete_correction")
+        self.assertEqual(
+            {"current_step": "semantic_review", "correction_cycle": 1}, cursor
+        )
+
+    def test_flow_validation_rejects_closed_contract_violations(self):
+        state = load_controller_state()
+        cases = []
+
+        def changed(mutator):
+            flow = self.flow("reviewed")
+            mutator(flow)
+            return flow
+
+        cases.extend([
+            changed(lambda flow: flow["steps"].pop(1)),
+            changed(lambda flow: flow["steps"].append(dict(flow["steps"][1]))),
+            changed(lambda flow: flow["steps"].reverse()),
+            changed(lambda flow: flow["steps"].insert(
+                1, {"kind": "deploy", "role": "deployer", "mode": "standard"}
+            )),
+            changed(lambda flow: flow["steps"][3].update(mode="light")),
+            changed(lambda flow: flow["steps"][-1].update(mode="commit")),
+            changed(lambda flow: flow["correction"].update(limit=-1)),
+            changed(lambda flow: flow["correction"].update(limit=float("inf"))),
+            changed(lambda flow: flow.update(implementation_session_reuse_threshold=0.49)),
+            changed(lambda flow: flow["actor_levels"]["strong"].update(reasoning="xhigh")),
+        ])
+        for index, flow in enumerate(cases):
+            with self.subTest(case=index):
+                with self.assertRaises(ValueError):
+                    state.validate_flow_profile(flow)
+
+    def test_correction_limit_and_structured_envelopes_are_authority_safe(self):
+        state = load_controller_state()
+        flow = self.flow("reviewed")
+        flow["correction"]["limit"] = 1
+        cursor = {"current_step": "semantic_review", "correction_cycle": 0}
+        correction = state.transition_flow_cursor(
+            flow, cursor, "begin_correction", result="CHANGES_REQUESTED"
+        )
+        review = state.transition_flow_cursor(
+            flow, correction, "complete_correction"
+        )
+        exhausted = state.transition_flow_cursor(
+            flow, review, "begin_correction", result="CHANGES_REQUESTED"
+        )
+        self.assertEqual(
+            {
+                "current_step": "semantic_review",
+                "correction_cycle": 1,
+                "stop_action": "escalate",
+            },
+            exhausted,
+        )
+
+        subject = {
+            "run_id": "run-1",
+            "task_id": "T1",
+            "flow_revision": 1,
+            "flow_sha256": "a" * 64,
+            "step": "semantic_review",
+            "correction_cycle": 1,
+            "actor_role": "semantic_reviewer",
+        }
+        handoff = {
+            "version": 1,
+            "subject": subject,
+            "summary": "Review the bounded change.",
+            "changed_paths": ["allowed.txt"],
+            "evidence_refs": ["verification/attempt-001.turn-001.json"],
+            "transcript_ref": "transcripts/review-001.jsonl",
+        }
+        outcome = {
+            "version": 1,
+            "subject": subject,
+            "result": "ACCEPT",
+            "evidence_status": "reported",
+            "artifact_refs": ["reviews/review-001.json"],
+            "payload": {"version": 1, "reference": "reviews/findings-001.json"},
+        }
+        state.validate_handoff_envelope(handoff, expected_subject=subject)
+        state.validate_step_outcome(outcome, expected_subject=subject)
+
+        for unsafe in ("/tmp/evidence", "../evidence", "evidence//record"):
+            invalid = json.loads(json.dumps(handoff))
+            invalid["evidence_refs"] = [unsafe]
+            with self.subTest(unsafe=unsafe):
+                with self.assertRaises(ValueError):
+                    state.validate_handoff_envelope(invalid, expected_subject=subject)
+        injected = json.loads(json.dumps(outcome))
+        injected["flow"] = self.flow()
+        with self.assertRaises(ValueError):
+            state.validate_step_outcome(injected, expected_subject=subject)
+
+    def test_flow_cursor_rejects_step_cycle_incoherence(self):
+        state = load_controller_state()
+        flow = self.flow("reviewed")
+        invalid_cursors = (
+            {"current_step": "implement", "correction_cycle": 1},
+            {"current_step": "correction", "correction_cycle": 0},
+            {"current_step": "correction", "correction_cycle": 3},
+            {"current_step": "semantic_review", "correction_cycle": 3},
+            {"current_step": "accept", "correction_cycle": 3},
+        )
+        for cursor in invalid_cursors:
+            with self.subTest(cursor=cursor):
+                with self.assertRaisesRegex(ValueError, "correction cycle"):
+                    state.validate_flow_cursor(flow, cursor)
+
+        for cursor in (
+            {"current_step": "implement", "correction_cycle": 0},
+            {"current_step": "correction", "correction_cycle": 1},
+            {"current_step": "semantic_review", "correction_cycle": 2},
+            {"current_step": "accept", "correction_cycle": 2},
+        ):
+            with self.subTest(cursor=cursor):
+                state.validate_flow_cursor(flow, cursor)
+
+        flow["correction"]["limit"] = 1
+        impossible = {"current_step": "semantic_review", "correction_cycle": 2}
+        with self.assertRaisesRegex(ValueError, "correction cycle"):
+            state.transition_flow_cursor(
+                flow, impossible, "begin_correction",
+                result="CHANGES_REQUESTED",
+            )
 
     def test_valid_manifest_keeps_exact_ledger_entries(self):
         state = load_controller_state()
@@ -356,13 +593,18 @@ class ControllerStateContractTest(unittest.TestCase):
             )
         self.assertEqual(original, json.dumps(ledger, sort_keys=True))
 
-    def test_attempt_record_rejects_tampered_model(self):
+    def test_attempt_record_rejects_tampered_actor_selection(self):
         state = load_controller_state()
         attempt = state.build_attempt_record(
             task_id="T1",
             brief_path="tasks/T1.md",
             prompt="implement T1",
             policy=self.policy(),
+            flow=self.flow(),
+            flow_revision=1,
+            flow_sha256=state.sha256_text(
+                state.canonical_json(self.flow()) + "\n"
+            ),
             baseline_ref="task-001.json",
         )
         attempt["model"] = "tampered-model"
@@ -435,6 +677,7 @@ class ControllerStateContractTest(unittest.TestCase):
         finalizing = self.ledger()
         finalizing.update({
             "state": "finalizing", "selected_task_id": "T1",
+            "current_step": "accept",
             "last_closure_path": "closure/attempt-001.json",
             "last_closure_sha256": "a" * 64,
             "last_verification_path": "verification/attempt-001.json",
@@ -457,6 +700,7 @@ class ControllerStateContractTest(unittest.TestCase):
         released_tasks[1]["state"] = "ready"
         updater = {
             "state": "ready", "selected_task_id": None,
+            "current_step": None, "correction_cycle": 0,
             "active_operation_path": None, "tasks": released_tasks,
         }
         identity = {
@@ -472,10 +716,12 @@ class ControllerStateContractTest(unittest.TestCase):
                 finalizing, updater, "2026-07-16T01:00:00+00:00",
                 expected_revision=1,
                 closure_decision=dict(decision, identity=dict(identity, attempt_id="attempt-000")),
+                cursor_action="task_boundary",
             )
         released = state.apply_ledger_update(
             finalizing, updater, "2026-07-16T01:00:00+00:00",
             expected_revision=1, closure_decision=decision,
+            cursor_action="task_boundary",
         )
         self.assertEqual(2, released["revision"])
         self.assertEqual("ready", released["state"])
@@ -487,6 +733,7 @@ class ControllerStateContractTest(unittest.TestCase):
         ledger = self.ledger()
         ledger.update({
             "state": "finalizing", "selected_task_id": "T1",
+            "current_step": "accept",
             "last_closure_path": "closure/attempt-001.json",
             "last_closure_sha256": "a" * 64,
             "last_verification_path": "verification/attempt-001.json",
@@ -512,6 +759,7 @@ class ControllerStateContractTest(unittest.TestCase):
         released_tasks[1]["state"] = "ready"
         updater = {
             "state": "ready", "selected_task_id": None,
+            "current_step": None, "correction_cycle": 0,
             "active_operation_path": None, "tasks": released_tasks,
         }
         decision = {
@@ -530,6 +778,7 @@ class ControllerStateContractTest(unittest.TestCase):
             state.apply_ledger_update(
                 ledger, updater, "2026-07-16T01:00:00+00:00",
                 expected_revision=1, closure_decision=decision,
+                cursor_action="task_boundary",
             )
         self.assertEqual(original_ledger, json.dumps(ledger, sort_keys=True))
         self.assertEqual(original_updater, json.dumps(updater, sort_keys=True))
@@ -545,6 +794,7 @@ class ControllerStateContractTest(unittest.TestCase):
             controller.update_ledger(
                 run_dir, updater, expected_revision=1,
                 closure_decision=decision,
+                cursor_action="task_boundary",
             )
         self.assertEqual(original_bytes, ledger_path.read_bytes())
         self.assertEqual(original_updater, json.dumps(updater, sort_keys=True))
@@ -599,6 +849,7 @@ class ControllerStateContractTest(unittest.TestCase):
         ledger.update({
             "state": "running", "selected_task_id": "T1",
             "active_attempt_id": "attempt-001",
+            "current_step": "implement",
         })
         ledger["tasks"][0].update({"state": "running", "attempt_ids": ["attempt-001"]})
         state.validate_ledger(ledger)
@@ -631,6 +882,7 @@ class ControllerStateContractTest(unittest.TestCase):
             ledger = self.ledger()
             ledger.update({
                 "state": "finalizing", "selected_task_id": "T1",
+                "current_step": "accept",
                 "last_closure_path": "closure/attempt-001.json",
                 "last_closure_sha256": "a" * 64,
                 "last_verification_path": "verification/attempt-001.json",
@@ -684,6 +936,7 @@ class ControllerStateContractTest(unittest.TestCase):
                 "state": "running",
                 "selected_task_id": "T1",
                 "active_attempt_id": "attempt-001",
+                "current_step": "implement",
             })
             ledger["tasks"][0].update({
                 "state": "running",
@@ -827,6 +1080,7 @@ class ControllerStateContractTest(unittest.TestCase):
         ledger.update({
             "state": "running", "selected_task_id": "T1",
             "active_attempt_id": "attempt-001",
+            "current_step": "implement",
         })
         ledger["tasks"][0].update({
             "state": "running",
@@ -896,6 +1150,7 @@ class ControllerStateContractTest(unittest.TestCase):
         stopped_with_running.update({
             "state": "running", "selected_task_id": "T1",
             "active_attempt_id": "attempt-001",
+            "current_step": "implement",
         })
         stopped_with_running["tasks"][0].update({
             "state": "running", "attempt_ids": ["attempt-001"],
@@ -911,7 +1166,8 @@ class ControllerStateContractTest(unittest.TestCase):
                 "stopped_with_running", stopped_with_running,
                 {
                     "state": "stopped", "selected_task_id": None,
-                    "active_attempt_id": None,
+                    "active_attempt_id": None, "current_step": None,
+                    "correction_cycle": 0,
                 },
                 "stopped.*active task state",
             ),
@@ -975,6 +1231,17 @@ class ControllerStateContractTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "authority is immutable"):
             state.apply_ledger_update(
                 ledger, {"tasks": changed_tasks}, "2026-07-16T01:00:00+00:00",
+                expected_revision=1,
+            )
+        with self.assertRaisesRegex(ValueError, "authority is immutable"):
+            state.apply_ledger_update(
+                ledger,
+                {
+                    "flow_revision": 2,
+                    "flow_path": "flows/flow-002.json",
+                    "flow_sha256": "b" * 64,
+                },
+                "2026-07-16T01:00:00+00:00",
                 expected_revision=1,
             )
         with self.assertRaisesRegex(ValueError, "revision is controller-owned"):

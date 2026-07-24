@@ -12,7 +12,37 @@ from typing import Any
 
 ATTEMPT_REQUIRED_FIELDS = (
     "task_id", "brief_path", "prompt_sha256", "baseline_ref", "policy_sha256",
-    "transport", "model", "sandbox", "approval_policy", "network", "writable_roots",
+    "flow_revision", "flow_sha256", "transport", "model", "effort", "sandbox",
+    "approval_policy", "network", "writable_roots",
+)
+
+ACTOR_LEVELS = {
+    "light": {"model": "gpt-5.6-sol", "reasoning": "low"},
+    "standard": {"model": "gpt-5.6-sol", "reasoning": "medium"},
+    "strong": {"model": "gpt-5.6-sol", "reasoning": "high"},
+}
+IMPLEMENTATION_SESSION_REUSE_THRESHOLD = 0.5
+FLOW_STEP_ORDER = (
+    "preflight", "implement", "verify", "semantic_review", "accept",
+)
+FLOW_STEP_ROLES = {
+    "preflight": "preflight",
+    "implement": "implementer",
+    "verify": "verifier",
+    "semantic_review": "semantic_reviewer",
+    "accept": "controller",
+}
+FLOW_STEP_MODES = {
+    "preflight": {"light", "standard", "strong"},
+    "implement": {"light", "standard", "strong"},
+    "verify": {"targeted", "targeted_plus_repository_gate"},
+    "semantic_review": {"standard", "strong"},
+    "accept": {"off"},
+}
+FLOW_ROUTE_FIELDS = (
+    "blocked", "failed", "needs_input", "unexpected_changes", "inconclusive",
+    "corrections_exhausted", "permission_expansion",
+    "plan_or_architecture_question",
 )
 
 ALLOWED_TASK_TRANSITIONS = {
@@ -42,6 +72,293 @@ def canonical_json(value: dict[str, Any]) -> str:
 
 def sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
+
+
+def _default_reviewed_flow() -> dict[str, Any]:
+    return {
+        "version": 1,
+        "profile": "reviewed",
+        "steps": [
+            {"kind": "preflight", "role": "preflight", "mode": "light"},
+            {"kind": "implement", "role": "implementer", "mode": "standard"},
+            {"kind": "verify", "role": "verifier", "mode": "targeted"},
+            {
+                "kind": "semantic_review",
+                "role": "semantic_reviewer",
+                "mode": "standard",
+            },
+            {"kind": "accept", "role": "controller", "mode": "off"},
+        ],
+        "actor_levels": json.loads(json.dumps(ACTOR_LEVELS)),
+        "implementation_session_reuse_threshold": (
+            IMPLEMENTATION_SESSION_REUSE_THRESHOLD
+        ),
+        "correction": {"enabled": True, "limit": 2},
+        "routes": {
+            "blocked": "stop",
+            "failed": "stop",
+            "needs_input": "escalate",
+            "unexpected_changes": "stop",
+            "inconclusive": "escalate",
+            "corrections_exhausted": "escalate",
+            "permission_expansion": "stop",
+            "plan_or_architecture_question": "escalate",
+        },
+    }
+
+
+def validate_flow_profile(flow: dict[str, Any]) -> None:
+    required = (
+        "version", "profile", "steps", "actor_levels",
+        "implementation_session_reuse_threshold", "correction", "routes",
+    )
+    _validate_exact_object(flow, required, "flow")
+    if type(flow["version"]) is not int or flow["version"] != 1:
+        raise ValueError("Unsupported flow version")
+    _validate_str(flow["profile"], "flow.profile")
+    if flow["actor_levels"] != ACTOR_LEVELS:
+        raise ValueError("flow.actor_levels must match the frozen actor mapping")
+    if (
+        type(flow["implementation_session_reuse_threshold"]) is not float
+        or flow["implementation_session_reuse_threshold"]
+        != IMPLEMENTATION_SESSION_REUSE_THRESHOLD
+    ):
+        raise ValueError(
+            "flow.implementation_session_reuse_threshold must be exactly 0.5"
+        )
+
+    steps = flow["steps"]
+    if not isinstance(steps, list):
+        raise ValueError("flow.steps must be an array")
+    kinds = []
+    for step in steps:
+        _validate_exact_object(step, ("kind", "role", "mode"), "flow step")
+        kind = step["kind"]
+        if kind not in FLOW_STEP_ORDER:
+            raise ValueError(f"Unsupported flow step: {kind}")
+        if step["role"] != FLOW_STEP_ROLES[kind]:
+            raise ValueError(f"flow step {kind} has an invalid role")
+        if step["mode"] not in FLOW_STEP_MODES[kind]:
+            raise ValueError(f"flow step {kind} has an unsupported mode")
+        kinds.append(kind)
+    if len(kinds) != len(set(kinds)):
+        raise ValueError("flow steps must not be duplicated")
+    for required_kind in ("implement", "accept"):
+        if kinds.count(required_kind) != 1:
+            raise ValueError(f"flow requires exactly one {required_kind} step")
+    if not kinds or kinds[-1] != "accept":
+        raise ValueError("accept must be the terminal flow step")
+    if kinds != sorted(kinds, key=FLOW_STEP_ORDER.index):
+        raise ValueError("flow steps are outside the closed MVP phase order")
+
+    correction = flow["correction"]
+    _validate_exact_object(correction, ("enabled", "limit"), "flow.correction")
+    _validate_bool(correction["enabled"], "flow.correction.enabled")
+    if type(correction["limit"]) is not int or correction["limit"] < 0:
+        raise ValueError("flow.correction.limit must be a finite non-negative integer")
+    if correction["enabled"] and "semantic_review" not in kinds:
+        raise ValueError("flow correction requires semantic_review")
+
+    routes = flow["routes"]
+    _validate_exact_object(routes, FLOW_ROUTE_FIELDS, "flow.routes")
+    for field in FLOW_ROUTE_FIELDS:
+        if routes[field] not in {"stop", "escalate"}:
+            raise ValueError(f"flow.routes.{field} must be stop or escalate")
+
+
+def resolve_flow_profile(policy: dict[str, Any]) -> dict[str, Any]:
+    flow = json.loads(json.dumps(policy.get("flow", _default_reviewed_flow())))
+    validate_flow_profile(flow)
+    return flow
+
+
+def flow_step(flow: dict[str, Any], kind: str) -> dict[str, Any] | None:
+    validate_flow_profile(flow)
+    return next((dict(step) for step in flow["steps"] if step["kind"] == kind), None)
+
+
+def validate_flow_cursor(
+    flow: dict[str, Any], cursor: dict[str, Any],
+) -> None:
+    validate_flow_profile(flow)
+    _validate_exact_object(
+        cursor, ("current_step", "correction_cycle"), "flow cursor"
+    )
+    current = cursor["current_step"]
+    cycle = cursor["correction_cycle"]
+    kinds = [step["kind"] for step in flow["steps"]]
+    if current is not None and current not in kinds and current != "correction":
+        raise ValueError("flow cursor current step does not belong to the flow")
+    if type(cycle) is not int or cycle < 0:
+        raise ValueError("flow cursor correction cycle is invalid")
+    if current is None:
+        if cycle != 0:
+            raise ValueError("a null flow cursor requires correction cycle zero")
+        return
+
+    correction = flow["correction"]
+    if cycle > correction["limit"]:
+        raise ValueError("flow cursor correction cycle exceeds the flow limit")
+    if cycle > 0 and not correction["enabled"]:
+        raise ValueError("flow cursor correction cycle is disabled by the flow")
+    if current == "correction":
+        if cycle == 0 or not correction["enabled"]:
+            raise ValueError("correction step requires an active correction cycle")
+    elif current in {"preflight", "implement", "verify"} and cycle != 0:
+        raise ValueError(
+            f"{current} step requires correction cycle zero"
+        )
+
+
+def transition_flow_cursor(
+    flow: dict[str, Any],
+    cursor: dict[str, Any],
+    action: str,
+    *,
+    result: str | None = None,
+) -> dict[str, Any]:
+    validate_flow_cursor(flow, cursor)
+    current = cursor["current_step"]
+    cycle = cursor["correction_cycle"]
+    kinds = [step["kind"] for step in flow["steps"]]
+
+    if action == "select":
+        if current is not None or cycle != 0:
+            raise ValueError("task selection requires a null cursor at cycle zero")
+        return {"current_step": kinds[0], "correction_cycle": 0}
+    if action == "advance":
+        if current not in kinds or current == "accept":
+            raise ValueError("cursor cannot advance from the current step")
+        return {
+            "current_step": kinds[kinds.index(current) + 1],
+            "correction_cycle": cycle,
+        }
+    if action == "complete_inspection":
+        if current != "implement":
+            raise ValueError("inspection completion requires the implement cursor")
+        next_index = kinds.index("implement") + 1
+        if kinds[next_index] == "verify":
+            next_index += 1
+        return {
+            "current_step": kinds[next_index],
+            "correction_cycle": cycle,
+        }
+    if action == "begin_correction":
+        if current != "semantic_review" or result != "CHANGES_REQUESTED":
+            raise ValueError("correction requires CHANGES_REQUESTED at semantic_review")
+        correction = flow["correction"]
+        if not correction["enabled"] or cycle >= correction["limit"]:
+            return {
+                "current_step": "semantic_review",
+                "correction_cycle": cycle,
+                "stop_action": flow["routes"]["corrections_exhausted"],
+            }
+        return {"current_step": "correction", "correction_cycle": cycle + 1}
+    if action == "complete_correction":
+        if current != "correction" or cycle < 1:
+            raise ValueError("fresh review requires an active correction cycle")
+        return {"current_step": "semantic_review", "correction_cycle": cycle}
+    raise ValueError(f"Unsupported flow cursor action: {action}")
+
+
+def _validate_run_relative_reference(value: Any, field: str) -> None:
+    _validate_str(value, field)
+    if value.startswith("/") or "\\" in value:
+        raise ValueError(f"{field} must be a run-relative artifact path")
+    if any(part in {"", ".", ".."} for part in value.split("/")):
+        raise ValueError(f"{field} contains an invalid path segment")
+
+
+def _validate_flow_subject(
+    subject: dict[str, Any], *, expected: dict[str, Any] | None = None,
+) -> None:
+    required = (
+        "run_id", "task_id", "flow_revision", "flow_sha256", "step",
+        "correction_cycle", "actor_role",
+    )
+    _validate_exact_object(subject, required, "flow subject")
+    for field in ("run_id", "task_id"):
+        _validate_str(subject[field], f"flow subject.{field}")
+    if type(subject["flow_revision"]) is not int or subject["flow_revision"] < 1:
+        raise ValueError("flow subject.flow_revision must be a positive integer")
+    _validate_sha256(subject["flow_sha256"], "flow subject.flow_sha256")
+    if subject["step"] not in {*FLOW_STEP_ORDER, "correction"}:
+        raise ValueError("flow subject.step is invalid")
+    if type(subject["correction_cycle"]) is not int or subject["correction_cycle"] < 0:
+        raise ValueError("flow subject.correction_cycle is invalid")
+    expected_role = (
+        "implementer" if subject["step"] == "correction"
+        else FLOW_STEP_ROLES[subject["step"]]
+    )
+    if subject["actor_role"] != expected_role:
+        raise ValueError("flow subject.actor_role contradicts its step")
+    if expected is not None and subject != expected:
+        raise ValueError("flow subject does not match expected cursor identity")
+
+
+def validate_handoff_envelope(
+    envelope: dict[str, Any], *, expected_subject: dict[str, Any] | None = None,
+) -> None:
+    required = (
+        "version", "subject", "summary", "changed_paths", "evidence_refs",
+        "transcript_ref",
+    )
+    _validate_exact_object(envelope, required, "handoff envelope")
+    if type(envelope["version"]) is not int or envelope["version"] != 1:
+        raise ValueError("Unsupported handoff envelope version")
+    _validate_flow_subject(envelope["subject"], expected=expected_subject)
+    _validate_str(envelope["summary"], "handoff.summary")
+    for field in ("changed_paths", "evidence_refs"):
+        _validate_str_array(envelope[field], f"handoff.{field}", allow_empty=True)
+        for index, value in enumerate(envelope[field]):
+            _validate_run_relative_reference(value, f"handoff.{field}[{index}]")
+    _validate_run_relative_reference(envelope["transcript_ref"], "handoff.transcript_ref")
+
+
+def validate_step_outcome(
+    envelope: dict[str, Any], *, expected_subject: dict[str, Any] | None = None,
+) -> None:
+    required = (
+        "version", "subject", "result", "evidence_status", "artifact_refs",
+        "payload",
+    )
+    _validate_exact_object(envelope, required, "step outcome")
+    if type(envelope["version"]) is not int or envelope["version"] != 1:
+        raise ValueError("Unsupported step outcome version")
+    _validate_flow_subject(envelope["subject"], expected=expected_subject)
+    step = envelope["subject"]["step"]
+    result_families = {
+        "preflight": {"ready", "blocked", "needs_input"},
+        "implement": {"complete", "needs_input", "failed"},
+        "correction": {"complete", "needs_input", "failed"},
+        "verify": {"mechanically_eligible", "findings"},
+        "semantic_review": {"ACCEPT", "CHANGES_REQUESTED", "INCONCLUSIVE"},
+        "accept": {"task_accepted"},
+    }
+    evidence_status = envelope["evidence_status"]
+    if evidence_status == "omitted_by_policy":
+        if step != "verify" or envelope["result"] is not None:
+            raise ValueError("only verify may be omitted by policy with a null result")
+    elif evidence_status == "reported":
+        if envelope["result"] not in result_families[step]:
+            raise ValueError("step outcome result is invalid for its step")
+    else:
+        raise ValueError("step outcome evidence_status is invalid")
+    _validate_str_array(
+        envelope["artifact_refs"], "step outcome.artifact_refs", allow_empty=True
+    )
+    for index, value in enumerate(envelope["artifact_refs"]):
+        _validate_run_relative_reference(
+            value, f"step outcome.artifact_refs[{index}]"
+        )
+    payload = envelope["payload"]
+    _validate_exact_object(payload, ("version", "reference"), "step outcome.payload")
+    if type(payload["version"]) is not int or payload["version"] != 1:
+        raise ValueError("Unsupported step outcome payload version")
+    if payload["reference"] is not None:
+        _validate_run_relative_reference(
+            payload["reference"], "step outcome.payload.reference"
+        )
 
 
 def validate_attempt_turn_identity(
@@ -174,8 +491,8 @@ def validate_command_execution_record(
     validate_closure_identity(expected_closure_identity)
     if record["closure_identity"] != expected_closure_identity:
         raise ValueError("execution closure identity does not match expected closure")
-    if not isinstance(record["plan"], list) or not record["plan"]:
-        raise ValueError("execution.plan must be a non-empty array")
+    if not isinstance(record["plan"], list):
+        raise ValueError("execution.plan must be an array")
     plan_ids = []
     command_identities = []
     for index, command in enumerate(record["plan"], 1):
@@ -195,10 +512,9 @@ def validate_command_execution_record(
         raise ValueError("execution.plan normalized command identities must be unique")
     if (
         not isinstance(record["outcomes"], list)
-        or not record["outcomes"]
         or len(record["outcomes"]) > len(plan_ids)
     ):
-        raise ValueError("execution.outcomes must be a non-empty plan prefix")
+        raise ValueError("execution.outcomes must be a plan prefix")
     statuses = []
     for index, outcome in enumerate(record["outcomes"]):
         required_outcome = (
@@ -265,6 +581,7 @@ def validate_command_execution_record(
     reason = record["terminal_reason"]
     if reason not in {
         "complete", "command_failed", "timed_out", "interrupted", "authorized_gap",
+        "omitted_by_policy",
     }:
         raise ValueError("execution.terminal_reason is invalid")
     if record["authorized_gap"] is not None:
@@ -275,8 +592,11 @@ def validate_command_execution_record(
         "timed_out": "timed_out",
         "interrupted": "interrupted",
         "authorized_gap": "authorized_gap",
+        "omitted_by_policy": None,
     }[reason]
-    if reason == "complete":
+    if reason == "omitted_by_policy":
+        statuses_match_reason = not plan_ids and not statuses
+    elif reason == "complete":
         statuses_match_reason = (
             len(statuses) == len(plan_ids) and all(status == "passed" for status in statuses)
         )
@@ -319,7 +639,7 @@ def validate_verification_record(
     _validate_git_identity(record["pre_verification_git"], "verification.pre_verification_git")
     _validate_git_identity(record["post_verification_git"], "verification.post_verification_git")
     _validate_str_array(record["drift_findings"], "verification.drift_findings", allow_empty=True)
-    if record["outcome"] not in {"passed", "failed"}:
+    if record["outcome"] not in {"passed", "failed", "omitted_by_policy"}:
         raise ValueError("verification.outcome is invalid")
     if record["outcome"] == "passed" and record["drift_findings"]:
         raise ValueError("passed verification cannot contain drift findings")
@@ -625,7 +945,9 @@ def validate_run_policy(policy: dict[str, Any]) -> None:
     _validate_permissions(policy["permissions"])
     _validate_commit_policy(policy["commit_policy"])
     _validate_stop_policy(policy["stop_policy"])
-    unknown = set(policy) - set(required)
+    if "flow" in policy:
+        validate_flow_profile(policy["flow"])
+    unknown = set(policy) - {*required, "flow"}
     if unknown:
         raise ValueError(f"Run policy contains unknown top-level fields: {', '.join(sorted(unknown))}")
 
@@ -660,21 +982,41 @@ def validate_attempt_record(record: dict[str, Any]) -> None:
     for field in ATTEMPT_REQUIRED_FIELDS:
         if field not in record:
             raise ValueError(f"Attempt record is missing {field}")
+    if type(record["flow_revision"]) is not int or record["flow_revision"] < 1:
+        raise ValueError("Attempt record flow revision must be a positive integer")
+    _validate_sha256(record["flow_sha256"], "attempt flow_sha256")
     if record["transport"] != "codex-cli":
         raise ValueError("Attempt record transport must be codex-cli")
-    if record["model"] is not None:
-        raise ValueError("Attempt record model must be null")
+    if (record["model"], record["effort"]) not in {
+        (mapping["model"], mapping["reasoning"])
+        for mapping in ACTOR_LEVELS.values()
+    }:
+        raise ValueError("Attempt record actor selection contradicts the frozen mapping")
 
 
-def build_attempt_record(*, task_id: str, brief_path: str, prompt: str, policy: dict[str, Any],
-                         baseline_ref: str) -> dict[str, Any]:
+def build_attempt_record(
+    *, task_id: str, brief_path: str, prompt: str, policy: dict[str, Any],
+    flow: dict[str, Any], flow_revision: int, flow_sha256: str, baseline_ref: str,
+) -> dict[str, Any]:
     validate_run_policy(policy)
+    validate_flow_profile(flow)
+    if type(flow_revision) is not int or flow_revision < 1:
+        raise ValueError("Flow revision must be a positive integer")
+    _validate_sha256(flow_sha256, "flow_sha256")
+    if sha256_text(canonical_json(flow) + "\n") != flow_sha256:
+        raise ValueError("Flow bytes do not match the supplied digest")
     permissions = policy["permissions"]
+    implement = flow_step(flow, "implement")
+    assert implement is not None
+    actor = ACTOR_LEVELS[implement["mode"]]
     return {
         "task_id": task_id, "brief_path": brief_path, "prompt": prompt,
         "prompt_sha256": sha256_text(prompt), "baseline_ref": baseline_ref,
-        "policy_sha256": sha256_text(canonical_json(policy)), "transport": "codex-cli",
-        "model": None, "sandbox": permissions["sandbox"],
+        "policy_sha256": sha256_text(canonical_json(policy)),
+        "flow_revision": flow_revision, "flow_sha256": flow_sha256,
+        "transport": "codex-cli",
+        "model": actor["model"], "effort": actor["reasoning"],
+        "sandbox": permissions["sandbox"],
         "approval_policy": permissions["approval_policy"], "network": permissions["network"],
         "writable_roots": permissions["writable_roots"],
     }
@@ -828,14 +1170,27 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
         "initial_baseline_digest", "completed_task_ids", "state", "selected_task_id",
         "active_attempt_id", "last_closure_path", "tasks",
         "last_verification_path", "last_decision_path", "active_operation_path",
+        "current_step", "correction_cycle", "flow_revision", "flow_path",
+        "flow_sha256",
     )
     missing = [field for field in required if field not in ledger]
     if missing:
         raise ValueError(f"Ledger is missing: {', '.join(missing)}")
+    if type(ledger["flow_revision"]) is not int or ledger["flow_revision"] < 1:
+        raise ValueError("Ledger flow_revision must be a positive integer")
+    if ledger["flow_path"] != f"flows/flow-{ledger['flow_revision']:03d}.json":
+        raise ValueError("Ledger flow_path does not match flow_revision")
+    _validate_sha256(ledger["flow_sha256"], "flow_sha256")
     if ledger["state"] not in ALLOWED_RUN_TRANSITIONS:
         raise ValueError(f"Invalid ledger state: {ledger['state']}")
     if type(ledger["revision"]) is not int or ledger["revision"] < 1:
         raise ValueError("Ledger revision must be a positive integer")
+    if ledger["current_step"] is not None and ledger["current_step"] not in {
+        *FLOW_STEP_ORDER, "correction",
+    }:
+        raise ValueError("Ledger current_step is invalid")
+    if type(ledger["correction_cycle"]) is not int or ledger["correction_cycle"] < 0:
+        raise ValueError("Ledger correction_cycle must be a non-negative integer")
     _validate_str_array(
         ledger["completed_task_ids"], "completed_task_ids", allow_empty=True
     )
@@ -889,9 +1244,16 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
         for task in ledger["tasks"]
     ):
         raise ValueError("Only the selected task may have an ownership-bearing state")
-    if state in {"initialized", "ready", "stopped"}:
+    if state in {"initialized", "stopped"}:
         if ledger["selected_task_id"] is not None or ledger["active_attempt_id"] is not None:
             raise ValueError(f"'{state}' state must have neither selected_task_id nor active_attempt_id")
+    if ledger["selected_task_id"] is None:
+        if ledger["current_step"] is not None or ledger["correction_cycle"] != 0:
+            raise ValueError("A run without a selected task requires a null cycle-zero cursor")
+    elif ledger["current_step"] is None:
+        raise ValueError("A selected task requires a current flow step")
+    if state == "ready" and ledger["active_attempt_id"] is not None:
+        raise ValueError("'ready' state cannot have an active attempt")
     if state == "initialized" and any(
         ledger[field] is not None for field in (
             "last_closure_path", "last_verification_path", "last_decision_path",
@@ -953,6 +1315,8 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
 def apply_ledger_update(
     ledger: dict[str, Any], updater: dict[str, Any], updated_at: str, *,
     expected_revision: int, closure_decision: dict[str, Any] | None = None,
+    flow: dict[str, Any] | None = None, cursor_action: str | None = None,
+    cursor_result: str | None = None,
 ) -> dict[str, Any]:
     next_ledger = json.loads(json.dumps(ledger))
     validate_ledger(next_ledger)
@@ -963,10 +1327,17 @@ def apply_ledger_update(
     if "revision" in updater:
         raise ValueError("Ledger revision is controller-owned")
     previous_tasks = next_ledger["tasks"]
+    previous_cursor = {
+        "current_step": next_ledger["current_step"],
+        "correction_cycle": next_ledger["correction_cycle"],
+    }
+    if flow is not None:
+        validate_flow_cursor(flow, previous_cursor)
     immutable_top_level = (
         "version", "run_id", "repository", "created_at", "policy_path", "policy_sha256",
         "manifest_path", "manifest_sha256", "initial_baseline_path",
-        "initial_baseline_digest", "completed_task_ids",
+        "initial_baseline_digest", "completed_task_ids", "flow_revision",
+        "flow_path", "flow_sha256",
     )
     next_ledger.update(updater)
     next_ledger["updated_at"] = updated_at
@@ -974,6 +1345,26 @@ def apply_ledger_update(
     validate_ledger(next_ledger)
     if any(next_ledger[field] != ledger[field] for field in immutable_top_level):
         raise ValueError("Ledger authority is immutable")
+    next_cursor = {
+        "current_step": next_ledger["current_step"],
+        "correction_cycle": next_ledger["correction_cycle"],
+    }
+    if flow is not None:
+        validate_flow_cursor(flow, next_cursor)
+    if next_cursor != previous_cursor:
+        if cursor_action == "task_boundary":
+            expected_cursor = {"current_step": None, "correction_cycle": 0}
+        elif flow is not None and cursor_action is not None:
+            expected_cursor = transition_flow_cursor(
+                flow, previous_cursor, cursor_action, result=cursor_result
+            )
+        else:
+            raise ValueError("Flow cursor is controller-owned")
+        if next_cursor != {
+            "current_step": expected_cursor["current_step"],
+            "correction_cycle": expected_cursor["correction_cycle"],
+        }:
+            raise ValueError("Flow cursor update contradicts the persisted flow")
     next_tasks = next_ledger["tasks"]
     if [task["id"] for task in next_tasks] != [task["id"] for task in previous_tasks]:
         raise ValueError("Ledger task IDs are immutable")

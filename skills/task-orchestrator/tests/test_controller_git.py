@@ -656,6 +656,12 @@ class ControllerGitWiringTest(unittest.TestCase):
                     "on_needs_input": "escalate",
                     "on_unexpected_changes": "stop",
                 },
+                "flow": json.loads(
+                    (
+                        Path(__file__).parents[1]
+                        / "assets/examples/fast-local-flow.json"
+                    ).read_text()
+                ),
             }
             manifest = {
                 "version": 1,

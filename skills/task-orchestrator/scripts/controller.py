@@ -8,6 +8,7 @@ import hashlib
 import importlib.util
 import json
 import math
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -54,6 +55,10 @@ ALLOWED_RUN_TRANSITIONS = _state_module.ALLOWED_RUN_TRANSITIONS
 canonical_json = _state_module.canonical_json
 sha256_text = _state_module.sha256_text
 validate_run_policy = _state_module.validate_run_policy
+validate_flow_profile = _state_module.validate_flow_profile
+resolve_flow_profile = _state_module.resolve_flow_profile
+validate_flow_cursor = _state_module.validate_flow_cursor
+transition_flow_cursor = _state_module.transition_flow_cursor
 transition_task = _state_module.transition_task
 transition_run = _state_module.transition_run
 validate_attempt_record = _state_module.validate_attempt_record
@@ -77,6 +82,109 @@ def persist_run_policy(path: Path, policy: dict[str, Any]) -> str:
     with path.open("x") as stream:
         stream.write(serialized)
     return sha256_text(canonical_json(policy))
+
+
+def _canonical_flow_bytes(flow: dict[str, Any]) -> bytes:
+    validate_flow_profile(flow)
+    return (canonical_json(flow) + "\n").encode()
+
+
+def _sync_directory(path: Path) -> None:
+    descriptor = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _write_durable_exclusive(path: Path, content: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        with temporary.open("xb") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(temporary, path)
+        _sync_directory(path.parent)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _load_flow_authority_state(
+    run_dir: Path, ledger: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any] | None]:
+    revision = ledger["flow_revision"]
+    expected_path = f"flows/flow-{revision:03d}.json"
+    if ledger["flow_path"] != expected_path:
+        raise ValueError("Persisted current flow path does not match its revision")
+    expected_flow_names = [
+        f"flow-{history_revision:03d}.json"
+        for history_revision in range(1, revision + 1)
+    ]
+    actual_flow_names = sorted(
+        path.name for path in (run_dir / "flows").glob("flow-*.json")
+    )
+    candidate_flow_name = f"flow-{revision + 1:03d}.json"
+    if not set(expected_flow_names).issubset(actual_flow_names):
+        raise ValueError("Persisted flow revision history is not exact")
+    extra_flows = set(actual_flow_names) - set(expected_flow_names)
+    if not extra_flows.issubset({candidate_flow_name}):
+        raise ValueError("Persisted flow revision history is not exact")
+
+    flow = None
+    flow_digest = None
+    for history_revision in range(1, revision + 1):
+        flow_relative = f"flows/flow-{history_revision:03d}.json"
+        flow_raw = (run_dir / flow_relative).read_bytes()
+        revision_flow = json.loads(flow_raw)
+        validate_flow_profile(revision_flow)
+        if flow_raw != _canonical_flow_bytes(revision_flow):
+            raise ValueError("Persisted flow bytes are not canonical")
+        flow_digest = _sha256_bytes(flow_raw)
+        flow = revision_flow
+
+    if (
+        flow is None
+        or flow_digest is None
+        or ledger["flow_sha256"] != flow_digest
+    ):
+        raise ValueError("Persisted current flow digest mismatch")
+
+    candidate = None
+    if extra_flows:
+        candidate_path = run_dir / "flows" / candidate_flow_name
+        candidate_raw = candidate_path.read_bytes()
+        candidate_flow = json.loads(candidate_raw)
+        validate_flow_profile(candidate_flow)
+        if candidate_raw != _canonical_flow_bytes(candidate_flow):
+            raise ValueError("Uncommitted flow revision bytes are not canonical")
+        candidate_digest = _sha256_bytes(candidate_raw)
+        candidate = {
+            "flow": candidate_flow,
+            "flow_bytes": candidate_raw,
+            "flow_sha256": candidate_digest,
+        }
+
+    current = ledger["current_step"]
+    validate_flow_cursor(
+        flow,
+        {
+            "current_step": current,
+            "correction_cycle": ledger["correction_cycle"],
+        },
+    )
+    authority = {
+        "flow_revision": revision,
+        "flow_path": expected_path,
+        "flow_sha256": flow_digest,
+    }
+    return flow, authority, candidate
+
+
+def _load_flow_authority(run_dir: Path, ledger: dict[str, Any]) -> dict[str, Any]:
+    flow, _, _ = _load_flow_authority_state(run_dir, ledger)
+    return flow
 
 
 def render_worker_prompt(
@@ -241,6 +349,7 @@ def init_run(
     """Initialize an immutable run from validated policy and manifest."""
     policy = json.loads(policy_path.read_text())
     validate_run_policy(policy)
+    flow = resolve_flow_profile(policy)
     manifest = json.loads(manifest_path.read_text())
 
     # Resolve and verify repository is Git top-level
@@ -283,6 +392,13 @@ def init_run(
     try:
         # Copy canonical policy and manifest
         policy_digest = persist_run_policy(temp_dir / "run-policy.json", policy)
+        flow_relative = "flows/flow-001.json"
+        flow_bytes = _canonical_flow_bytes(flow)
+        flow_path = temp_dir / flow_relative
+        flow_path.parent.mkdir()
+        with flow_path.open("xb") as stream:
+            stream.write(flow_bytes)
+        flow_digest = _sha256_bytes(flow_bytes)
         manifest_content = manifest_path.read_text()
         manifest_digest = sha256_text(canonical_json(json.loads(manifest_content)))
         (temp_dir / "task-manifest.json").write_text(manifest_content)
@@ -309,6 +425,9 @@ def init_run(
             "created_at": _now_iso(),
             "updated_at": _now_iso(),
             "revision": 1,
+            "flow_revision": 1,
+            "flow_path": flow_relative,
+            "flow_sha256": flow_digest,
             "policy_path": "run-policy.json",
             "policy_sha256": policy_digest,
             "manifest_path": "task-manifest.json",
@@ -326,6 +445,8 @@ def init_run(
             "last_verification_path": None,
             "last_decision_path": None,
             "active_operation_path": None,
+            "current_step": None,
+            "correction_cycle": 0,
             "tasks": validated["task_entries"],
         }
         _validate_ledger(ledger)
@@ -403,12 +524,15 @@ class RunCommandLock:
 def _update_ledger_locked(
     run_dir: Path, updater: dict[str, Any], *, expected_revision: int,
     closure_decision: dict[str, Any] | None = None,
+    flow: dict[str, Any] | None = None, cursor_action: str | None = None,
+    cursor_result: str | None = None,
 ) -> dict[str, Any]:
     ledger_path = run_dir / "ledger.json"
     ledger = json.loads(ledger_path.read_text())
     ledger = _state_module.apply_ledger_update(
         ledger, updater, _now_iso(), expected_revision=expected_revision,
         closure_decision=closure_decision,
+        flow=flow, cursor_action=cursor_action, cursor_result=cursor_result,
     )
     atomic_write_json(ledger_path, ledger)
     return ledger
@@ -417,13 +541,101 @@ def _update_ledger_locked(
 def update_ledger(
     run_dir: Path, updater: dict[str, Any], *, expected_revision: int,
     closure_decision: dict[str, Any] | None = None,
+    flow: dict[str, Any] | None = None, cursor_action: str | None = None,
+    cursor_result: str | None = None,
 ) -> dict[str, Any]:
     """Lock, validate the expected revision, and atomically update the ledger."""
     with RunCommandLock(run_dir):
         return _update_ledger_locked(
             run_dir, updater, expected_revision=expected_revision,
             closure_decision=closure_decision,
+            flow=flow, cursor_action=cursor_action, cursor_result=cursor_result,
         )
+
+
+def _write_flow_pointer(
+    run_dir: Path,
+    ledger: dict[str, Any],
+    *,
+    flow_revision: int,
+    flow_path: str,
+    flow_sha256: str,
+) -> dict[str, Any]:
+    updated = json.loads(json.dumps(ledger))
+    updated.update({
+        "revision": ledger["revision"] + 1,
+        "updated_at": _now_iso(),
+        "flow_revision": flow_revision,
+        "flow_path": flow_path,
+        "flow_sha256": flow_sha256,
+    })
+    _validate_ledger(updated)
+    atomic_write_json(run_dir / "ledger.json", updated)
+    return updated
+
+
+def revise_flow(run_dir: Path, flow_path: Path) -> dict[str, Any]:
+    """Publish one immutable flow revision at the exact safe task boundary."""
+    requested = json.loads(flow_path.read_text())
+    validate_flow_profile(requested)
+    requested_bytes = _canonical_flow_bytes(requested)
+    requested_digest = _sha256_bytes(requested_bytes)
+    with RunCommandLock(run_dir):
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        _validate_ledger(ledger)
+        _, authority, candidate = _load_flow_authority_state(run_dir, ledger)
+        if (
+            ledger["state"] != "ready"
+            or ledger["selected_task_id"] is not None
+            or ledger["active_attempt_id"] is not None
+            or ledger["active_operation_path"] is not None
+            or ledger["current_step"] is not None
+            or ledger["correction_cycle"] != 0
+        ):
+            raise ValueError("Flow revision requires the exact safe task boundary")
+        if requested_digest == authority["flow_sha256"]:
+            return {
+                "status": "unchanged",
+                "flow_revision": authority["flow_revision"],
+                "flow_sha256": authority["flow_sha256"],
+            }
+        revision = authority["flow_revision"] + 1
+        relative = f"flows/flow-{revision:03d}.json"
+        published = run_dir / relative
+        if candidate is not None:
+            if candidate["flow_sha256"] != requested_digest:
+                raise ValueError(
+                    "An interrupted flow revision must be retried with the same flow"
+                )
+            if candidate["flow_bytes"] != requested_bytes:
+                raise ValueError("Uncommitted flow revision digest collision")
+        else:
+            _write_durable_exclusive(published, requested_bytes)
+        try:
+            _write_flow_pointer(
+                run_dir,
+                ledger,
+                flow_revision=revision,
+                flow_path=relative,
+                flow_sha256=requested_digest,
+            )
+        except Exception:
+            try:
+                committed = json.loads((run_dir / "ledger.json").read_text())
+                _validate_ledger(committed)
+            except Exception:
+                raise
+            if (
+                committed["flow_revision"] != revision
+                or committed["flow_path"] != relative
+                or committed["flow_sha256"] != requested_digest
+            ):
+                raise
+        return {
+            "status": "revised",
+            "flow_revision": revision,
+            "flow_sha256": requested_digest,
+        }
 
 
 def _validate_accepted_workspace(run_dir: Path, ledger: dict[str, Any]) -> None:
@@ -556,6 +768,7 @@ def _load_inspection_authority(
     _validate_ledger(ledger)
     if ledger["state"] != "awaiting_inspection":
         raise ValueError("inspect requires run state 'awaiting_inspection'")
+    flow, flow_authority, _ = _load_flow_authority_state(run_dir, ledger)
 
     policy_path = run_dir / "run-policy.json"
     manifest_path = run_dir / "task-manifest.json"
@@ -606,6 +819,9 @@ def _load_inspection_authority(
     attempt_record_bytes = (attempt_dir / "record.json").read_bytes()
     attempt = json.loads(attempt_record_bytes)
     validate_attempt_record(attempt)
+    implement = _state_module.flow_step(flow, "implement")
+    assert implement is not None
+    actor = _state_module.ACTOR_LEVELS[implement["mode"]]
     prompt = (attempt_dir / "prompt.txt").read_text()
     durable_prompt = attempt_dir / "turn-001.prompt.txt"
     if not durable_prompt.is_file() or durable_prompt.read_text() != prompt:
@@ -619,6 +835,10 @@ def _load_inspection_authority(
         or attempt["baseline_ref"] != expected_baseline_ref
         or attempt.get("baseline_digest") != baseline_digest
         or attempt["policy_sha256"] != ledger["policy_sha256"]
+        or attempt["flow_revision"] != flow_authority["flow_revision"]
+        or attempt["flow_sha256"] != flow_authority["flow_sha256"]
+        or attempt["model"] != actor["model"]
+        or attempt["effort"] != actor["reasoning"]
         or attempt["prompt_sha256"] != sha256_text(prompt)
         or attempt.get("effective_permission_envelope") != policy["permissions"]
     ):
@@ -645,6 +865,29 @@ def _load_inspection_authority(
         or Path(adapter_state.get("result_path", "")).resolve() != result_path.resolve()
     ):
         raise ValueError("Adapter state or structured result identity mismatch")
+    effective_command = adapter_state.get("effective_command")
+    if not isinstance(effective_command, list) or not all(
+        isinstance(item, str) for item in effective_command
+    ):
+        raise ValueError("Adapter effective command is invalid")
+    model_values = [
+        effective_command[index + 1]
+        for index, item in enumerate(effective_command[:-1])
+        if item == "--model"
+    ]
+    effort_values = [
+        effective_command[index + 1]
+        for index, item in enumerate(effective_command[:-1])
+        if item == "--config"
+        and effective_command[index + 1].startswith("model_reasoning_effort=")
+    ]
+    if (
+        adapter_state.get("model") != attempt["model"]
+        or adapter_state.get("effort") != attempt["effort"]
+        or model_values != [attempt["model"]]
+        or effort_values != [f'model_reasoning_effort="{attempt["effort"]}"']
+    ):
+        raise ValueError("Durable adapter command actor mismatch")
 
     closure_path = run_dir / ledger["last_closure_path"]
     closure_bytes = closure_path.read_bytes()
@@ -826,6 +1069,7 @@ def _build_inspection_decision(
     execution: dict[str, Any],
     plan: dict[str, Any],
     drift_findings: list[str],
+    current_step: str,
 ) -> dict[str, Any]:
     reasons = []
     resume_policies = []
@@ -880,12 +1124,18 @@ def _build_inspection_decision(
         reasons.extend(drift_findings)
         resume_policies.append("on_unexpected_changes")
 
-    accepted = not reasons
+    mechanically_eligible = not reasons
+    accepted = mechanically_eligible and current_step == "accept"
     if accepted:
         reasons = ["mechanical checks passed"]
         allowed_actions = ["accept", "stop"]
         allowed_transitions = ["accepted", "stopped"]
     else:
+        if mechanically_eligible:
+            reasons = [
+                "mechanical checks passed",
+                f"{current_step} is pending",
+            ]
         allowed_actions = ["stop"]
         allowed_transitions = ["stopped"]
         thread_id = adapter_state.get("thread_id")
@@ -921,9 +1171,9 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
         raise ValueError("timeout must be greater than zero")
     run_dir = run_dir.resolve()
     preliminary_ledger = json.loads((run_dir / "ledger.json").read_text())
-    _validate_ledger(preliminary_ledger)
     if preliminary_ledger["state"] != "awaiting_inspection":
         raise ValueError("inspect requires run state 'awaiting_inspection'")
+    _validate_ledger(preliminary_ledger)
     with RunCommandLock(run_dir):
         (
             ledger, policy, selected, baseline, attempt, adapter_state,
@@ -931,6 +1181,29 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
         ) = _load_inspection_authority(run_dir)
         closure = closure_data["packet"]
         closure_identity = closure_data["identity"]
+        flow = _load_flow_authority(run_dir, ledger)
+        verify_step = _state_module.flow_step(flow, "verify")
+        verify_enabled = verify_step is not None
+        completed_cursor = transition_flow_cursor(
+            flow,
+            {
+                "current_step": "implement",
+                "correction_cycle": ledger["correction_cycle"],
+            },
+            "complete_inspection",
+        )
+        if ledger["current_step"] not in {
+            "implement", completed_cursor["current_step"],
+        }:
+            raise ValueError("inspect cursor contradicts the current flow")
+        if (
+            ledger["current_step"] != "implement"
+            and (
+                ledger["last_verification_path"] is None
+                or ledger["last_decision_path"] is None
+            )
+        ):
+            raise ValueError("advanced inspection cursor lacks durable records")
         repo = Path(ledger["repository"]).resolve()
         expected_pre_identity = {
             "head_oid": closure_identity["post_worker_head_oid"],
@@ -938,7 +1211,21 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
             "status_sha256": closure_identity["post_worker_status_sha256"],
         }
 
-        plan = _verification_module.build_verification_plan(selected, policy)
+        if verify_step is not None:
+            effective_policy = json.loads(json.dumps(policy))
+            if verify_step["mode"] == "targeted":
+                effective_policy["verification"]["repository_gate"] = None
+                effective_policy["verification"]["authorized_gap"] = None
+            elif effective_policy["verification"]["repository_gate"] is None:
+                raise ValueError(
+                    "targeted_plus_repository_gate requires a repository gate"
+                )
+            plan = _verification_module.build_verification_plan(
+                selected, effective_policy
+            )
+        else:
+            plan = {"version": 1, "commands": []}
+            plan["plan_sha256"] = sha256_text(canonical_json(plan))
         subject = closure_identity["subject"]
         stem = f"{subject['attempt_id']}.turn-{subject['turn']:03d}"
         execution_relative = f"verification/{stem}.execution.json"
@@ -951,7 +1238,59 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
             raise ValueError(
                 "Existing decision record has no prerequisite verification record"
             )
-        if verification_path.exists():
+        if not verify_enabled:
+            if execution_path.exists():
+                raw_execution = execution_path.read_bytes()
+                execution = json.loads(raw_execution)
+                _state_module.validate_command_execution_record(
+                    execution, expected_closure_identity=closure_identity
+                )
+                if execution["terminal_reason"] != "omitted_by_policy":
+                    raise ValueError("Verify-off execution record is not omitted by policy")
+                execution_digest = _sha256_bytes(raw_execution)
+                pre_identity = expected_pre_identity
+                post_identity = _git_module.capture_workspace_identity(repo)
+            else:
+                pre_identity = _git_module.capture_workspace_identity(repo)
+                if pre_identity != expected_pre_identity:
+                    raise ValueError("Workspace identity changed before inspection")
+                current_status = _git_module.capture_git_status(repo)
+                if (
+                    sha256_text(canonical_json(current_status))
+                    != pre_identity["status_sha256"]
+                ):
+                    raise ValueError("Workspace identity changed during inspection")
+                _validate_closure_observations(
+                    closure=closure, baseline=baseline, selected=selected,
+                    current_status=current_status,
+                )
+                timestamp = _now_iso()
+                execution = {
+                    "version": 1,
+                    "closure_identity": closure_identity,
+                    "plan": [],
+                    "outcomes": [],
+                    "effective_envelope": policy["permissions"],
+                    "started_at": timestamp,
+                    "ended_at": timestamp,
+                    "terminal_reason": "omitted_by_policy",
+                    "authorized_gap": None,
+                }
+                execution, execution_digest = _publish_or_reuse_record(
+                    execution_path,
+                    execution,
+                    lambda record: _state_module.validate_command_execution_record(
+                        record, expected_closure_identity=closure_identity
+                    ),
+                )
+                post_identity = _git_module.capture_workspace_identity(repo)
+            if verification_path.exists():
+                existing_verification = json.loads(verification_path.read_text())
+                if post_identity != existing_verification.get("post_verification_git"):
+                    raise ValueError(
+                        "Workspace identity changed after recorded inspection"
+                    )
+        elif verification_path.exists():
             execution, execution_digest = _validate_execution_artifacts(
                 run_dir=run_dir,
                 record_path=execution_path,
@@ -1006,7 +1345,9 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
             drift_findings.append("verification changed the Git index")
         if post_identity["status_sha256"] != pre_identity["status_sha256"]:
             drift_findings.append("verification changed workspace content or paths")
-        execution_passed = execution["terminal_reason"] in {"complete", "authorized_gap"}
+        execution_passed = execution["terminal_reason"] in {
+            "complete", "authorized_gap", "omitted_by_policy",
+        }
         verification = {
             "version": 1,
             "closure_identity": closure_identity,
@@ -1015,7 +1356,13 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
             "pre_verification_git": pre_identity,
             "post_verification_git": post_identity,
             "drift_findings": drift_findings,
-            "outcome": "passed" if execution_passed and not drift_findings else "failed",
+            "outcome": (
+                "omitted_by_policy"
+                if execution["terminal_reason"] == "omitted_by_policy"
+                and not drift_findings
+                else "passed" if execution_passed and not drift_findings
+                else "failed"
+            ),
         }
         verification, verification_digest = _publish_or_reuse_record(
             verification_path,
@@ -1038,6 +1385,7 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
             execution=execution,
             plan=plan,
             drift_findings=verification["drift_findings"],
+            current_step=completed_cursor["current_step"],
         )
         decision, _decision_digest = _publish_or_reuse_record(
             decision_path,
@@ -1057,11 +1405,23 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
         if (
             ledger["last_verification_path"] != verification_relative
             or ledger["last_decision_path"] != decision_relative
+            or ledger["current_step"] == "implement"
         ):
-            _update_ledger_locked(run_dir, {
+            updater = {
                 "last_verification_path": verification_relative,
                 "last_decision_path": decision_relative,
-            }, expected_revision=ledger["revision"])
+            }
+            cursor_action = None
+            if ledger["current_step"] == "implement":
+                updater["current_step"] = completed_cursor["current_step"]
+                cursor_action = "complete_inspection"
+            _update_ledger_locked(
+                run_dir,
+                updater,
+                expected_revision=ledger["revision"],
+                flow=flow,
+                cursor_action=cursor_action,
+            )
         return {
             "status": "awaiting_inspection",
             "task_id": selected["id"],
@@ -1102,6 +1462,13 @@ def build_parser() -> "argparse.ArgumentParser":  # type: ignore[name-defined]
     inspect_parser.add_argument("--timeout-seconds", type=float, required=True)
     inspect_parser.set_defaults(handler=_cli_inspect)
 
+    revise_parser = subparsers.add_parser(
+        "revise-flow", help="Publish a flow revision at a safe task boundary"
+    )
+    revise_parser.add_argument("--run-dir", required=True)
+    revise_parser.add_argument("--flow", required=True)
+    revise_parser.set_defaults(handler=_cli_revise_flow)
+
     return parser
 
 
@@ -1123,6 +1490,9 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     if args.timeout_seconds <= 0:
         raise ValueError("timeout must be greater than zero")
     run_dir = Path(args.run_dir).resolve()
+    preliminary_ledger = json.loads((run_dir / "ledger.json").read_text())
+    _validate_ledger(preliminary_ledger)
+    _load_flow_authority(run_dir, preliminary_ledger)
     lock = RunCommandLock(run_dir)
     lock.acquire()
     ledger_path = run_dir / "ledger.json"
@@ -1130,6 +1500,7 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     _validate_ledger(ledger)
     policy = json.loads((run_dir / "run-policy.json").read_text())
     manifest = json.loads((run_dir / "task-manifest.json").read_text())
+    validate_run_policy(policy)
 
     # Validate persisted digests
     persisted_policy = json.loads((run_dir / "run-policy.json").read_text())
@@ -1138,6 +1509,57 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     persisted_manifest = json.loads((run_dir / "task-manifest.json").read_text())
     if sha256_text(canonical_json(persisted_manifest)) != ledger["manifest_sha256"]:
         raise ValueError("Persisted manifest digest mismatch")
+    flow, flow_authority, _ = _load_flow_authority_state(run_dir, ledger)
+    if ledger["state"] != "ready":
+        raise ValueError(f"Cannot select task from state '{ledger['state']}'")
+
+    cursor_action = None
+    if ledger["selected_task_id"] is None:
+        task = select_task(ledger, policy)
+        selected_cursor = transition_flow_cursor(
+            flow,
+            {"current_step": None, "correction_cycle": 0},
+            "select",
+        )
+        if selected_cursor["current_step"] != "implement":
+            pending = _update_ledger_locked(
+                run_dir,
+                {
+                    "selected_task_id": task["id"],
+                    "current_step": selected_cursor["current_step"],
+                },
+                expected_revision=ledger["revision"],
+                flow=flow,
+                cursor_action="select",
+            )
+            lock.release()
+            print(json.dumps({
+                "status": "pending",
+                "task_id": task["id"],
+                "current_step": pending["current_step"],
+                "reason": "no MVP adapter owns the current flow step",
+            }, sort_keys=True))
+            return 0
+        cursor_action = "select"
+    else:
+        task = next(
+            (
+                entry for entry in ledger["tasks"]
+                if entry["id"] == ledger["selected_task_id"]
+            ),
+            None,
+        )
+        if task is None:
+            raise ValueError("Selected task is missing from the ledger")
+        if ledger["current_step"] != "implement":
+            lock.release()
+            print(json.dumps({
+                "status": "pending",
+                "task_id": task["id"],
+                "current_step": ledger["current_step"],
+                "reason": "no MVP adapter owns the current flow step",
+            }, sort_keys=True))
+            return 0
 
     # Compare current Git state with the applicable controller-owned evidence.
     repo = Path(ledger["repository"]).resolve()
@@ -1179,9 +1601,6 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
         sandbox=policy["permissions"]["sandbox"],
     )
 
-    # Selection is pure. Durable mutation begins only after exact preflight.
-    task = select_task(ledger, policy)
-
     # Capture task baseline
     attempt_number = 1
     attempts_dir = run_dir / "attempts"
@@ -1209,6 +1628,9 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
         brief_path=task["brief_path"],
         prompt=prompt,
         policy=policy,
+        flow=flow,
+        flow_revision=flow_authority["flow_revision"],
+        flow_sha256=flow_authority["flow_sha256"],
         baseline_ref=task_baseline_ref,
     )
     expected_attempt_dir = run_dir / "attempts" / f"attempt-{attempt_number:03d}"
@@ -1220,6 +1642,8 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
         "--codex-bin", args.codex_bin,
         "--timeout-seconds", str(args.timeout_seconds),
         "--sandbox", policy["permissions"]["sandbox"],
+        "--model", attempt_record["model"],
+        "--effort", attempt_record["effort"],
     ]
     attempt_record.update({
         "adapter_invocation": adapter_invocation,
@@ -1240,11 +1664,12 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     ledger = _update_ledger_locked(run_dir, {
         "state": "running",
         "selected_task_id": task["id"],
+        "current_step": "implement",
         "active_attempt_id": attempt_id,
         "selected_task_baseline_ref": task_baseline_ref,
         "selected_task_baseline_digest": task_baseline_digest,
         "tasks": running_tasks,
-    }, expected_revision=ledger["revision"])
+    }, expected_revision=ledger["revision"], flow=flow, cursor_action=cursor_action)
     running_revision = ledger["revision"]
     lock.release()
 
@@ -1256,8 +1681,10 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
             "state": "stopped",
             "selected_task_id": None,
             "active_attempt_id": None,
+            "current_step": None,
+            "correction_cycle": 0,
             "tasks": stopped_tasks,
-        }, expected_revision=ledger["revision"])
+        }, expected_revision=ledger["revision"], cursor_action="task_boundary")
         lock.release()
         return 1
 
@@ -1437,6 +1864,15 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
 
 def _cli_inspect(args: "argparse.Namespace") -> int:  # type: ignore[name-defined]
     result = inspect_run(Path(args.run_dir).resolve(), args.timeout_seconds)
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+def _cli_revise_flow(args: "argparse.Namespace") -> int:  # type: ignore[name-defined]
+    result = revise_flow(
+        Path(args.run_dir).resolve(),
+        Path(args.flow).resolve(),
+    )
     print(json.dumps(result, sort_keys=True))
     return 0
 

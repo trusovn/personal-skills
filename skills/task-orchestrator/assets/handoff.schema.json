@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:task-orchestrator:handoff:v1",
+  "title": "Task Orchestrator Compact Handoff",
+  "type": "object",
+  "required": [
+    "version",
+    "subject",
+    "summary",
+    "changed_paths",
+    "evidence_refs",
+    "transcript_ref"
+  ],
+  "properties": {
+    "version": {"const": 1},
+    "subject": {"$ref": "#/$defs/subject"},
+    "summary": {"type": "string", "minLength": 1},
+    "changed_paths": {"type": "array", "items": {"$ref": "#/$defs/reference"}},
+    "evidence_refs": {"type": "array", "items": {"$ref": "#/$defs/reference"}},
+    "transcript_ref": {"$ref": "#/$defs/reference"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "reference": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)[^\\\\]+$"
+    },
+    "subject": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "task_id",
+        "flow_revision",
+        "flow_sha256",
+        "step",
+        "correction_cycle",
+        "actor_role"
+      ],
+      "properties": {
+        "run_id": {"type": "string", "minLength": 1},
+        "task_id": {"type": "string", "minLength": 1},
+        "flow_revision": {"type": "integer", "minimum": 1},
+        "flow_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "step": {
+          "enum": [
+            "preflight",
+            "implement",
+            "verify",
+            "semantic_review",
+            "correction",
+            "accept"
+          ]
+        },
+        "correction_cycle": {"type": "integer", "minimum": 0},
+        "actor_role": {
+          "enum": [
+            "preflight",
+            "implementer",
+            "verifier",
+            "semantic_reviewer",
+            "controller"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -24,10 +24,28 @@ exact freshness/ownership evidence is proportionate to the task's risk.
 - Accept a `ready` task brief or a bounded user request with clear authority and
   scope.
 - Return a compact inline readiness result unless the user requests a file.
-- Inspect only enough repository state to protect user work, confirm scope and
-  dependencies, resolve the targeted command, and establish a decisive oracle.
+- Inspect the minimum current state needed to protect ownership and identify
+  concrete readiness uncertainty, then classify the standalone preflight's
+  value before doing broader readiness work. This classification guides
+  effort; it is not a readiness status or a required machine-schema field.
 - The standalone stage is optional; `bounded-task-implementer` may perform the
   same compact self-preflight.
+
+Classify `standalone_preflight_value` as:
+
+- `material` when dirty or multi-writer ownership, a required environment,
+  permission, dependency, helper, fixture, or real-boundary capability, an
+  ambiguous or expensive command/oracle, a durable cross-session handoff, or a
+  high-assurance/unattended entry condition is genuinely uncertain or costly
+  to discover late; or
+- `marginal` when authority, scope, ownership, paths, dependencies, command,
+  and oracle are routine and `bounded-task-implementer` can check them cheaply.
+
+If a brief recommends standalone guided preflight for a named uncertainty,
+compare that reason with current repository state. Reclassify when later
+focused discovery resolves or reveals a material fact, and report the final
+classification with the exact uncertainty resolved. Do not preserve or reject
+the route merely because the brief named it.
 
 ### High assurance
 
@@ -43,25 +61,41 @@ exact freshness/ownership evidence is proportionate to the task's risk.
 1. Read applicable instructions and the task/request. Confirm the expected
    behavior is sufficiently clear; route a material product or architecture
    gap back to the owner rather than guessing.
-2. Inspect `git status --short` and the intended change area. Identify
-   pre-existing user changes and stop on ownership overlap that cannot be
-   safely separated.
-3. Confirm dependencies and entry conditions that matter now. Do not require a
+2. Inspect `git status --short`, the intended change area, and any declared
+   multi-writer ownership signal. Identify pre-existing user changes and stop
+   on ownership overlap that cannot be safely separated.
+3. Make a provisional standalone-value classification from the named route,
+   current ownership facts, and the criteria above before doing baseline or
+   freshness work. Reclassify as focused discovery resolves dependencies,
+   commands, or oracles. In the result, record the final classification and
+   exact uncertainty resolved when value is material, or why the final facts
+   are routine when it is marginal.
+4. Confirm dependencies and entry conditions that matter now. Do not require a
    tracker or digest merely because high-assurance mode would record one.
-4. Resolve the relevant implementation paths, closest tests, public entry
+5. Resolve the relevant implementation paths, closest tests, public entry
    point, and lowest-cost targeted command. Focused discovery is allowed; do
    not perform generic repository archaeology.
-5. For each acceptance criterion, confirm an observable oracle. Require the
+6. For each acceptance criterion, confirm an observable oracle. Require the
    real boundary only where unit/module evidence cannot prove wiring,
    persistence, process, database, filesystem, concurrency, recovery,
    authorization, or another material behavior.
-6. Run an authorized cheap local baseline only when it distinguishes a broken
-   environment from the intended fail-first state or materially lowers risk.
+7. Run an authorized cheap local baseline only when it distinguishes a broken
+   environment from the intended fail-first state or freshness is an entry
+   criterion. Do not run a broad or aggregate baseline to make the result look
+   complete.
    Ask before slow, flaky, privileged, destructive, live, or networked checks
    unless already authorized.
-7. Return `ready` with the exact targeted command, scope/ownership result,
-   meaningful gaps, and implementation stops; otherwise return `blocked` with
-   the evidence, owner, and smallest next action.
+8. Return `ready` with the exact targeted command and oracle, scope/ownership
+   result, relevant capability result, meaningful warning or blocker,
+   implementation stops, and exact next action; otherwise return `blocked`
+   with the evidence, owner, and smallest next action.
+
+For a marginal direct invocation, still perform steps 1-8 sufficiently to give
+a truthful `ready` or `blocked` result. Limit the check to applicable
+instructions, status/ownership, bounded paths, and the targeted command with
+its oracle. Do not create a broad baseline, digest ledger, repeated task
+summary, or high-assurance artifact. Recommend implementer self-preflight for
+the next materially similar task.
 
 ## Guided blockers and warnings
 
@@ -126,11 +160,19 @@ Use exactly one status:
 
 For guided mode, default to a short human-readable result containing:
 
-- status and basis;
-- confirmed scope and user-work ownership;
-- targeted test/verification command and oracle;
-- warnings or skipped stronger checks; and
-- exact next action.
+- status and `standalone_preflight_value: marginal | material`, including the
+  routine basis or exact uncertainty resolved;
+- only implementation deltas: confirmed scope and user-work ownership,
+  targeted command and observable oracle, relevant helper/capability result,
+  material warnings or blockers, and implementation stops;
+- whether the standalone stage added enough value to recommend it for the next
+  materially similar task; and
+- the exact next action.
+
+When another session will consume the guided result, include one copyable
+`Implementer handoff` block containing those deltas and the exact next action.
+Do not repeat the task outcome or acceptance prose unless needed to
+disambiguate the oracle.
 
 For high-assurance mode, use the full packet template and durable path. A
 blocked packet is evidence, not authorization to implement.
@@ -147,7 +189,10 @@ blocked packet is evidence, not authorization to implement.
 ## Definition of done
 
 - The readiness result is proportionate to the selected profile.
+- Guided standalone value is classified before ceremony and explained from
+  current facts.
 - Scope, user-work ownership, dependencies, command, oracle, permissions, and
   meaningful gaps are explicit.
-- Guided mode avoids freshness paperwork that no later process will consume.
+- Guided output is delta-focused, and marginal direct requests still receive a
+  truthful readiness check without freshness paperwork or broad baselines.
 - High-assurance mode remains independently reproducible and freshness-safe.

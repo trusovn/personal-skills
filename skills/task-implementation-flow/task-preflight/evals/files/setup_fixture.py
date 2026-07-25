@@ -172,7 +172,60 @@ def queue_guided() -> None:
     subprocess.run(["git", "-C", str(root), "commit", "--amend", "-qm", "fixture baseline"], check=True)
 
 
+def api_routine() -> None:
+    root = WORK / "api-routine"
+    initialize(root)
+    write(
+        root,
+        "AGENTS.md",
+        "# Fixture rules\n\nPreflight is repository-read-only. Use the exact targeted unittest command in the task brief.",
+    )
+    write(
+        root,
+        "docs/tasks/API-07.md",
+        """
+        # API-07 — Reject expired sessions
+
+        Artifact status: ready
+        Standalone readiness route: guided preflight to confirm the local test command.
+        Allowed paths: src/auth/session.py; tests/auth/test_session.py
+        Dependencies: complete; Python standard library only.
+        AC-01: an unexpired session is valid when its expiry is later than the current time.
+        Targeted command: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.auth.test_session.SessionTest.test_unexpired_session_is_valid
+        Oracle: the public `is_valid` result is true for expires_at=200 and now=100.
+        """,
+    )
+    write(
+        root,
+        "src/auth/session.py",
+        """
+        def is_valid(session, now):
+            return session["expires_at"] > now
+        """,
+    )
+    write(
+        root,
+        "tests/auth/test_session.py",
+        """
+        import unittest
+
+        from src.auth.session import is_valid
+
+
+        class SessionTest(unittest.TestCase):
+            def test_unexpired_session_is_valid(self):
+                session = {"expires_at": 200}
+
+                self.assertTrue(is_valid(session, now=100))
+        """,
+    )
+    write(root, "tests/__init__.py", "")
+    write(root, "tests/auth/__init__.py", "")
+    commit(root)
+
+
 SCENARIOS = {
+    "api-routine": api_routine,
     "queue-ready": queue_ready,
     "queue-guided": queue_guided,
     "scheduler-missing": scheduler_missing,

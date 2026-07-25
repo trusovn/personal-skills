@@ -2,12 +2,51 @@
 
 Status: `ready | ready_for_preflight | blocked_design`
 
+When the status is `blocked_design`, do not use the implementation template
+below. Emit only this abbreviated design-block form and stop:
+
+```markdown
+# Design block: `<requested outcome as stated>`
+
+Status: `blocked_design`
+
+## Missing decisions or authority
+
+- `<decision or authority gap; why it materially changes the task>`
+
+## Owner and smallest next action
+
+- Owner: `<user or named decision owner>`
+- Next: `<smallest planning/approval action>`
+```
+
+Do not add launch metadata, a readiness route, proposed architecture,
+implementation scope or paths, work items, implementation acceptance criteria,
+finite-risk cases, verification obligations, or an implementation handoff.
+The remaining template applies only to `ready` and `ready_for_preflight`.
+
 ```yaml
 agent_tier: mechanical | standard | strong
 reasoning: low | medium | high
 review: mechanical | milestone | immediate
 budget: <tool calls> / <time> / <context>
 ```
+
+These four scalar values are intended launch guidance for future automated or
+current manual routing. Use the profile approved by the authority; do not
+present `reasoning` or another value as observed runtime configuration unless
+it was supplied. Treat the budget as a soft checkpoint unless authority makes
+it hard.
+
+## Readiness route
+
+`<implementer self-preflight | standalone guided preflight — concrete material uncertainty | high-assurance preflight>`
+
+Use implementer self-preflight for routine guided work. Recommend standalone
+guided preflight only with the concrete material readiness uncertainty that it
+should resolve. Use high-assurance preflight when that profile is required.
+This is human-readable guidance, not a fifth metadata key; current execution
+facts may still require escalation.
 
 ## Outcome
 
@@ -42,6 +81,27 @@ Required work:
 Omit AC-03 when it adds no distinct protection. Add more ACs only for distinct
 approved outcomes.
 
+### Finite-risk coverage contract (optional)
+
+Include this subsection only when authority contains a universal or lifecycle
+claim with finite, material cases whose omission could permit false success.
+Omit it for tasks without such dimensions; do not fill it with generic test
+categories or speculative cases.
+
+| Invariant | Material dimensions/cases | Decisive oracle/boundary | Implementation evidence | Independent review probe | Gate owner |
+|---|---|---|---|---|---|
+| `<property that remains true>` | `<exact finite values or state transitions>` | `<observable outcome at the real boundary>` | `<fail-first, targeted, or owning evidence>` | `<distinct corroboration/adversarial probe, or N/A with reason>` | `<owner and stage for owning/broad gate>` |
+
+Combine cases only when they share one invariant and oracle; this table does
+not require a Cartesian product. Keep implementation evidence distinct from
+independent review. For immediate-review correction, assign the broader or
+aggregate gate to either the correction implementer or the final fresh
+reviewer, and keep targeted evidence first while it remains red. Keep row
+identity stable so later reviews can record `pass`, `fail`, `blocked`, or
+`unchecked`; a prior result does not prove corrected bytes. Use exactly these
+six semantic columns; do not replace them with a smaller requirements table and
+move evidence roles or gate ownership elsewhere.
+
 ## Verification
 
 | Evidence | Scenario and oracle | Command |
@@ -49,7 +109,7 @@ approved outcomes.
 | Fail-first / regression | `<how the test rejects missing or faulty behavior, or why infeasible>` | `<exact command or focused discovery owner>` |
 | Targeted | `<lowest reliable behavior and boundary>` | `<exact command or focused discovery owner>` |
 | Owning suite | `<nearby regression coverage>` | `<command or N/A with reason>` |
-| Broader gate | `<blast radius covered>` | `<command, approval required, or N/A with reason>` |
+| Broader gate | `<blast radius covered, owner, and execution stage>` | `<command, approval required, or N/A with reason>` |
 
 For repeated, resumed, retried, recovered, paginated, or migrated behavior,
 include the first occurrence, its legitimate state change, and the next real
@@ -62,7 +122,11 @@ risk.
   material scope expansion, or a missing decisive verification capability.
 - Treat the metadata budget as a checkpoint unless explicitly declared hard.
 - Preserve pre-existing user work.
-- Next action: `<guided implementation | high-assurance preflight | decision owner>`.
+- Next action: `<guided implementation | standalone guided preflight and reason | high-assurance preflight | decision owner>`.
+- When `review: immediate`, preserve implementation as the next action and add:
+  `Required follow-on: immediately after implementation or correction, hand
+  the completed bytes to a fresh independent acceptance reviewer.` Do not use
+  same-session self-review as that acceptance step.
 
 ---
 

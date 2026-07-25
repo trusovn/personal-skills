@@ -166,6 +166,37 @@ This section is one continuous sequence — don't stop partway through. Do NOT u
 
 Put results in `<skill-name>-workspace/` as a sibling to the skill directory. Within the workspace, organize results by iteration (`iteration-1/`, `iteration-2/`, etc.) and within that, each test case gets a directory (`eval-0/`, `eval-1/`, etc.). Don't create all of this upfront — just create directories as you go.
 
+### Choose the evaluation runner
+
+Use `scripts/run_eval.py` to evaluate whether a skill's description triggers
+for representative prompts.
+
+For artifact-producing Codex evals that declare structured `execution`
+metadata, use the sequential behavioral runner:
+
+```bash
+python3 scripts/run_behavior_evals.py <skill-path> \
+  --ids 1,4,5 \
+  --baseline-skill <optional-path> \
+  --output-dir <optional-path>
+```
+
+Optional `--model` and `--reasoning` values override the user's configured
+Codex defaults. Before a live, model-backed run, show the exact command and
+obtain approval unless that class of run is already authorized.
+
+The behavioral runner stages each eval in a fresh workspace and preserves its
+effective prompt, final response, workspace, exit metadata, and non-empty
+stderr. It does not grade expectations or produce the complete grader,
+benchmark, or viewer workspace contract described below. A zero Codex exit is
+execution evidence only, not an expectation grade or acceptance verdict.
+Continue with the existing grading, aggregation, viewer, and human-review
+steps when those outcomes are needed.
+
+The numbered workflow below describes the existing subagent workspace flow.
+Do not also spawn those runs for cases already launched by the behavioral
+runner.
+
 ### Step 1: Spawn all runs (with-skill AND baseline) in the same turn
 
 For each test case, spawn two subagents in the same turn — one with the skill, one without. This is important: don't spawn the with-skill runs first and then come back for baselines later. Launch everything at once so it all finishes around the same time.

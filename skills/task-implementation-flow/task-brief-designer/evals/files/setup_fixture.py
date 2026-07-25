@@ -130,6 +130,8 @@ def existing_brief() -> None:
         ## Authority and scope
 
         Authority: approved issue API-31.
+        Approved launch guidance: standard agent tier, medium reasoning, and
+        immediate fresh acceptance review.
         Allowed changes: `src/auth/session.py`, `tests/auth/test_session.py`.
         Out of scope: token format changes, dependencies, network, and commits.
 
@@ -152,7 +154,82 @@ def existing_brief() -> None:
     commit(root)
 
 
+def finite_risk_matrix() -> None:
+    root = WORK / "evidence-flow"
+    initialize(root)
+    write(
+        root,
+        "AGENTS.md",
+        "# Fixture rules\n\nDesign artifacts may be written only under `docs/tasks/`. Do not edit implementation or tests during task design.",
+    )
+    write(
+        root,
+        "docs/evidence-plan.md",
+        """
+        # Evidence flow plan
+
+        ## EVD-12 — Reject tampered or contradictory publication state
+
+        Design a guided implementation task for the public command
+        `evidence-runner resume --state <path>`.
+
+        Persisted evidence families are exactly: policy, manifest, attempt
+        record, structured result, and closure. Resume must validate every
+        present family before any filesystem mutation or subprocess start.
+
+        Publications occur in this exact order: execution, verification,
+        decision, ledger. The only legal prefixes are: none; execution;
+        execution + verification; execution + verification + decision; and
+        execution + verification + decision + ledger. A valid prefix reuses
+        its existing bytes and publishes only the next missing stage.
+
+        Reject these contradictory orphan states before side effects:
+        structured result without an attempt record; closure without a
+        decision publication; ledger without a verification publication; and
+        a manifest that references a missing attempt record. Reject tampering
+        of each named persisted evidence family at the same boundary.
+
+        Implementation evidence must establish fail-first and targeted public
+        command coverage. A fresh independent reviewer must use a distinct
+        tamper/recovery probe and owns the aggregate suite after corrections;
+        correction implementers rerun targeted evidence first and do not rerun
+        the aggregate suite while targeted evidence is red.
+
+        Material readiness uncertainty: the repository has no confirmed
+        deterministic observer for proving that rejection precedes both file
+        writes and subprocess starts. Recommend standalone guided preflight to
+        resolve that exact capability before implementation.
+
+        Allowed implementation paths are `src/evidence_flow.py` and
+        `tests/test_evidence_flow.py`. Do not add shared harnesses, new
+        dependencies, or unrelated generic corruption, fuzz, platform, or
+        performance cases.
+        """,
+    )
+    write(
+        root,
+        "tests/test_evidence_flow.py",
+        """
+        import unittest
+
+        from evidence_flow import validate_publication_state
+
+
+        class EvidenceFlowTest(unittest.TestCase):
+            def test_complete_happy_path_is_accepted(self):
+                state = {
+                    "evidence": ["policy", "manifest", "attempt record", "structured result", "closure"],
+                    "publications": ["execution", "verification", "decision", "ledger"],
+                }
+
+                self.assertTrue(validate_publication_state(state))
+        """,
+    )
+    commit(root)
+
+
 SCENARIOS = {
+    "finite-risk-matrix": finite_risk_matrix,
     "queue-runner": queue_runner,
     "process-tree": process_tree,
     "existing-brief": existing_brief,

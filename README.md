@@ -23,6 +23,7 @@ Current source skills:
 - `idea-brief`
 - `idea-challenger`
 - `idea-investigator`
+- `project-direction`
 - `repo-foundation`
 - `senior-code-review`
 - `session-handoff`

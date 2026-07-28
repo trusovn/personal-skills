@@ -52,6 +52,24 @@ facts may still require escalation.
 
 `<One testable sentence describing the approved result.>`
 
+## Direction trace
+
+Include this section when governing direction was supplied. Omit it otherwise.
+
+- Direction contribution: `<approved outcome, scenario, priority, or boundary
+  this task advances>`
+- User-observable effect: `<direct effect, or "No direct effect; enables
+  <next demonstrable outcome>">`
+- Why now: `<approved sequence or real technical dependency leading toward the
+  next demonstrable outcome>`
+- Direction decisions used: `<exact paths, sections, or decision IDs>`
+- New direction decisions required: `None`
+
+If `New direction decisions required` cannot truthfully be `None`, do not use
+this template or produce an implementation-ready brief. Return the
+plain-language direction-delta-needed response and stop. Do not use "Why now"
+to invent priority or ordering that the supplied authority does not establish.
+
 ## Authority and scope
 
 | Item | Contract |

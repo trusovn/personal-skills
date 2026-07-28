@@ -111,6 +111,96 @@
         "The brief does not invent unrelated generic corruption, fuzz, platform, performance, Cartesian-product, high-assurance ledger, or shared-harness requirements.",
         "The output writes only `docs/tasks/EVD-12.md` and does not implement code, tests, dependencies, or orchestrator state."
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "Create an implementation-ready guided brief at `docs/tasks/SYNC-4.md` from `docs/requests/SYNC-4.md`. The governing owner direction is `docs/project-direction.md`. A technical note recommends silently uploading local notes to a hosted service to simplify multi-device sync. Keep planning subordinate to the supplied direction and do not implement anything.",
+      "expected_output": "A concise plain-language direction-delta-needed response rather than an implementation-ready brief, because hosted upload changes the approved privacy, trust, intervention, and scope boundaries. It cites the governing direction, explains the practical choice and tradeoffs, labels any recommendation as non-authoritative, and stops before task ACs or implementation metadata.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "direction-gap"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/note-sync"
+      },
+      "expectations": [
+        "The response cites `docs/project-direction.md` and identifies the local-only privacy or trust boundary that SYNC-4 would change.",
+        "The response uses the direction-delta-needed form and explains the practical owner choice between local-only behavior and hosted multi-device sync.",
+        "Any technical recommendation is clearly labeled non-authoritative rather than treated as approved direction.",
+        "Because a new direction decision is required, the response does not claim `New direction decisions required: None` or emit a Direction trace for a ready brief.",
+        "The response does not create `docs/tasks/SYNC-4.md` or add task scope, acceptance criteria, launch metadata, verification, or implementation handoff.",
+        "No source direction, request, implementation, test, dependency, or orchestrator file is modified."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Create the ordinary guided implementation brief `docs/tasks/EXPORT-2.md` from `docs/requests/EXPORT-2.md`. Use the approved governing direction at `docs/project-direction.md`, keep the technical task detailed, and do task design only.",
+      "expected_output": "Creates a ready guided brief with a compact Direction trace that connects the technical export task to the approved portable-backup outcome, states its direct user effect, explains why it is the next demonstrable proof without inventing priority, cites exact governing decisions, records that no new direction decisions are required, and treats the supplied helper reuse as a consequence-neutral technical refinement.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "direction-trace"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/note-export"
+      },
+      "expectations": [
+        "The output creates only `docs/tasks/EXPORT-2.md` and keeps status `ready` with proportionate guided metadata and implementer self-preflight.",
+        "A `Direction trace` contains all five fields: Direction contribution, User-observable effect, Why now, Direction decisions used, and New direction decisions required.",
+        "Direction contribution traces to the approved portable-backup outcome, and User-observable effect says the owner can create a restorable local export.",
+        "Why now cites the approved first useful proof or the export-before-restore dependency without inventing a new priority.",
+        "Direction decisions used cites exact sections of `docs/project-direction.md`, and New direction decisions required is exactly `None`.",
+        "Reusing the existing `LocalArchiveWriter` is treated as a permitted consequence-neutral technical refinement rather than a reason to request direction.",
+        "The technical work remains bounded to the approved local export behavior and does not add hosted storage, automatic upload, new product behavior, implementation, tests, dependencies, or orchestrator state."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Create an implementation-ready guided brief at `docs/tasks/RETENTION-3.md` from `docs/requests/RETENTION-3.md`, using `docs/project-direction.md` as governing direction. The request calls automatic deletion a storage implementation detail. Keep planning subordinate to approved direction and do not implement anything.",
+      "expected_output": "Returns a direction-delta-needed response instead of a ready brief because automatically deleting older exports introduces an owner-visible retention and data-loss policy that the governing direction does not approve. It treats silence as unresolved for this material consequence and does not misclassify deletion as a technical refinement.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "retention-gap"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/backup-retention"
+      },
+      "expectations": [
+        "The response identifies automatic deletion as a material user-observable retention and data-loss decision, not a consequence-neutral technical refinement.",
+        "It states that the owner-confirmed direction does not authorize a retention limit and treats that silence as unresolved rather than permission.",
+        "The response uses the direction-delta-needed form, gives practical retention options and consequences, and keeps any recommendation non-authoritative.",
+        "It does not create `docs/tasks/RETENTION-3.md`, claim `New direction decisions required: None`, or add task ACs, metadata, verification, or implementation handoff.",
+        "No direction, request, implementation, test, dependency, or orchestrator file is modified."
+      ]
     }
   ]
 }

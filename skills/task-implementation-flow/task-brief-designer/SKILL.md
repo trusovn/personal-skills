@@ -11,6 +11,16 @@ material and add only what the implementer or reviewer needs.
 Repository and user instructions outrank this skill. Preserve existing user
 work and never claim ownership of it.
 
+When supplied owner-confirmed direction governs the task, classify direction
+authority before selecting a profile, status, or output artifact. If the task
+would introduce or change a material practical consequence beyond that
+direction, return only the direction-delta-needed response in the conversation
+and leave the requested task path absent or unchanged. This route takes
+precedence over `blocked_design`; unresolved architecture does not convert a
+direction gap into a blocked implementation-task artifact. If the task remains
+within the approved consequences, continue normally and do not require
+direction to authorize consequence-neutral technical details.
+
 ## Choose the profile
 
 Use `guided` by default. Use `high-assurance` only when the user requests it,
@@ -45,6 +55,8 @@ smallest additional artifact or decision required.
 Require enough information to identify:
 
 - the requested outcome and its authority;
+- any supplied governing direction and the part this task is intended to
+  advance;
 - repository or working context;
 - known scope, dependencies, and constraints; and
 - any existing task artifact that should be preserved.
@@ -60,20 +72,55 @@ an unapproved premise.
 
 ## Workflow
 
-1. Read applicable instructions, the task authority, and the existing brief if
-   present. Load only cited context needed to understand the task.
-2. State the smallest testable outcome. Separate confirmed requirements from
-   implementation choices and unresolved decisions.
+1. Read applicable instructions, the task authority, any supplied governing
+   direction, and the existing brief if present. Load only cited context needed
+   to understand the task.
+2. State the smallest testable outcome. When governing direction is supplied,
+   prepare the direction trace described in the template. When a technical
+   artifact is an intermediate step in an approved end-to-end proof, state both
+   its immediate user-observable result and the approved capability it enables;
+   do not reduce the trace to a generic artifact property. Allow a task to have
+   no direct user-observable effect only when it names the next demonstrable
+   outcome it enables. Ground "why now" in approved sequencing or a real
+   dependency rather than inventing priority. Separate confirmed requirements
+   from implementation choices and unresolved decisions.
 3. Run a delta check before drafting:
    - outcome testable;
    - allowed and prohibited scope clear enough to prevent adjacent work;
    - dependencies and meaningful stop conditions known;
    - acceptance criteria observable; and
    - verification can exercise the decisive behavior.
+   When governing direction is supplied, also run this direction-authority
+   check before claiming the task is ready:
+   - Compare the task's material practical consequences, not every
+     implementation detail, with the supplied direction.
+   - Treat only owner-confirmed direction and specifically confirmed decisions
+     as authority. Recommendations, assumptions, unresolved questions, and
+     technical notes are not approvals.
+   - Check user-observable behavior and operating scenarios, ordered priorities
+     and their conflict rule, the first useful proof, scope and non-goals,
+     assurance and trust, and intervention and decision ownership.
+   - Allow a technical refinement when task authority permits it and it changes
+     none of those consequences. Direction need not name every implementation
+     detail.
+   - Do not make a conflicting request appear authorized by silently dropping
+     its stated or recommended behavior and inventing a different task. When
+     the supplied request's only proposed approach crosses a direction
+     boundary, and the owner has not explicitly rejected or replaced that
+     approach with an authorized alternative, the missing choice still needs a
+     direction delta. A hypothetical compliant architecture is not authority
+     to draft a substitute implementation task.
+   - Treat silence as unresolved for a material consequence, not as permission.
+     If approval is absent, sources conflict, or the boundary cannot be
+     established, return the direction-delta-needed form below in the
+     conversation and stop without creating or modifying the requested task
+     artifact.
    Preserve adequate sections verbatim or by reference. Do not expand them for
-   template completeness. If a material product or architecture decision is
-   missing, switch to `blocked_design` and stop before the remaining drafting
-   steps.
+   template completeness. If the task would need to introduce or change product
+   behavior, priority, assurance, trust, intervention, or scope beyond supplied
+   governing direction, return the plain-language direction-delta-needed form
+   below and stop. For other material product or architecture gaps, switch to
+   `blocked_design` and stop before the remaining drafting steps.
 4. Classify verification-capability uncertainty before choosing preflight or a
    split:
    - Use implementer self-preflight or standalone guided preflight when an
@@ -199,7 +246,34 @@ For a gap check, report only:
 - when `review: immediate`, the ordered handoff from implementation or
   correction to fresh independent acceptance review immediately afterward.
 
-For a durable brief, use `references/task-brief-template.md` with one status:
+When supplied direction does not authorize a needed product, priority,
+assurance, trust, intervention, or scope choice, return only:
+
+```markdown
+# Direction delta needed: `<requested task>`
+
+- Governing direction: `<exact source and relevant section>`
+- Missing decision: `<plain-language choice the task cannot make>`
+- Why it matters: `<practical consequence for the owner or user>`
+- Options: `<concise choices and their practical tradeoffs>`
+- Recommendation: `<optional and clearly non-authoritative, or none>`
+- Downstream impact: `<briefs or plans that may need review>`
+- Owner action: `<smallest decision or direction update needed>`
+```
+
+This is a routing response, not a task brief. Return it in the conversation and
+leave the requested task path absent or unchanged. Write a durable delta only
+when the user explicitly requests a separate direction-delta artifact path;
+never store it at the requested implementation-task path.
+
+Do not continue into task scope, acceptance criteria, launch metadata,
+verification, or implementation handoff until the owner supplies the missing
+direction. A technical recommendation is not governing authority.
+
+For a durable brief, use `references/task-brief-template.md`. When governing
+direction was supplied, include its `Direction trace` section and require
+`New direction decisions required: None`; any other value requires the
+direction-delta-needed response instead of a ready brief. Use one status:
 
 - `ready`: guided implementation may begin after its recommended readiness
   route is satisfied;
@@ -227,6 +301,9 @@ design task.
   a separate prerequisite evaluation/proof task and block the primary task on
   its result.
 - Route missing product or architecture authority to its owner or the user.
+- Route gaps in supplied product direction through the plain-language
+  direction-delta-needed form rather than silently resolving them in a
+  technical brief.
 - Route wider scope or new shared infrastructure back through brief design.
 - Do not implement, accept the result, update trackers, launch subagents, or
   modify orchestration state.
@@ -236,5 +313,10 @@ design task.
 - The task is independently understandable without this conversation.
 - Every changed or added line in an existing brief closes a concrete gap.
 - Outcome, scope, ACs, evidence, metadata, stops, and next action are clear.
+- When direction is supplied, the contribution, user-observable effect or
+  enabled outcome, sequencing reason, and approved decisions are traceable.
+- Every ready brief with supplied governing direction says
+  `New direction decisions required: None`; otherwise brief design stopped
+  with a direction delta.
 - Guided briefs avoid high-assurance artifact ceremony unless risk justifies it.
 - High-assurance briefs preserve exact stage and evidence contracts.

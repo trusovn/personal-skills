@@ -1,6 +1,6 @@
 # Task Orchestrator: Revised Direction
 
-Status: draft for owner review
+Status: approved
 
 Sources:
 
@@ -82,7 +82,7 @@ instead of asking for routine confirmation.
   owner experience uses the same reviewed path every time.
 - Automatically diagnosing that a poor architecture choice is the root cause
   of repeated problems. The initial protection is a bounded stop with useful
-  evidence; smarter diagnosis may come later.
+  evidence; smarter diagnosis will come later.
 - Pushing commits, publishing changes, or making other remote changes.
 - Automatically granting broader permissions after startup.
 - Parallel task execution, remote workers, or multiple operators.

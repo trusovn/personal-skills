@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "template": "targeted-cv-template.docx",
+  "sha256": "3d29daed3990a12fc07c8cf99cd535c3bd5c2434fe5ce2c9e01c44a3b2e6601a",
+  "editable_parts": [
+    "word/document.xml",
+    "word/header1.xml"
+  ],
+  "header": {
+    "paragraph_id": "7FFF0000"
+  },
+  "body": {
+    "name": "00000001",
+    "tagline": "00000002",
+    "location": "00000003",
+    "contact": "00000004",
+    "profile_heading": "00000005",
+    "profile": "00000006",
+    "expertise_heading": "00000007",
+    "expertise_table": {
+      "titles": ["00000008", "0000000A", "0000000C", "0000000E", "00000010", "00000012"],
+      "descriptions": ["00000009", "0000000B", "0000000D", "0000000F", "00000011", "00000013"]
+    },
+    "experience_heading": "00000014",
+    "role_header": "00000015",
+    "role_bullet": "00000016",
+    "environment": "00000017",
+    "strengths_heading": "00000018",
+    "strength_bullet": "00000019",
+    "skills_heading": "0000001A",
+    "skill_line": "0000001B",
+    "spacer": "0000001C",
+    "certificates": "0000001D",
+    "languages": "0000001E",
+    "availability": "0000001F"
+  }
+}

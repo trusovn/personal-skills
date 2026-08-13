@@ -31,6 +31,7 @@ Current source skills:
 - `task-acceptance-review`
 - `task-brief-designer`
 - `task-preflight`
+- `targeted-cv`
 - `task-orchestrator`
 - `testing-discipline`
 

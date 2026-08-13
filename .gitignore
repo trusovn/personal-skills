@@ -2,3 +2,5 @@
 __pycache__/
 *.py[cod]
 .handoff/
+/*_CV_*.docx
+/*_CV_Facts_and_Claims.md

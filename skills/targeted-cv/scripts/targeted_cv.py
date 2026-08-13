@@ -356,7 +356,7 @@ def validate_draft(draft: dict, facts_index: dict) -> list[dict]:
         employer = require_text(role.get("employer"), f"{role_path}.employer")
         dates = require_text(role.get("dates"), f"{role_path}.dates")
         header_item = {
-            "text": f"{title} — {employer} {dates}",
+            "text": f"{title} - {employer} {dates}",
             "evidence_ids": role.get("header_evidence_ids"),
         }
         header_evidence, header_ids = validate_evidence(
@@ -366,7 +366,7 @@ def validate_draft(draft: dict, facts_index: dict) -> list[dict]:
             {
                 "path": f"{role_path}.header",
                 "rendered_text": header_item["text"],
-                "output_fragments": [f"{title} — {employer}", dates],
+                "output_fragments": [f"{title} - {employer}", dates],
                 "evidence_ids": header_ids,
                 "evidence": header_evidence,
             }
@@ -475,8 +475,7 @@ def set_role_header(paragraph: ET.Element, role: str, dates: str) -> None:
     for run in found:
         clear_run_content(run)
     append_text(found[0], role)
-    ET.SubElement(found[1], W + "tab")
-    append_text(found[1], dates)
+    append_text(found[1], "  |  " + dates)
 
 
 def set_labeled_text(paragraph: ET.Element, label: str, text: str) -> None:
@@ -575,7 +574,7 @@ def build_document_xml(source: bytes, draft: dict, contract: dict) -> bytes:
 
     for role in draft["experience"]:
         header = deepcopy(archetypes["role_header"])
-        set_role_header(header, f"{role['title']} — {role['employer']}", role["dates"])
+        set_role_header(header, f"{role['title']} - {role['employer']}", role["dates"])
         body.append(header)
         for bullet in role["bullets"]:
             paragraph = deepcopy(archetypes["role_bullet"])
@@ -612,13 +611,16 @@ def build_document_xml(source: bytes, draft: dict, contract: dict) -> bytes:
     return xml_bytes(root)
 
 
-def build_header_xml(source: bytes, draft: dict) -> bytes:
+def build_footer_xml(source: bytes, draft: dict) -> bytes:
     register_namespaces(source)
     root = ET.fromstring(source)
     paragraphs = list(root.iter(W + "p"))
     if len(paragraphs) != 1:
-        raise ValidationError("template header must contain exactly one paragraph")
-    set_plain_text(paragraphs[0], draft["identity"]["header"]["text"])
+        raise ValidationError("template footer must contain exactly one paragraph")
+    text_nodes = list(paragraphs[0].iter(W + "t"))
+    if len(text_nodes) != 1:
+        raise ValidationError("template footer must contain exactly one text node")
+    text_nodes[0].text = draft["identity"]["header"]["text"] + " | Page "
     assign_unique_paragraph_ids(root, start=0x7FFF0000)
     return xml_bytes(root)
 
@@ -672,13 +674,13 @@ def build_cv(
 
     with zipfile.ZipFile(template_path) as archive:
         source_document = archive.read("word/document.xml")
-        source_header = archive.read("word/header1.xml")
+        source_footer = archive.read("word/footer1.xml")
     document = build_document_xml(source_document, draft, contract)
-    header = build_header_xml(source_header, draft)
+    footer = build_footer_xml(source_footer, draft)
     write_modified_docx(
         template_path,
         output_path,
-        {"word/document.xml": document, "word/header1.xml": header},
+        {"word/document.xml": document, "word/footer1.xml": footer},
     )
 
     template_parts = zip_part_hashes(template_path)
@@ -720,7 +722,7 @@ def build_cv(
 
 def extract_docx_text(path: Path) -> str:
     with zipfile.ZipFile(path) as archive:
-        parts = [archive.read("word/document.xml"), archive.read("word/header1.xml")]
+        parts = [archive.read("word/document.xml"), archive.read("word/footer1.xml")]
     text: list[str] = []
     for part in parts:
         root = ET.fromstring(part)

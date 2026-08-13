@@ -233,13 +233,18 @@ class TargetedCvTest(unittest.TestCase):
         before = part_hashes(TEMPLATE)
         after = part_hashes(output)
         self.assertEqual(set(before), set(after))
-        editable = {"word/document.xml", "word/header1.xml"}
+        editable = {"word/document.xml", "word/footer1.xml"}
         for name in before.keys() - editable:
             self.assertEqual(before[name], after[name], name)
         with zipfile.ZipFile(output) as archive:
             text = archive.read("word/document.xml").decode("utf-8")
+            footer = archive.read("word/footer1.xml").decode("utf-8")
         self.assertIn("MORGAN IBARRA", text)
+        self.assertIn("Platform Engineer - Northstar Labs", text)
         self.assertIn("Reduced paging incidents by 35%", text)
+        self.assertNotIn("<w:tab", text)
+        self.assertIn("Morgan Ibarra | Platform Engineer | Page ", footer)
+        self.assertIn(" PAGE ", footer)
         self.assertNotIn("{{", text)
         verified = self.subject.verify_output(
             draft=draft,
@@ -315,6 +320,9 @@ class TargetedCvTest(unittest.TestCase):
     def test_placeholder_template_contains_no_fixture_candidate_data(self):
         with zipfile.ZipFile(TEMPLATE) as archive:
             visible = self.subject.extract_docx_text(TEMPLATE)
+            names = set(archive.namelist())
+            document = archive.read("word/document.xml").decode("utf-8")
+            footer = archive.read("word/footer1.xml").decode("utf-8")
             package_text = "\n".join(
                 archive.read(name).decode("utf-8", errors="ignore")
                 for name in archive.namelist()
@@ -327,12 +335,23 @@ class TargetedCvTest(unittest.TestCase):
             "availability", "full", "name", "tagline", "location", "and",
             "contact", "details", "summary", "title", "detail", "employer",
             "dates", "achievement", "strength", "skill", "group", "target",
+            "page",
         }
         words = set(re.findall(r"[A-Za-z]+", visible.lower()))
         self.assertLessEqual(words, allowed_words, words - allowed_words)
         self.assertIn("{{FULL_NAME}}", package_text)
         self.assertIn("{{ROLE_ACHIEVEMENT}}", package_text)
         self.assertIn("Targeted CV Skill", package_text)
+        self.assertNotIn("Mykola", package_text)
+        self.assertNotIn("Riverty", package_text)
+        self.assertIn("word/footer1.xml", names)
+        self.assertNotIn("word/header1.xml", names)
+        self.assertFalse(any(name.startswith("word/fonts/") for name in names))
+        self.assertIn('w:ascii="Arial"', document)
+        self.assertIn("<w:caps", document)
+        self.assertIn('w:fill="F5F6F7"', document)
+        self.assertIn("{{FULL_NAME}} | {{TARGET_ROLE}} | Page ", footer)
+        self.assertIn(" PAGE ", footer)
 
     def test_public_cli_build_and_verify_the_same_artifact(self):
         draft_path = self.root / "draft.json"

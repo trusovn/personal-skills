@@ -146,7 +146,7 @@ python3 "$SKILL_DIR/scripts/targeted_cv.py" verify \
   --ledger "$WORK_DIR/claim-ledger.json"
 ```
 
-The builder changes only `word/document.xml` and `word/header1.xml`.
+The builder changes only `word/document.xml` and `word/footer1.xml`.
 Verification is a structural/provenance gate: it rejects corrupt packages,
 altered preserve-only parts, stale ledgers, missing drafted content, and
 unresolved placeholders. It does not replace semantic review.

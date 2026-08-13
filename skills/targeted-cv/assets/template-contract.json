@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "template": "targeted-cv-template.docx",
-  "sha256": "3d29daed3990a12fc07c8cf99cd535c3bd5c2434fe5ce2c9e01c44a3b2e6601a",
+  "sha256": "fc328c91d631f3bac659c8c2257951a0fc742684ef3082e971b505eae79c236b",
   "editable_parts": [
     "word/document.xml",
-    "word/header1.xml"
+    "word/footer1.xml"
   ],
-  "header": {
+  "footer": {
     "paragraph_id": "7FFF0000"
   },
   "body": {

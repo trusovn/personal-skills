@@ -12,7 +12,8 @@ description: >-
   submitting an application.
 compatibility: >-
   Requires Python 3 and filesystem access. URL inputs require browser or web
-  access. Visual QA additionally requires LibreOffice and pdftoppm.
+  access. Visual QA additionally requires LibreOffice and pdftoppm; on macOS,
+  LibreOffice rendering requires sandbox escalation even in headless mode.
 ---
 
 # Targeted CV
@@ -100,6 +101,9 @@ Read `references/draft-schema.md`, then write `$WORK_DIR/draft.json`. Every
 factual fragment must cite one or more evidence IDs from the index.
 
 - Preserve the layout's section order and exactly six expertise slots.
+- For `certificates`, `languages`, and `availability`, write only the value;
+  the template supplies those labels. For example, use `English — C1`, not
+  `LANGUAGES | English — C1` or `Languages: English — C1`.
 - Preserve every role's identity and chronology. Reorder or omit bullets for
   relevance; do not create a false chronology.
 - Put the strongest supported matches in the profile, expertise grid, recent
@@ -167,10 +171,23 @@ python3 "$SKILL_DIR/scripts/targeted_cv.py" render \
   --output-dir "$WORK_DIR/rendered"
 ```
 
+On macOS, request sandbox escalation and run this render command outside the
+sandbox from the start. LibreOffice initializes AppKit even with `--headless`,
+so a sandboxed process can abort before it reads the DOCX. If an attempted
+render returns `-6`/`SIGABRT` with empty stderr, report it as a likely sandbox
+restriction and retry the same command outside the sandbox. Do not change the
+LibreOffice command, temporary profile, or `pdftoppm` invocation for this
+failure signature.
+
 Inspect every `page-*.png` at full resolution for clipping, overlap, broken
 glyphs, table overflow, awkward wrapping, poor page breaks, placeholders, and
 blank pages. Tighten content rather than shrinking fonts or changing the
-retained design. Rebuild, reverify, and rerender after corrections.
+retained design. Treat a sparse final page as a layout defect even when nothing
+is clipped. In particular, if a natural break lands immediately before
+`Selected Engineering Strengths`, shorten lower-priority prose or bullets above
+it until the heading and some following content move onto the preceding page;
+do not insert a manual page break or reorder the retained sections. Rebuild,
+reverify, and rerender after corrections.
 
 If LibreOffice or `pdftoppm` is unavailable, structural verification may still
 finish, but disclose that visual QA was not possible. Never claim the render

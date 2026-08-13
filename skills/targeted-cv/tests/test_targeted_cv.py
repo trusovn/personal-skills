@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 import zipfile
 
 
@@ -278,6 +279,38 @@ class TargetedCvTest(unittest.TestCase):
 
         with self.assertRaisesRegex(self.subject.ValidationError, "source_section"):
             self.subject.validate_draft(draft, self.index)
+
+    def test_template_supplied_labels_are_rejected_from_draft_values(self):
+        for field, label in (
+            ("certificates", "CERTIFICATES"),
+            ("languages", "LANGUAGES"),
+            ("availability", "AVAILABILITY"),
+        ):
+            with self.subTest(field=field):
+                draft = self.supported_draft()
+                draft[field]["text"] = f"{label} | {draft[field]['text']}"
+
+                with self.assertRaisesRegex(
+                    self.subject.ValidationError,
+                    rf"{field}\.text must omit the template-supplied label",
+                ):
+                    self.subject.validate_draft(draft, self.index)
+
+    def test_sigabrt_with_empty_stderr_reports_likely_macos_sandbox_restriction(self):
+        failed = subprocess.CompletedProcess([], -6, stdout="", stderr="")
+        with (
+            mock.patch.object(
+                self.subject.shutil,
+                "which",
+                side_effect=["/fake/soffice", "/fake/pdftoppm"],
+            ),
+            mock.patch.object(self.subject.subprocess, "run", return_value=failed),
+        ):
+            with self.assertRaisesRegex(
+                self.subject.ValidationError,
+                "likely a macOS sandbox restriction.*Retry the same render command outside the sandbox",
+            ):
+                self.subject.render_docx(self.root / "cv.docx", self.root / "rendered")
 
     def test_placeholder_template_contains_no_fixture_candidate_data(self):
         with zipfile.ZipFile(TEMPLATE) as archive:

@@ -20,7 +20,9 @@
         "The CV prominently includes supported Selenium, Java, web and backend-service testing, agile collaboration, Git, Linux, shell scripting, Gradle, CI/CD failure analysis, reporting, ISTQB, and English C1 evidence.",
         "Any Docker claim visibly says hands-on use for local test environments and does not imply production platform ownership.",
         "The CV does not claim TestRail, cryptography, Smart Card/HSM/Key Vault, email-protocol expertise, or German proficiency.",
-        "A claim ledger exists under `.targeted-cv/`, and bundled structural verification succeeds against the exact draft and output."
+        "Certificates, Languages, and Availability labels appear exactly once and are not repeated inside their values.",
+        "A claim ledger exists under `.targeted-cv/`, and bundled structural verification succeeds against the exact draft and output.",
+        "Every rendered page is visually inspected; the final page is not left sparse by a natural break immediately before Selected Engineering Strengths."
       ]
     },
     {

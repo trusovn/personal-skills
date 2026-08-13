@@ -91,6 +91,11 @@ Every rendered factual fragment uses this shape:
 }
 ```
 
+The `certificates`, `languages`, and `availability` values contain only their
+content because the template supplies those labels. Values beginning with
+`Certificates`, `Languages`, or `Availability` are rejected to prevent output
+such as `Languages: LANGUAGES | English — C1`.
+
 `expertise` must contain exactly six entries. A role bullet or environment must
 cite at least one allowed fact whose `section_path` contains that role's exact
 `source_section`; this prevents borrowing evidence from another employer.

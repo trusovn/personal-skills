@@ -403,8 +403,18 @@ def validate_draft(draft: dict, facts_index: dict) -> list[dict]:
                 )
             )
 
-    for key in ("certificates", "languages", "availability"):
-        ledger.append(validate_claim(draft.get(key), key, facts_by_id))
+    for key, label in (
+        ("certificates", "Certificates"),
+        ("languages", "Languages"),
+        ("availability", "Availability"),
+    ):
+        item = require_mapping(draft.get(key), key)
+        text = require_text(item.get("text"), f"{key}.text")
+        if re.match(rf"^{re.escape(label)}\b", text, re.I):
+            raise ValidationError(
+                f"{key}.text must omit the template-supplied label {label!r}"
+            )
+        ledger.append(validate_claim(item, key, facts_by_id))
     return ledger
 
 
@@ -811,6 +821,13 @@ def render_docx(input_path: Path, output_dir: Path) -> dict:
             check=False,
         )
         if completed.returncode != 0:
+            if completed.returncode == -6 and not completed.stderr.strip():
+                raise ValidationError(
+                    "LibreOffice conversion failed (-6/SIGABRT) with empty stderr; "
+                    "this is likely a macOS sandbox restriction because LibreOffice "
+                    "initializes AppKit even in headless mode. Retry the same render "
+                    "command outside the sandbox with escalation"
+                )
             raise ValidationError(
                 f"LibreOffice conversion failed ({completed.returncode}): {completed.stderr.strip()}"
             )

@@ -17,6 +17,7 @@ SKILL = Path(__file__).resolve().parents[1]
 SCRIPT = SKILL / "scripts" / "targeted_cv.py"
 TEMPLATE = SKILL / "assets" / "targeted-cv-template.docx"
 CONTRACT = SKILL / "assets" / "template-contract.json"
+SKILL_INSTRUCTIONS = SKILL / "SKILL.md"
 
 
 def load_subject():
@@ -316,6 +317,18 @@ class TargetedCvTest(unittest.TestCase):
                 "likely a macOS sandbox restriction.*Retry the same render command outside the sandbox",
             ):
                 self.subject.render_docx(self.root / "cv.docx", self.root / "rendered")
+
+    def test_render_workflow_uses_approval_stable_command_prefix(self):
+        instructions = SKILL_INSTRUCTIONS.read_text(encoding="utf-8")
+        render_section = instructions.split(
+            "### 6. Render and inspect every page", maxsplit=1
+        )[1].split("## Delivery and stop conditions", maxsplit=1)[0]
+
+        self.assertIn(
+            'env TMPDIR=/private/tmp python3 "$SKILL_DIR/scripts/targeted_cv.py" render',
+            render_section,
+        )
+        self.assertRegex(render_section, r"Do not prepend\s+environment assignments")
 
     def test_placeholder_template_contains_no_fixture_candidate_data(self):
         with zipfile.ZipFile(TEMPLATE) as archive:

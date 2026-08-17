@@ -13,7 +13,8 @@ description: >-
 compatibility: >-
   Requires Python 3 and filesystem access. URL inputs require browser or web
   access. Visual QA additionally requires LibreOffice and pdftoppm; on macOS,
-  LibreOffice rendering requires sandbox escalation even in headless mode.
+  LibreOffice rendering requires an outside-sandbox command allow rule even in
+  headless mode.
 ---
 
 # Targeted CV
@@ -166,16 +167,22 @@ requirements do not appear as candidate capabilities.
 ### 6. Render and inspect every page
 
 ```bash
-python3 "$SKILL_DIR/scripts/targeted_cv.py" render \
+env TMPDIR=/private/tmp python3 "$SKILL_DIR/scripts/targeted_cv.py" render \
   --input "$OUTPUT_DOCX" \
   --output-dir "$WORK_DIR/rendered"
 ```
 
-On macOS, request sandbox escalation and run this render command outside the
-sandbox from the start. LibreOffice initializes AppKit even with `--headless`,
-so a sandboxed process can abort before it reads the DOCX. If an attempted
-render returns `-6`/`SIGABRT` with empty stderr, report it as a likely sandbox
-restriction and retry the same command outside the sandbox. Do not change the
+Resolve all paths to literal arguments before invoking the execution tool. On
+macOS, run this command outside the sandbox from the start with the reusable
+approval prefix `env TMPDIR=/private/tmp python3 <resolved-script-path> render`.
+LibreOffice initializes AppKit even with `--headless`, so a sandboxed process
+can abort before it reads the DOCX. Keeping the prefix stable lets an existing
+allow rule run every CV render without another prompt. Do not prepend
+environment assignments such as `PYTHONDONTWRITEBYTECODE=1`, insert Python
+flags, or wrap the command in a shell; those produce a different command prefix
+and can trigger another approval. If an attempted render returns
+`-6`/`SIGABRT` with empty stderr, report it as a likely sandbox restriction and
+retry the same canonical command outside the sandbox. Do not change the
 LibreOffice command, temporary profile, or `pdftoppm` invocation for this
 failure signature.
 

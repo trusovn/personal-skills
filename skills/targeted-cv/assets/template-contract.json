@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "template": "targeted-cv-template.docx",
-  "sha256": "fc328c91d631f3bac659c8c2257951a0fc742684ef3082e971b505eae79c236b",
+  "sha256": "a0b75f898fa811e953ccfd9ab301006c3f56d35dcfe4b24ed3b70488492f104e",
   "editable_parts": [
     "word/document.xml",
     "word/footer1.xml"

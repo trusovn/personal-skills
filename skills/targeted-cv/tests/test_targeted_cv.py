@@ -366,6 +366,52 @@ class TargetedCvTest(unittest.TestCase):
         self.assertIn("{{FULL_NAME}} | {{TARGET_ROLE}} | Page ", footer)
         self.assertIn(" PAGE ", footer)
 
+    def test_template_main_body_text_is_at_least_ten_points(self):
+        contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
+        body = contract["body"]
+        body_paragraph_ids = {
+            body["profile"],
+            *body["expertise_table"]["titles"],
+            *body["expertise_table"]["descriptions"],
+            body["role_header"],
+            body["role_bullet"],
+            body["environment"],
+            body["strength_bullet"],
+            body["skill_line"],
+            body["certificates"],
+            body["languages"],
+            body["availability"],
+        }
+        with zipfile.ZipFile(TEMPLATE) as archive:
+            document = self.subject.ET.fromstring(archive.read("word/document.xml"))
+            styles = self.subject.ET.fromstring(archive.read("word/styles.xml"))
+
+        checked = set()
+        paragraph_id_name = f"{{{self.subject.W14_NS}}}paraId"
+        for paragraph in document.iter(self.subject.W + "p"):
+            paragraph_id = paragraph.get(paragraph_id_name)
+            if paragraph_id not in body_paragraph_ids:
+                continue
+            sizes = [
+                int(size.get(self.subject.W + "val"))
+                for size in paragraph.iter(self.subject.W + "sz")
+            ]
+            self.assertTrue(sizes, paragraph_id)
+            self.assertGreaterEqual(min(sizes), 20, paragraph_id)
+            checked.add(paragraph_id)
+
+        self.assertEqual(body_paragraph_ids, checked)
+        for style in styles.iter(self.subject.W + "style"):
+            style_id = style.get(self.subject.W + "styleId")
+            if style_id not in {"CVRole", "CVBullet", "CVEnv"}:
+                continue
+            sizes = [
+                int(size.get(self.subject.W + "val"))
+                for size in style.iter(self.subject.W + "sz")
+            ]
+            self.assertTrue(sizes, style_id)
+            self.assertGreaterEqual(min(sizes), 20, style_id)
+
     def test_public_cli_build_and_verify_the_same_artifact(self):
         draft_path = self.root / "draft.json"
         output = self.root / "application" / "cv.docx"

@@ -64,5 +64,28 @@ input
 - Side-effect gate:
 - Human approval: N/A / <boundary>
 
+## Repo-foundation handoff
+
+- Status: READY / BLOCKED
+- Authority artifacts: <project charter, foundation plan, or approved equivalents>
+
+### Established or reused behavior
+
+| Concern | Evidence | Status |
+|---|---|---|
+| <provider runner, validation, tests, tracing, etc.> | <path and observed behavior> | ESTABLISHED/REUSE |
+
+### Gaps requiring materialization
+
+| Authorized change | Files likely affected | Verification |
+|---|---|---|
+| <smallest required foundation change> | <paths> | <command or observable DoD> |
+
+### Handoff constraints
+
+- Non-goals:
+- Values that must remain unknown:
+- Blockers: N/A / <missing authority or prerequisite>
+
 ## Deferred to feature design
 - <prompt contents, detailed routing, workflow graph, feature schemas, etc.>

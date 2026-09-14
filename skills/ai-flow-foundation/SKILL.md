@@ -173,6 +173,8 @@ materialization. Anything `TBD-BY-FEATURE` must still identify the safe engineer
 
 ### 9. Hand off to `repo-foundation`
 
+Complete the template's `Repo-foundation handoff` section.
+
 Prepare a bounded handoff authorizing `repo-foundation` to materialize, as applicable:
 
 - provider adapter/fake seam

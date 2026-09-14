@@ -19,11 +19,14 @@ Keep files used only by one skill inside that skill's directory.
 Current source skills:
 
 - `ask-user-questions`
+- `ai-flow-foundation`
 - `bounded-task-implementer`
+- `foundation-readiness-review`
 - `idea-brief`
 - `idea-challenger`
 - `idea-investigator`
 - `project-direction`
+- `project-bootstrap`
 - `repo-foundation`
 - `senior-code-review`
 - `session-handoff`

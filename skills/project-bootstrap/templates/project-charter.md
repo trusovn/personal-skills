@@ -16,11 +16,13 @@
 - <observable outcome, not implementation detail>
 
 ## Quality priorities
+<adapt the order to the project; remove priorities that are not material>
 1. Correctness
 2. Verifiability
-3. Simplicity
-4. Agent legibility
-5. Fast iteration
+3. Maintainability / localized change
+4. Simplicity
+5. Agent legibility
+6. Fast iteration
 
 ## Non-goals
 - <explicitly not part of bootstrap/current objective>

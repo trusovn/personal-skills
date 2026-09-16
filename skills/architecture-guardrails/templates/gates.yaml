@@ -1,0 +1,16 @@
+# Optional command-discovery registry for repositories that do not already have
+# an equivalent machine-readable source. Merge with local conventions; do not
+# create a second registry just to match this template.
+version: 1
+
+architecture:
+  command: "<repo-native architecture check command>"
+  required: true
+  semantic_review:
+    required: true
+    skill: "task-maintainability-review"
+  mode: "clean" # clean | no-regression
+  policy:
+    - "<native config or architecture-test path>"
+  baseline: null # path when no-regression needs an explicit baseline; otherwise null
+  baseline_freshness: null # required no-write stale-entry check when mode is no-regression

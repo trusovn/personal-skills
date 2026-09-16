@@ -1,0 +1,28 @@
+{
+  "skill_name": "architecture-guardrails",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We have a tiny disposable Python repository: one `main.py`, one test, no package boundaries, no CI, and no expectation of recurring agent maintenance. The owner asks whether to add deterministic architecture guardrails before a one-week internal prototype. Give the smallest appropriate architecture-guardrail recommendation; do not invent layers, a toolchain, a registry, or a baseline.",
+      "expected_output": "A proportionate recommendation to defer deterministic architecture guardrails for this tiny disposable repository, while avoiding invented architecture policy or ceremony.",
+      "files": [],
+      "expectations": [
+        "The recommendation explicitly chooses `DEFER` (or an unambiguously equivalent deferred/no-guardrail decision) for deterministic architecture enforcement.",
+        "It explains that the repository lacks a meaningful stable boundary and that enforcement cost exceeds the risk for this short-lived prototype.",
+        "It does not propose new layers, interfaces, architecture tooling, a `.quality/gates.yaml` registry, CI wiring, or a baseline merely to create a guardrail."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "A mature TypeScript service has an authoritative rule that `src/domain/**` must not import `src/infrastructure/**`. Running the intended checker finds exactly one real, pre-existing forbidden import in `src/domain/legacy/report.ts`; product work cannot refactor it now. Design the smallest trustworthy no-regression guardrail and its verification. The gate must allow that unchanged debt without letting a removed violation silently return. Do not widen a wildcard ignore or auto-rewrite tracked files during ordinary feature verification.",
+      "expected_output": "A NO_REGRESSION guardrail that baselines only the known legacy violation, performs non-mutating baseline freshness checking before ordinary ignored-violation checking, and still rejects new or reintroduced forbidden imports.",
+      "files": [],
+      "expectations": [
+        "The design selects `NO_REGRESSION`, records only the exact pre-existing `src/domain/legacy/report.ts` violation, and treats the baseline as temporary compatibility debt rather than accepted policy.",
+        "The canonical command includes a non-mutating baseline-freshness check before the normal known-violation check, so removing the legacy edge requires a reviewed baseline shrink and reintroducing it then fails the ordinary gate.",
+        "It requires proof that a representative new forbidden import fails and that the legacy-baseline remove/shrink/reintroduce sequence behaves correctly.",
+        "It rejects wildcard suppression, baseline expansion as feature-work cleanup, and automatic baseline regeneration during normal architecture verification."
+      ]
+    }
+  ]
+}

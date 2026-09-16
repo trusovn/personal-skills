@@ -1,0 +1,27 @@
+{
+  "skill_name": "task-maintainability-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I wrote the current production bytes in `src/payments/service.py` during this session and now want you to review their maintainability. The repository's documented `npm run check:architecture` gate is available and passes. Perform any useful self-check, but preserve reviewer independence and tell me the correct next step.",
+      "expected_output": "A labeled self-check result that may record the passing gate and findings, but does not issue an independent maintainability verdict for bytes authored in the same session.",
+      "files": [],
+      "expectations": [
+        "The output starts with or is explicitly labeled `SELF_CHECK_ONLY`.",
+        "It records `ARCHITECTURE_GATE: PASS` and may report findings, but does not emit `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE` as an independent verdict for these bytes.",
+        "It explains that the same session authored the reviewed production bytes and routes the current diff to a fresh independent `task-maintainability-review` session."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Independently review the current task's changed production bytes. Repository policy requires `./scripts/check-architecture` before a maintainability verdict. The script cannot execute because its required `archcheck` binary is absent, the repository provides no valid fresh saved result or documented exception, and the failure does not reveal whether the implementation or verifier is at fault. Do not edit code, install tools, weaken policy, or guess from static inspection alone.",
+      "expected_output": "An INCONCLUSIVE maintainability review that truthfully records unavailable required architecture-gate evidence and does not substitute an acceptance or changes-requested verdict.",
+      "files": [],
+      "expectations": [
+        "The report uses exactly `VERDICT: INCONCLUSIVE` and `ARCHITECTURE_GATE: NOT_AVAILABLE`.",
+        "It identifies the required command, the missing `archcheck` capability, and the absence of trustworthy fresh evidence or a documented exception.",
+        "It does not issue `ACCEPT` or `CHANGES_REQUESTED`, edit code or gate configuration, install the missing tool, or treat static semantic inspection as a substitute for the required gate."
+      ]
+    }
+  ]
+}

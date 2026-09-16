@@ -1,11 +1,11 @@
 # Task implementation flow
 
-These four skills provide a reusable implementation discipline without making
-every task carry an orchestration-grade artifact chain. The default is a
-lightweight guided flow. A high-assurance profile remains available for work
-that benefits from durable handoffs, exact freshness evidence, and
-machine-readable results.
-
+These five task skills provide a reusable implementation discipline without
+making every task carry an orchestration-grade artifact chain. The default is a
+lightweight guided flow. Repositories that enable maintainability guardrails can
+insert a focused architecture gate before functional acceptance. A
+high-assurance profile remains available for work that benefits from durable
+handoffs, exact freshness evidence, and machine-readable results.
 ## Goals
 
 - Make bounded implementation more consistent without repeatedly prompting an
@@ -13,18 +13,24 @@ machine-readable results.
   user work, and report evidence.
 - Spend tokens on the task and its highest-risk behavior rather than repeated
   stage paperwork.
+- Let cheap/small agents carry a short implementation contract while deterministic
+  gates and focused reviewers carry the deeper architecture/quality policy.
+- Separate maintainability judgment from functional/specification acceptance so
+  each reviewer can spend its context on one question.
 - Scale assurance with risk instead of treating every task as mission-critical.
 - Preserve an orchestrator-compatible path for unattended or audited work.
-
 ## Skills
-
 | Skill | Use it for | Skip it when |
 |---|---|---|
 | `task-brief-designer` | Create or tighten a bounded task contract. It defaults to a delta check when a useful brief already exists. | The user request already gives an unambiguous outcome, scope, and acceptance criteria for a small task. |
 | `task-preflight` | Check readiness, ownership, commands, and decisive evidence when dirty ownership, dependencies, environment, permissions, helpers, fixtures, real-boundary capability, or a durable handoff creates material uncertainty. | A routine guided task can perform the same compact self-check inside the implementer. |
 | `bounded-task-implementer` | Implement one bounded task with risk-based tests, progressive verification, and a useful handoff. | The request is planning, review-only, or too ambiguous to implement safely. |
-| `task-acceptance-review` | Independently assess the scoped result and return `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`. | The task does not need independent review under its metadata or risk. |
+| `task-maintainability-review` | Independently assess the changed design for concrete maintainability regression after the repo's deterministic architecture gate. | The repo does not require maintainability review and the user/task does not request it. |
+| `task-acceptance-review` | Independently assess scoped functional/specification correctness and return `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`. | The task does not need independent functional review under its metadata or risk. |
 
+`architecture-guardrails` is a foundation/setup skill, not a per-task reviewer. It
+materializes the deterministic gate and short repo-local contract that this flow
+can consume.
 ## Guided profile: default
 
 Use guided mode for most ordinary bounded tasks, especially when a person is
@@ -41,11 +47,12 @@ implement + risk-based tests + progressive verification
         ↓
 human-readable result
         ↓
-fresh-session acceptance review when metadata or risk calls for it
+required architecture gate / maintainability review, if declared by repo
+        ↓
+fresh-session functional acceptance review when metadata or risk calls for it
 ```
 
 Guided mode carries these defaults so the user does not need to repeat them:
-
 1. State or infer the smallest testable outcome and bounded scope. Ask only
    when a missing decision could materially change the implementation.
 2. Define concise acceptance criteria when they are absent. Include positive
@@ -56,15 +63,23 @@ Guided mode carries these defaults so the user does not need to repeat them:
    tests cannot prove wiring, persistence, concurrency, recovery, or another
    material risk.
 5. Run the targeted check first, then the nearest owning suite, then only the
-   broader gate justified by blast radius and authorization.
+   broader gate justified by blast radius and authorization. If repo authority
+   declares a required architecture gate, run its canonical command before
+   maintainability handoff.
 6. Finish with a concise human summary: outcome, changed files, verification,
-   residual risks, and next action. When independent review is required, end at
-   `READY_FOR_REVIEW` and route the completed bytes to a fresh reviewer.
+   residual risks, and next action. When independent maintainability or
+   functional review is required, end at `READY_FOR_REVIEW` and route the
+   completed bytes to the appropriate fresh reviewer.
+
+The implementation agent should not be burdened with a long architecture
+rubric. When the repo has maintainability guardrails, follow the short
+repo-local contract (normally cohesion, change locality, explicit/narrow
+dependencies, testability, and no speculative abstraction) and let the
+canonical gate plus `task-maintainability-review` enforce the deeper policy.
 
 The brief designer and standalone preflight are optional in guided mode. Use
 them when they reduce ambiguity or risk; do not create artifacts merely to
 satisfy the diagram.
-
 ### When standalone preflight adds value
 
 Use the implementer's compact self-preflight for routine guided work. Use
@@ -73,7 +88,8 @@ material uncertainty, such as:
 
 - dirty or multi-writer ownership;
 - a required environment, permission, dependency, helper, or fixture;
-- real-boundary capability or an unresolved command and observable oracle; or
+- real-boundary capability or an unresolved command and observable oracle;
+- a required repo gate whose command or prerequisites are not actually ready; or
 - a durable handoff between sessions.
 
 A directly requested standalone preflight still returns a truthful readiness
@@ -82,13 +98,84 @@ avoid broad baseline work without a named readiness reason, and recommend
 implementer self-preflight for the next materially similar task. Explicit
 high-assurance and orchestrated flows continue to require standalone
 preflight.
+## Maintainability-gated profile
 
+Use this profile whenever repo authority declares architecture/maintainability
+review required, or when the user explicitly asks for focused maintainability
+verification.
+
+The order is intentional:
+
+```text
+bounded implementation
+        ↓
+canonical deterministic architecture gate
+        ↓
+fresh task-maintainability-review
+        ├── CHANGES_REQUESTED
+        │       ↓
+        │   implementation correction
+        │       ↓
+        │   architecture gate + fresh maintainability review again
+        │
+        └── ACCEPT
+                ↓
+        functional/spec acceptance review when required
+                ├── CHANGES_REQUESTED
+                │       ↓
+                │   implementation correction
+                │       ↓
+                │   architecture gate + fresh maintainability review again
+                │       ↓
+                │   fresh functional acceptance review again
+                │
+                └── ACCEPT
+```
+
+Do not reverse the two semantic reviews merely to save a stage. The first
+review asks whether the change introduced or materially worsened concrete
+design/maintainability risk. The later acceptance review spends its budget on
+whether the code actually satisfies the requested behavior and preserves
+required behavior.
+
+The deterministic architecture command is evidence, not the semantic verdict:
+
+- a hard gate failure is an implementation failure and normally yields
+  `CHANGES_REQUESTED` without requiring a broad subjective review;
+- advisory size/complexity/fan-out/duplication signals are leads for the
+  maintainability reviewer, not automatic blockers;
+- a passing gate does not prove cohesion, change locality, useful test seams, or
+  absence of speculative abstraction;
+- a maintainability `ACCEPT` does not prove the task specification is satisfied.
+
+When launching `task-acceptance-review` after maintainability acceptance, carry a
+short routing note rather than asking the acceptance reviewer to infer the stage:
+
+```text
+Maintainability review accepted the current production bytes. Focus review budget
+on specification conformance, observable behavior, regressions, edge cases, and
+test adequacy. Do not redo general architecture review unless architecture directly
+causes an observed functional defect.
+```
+
+When the flow already carries a byte/diff digest, attach it to both reviews. In a
+lightweight human-driven flow, at minimum confirm the production diff did not change
+between maintainability `ACCEPT` and functional-review start.
+
+Every correction changes the bytes under review. Therefore a previous
+maintainability verdict and a previous functional verdict are both stale after
+production corrections. Rerun the deterministic architecture gate and use a
+fresh maintainability reviewer before re-entering functional acceptance.
+
+For a trivial correction that provably cannot affect production architecture
+(for example, an authorized tests-only correction), repo policy may allow the
+maintainability stage to be skipped; do not infer that exception when the repo
+says the gate is required for all changed source bytes.
 ## High-assurance profile
 
 Use high-assurance mode when explicitly requested, when an orchestrator or
 machine output schema is supplied, or when durable evidence is proportionate
 to the risk. Typical signals include:
-
 - security, authorization, privacy, or credential boundaries;
 - migrations, irreversible writes, recovery, or destructive state;
 - concurrency or multi-process coordination;
@@ -97,7 +184,6 @@ to the risk. Typical signals include:
 - audited or unattended execution requiring resumable machine contracts.
 
 High-assurance mode uses the complete chain:
-
 ```text
 task brief (`ready_for_preflight`)
         ↓
@@ -105,16 +191,20 @@ fresh preflight packet (`ready`)
         ↓
 bounded implementation + structured worker result
         ↓
-independent acceptance report
+required deterministic architecture gate + independent maintainability report
+        ↓
+independent functional acceptance report
         ↓
 orchestrator or human advancement
 ```
 
-It may require exact digests, durable external artifacts, a supplied result
-schema, and strict entry/exit statuses. A guided run that encounters one of
-these needs should pause and recommend the smallest escalation rather than
-silently rebuilding the entire chain.
+If the repo does not require maintainability review, omit that stage rather than
+manufacturing policy for the task.
 
+High-assurance mode may require exact digests, durable external artifacts, a
+supplied result schema, and strict entry/exit statuses. A guided run that
+encounters one of these needs should pause and recommend the smallest
+escalation rather than silently rebuilding the entire chain.
 ## Task metadata
 
 Durable briefs put this compact block near the top:
@@ -136,15 +226,14 @@ budget: 30 tool calls / 90 minutes / 100k context
 about the eventual runtime configuration. Authors should choose the economical
 values the task actually calls for. `review: immediate` means an immediate
 handoff after implementation or correction to a fresh independent reviewer; it
-never instructs the implementer to accept its own work. Metadata does not
-replace the task's outcome, scope, acceptance criteria, or verification
-commands.
-
+never instructs the implementer to accept its own work. When repo policy also
+requires maintainability review, that focused review comes before functional
+acceptance. Metadata does not replace the task's outcome, scope, acceptance
+criteria, or verification commands.
 ## Review rules worth keeping
 
-Independent review should spend effort where implementation evidence is most
-likely to be misleading:
-
+Independent functional review should spend effort where implementation evidence
+is most likely to be misleading:
 - account for every explicit finite task row and selected material risk
   dimension, keeping blocked or unchecked areas visible without promising to
   find every latent defect;
@@ -161,6 +250,22 @@ A digest stored beside mutable bytes proves internal consistency, not
 immutability. Claims of immutability require an independently protected anchor
 or an explicitly narrower threat model.
 
+Maintainability review has a different ledger. Keep it focused on concrete
+regression introduced or materially worsened by the current change:
+
+- responsibility/cohesion;
+- unnecessary or hidden coupling and dependency direction;
+- change locality across owning subsystems;
+- independently testable important logic;
+- duplicated business/domain rules or growing dispatch structures;
+- speculative layers/interfaces/abstractions with no concrete boundary,
+  variation, or test-seam value;
+- deterministic gate failures and architecture warnings that correspond to a
+  real design problem.
+
+Do not make maintainability review a second functional review or a style
+preference contest.
+
 Independence is based on session authorship. Loading another skill, quoting its
 instructions, or changing roles in the same session does not reset provenance.
 A session that authored reviewed production bytes may perform a labeled
@@ -168,22 +273,27 @@ A session that authored reviewed production bytes may perform a labeled
 verdict. Only a fresh reviewer may return `ACCEPT`, `CHANGES_REQUESTED`, or
 `INCONCLUSIVE` for those bytes.
 
-Every `CHANGES_REQUESTED` correction requires a fresh acceptance review. A
-previous verdict never applies to corrected bytes.
-
+Every `CHANGES_REQUESTED` correction requires fresh review for the affected
+stage, and production corrections invalidate both semantic review verdicts when
+both stages are required. A previous verdict never applies to corrected bytes.
 ### Verification gate ownership
-
 - Initial implementer: fail-first evidence, targeted checks, the nearest owning
-  suite, and a broader gate only when authority or blast radius justifies it.
-- Discovery reviewer: targeted adversarial probes first; after a decisive
-  failure, skip the broad gate unless it has a distinct authorized diagnostic
-  purpose.
+  suite, the canonical architecture gate when required, and a broader gate only
+  when authority or blast radius justifies it.
+- Maintainability reviewer: rerun or validate the canonical architecture gate,
+  inspect its warnings plus the changed design and immediate neighbors, and
+  avoid spending budget on full functional acceptance.
+- Functional discovery reviewer: targeted adversarial probes first; after a
+  decisive failure, skip the broad gate unless it has a distinct authorized
+  diagnostic purpose. When maintainability review is required, do not redo
+  general architecture review unless architecture directly causes the
+  functional defect.
 - Correction implementer: reviewer regressions followed by the nearest owning
-  suite; leave an assigned final reviewer's aggregate gate untouched.
-- Fresh final reviewer: rerun reviewer regressions, complete the finite review
-  ledger against corrected bytes, and run one justified aggregate gate after
-  adversarial evidence is clean.
-
+  suite and required architecture gate; leave an assigned final reviewer's
+  aggregate functional gate untouched.
+- Fresh final functional reviewer: rerun reviewer regressions, complete the
+  finite review ledger against corrected bytes, and run one justified aggregate
+  gate after adversarial evidence is clean.
 ### Optional tests-only reproducer
 
 After fixing and reporting an independent `CHANGES_REQUESTED` verdict, the
@@ -193,21 +303,22 @@ writable test file or bounded test area. Task scope, `review: immediate`, or an
 allowed test path is not write permission.
 
 The reviewer must not change production code, shared test infrastructure,
-dependencies, plans, or result artifacts, and must not stage or commit the
-test. It must prove the focused intended failure and report status and diff side
-effects. The verdict remains `CHANGES_REQUESTED`, and corrected production
-bytes always require a fresh reviewer; the reproducer-writing session cannot
-accept them.
-
+dependencies, plans, architecture policy/baselines, or result artifacts, and
+must not stage or commit the test. It must prove the focused intended failure
+and report status and diff side effects. The verdict remains
+`CHANGES_REQUESTED`, and corrected production bytes always require a fresh
+reviewer; the reproducer-writing session cannot accept them.
 ## Recommended agent session usage for context reuse
 
 - Keep the implementer session alive.
-- Run review in a separate, independent session.
-- Feed the reviewer’s complete findings and failing tests back to the implementer session.
-- Run final acceptance in a new reviewer session.
+- When maintainability review is required, run it in a separate, independent session first.
+- Feed maintainability findings back to the implementer and repeat that stage until accepted.
+- Run functional acceptance in a separate, independent reviewer session after maintainability acceptance.
+- Feed functional findings back to the implementer; production corrections then re-enter the maintainability stage before fresh functional acceptance.
 
-If the implementer session becomes very long or confused, start a fresh correction session using the reviewer’s concise findings and tests. Context reuse is an optimization, not a requirement.
-
+If the implementer session becomes very long or confused, start a fresh
+correction session using the reviewer's concise findings and tests. Context
+reuse is an optimization, not a requirement.
 ### A practical heuristic for the implementer context
 
   - Below 50%: normally resume the implementer.

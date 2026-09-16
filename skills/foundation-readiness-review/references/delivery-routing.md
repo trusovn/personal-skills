@@ -1,7 +1,6 @@
 # Delivery Routing After Foundation
 
 Choose the **cheapest route that adequately controls risk**.
-
 ## PERSONAL_FLOW — default
 
 Use the personal task flow when most are true:
@@ -16,12 +15,19 @@ Use the personal task flow when most are true:
 
 Recommended flow:
 
-`task-brief-designer -> task-preflight -> bounded-task-implementer -> task-acceptance-review`
+```text
+task-brief-designer
+  -> task-preflight when needed
+  -> bounded-task-implementer
+  -> architecture gate + task-maintainability-review when repo policy requires it
+  -> task-acceptance-review when task risk/metadata requires functional acceptance
+```
+
+The maintainability stage is orthogonal to SDD depth. If the repository requires it, keep it in the bounded flow even for otherwise small tasks. It is a focused quality gate, not evidence that the task needs broader specification ceremony.
 
 Use repeated bounded tasks rather than one giant implementation task.
 
 Exact next skill: `task-brief-designer`.
-
 ## SDD_QUICK — targeted spec/design protection
 
 Use when at least one is true:
@@ -35,7 +41,6 @@ Use when at least one is true:
 Prefer easy interview depth and quick route. Skip N/A stages.
 
 This is usually the maximum SDD depth justified for a bounded feature.
-
 ## SDD_STANDARD — cross-cutting system change
 
 Use when several are true:
@@ -49,7 +54,6 @@ Use when several are true:
 - the project is large enough that rework would cost more than planning
 
 Still skip irrelevant stages.
-
 ## SDD_FULL — rare escalation
 
 Use only when the project behaves more like a substantial product than a bounded change:
@@ -66,9 +70,9 @@ Do not select `SDD_FULL` merely because:
 - AI is involved
 - the repo is unfamiliar
 - you want more confidence
+- the repo has an architecture/maintainability gate
 
 Hard implementation can still be a bounded task after a good foundation.
-
 ## Resolve the recommendation to an available next step
 
 Before finalizing the recommendation, confirm that its entry skill or command is actually available
@@ -76,7 +80,6 @@ in the current skill catalog or repository instructions. A document that merely 
 stage is not availability evidence.
 
 When `sdd-specify` is available, map the SDD recommendations as follows:
-
 | Recommendation | Exact next skill | Direction to carry into that skill |
 |---|---|---|
 | `SDD_QUICK` | `sdd-specify` | Prefer easy interview depth and the quick route; skip N/A stages. |
@@ -86,14 +89,12 @@ When `sdd-specify` is available, map the SDD recommendations as follows:
 Do not invent an SDD command, stage, or parameter beyond what the available SDD workflow documents.
 
 If `sdd-specify` or another explicitly documented SDD entry point is unavailable:
-
 1. If the work can still be decomposed into safe bounded tasks, change the recommendation to
    `PERSONAL_FLOW` and name `task-brief-designer` as the exact next skill.
 2. If that downgrade would discard necessary cross-cutting design or traceability, retain the
    preferred SDD route as unavailable and make the exact next stage `USER_DECISION`: provide/install
    an SDD workflow, or explicitly accept the `PERSONAL_FLOW` fallback. Do not pretend the missing
    route can be executed.
-
 ## Route escalation during execution
 
 Start lighter.

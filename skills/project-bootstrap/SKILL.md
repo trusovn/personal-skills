@@ -9,16 +9,13 @@ description: >
   ai-flow-foundation before handing repo-level materialization to repo-foundation; route non-AI
   projects directly to repo-foundation. Do not use this skill to plan features.
 ---
-
 # Project Bootstrap
 
 Establish the **pre-planning foundation contract** for an unfamiliar project.
 
 The job is not to design the product. The job is to make later planning and implementation
 well-founded, fast, and verifiable.
-
 ## Core stance
-
 - High-level intent must be clear before infrastructure choices are made.
 - Inspect the provided scaffold before proposing new structure.
 - Preserve useful local conventions; do not replace the scaffold with a preferred template.
@@ -26,7 +23,6 @@ well-founded, fast, and verifiable.
 - Prefer a few durable, executable signals over extensive prose.
 - Do not create feature tasks, feature APIs, detailed domain models, screens, prompts, or workflows here.
 - When the high-level objective is clear, use good reversible defaults instead of triggering long interviews.
-
 ## Inputs
 
 Required:
@@ -40,7 +36,6 @@ Optional:
 - repo-local authority files (`AGENTS.md`, `CLAUDE.md`, `README.md`, architecture docs, ADRs)
 - existing build/test/lint/typecheck/run commands
 - explicit project/runtime constraints
-
 ## Outputs
 
 Create or update:
@@ -56,7 +51,6 @@ After these artifacts are ready:
 - for non-AI projects, use `repo-foundation` directly
 
 ## Protocol
-
 ### 1. Read authority before inventing anything
 
 Read, when present:
@@ -71,7 +65,6 @@ Read, when present:
 - project-provided instructions
 
 Classify statements as:
-
 - `REQUIRED` — project/runtime/local authority
 - `EXISTING` — current scaffold reality
 - `DECISION` — explicit user/project choice
@@ -79,7 +72,6 @@ Classify statements as:
 - `UNKNOWN` — not yet known and not safe to invent
 
 Historical notes are evidence, not authority, unless explicitly marked current.
-
 ### 2. Write the project charter
 
 Create `docs/project-charter.md` using `templates/project-charter.md`.
@@ -96,13 +88,10 @@ Keep it short. Capture only what is needed to choose an engineering foundation:
 - unresolved foundation-bearing questions
 
 Do not decompose features.
-
 If the high-level goal is already clear, restate and record it rather than interviewing again.
-
 ### 3. Survey the scaffold for foundation capabilities
 
 Inspect enough of the repo to answer:
-
 - What runtime/build system already exists?
 - What starts/runs today?
 - What verification commands already exist?
@@ -113,12 +102,11 @@ Inspect enough of the repo to answer:
 - Is there a datastore/migration mechanism?
 - Are there generated files?
 - Are agent instructions or architecture maps already present?
+- Are architectural boundaries or maintainability checks already executable?
 - What parts of the scaffold are authoritative or must not be replaced?
 
 Record evidence with file/path anchors where practical.
-
 Do not perform a broad code comprehension exercise unless required to answer these foundation questions.
-
 ### 4. Classify foundation gaps
 
 Use these capability groups:
@@ -153,14 +141,19 @@ Use these capability groups:
    - if AI/LLM is in the process/data flow, mark `ai-flow-foundation: REQUIRED`
    - do not design AI internals here
 
-For each capability mark:
+8. **Maintainability / architecture guardrails**
+   - discoverable architectural boundaries and ownership rules where they materially reduce future ambiguity
+   - one canonical deterministic architecture/maintainability gate when the repo has meaningful enforceable invariants
+   - a short agent-facing maintainability contract when recurring agent implementation is expected
 
+For each capability mark:
 - `REUSE`
 - `REPAIR`
 - `ADD`
 - `DEFER`
 - `N/A`
 
+For maintainability guardrails, prefer `N/A` or `DEFER` for tiny/disposable repos where the enforcement would cost more than the risk it controls. Prefer `REUSE`, `REPAIR`, or `ADD` when recurring agent maintenance, multiple modules, explicit dependency boundaries, or costly refactoring/regression risk make the gate useful.
 ### 5. Write the minimum foundation plan
 
 Create `docs/foundation-plan.md` using `templates/foundation-plan.md`.
@@ -175,8 +168,9 @@ For every proposed foundation change include:
 - why it must happen before product planning
 - whether it is reversible
 
-Do not write a product roadmap.
+For maintainability/architecture guardrails, plan the **capability**, not the implementation tool. State the invariant or risk to control and the expected canonical gate; leave ecosystem-specific tool/config selection to materialization.
 
+Do not write a product roadmap.
 ### 6. Apply the pre-planning boundary
 
 A change belongs in the foundation plan only if at least one is true:
@@ -186,9 +180,9 @@ A change belongs in the foundation plan only if at least one is true:
 - without it deterministic tests/evals cannot be written
 - without it later architectural decisions would be made on false assumptions
 - it encodes a project/runtime constraint that future agents must not rediscover
+- it turns a stable, already-known architecture invariant into a cheap executable guard against future regression
 
 Otherwise defer it to product design or implementation.
-
 ### 7. Route the foundation handoff
 
 If `ai-flow-foundation: REQUIRED`, use `ai-flow-foundation` first to create
@@ -197,9 +191,13 @@ the provider adapter, validation, retry/idempotency, and deterministic test-seam
 required skill is unavailable, stop and report the missing prerequisite.
 
 For non-AI projects, hand off directly to `repo-foundation`.
-
 After the applicable route is complete, use `repo-foundation` as the governing skill for
 materialization when it is available.
+
+If the foundation plan marks maintainability/architecture guardrails `ADD` or `REPAIR`, the
+materialization handoff should direct `repo-foundation` to use `architecture-guardrails` when that
+skill is available. `project-bootstrap` must not choose or configure the underlying architecture
+tool itself.
 
 The handoff must name:
 
@@ -210,7 +208,6 @@ The handoff must name:
 - any `UNKNOWN` values that must remain unknown
 
 Do not silently broaden the materialization scope.
-
 ### 8. Stop before detailed product planning
 
 Exit when:
@@ -222,25 +219,23 @@ Exit when:
 
 Recommended next step after materialization:
 `foundation-readiness-review`.
-
 ## Definition of Done
-
 - `docs/project-charter.md` states the high-level objective and hard constraints without feature decomposition.
 - `docs/foundation-plan.md` distinguishes reuse/repair/add/defer/N/A.
 - Every `ADD`/`REPAIR` item has a concrete verification method.
 - Existing scaffold capabilities were reused where reasonable.
+- Maintainability/architecture guardrails are explicitly classified, and any planned guardrail names the risk/invariant to control without prematurely prescribing product architecture.
 - Unknowns are explicit rather than guessed.
 - Product design, roadmap, and task planning have not started.
 - AI projects have completed `ai-flow-foundation` and produced `docs/ai-foundation.md` before the
   `repo-foundation` handoff; non-AI projects hand off directly.
 - The materialization handoff is narrow enough for `repo-foundation`.
-
 ## Anti-patterns
-
 - Writing a detailed master plan before understanding the scaffold.
 - Replacing the provided scaffold because another stack/layout is more familiar.
 - Creating CI, Docker, observability, or docs merely because "real projects have them".
 - Treating architecture diagrams as a substitute for executable run/test commands.
+- Choosing dependency-analysis tooling here instead of leaving repo-native materialization to `repo-foundation` / `architecture-guardrails`.
 - Putting product behavior into bootstrap tasks.
 - Designing prompts, agents, workflows, or business state before the AI/product behavior is specified.
 - Producing a 20-page foundation artifact for a small repo.

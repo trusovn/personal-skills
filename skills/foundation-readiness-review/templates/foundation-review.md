@@ -12,6 +12,7 @@ READY / READY_WITH_NOTES / BLOCKED
 | Focused/smoke test | | | |
 | Full/normal verify | | | |
 | Lint/static | | | |
+| Architecture/maintainability gate | | | |
 | Run/boot | | | |
 | Migration smoke | | | |
 | AI fake/fixture test | | | |
@@ -22,8 +23,20 @@ READY / READY_WITH_NOTES / BLOCKED
 - Canonical commands discoverable:
 - Placement rules discoverable:
 - Architecture/current constraints discoverable:
+- Maintainability contract / architecture gate discoverable:
 - Generated vs editable files clear:
 - Failure diagnostics available:
+
+## Architecture / maintainability guardrails
+N/A or:
+- Canonical command:
+- Policy/config source:
+- Mode: clean / no-regression / equivalent
+- Hard rules distinguishable from advisory signals:
+- Required semantic reviewer available:
+- Baseline/exceptions source:
+- Representative failure-sentinel evidence:
+- Local/CI command parity:
 
 ## AI foundation check
 N/A or:

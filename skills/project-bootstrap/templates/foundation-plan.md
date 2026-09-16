@@ -5,6 +5,7 @@
 - Existing run command:
 - Existing focused verification:
 - Existing full verification:
+- Existing architecture/maintainability gate:
 - Existing repo instructions/maps:
 - Existing CI:
 - Config/state:
@@ -22,6 +23,7 @@
 | Configuration/state | | | | |
 | Automation/CI | | | | |
 | AI foundation | | | | |
+| Maintainability / architecture guardrails | | | | |
 
 ## Authorized foundation changes
 1. <bounded change>
@@ -40,6 +42,7 @@ Read:
 
 Use:
 - `repo-foundation`
+- `architecture-guardrails` through `repo-foundation` when maintainability / architecture guardrails are `ADD` or `REPAIR`
 
 Do not:
 - implement product features

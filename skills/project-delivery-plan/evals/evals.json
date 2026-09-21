@@ -1,0 +1,23 @@
+{
+  "skill_name": "project-delivery-plan",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The foundation for a small React/Spring Boot AI-assisted policy-change app is ready. Create the delivery plan so later task agents can implement it independently. I care especially about document-version provenance, stale analysis, human approval, and the AI provider seam.",
+      "expected_output": "Creates a compact project plan and task map with explicit artifacts, interfaces, invariants, state transitions, end-to-end flows, and task input/output placement without devolving into class-level implementation design.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Turn this approved 6-feature product concept into an implementation plan. Do not use full SDD. The plan must make it obvious what each future task consumes and produces and which runtime interfaces it owns.",
+      "expected_output": "Plans data/process/state flow before task decomposition, includes producer/consumer closure and interface contracts, and produces validator-compatible task-map structure.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Plan a simple CRUD admin app with one backend and one frontend. Keep planning proportionate; I still want tasks to fit together safely.",
+      "expected_output": "Uses the same flow/interface discipline but keeps the plan compact, delegates local choices, and avoids manufacturing SDD-level ceremony for a simple project.",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "skill_name": "project-plan-verification",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Independently review this project plan before implementation. The tasks look reasonable, but verify that every artifact they consume has a producer, that stale/versioned state is safe, and that all critical journeys actually close end to end. Do not modify the plan.",
+      "expected_output": "Produces a separate evidence-based review with fresh artifact digests, independent scope reconstruction, flow/interface/artifact/task coverage analysis, concrete findings, and one valid verdict without editing the plan.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Review a lightweight plan where the backend and frontend tasks both say they will define the API contract later. Decide whether that is a task-local choice or a project-plan gap, and report accordingly.",
+      "expected_output": "Recognizes a shared cross-task interface as a plan-level contract requiring sufficient behavioral definition, while avoiding unnecessary class/DTO-level prescription.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Review this plan for over-planning as well as missing detail. It specifies class names, repository methods, React component trees, and helper functions, but barely states error/state transitions between tasks.",
+      "expected_output": "Flags the concrete coordination risk from missing cross-task semantics and identifies unnecessary implementation prescription without turning review into a redesign.",
+      "files": []
+    }
+  ]
+}

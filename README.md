@@ -24,8 +24,10 @@ Current source skills:
 - `idea-brief`
 - `idea-challenger`
 - `idea-investigator`
+- `project-delivery-plan`
 - `project-direction`
 - `project-bootstrap`
+- `project-plan-verification`
 - `repo-foundation`
 - `senior-code-review`
 - `session-handoff`
@@ -53,6 +55,8 @@ raw idea
   -> repo-foundation        materialize the approved repository foundation
        -> architecture-guardrails when maintainability guardrails are planned
   -> foundation-readiness-review
+  -> project-delivery-plan  when multi-task delivery needs a shared flow and handoff plan
+  -> project-plan-verification  fresh-agent check before task planning
 ```
 Not every project needs every idea stage. Enter at `project-direction` when the
 desired experience and tradeoffs need clarification, or at `project-bootstrap`
@@ -68,11 +72,18 @@ the smallest useful deterministic architecture gate without redesigning the
 product architecture.
 
 `foundation-readiness-review` checks the resulting repository from a fresh
-operator's perspective and recommends the cheapest safe delivery route. Its
-`SDD_*` routes refer to an optional external or project-provided SDD workflow;
-this repository does not currently provide those SDD skills. When no SDD
-workflow is available, use the bounded personal flow or ask the project owner
-how planning should proceed.
+operator's perspective and recommends the cheapest safe delivery route. For
+deeper SDD planning, go to the separate SDD repository.
+
+`project-delivery-plan` is the lightweight default bridge from a ready
+foundation to multi-task delivery when full SDD is unnecessary. It makes
+end-to-end data/process/state flow, interfaces, artifacts, invariants, and task
+handoffs explicit without pre-solving task-local implementation. Run
+`project-plan-verification` with a fresh agent before implementation to
+independently check scope, producer/consumer closure, interface/state
+consistency, task coverage, and dependency composition. Use full SDD instead
+when foundation readiness or project risk requires deeper specification
+artifacts.
 ### Implementing a bounded change
 
 The normal human-driven path is deliberately lightweight:

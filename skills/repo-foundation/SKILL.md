@@ -249,3 +249,43 @@ A repo foundation change is done when:
 - tests/lint/typecheck/build/docs/architecture checks ran at the narrowest meaningful level, with results reported
 - any skipped stronger verification is named explicitly
 - unrelated stale docs or structure issues are mentioned, not silently swept into the change
+
+
+<!-- contract-registry-flow:repo-foundation:begin -->
+## Machine-readable implemented-contract discovery
+
+When the foundation plan requires cheap cross-task contract discovery, materialize a structured current-state registry:
+
+```text
+docs/contracts/
+  index.json
+  <subsystem>.json
+```
+
+Read `docs/ai-foundation.md` when present in addition to the existing foundation authorities.
+
+Use `references/contract-registry.md` for the registry model and inclusion threshold. `docs/contracts/<subsystem>.json` records implemented reusable contracts. `docs/contracts/index.json` is a deterministic discovery router generated from those records, not a second manually maintained source of truth.
+
+A founded repository should expose a canonical deterministic check equivalent to:
+
+```bash
+python3 tools/check_contracts.py --root . --write-index
+python3 tools/check_contracts.py --root .
+```
+
+The reusable validator template is `scripts/check_contracts.py`; copy/adapt it into the target repository's canonical tooling location without adding unnecessary dependencies.
+
+Route zero-context agents from root/scoped instructions to `docs/contracts/index.json`, then to the relevant subsystem record, module README, and executable/declarative authority.
+
+Keep these authorities distinct:
+
+- project/foundation/task planning = intended state, including future contracts;
+- contract registry = currently implemented reusable state;
+- OpenAPI/schemas/package APIs/migrations/code/tests = executable/declarative authority and behavioral truth.
+
+Project/architecture maps remain useful high-level orientation. Module READMEs remain the local explanatory surface. Avoid duplicating the detailed registry into either.
+
+### Documentation-ownership exception for the bounded task flow
+
+The normal rule that a structural change owns the documentation it makes stale still holds. When the standard task flow explicitly includes `task-contract-registry-updater`, that responsibility is split: the implementer owns code, tests, and executable/declarative contracts; the updater synchronizes the registry and stale discovery/reference surfaces before acceptance. Outside that flow, retain the repository's normal change-author ownership rule.
+<!-- contract-registry-flow:repo-foundation:end -->

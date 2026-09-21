@@ -356,3 +356,14 @@ The plan is ready for independent verification only when:
 - Making tasks tiny solely to simplify planning.
 - Leaving important semantics for task agents to independently rediscover.
 - Self-reviewing the plan and calling it independently verified.
+
+
+<!-- contract-registry-flow:project-delivery-plan:begin -->
+## Planned contracts vs implemented contracts
+
+`docs/project-plan.md` and `docs/task-map.json` describe the **intended coordinated system**, including contracts that may not exist yet. They are not proof that a capability is currently implemented.
+
+Keep using the existing stable artifact/interface/invariant IDs and each task's existing consumes/produces/interfaces/invariants relationships. Do not add a duplicate contract-impact structure to `task-map.json`.
+
+When downstream task planning happens after predecessor tasks may already be implemented, preserve the stable IDs and reconcile relevant dependencies with the repository's current contract registry. A material semantic mismatch between a planned ID and implemented current state must be surfaced; do not silently redefine the planned contract around accidental implementation details.
+<!-- contract-registry-flow:project-delivery-plan:end -->

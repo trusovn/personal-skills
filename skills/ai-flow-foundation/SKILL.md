@@ -212,3 +212,14 @@ been implemented or verified; those are responsibilities of the materialization 
 - Adding vector DB/RAG/queue/state machinery before the use case requires it.
 - Hiding deterministic business rules inside prompts.
 - Retrying a call that can repeat a side effect without idempotency semantics.
+
+
+<!-- contract-registry-flow:ai-flow-foundation:begin -->
+## Contract-discovery handoff
+
+`docs/ai-foundation.md` remains an intended AI-foundation authority, not a live inventory of implemented repository state.
+
+When handing materialization to `repo-foundation`, identify AI seams that should become discoverable through the implemented-contract registry once they actually exist. Typical candidates are provider boundaries, input/output validation boundaries, deterministic fake/substitution seams, persisted-state ownership, side-effect gates, and retry/idempotency semantics when later tasks may depend on them.
+
+Do not register planned AI seams before materialization. Preserve stable project-plan IDs where a materialized AI seam corresponds to one.
+<!-- contract-registry-flow:ai-flow-foundation:end -->

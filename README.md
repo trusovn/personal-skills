@@ -6,12 +6,17 @@ agent skills used by the Local Workbench.
 
 ```text
 skills/
-└── <skill-name>/
-    ├── SKILL.md
-    └── <skill-owned references, scripts, fixtures, or evals>
+├── <skill-name>/
+│   ├── SKILL.md
+│   └── <skill-owned references, scripts, fixtures, or evals>
+└── task-implementation-flow/
+    ├── README.md
+    └── <flow-skill>/
+        ├── SKILL.md
+        └── <skill-owned references, scripts, fixtures, or evals>
 ```
 
-Each direct child of `skills/` is a complete skill package. Its `SKILL.md`
+Each directory containing a `SKILL.md` is a complete skill package. Its
 frontmatter `name` is the identifier used by workbench profiles and installers.
 Keep files used only by one skill inside that skill's directory.
 
@@ -34,6 +39,7 @@ Current source skills:
 - `skill-creator`
 - `task-acceptance-review`
 - `task-brief-designer`
+- `task-contract-registry-updater`
 - `task-maintainability-review`
 - `task-preflight`
 - `task-orchestrator`
@@ -128,3 +134,27 @@ flow directly under human coordination.
 
 Installed copies under `~/.agents/skills`, `~/.codex/skills`, or a project are
 distribution targets. Edit here, validate here, and redistribute from here.
+
+
+<!-- contract-registry-flow:root-readme:begin -->
+## Implemented-contract discovery in the delivery flow
+
+For projects that enable machine-readable contract discovery, the end-to-end flow distinguishes intended and implemented system state:
+
+```text
+project-bootstrap
+  -> ai-flow-foundation (when applicable)
+  -> repo-foundation
+  -> foundation-readiness-review
+  -> project-delivery-plan
+  -> project-plan-verification
+  -> task brief
+  -> bounded implementation
+  -> deterministic architecture validation
+  -> maintainability review
+  -> contract-registry synchronization
+  -> acceptance review
+```
+
+Planning artifacts (`project-plan.md`, `task-map.json`, task briefs) may describe future contracts. `docs/contracts/*.json` describes reusable contracts that are currently implemented. Stable plan IDs connect the two when a planned contract materializes. Executable declarations and code/tests remain the underlying authority.
+<!-- contract-registry-flow:root-readme:end -->

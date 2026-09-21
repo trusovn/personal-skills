@@ -279,3 +279,43 @@ For the existing worker-result schema:
 - Guided output is useful to a person; machine output is emitted only under an
   explicit machine contract.
 - The next owner can act without reading the implementation transcript.
+
+
+<!-- contract-registry-flow:bounded-task-implementer:begin -->
+## Contract-aware discovery and handoff
+
+When `docs/contracts/index.json` exists, use it before broad repository discovery:
+
+```text
+task authority
+  -> stable/current contract refs
+  -> docs/contracts/index.json
+  -> relevant subsystem contract
+  -> module/executable authority
+  -> focused code discovery as needed
+```
+
+This registry is current-state routing, not a substitute for reading the implementation needed for the task.
+
+The implementer owns changes to executable/declarative contracts that are part of the implementation, including OpenAPI/GraphQL/protobuf/JSON Schema, public types/package exports, CLI/config definitions, migrations, and event/schema declarations.
+
+When the standard flow includes `task-contract-registry-updater`, do not spend the implementation role's attention synchronizing `docs/contracts` or explanatory discovery references. Report the actual delta instead. If no such updater stage exists, follow the repository's normal stale-reference ownership rule.
+
+Add these fields to the implementation handoff:
+
+```text
+Deliverables:
+- <concrete task outputs>
+
+Actual contract impact:
+- added/changed/removed <durable cross-task surface>
+- ...
+OR
+- none
+
+Executable contract declarations changed:
+- <paths or none>
+```
+
+Treat `Actual contract impact` as a factual claim for downstream verification. If implementation materially differs from an expected stable cross-task contract, report the mismatch instead of silently reinterpreting the plan.
+<!-- contract-registry-flow:bounded-task-implementer:end -->

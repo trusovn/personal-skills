@@ -319,3 +319,17 @@ The review is complete when:
 - Trusting AI output/state without checking deterministic validation and authority boundaries.
 - Reusing an old verdict after plan bytes changed.
 - Claiming independent review from the same planning reasoning context.
+
+
+<!-- contract-registry-flow:project-plan-verification:begin -->
+## Contract-discovery verification
+
+During dependency-order mental execution, additionally check that:
+
+- cross-task outputs that later tasks consume have stable identities sufficient for downstream lookup;
+- produced artifacts/interfaces/invariants can later be mapped into implemented contract discovery without inventing new identity;
+- later tasks are not forced to infer predecessor outputs from private implementation details;
+- the plan does not require concrete implementation paths for contracts that do not yet exist.
+
+This remains plan verification. Do not treat the current repository registry as authority for future planned state, and do not require a registry entry for a contract before it is implemented.
+<!-- contract-registry-flow:project-plan-verification:end -->

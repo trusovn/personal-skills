@@ -152,3 +152,12 @@ State:
 - modifying the ledger or workflow from a worker session;
 - inventing commit, network, dependency, or destructive permissions; and
 - combining tasks or reading all briefs and transcripts into one context.
+
+
+<!-- contract-registry-flow:task-orchestrator:begin -->
+## Contract-registry stage when enabled
+
+When the repository uses machine-readable implemented-contract discovery, place `task-contract-registry-updater` after deterministic architecture/maintainability checks and before `task-acceptance-review`. Do not ask the bounded implementation agent to perform this synchronization in the same attention-heavy implementation pass.
+
+A reference-only acceptance correction returns directly to the registry updater and then fresh acceptance when production/test/executable-contract bytes did not change.
+<!-- contract-registry-flow:task-orchestrator:end -->

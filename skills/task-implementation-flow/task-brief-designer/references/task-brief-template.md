@@ -202,3 +202,14 @@ specific risk requires durable evidence. Do not add it to routine guided tasks.
   command truthfully, and must produce the supplied structured result.
 - Independent review must reconstruct the scoped diff, corroborate every AC at
   the required boundary, and issue a fresh verdict after every correction.
+
+
+<!-- contract-registry-flow:task-brief-template:begin -->
+## Expected contract impact
+
+Use only when relevant; otherwise write `Expected contract impact: none`.
+
+- Plan refs: `<ART-... / IF-... / INV-... — materialize | change | preserve>`
+- Current contract dependencies: `<plan ref or capability -> docs/contracts/<subsystem>.json>`
+- Expected durable delta: `<new/changed/removed reusable interface, artifact, ownership, state, invariant, integration, or infrastructure capability>`
+<!-- contract-registry-flow:task-brief-template:end -->

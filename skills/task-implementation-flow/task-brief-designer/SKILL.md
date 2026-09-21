@@ -320,3 +320,20 @@ design task.
   with a direction delta.
 - Guided briefs avoid high-assurance artifact ceremony unless risk justifies it.
 - High-assurance briefs preserve exact stage and evidence contracts.
+
+
+<!-- contract-registry-flow:task-brief-designer:begin -->
+## Expected contract impact
+
+When the repository has a contract registry, use it while preparing the brief to resolve already implemented dependencies before asking the implementation agent to explore code broadly.
+
+For tasks that may materialize or change durable cross-task contracts, include a compact `Expected contract impact` section derived from existing task-map IDs and current repository state. It should identify:
+
+- relevant stable plan refs and whether this task is expected to materialize/change/preserve them;
+- current contract dependencies already available in `docs/contracts`;
+- the expected durable current-state delta in behavioral/ownership terms.
+
+When there is no expected durable cross-task impact, state `Expected contract impact: none` rather than inventing registry work.
+
+The brief describes expected delta, not proof of what implementation eventually produced.
+<!-- contract-registry-flow:task-brief-designer:end -->

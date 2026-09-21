@@ -239,3 +239,19 @@ Recommended next step after materialization:
 - Putting product behavior into bootstrap tasks.
 - Designing prompts, agents, workflows, or business state before the AI/product behavior is specified.
 - Producing a 20-page foundation artifact for a small repo.
+
+
+<!-- contract-registry-flow:project-bootstrap:begin -->
+## Implemented-contract discovery foundation
+
+Treat cheap discovery of **currently implemented reusable contracts** as part of repository navigation when the expected project lifetime, task count, or subsystem count makes repeated rediscovery material.
+
+During foundation assessment, classify this capability `REUSE`, `REPAIR`, `ADD`, `DEFER`, or `N/A` alongside the existing repo-navigation capability. The intended capability is:
+
+- one canonical machine-readable entry point for implemented cross-task contracts;
+- routing from agent instructions into that entry point;
+- links from structured contract records to module docs and executable/declarative authorities;
+- deterministic validation of registry structure and referenced repository paths.
+
+Do not populate application contracts during bootstrap and do not turn `project-charter.md` or `foundation-plan.md` into live current-state registries. Bootstrap establishes that the capability must exist; `repo-foundation` materializes it.
+<!-- contract-registry-flow:project-bootstrap:end -->

@@ -281,3 +281,47 @@ write exception is the explicit post-verdict tests-only protocol above.
 - Broad-gate ownership and suppression after decisive failure are visible.
 - Exactly one justified verdict or `SELF_CHECK_ONLY`, residual-risk statement,
   continuation when required, and next route are present.
+
+
+<!-- contract-registry-flow:task-acceptance-review:begin -->
+## Contract and discovery-reference acceptance
+
+For contract-bearing tasks, independently reconstruct contract impact. Do not trust either the implementer handoff or the registry-updater handoff as proof.
+
+Reconcile four layers:
+
+```text
+EXPECTED
+  task brief / relevant stable plan IDs
+      <->
+ACTUAL
+  implementation + behavior
+      <->
+DECLARED
+  OpenAPI / schemas / public types / package exports / CLI/config / migrations as applicable
+      <->
+DISCOVERABLE
+  docs/contracts + required local/routing references
+```
+
+Check, as applicable:
+
+1. the implementation really added/changed/removed the claimed durable surface;
+2. existing executable/declarative authorities were updated by implementation;
+3. the owning subsystem contract record represents current implemented semantics;
+4. `docs/contracts/index.json` is current and the canonical validator passes;
+5. materialized stable plan IDs map to the correct current contract without semantic drift;
+6. an affected module README was updated if its existing explanation became stale;
+7. root/scoped `AGENTS.md` / `CLAUDE.md`, root README, or project/architecture map were updated only when claims they already make became stale.
+
+Missing, stale, contradictory, or aspirational current-state discovery that affects later task routing is `CHANGES_REQUESTED`, not merely residual risk.
+
+Route failures narrowly:
+
+- production/test/executable-contract defect -> `bounded-task-implementer`;
+- registry/module/reference-only defect -> `task-contract-registry-updater`;
+- planned/current semantic mismatch -> appropriate task/project planning owner;
+- missing or unclear registry foundation -> `repo-foundation`.
+
+After a reference-only correction, run fresh acceptance. Do not require a maintainability rerun when production, test, and executable-contract bytes are unchanged.
+<!-- contract-registry-flow:task-acceptance-review:end -->

@@ -190,3 +190,19 @@ Do not generate speculative improvements.
 - Running expensive full integration checks when a documented external dependency makes them impossible.
 - Turning the readiness review into a product architecture review.
 - Using `SDD_FULL` as a prestige/default choice.
+
+
+<!-- contract-registry-flow:foundation-readiness-review:begin -->
+## Implemented-contract discovery readiness
+
+When the foundation requires a contract registry, independently verify that a zero-context agent can:
+
+- discover the canonical current-state contract entry point from repository instructions;
+- find an existing reusable contract without reconstructing the subsystem from source;
+- resolve a materialized stable plan ID to the owning subsystem where such IDs exist;
+- follow a registry record to real module/executable declaration paths;
+- distinguish planned/future contracts from currently implemented contracts;
+- run the canonical registry validator successfully.
+
+Treat missing, stale, or ambiguous discovery foundation as a readiness defect rather than relying on later task agents to compensate through broad repository exploration.
+<!-- contract-registry-flow:foundation-readiness-review:end -->

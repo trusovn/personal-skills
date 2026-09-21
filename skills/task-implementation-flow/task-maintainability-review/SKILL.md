@@ -319,3 +319,12 @@ If functional acceptance later changes production bytes, repeat architecture gat
 - Rechecking every acceptance criterion and starving the architecture question of context.
 - Editing the architecture baseline to make the current task pass.
 - Reporting ten low-value nits instead of the few material maintainability risks.
+
+
+<!-- contract-registry-flow:task-maintainability-review:begin -->
+## Contract-registry stage boundary
+
+When the standard task flow includes `task-contract-registry-updater`, this review runs **before** registry/reference synchronization. Do not fail an otherwise maintainable implementation merely because `docs/contracts` or explanatory discovery references still need the dedicated post-review sync.
+
+Still review executable/declarative contracts that are part of the implementation itself, and call out any actual reusable boundary or ownership change the registry updater will need to reconcile. If production/test/executable-contract bytes change after this review, normal review invalidation rules still apply.
+<!-- contract-registry-flow:task-maintainability-review:end -->

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://personal-skills.local/subsystem-contract.schema.json",
+  "title": "Implemented Subsystem Contract",
+  "$defs": {
+    "planRefs": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*-[A-Z0-9][A-Z0-9._-]*$"},
+      "uniqueItems": true
+    },
+    "paths": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "surface": {
+      "type": "object",
+      "required": ["name", "kind"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "minLength": 1},
+        "summary": {"type": "string"},
+        "plan_refs": {"$ref": "#/$defs/planRefs"},
+        "declarations": {"$ref": "#/$defs/paths"}
+      },
+      "additionalProperties": false
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "summary": {"type": "string"},
+        "plan_refs": {"$ref": "#/$defs/planRefs"},
+        "declarations": {"$ref": "#/$defs/paths"}
+      },
+      "additionalProperties": false
+    },
+    "invariant": {
+      "type": "object",
+      "required": ["statement"],
+      "properties": {
+        "statement": {"type": "string", "minLength": 1},
+        "plan_refs": {"$ref": "#/$defs/planRefs"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": ["schema_version", "id", "owner_paths"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "id": {"type": "string", "minLength": 1},
+    "summary": {"type": "string"},
+    "owner_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "provides": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/surface"}
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/artifact"}
+    },
+    "state_owned": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/artifact"}
+    },
+    "invariants": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/invariant"}
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "module_docs": {"$ref": "#/$defs/paths"},
+    "extensions": {"type": "object"}
+  },
+  "additionalProperties": false
+}

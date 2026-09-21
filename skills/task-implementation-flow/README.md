@@ -1,6 +1,6 @@
 # Task implementation flow
 
-These five task skills provide a reusable implementation discipline without
+These six task skills provide a reusable implementation discipline without
 making every task carry an orchestration-grade artifact chain. The default is a
 lightweight guided flow. Repositories that enable maintainability guardrails can
 insert a focused architecture gate before functional acceptance. A
@@ -26,6 +26,7 @@ handoffs, exact freshness evidence, and machine-readable results.
 | `task-preflight` | Check readiness, ownership, commands, and decisive evidence when dirty ownership, dependencies, environment, permissions, helpers, fixtures, real-boundary capability, or a durable handoff creates material uncertainty. | A routine guided task can perform the same compact self-check inside the implementer. |
 | `bounded-task-implementer` | Implement one bounded task with risk-based tests, progressive verification, and a useful handoff. | The request is planning, review-only, or too ambiguous to implement safely. |
 | `task-maintainability-review` | Independently assess the changed design for concrete maintainability regression after the repo's deterministic architecture gate. | The repo does not require maintainability review and the user/task does not request it. |
+| `task-contract-registry-updater` | Synchronize implemented-contract discovery after maintainability review. | The repository does not use implemented-contract discovery, or the task did not change a durable cross-task contract. |
 | `task-acceptance-review` | Independently assess scoped functional/specification correctness and return `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`. | The task does not need independent functional review under its metadata or risk. |
 
 `architecture-guardrails` is a foundation/setup skill, not a per-task reviewer. It
@@ -325,3 +326,28 @@ reuse is an optimization, not a requirement.
   - 50–70%: resume for one focused correction if the session stayed clean.
   - Above 70%: prefer a fresh correction session with the findings and tests.
   - At any percentage: restart if the agent repeats work, relies on stale state, confuses roles, or loses track of findings.
+
+
+<!-- contract-registry-flow:task-flow-readme:begin -->
+## Contract-aware standard sequence
+
+For repositories with implemented-contract discovery enabled, the standard bounded-task sequence is:
+
+```text
+task brief
+  -> bounded-task-implementer
+  -> deterministic architecture gate
+  -> task-maintainability-review
+  -> task-contract-registry-updater
+  -> task-acceptance-review
+```
+
+Ownership is intentionally separated:
+
+- planner: intended cross-task contract;
+- implementer: executable implementation and executable/declarative contract bytes;
+- registry updater: machine-readable current-state discovery plus stale explanatory references;
+- acceptance reviewer: independent consistency proof.
+
+Reference-only acceptance failures return to `task-contract-registry-updater` and then fresh acceptance. Implementation defects return through the normal implementation/review path. Planned/current semantic mismatches return to the planning owner rather than being normalized by the updater.
+<!-- contract-registry-flow:task-flow-readme:end -->

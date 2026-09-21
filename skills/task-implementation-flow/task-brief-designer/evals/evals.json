@@ -5,10 +5,16 @@
       "id": 1,
       "prompt": "Use the high-assurance profile to turn approved plan item `docs/stage-3-plan.md#S3-04` into an executable `ready_for_preflight` brief at `docs/stage-3-tasks/S3-04.md`. The approved behavior adds `run-next`: the command selects the next ready task, records it as running, and later invocations continue selecting remaining ready tasks. Existing unit ACs mention only selecting one task from a static queue. The public entry point is `runner run-next`; state is persisted in `.runner/state.json`. Do brief design only—do not certify the current tree or edit implementation files.",
       "expected_output": "A ready-for-preflight task brief that preserves the approved lifecycle behavior and adds real public-entry evidence covering the first invocation, its persisted state change, and a second invocation, with negative/unchanged-state evidence and provisional preflight checks.",
-      "files": ["evals/files/setup_fixture.py"],
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
       "execution": {
         "setup": {
-          "command": ["python3", "evals/files/setup_fixture.py", "queue-runner"],
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "queue-runner"
+          ],
           "cwd": ".",
           "env": {
             "EVAL_WORK_ROOT": "{run_root}/work"
@@ -28,10 +34,16 @@
       "id": 2,
       "prompt": "In this repository, design task brief `SBX-07` from approved section `docs/verification-plan.md#deny-child-process-tree`. The requirement is to prove that a verification runner terminates a command and every descendant process at timeout on macOS and Linux. The repo has ordinary unit-test fixtures, but nobody knows whether the sandbox permits deterministic process-tree control or inspection. The implementation task must remain small, and we do not want a shared harness invented inside it.",
       "expected_output": "A separate prerequisite evaluation/proof brief for uncertain process-control feasibility plus a `blocked_design` primary task that records the proof as a dependency. The primary task is not executable until the proof resolves the enforcement method; ordinary readiness preflight is not used as a substitute and no reusable helper is silently assigned to the implementer.",
-      "files": ["evals/files/setup_fixture.py"],
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
       "execution": {
         "setup": {
-          "command": ["python3", "evals/files/setup_fixture.py", "process-tree"],
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "process-tree"
+          ],
           "cwd": ".",
           "env": {
             "EVAL_WORK_ROOT": "{run_root}/work"
@@ -63,12 +75,18 @@
     },
     {
       "id": 4,
-      "prompt": "Gap-check the existing task at `docs/tasks/API-31.md` for ordinary guided implementation. It already has an outcome, scope, positive and negative ACs, targeted and broader commands, stops, and a next action. Its authority explicitly calls for an economical standard-agent, medium-reasoning launch profile and immediate fresh acceptance review. Add the standard `agent_tier`, `reasoning`, `review`, and `budget` metadata block plus the proportionate readiness route, but do not rewrite adequate prose or add high-assurance ledgers, matrices, digests, packet requirements, or prerequisite tasks.",
-      "expected_output": "A surgical update that adds truthful intended launch guidance and the implementer self-preflight route, preserves guided implementation as the next action, and explicitly requires fresh independent acceptance review immediately after implementation without replacing the brief with the full template.",
-      "files": ["evals/files/setup_fixture.py"],
+      "prompt": "Gap-check the existing task at `docs/tasks/API-31.md` for ordinary guided implementation. It already has an outcome, scope, positive and negative ACs, targeted and broader commands, stops, and a next action. Its authority explicitly calls for an economical standard-agent, medium-reasoning launch profile and immediate fresh acceptance review. Estimate it at 6 implementation-agent calls and 20 minutes under the active sizing policy. Add the standard `agent_tier`, `reasoning`, `review`, and `budget` metadata block, the execution-sizing evidence, and the proportionate readiness route, but do not rewrite adequate prose or add high-assurance ledgers, matrices, digests, packet requirements, or prerequisite tasks.",
+      "expected_output": "A surgical update that adds truthful intended launch guidance, fitting execution-sizing evidence, and the implementer self-preflight route; preserves guided implementation as the next action; and explicitly requires fresh independent acceptance review immediately after implementation without replacing the brief with the full template.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
       "execution": {
         "setup": {
-          "command": ["python3", "evals/files/setup_fixture.py", "existing-brief"],
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "existing-brief"
+          ],
           "cwd": ".",
           "env": {
             "EVAL_WORK_ROOT": "{run_root}/work"
@@ -79,6 +97,7 @@
       "expectations": [
         "The existing outcome, scope, ACs, commands, stops, and next action remain substantively unchanged.",
         "The brief gains exactly the four standard metadata keys with `agent_tier: standard`, `reasoning: medium`, `review: immediate`, and a soft, proportionate budget; it does not default to generic `reasoning: high` guidance or claim to observe hidden runtime configuration.",
+        "The brief adds execution-sizing evidence for the supplied 6-call / 20-minute estimate, identifies the active policy result as fitting, and does not treat the surgical gap-check as exempt from sizing.",
         "The result keeps guided status `ready`, recommends `implementer self-preflight`, adds no route metadata key, and does not force standalone preflight.",
         "The handoff preserves guided implementation as the next action and explicitly requires fresh independent acceptance review immediately after implementation or correction; a generic implementation next action alone or same-session self-review semantics fails this expectation.",
         "No knowledge ledger, AC execution matrix, digest inventory, durable packet contract, or prerequisite task is added.",
@@ -89,10 +108,16 @@
       "id": 5,
       "prompt": "Create the guided implementation brief `docs/tasks/EVD-12.md` from `docs/evidence-plan.md#EVD-12`. The existing test covers only one complete happy path. Preserve the approved scope and do task design only.",
       "expected_output": "A compact guided brief whose optional finite-risk table enumerates all approved persisted evidence families, publication stages and legal prefixes, and contradictory orphan states; uses the public resume boundary and pre-side-effect rejection/reuse oracle; separates implementation from independent-review evidence; assigns the final fresh reviewer as aggregate-gate owner; and recommends standalone guided preflight with the named observer-capability uncertainty.",
-      "files": ["evals/files/setup_fixture.py"],
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
       "execution": {
         "setup": {
-          "command": ["python3", "evals/files/setup_fixture.py", "finite-risk-matrix"],
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "finite-risk-matrix"
+          ],
           "cwd": ".",
           "env": {
             "EVAL_WORK_ROOT": "{run_root}/work"
@@ -200,6 +225,95 @@
         "The response uses the direction-delta-needed form, gives practical retention options and consequences, and keeps any recommendation non-authoritative.",
         "It does not create `docs/tasks/RETENTION-3.md`, claim `New direction decisions required: None`, or add task ACs, metadata, verification, or implementation handoff.",
         "No direction, request, implementation, test, dependency, or orchestrator file is modified."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Design TASK-40 from `docs/project-plan.md` and `docs/task-map.json` using the task-implementation-flow defaults. Use the approved sizing input in the plan. Create durable task-design artifacts, but do not implement anything or edit the project plan/task map.",
+      "expected_output": "A canonical decomposition package: TASK-40 becomes a non-executable composite parent, coherent executable child briefs are created and independently re-estimated until each leaf fits the active sizing policy (or carries the explicit permitted unsplittable override), and `docs/tasks/index.json` records the structural parent/child graph without becoming an execution ledger.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "sizing-decomposition"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/decomposition"
+      },
+      "expectations": [
+        "The output reads the active task-sizing policy rather than hard-coding a different threshold and recognizes the approved 24-call / 65-minute unsplit estimate as requiring decomposition.",
+        "The parent brief is written at the canonical task package location with `Status: decomposed` and `Task kind: composite`, and it has no executable launch metadata or readiness route.",
+        "At least two child briefs use stable numeric suffix IDs, are full executable task briefs rather than checklist bullets, preserve relevant FLOW-40 / ART-40 / IF-40 / INV-40 context, and state explicit dependencies/owned outputs.",
+        "Every executable leaf is independently re-estimated and either fits the active sizing envelope or records the allowed `cannot_split_safely` override with a concrete reason; merely renaming the original work into children is insufficient.",
+        "Parent outcome/AC coverage is mapped to children, and any end-to-end proof that requires sibling composition is owned by an executable integration child rather than a special composite-parent review stage.",
+        "`docs/tasks/index.json` is created as a structural discovery/decomposition index and does not contain runtime attempt/controller/review status.",
+        "`docs/project-plan.md`, `docs/task-map.json`, implementation, tests, and orchestration state are unchanged."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Create the ordinary guided durable brief for `docs/requests/CACHE-15.md` using the default task artifact layout and current sizing policy. Use the approved sizing input exactly and do task design only.",
+      "expected_output": "One executable CACHE-15 brief, not a decomposition: the exact boundary values fit because only estimates greater than the configured call/time maxima split, and strong/medium does not match the configured strong+high profile trigger.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "sizing-boundary"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/sizing-boundary"
+      },
+      "expectations": [
+        "The brief records 15 estimated agent calls, 40 estimated implementation minutes, and strong/medium launch guidance.",
+        "The policy result is `fits`; the skill does not split on equality with the configured maxima.",
+        "The strong+high execution-profile trigger is treated as a conjunction, so strong/medium does not trigger decomposition.",
+        "The task remains one executable brief with normal launch metadata and no `decomposed` composite parent.",
+        "No implementation, source request, or orchestration state is modified."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Design TASK-51 from `docs/project-plan.md` using the default task artifact layout and current sizing policy. Use the approved sizing input in the plan and preserve the two stated ownership boundaries. Do task design only.",
+      "expected_output": "TASK-51 is decomposed even though its call/time estimates are below the numeric maxima, because the combined launch profile is strong+high; the child briefs follow the two coherent ownership boundaries and are independently re-estimated rather than carrying the parent's profile mechanically.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "sizing-strong-high"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/sizing-strong-high"
+      },
+      "expectations": [
+        "The skill recognizes strong/high as an active decomposition trigger even though 12 calls and 35 minutes are below the numeric maxima.",
+        "TASK-51 becomes a `decomposed` composite parent and the two independently verifiable ownership boundaries become dependent executable child briefs.",
+        "The second child explicitly consumes the immutable normalized artifact produced by the first and both preserve INV-51.",
+        "Each child receives its own implementation estimate and launch metadata; the parent strong/high profile is not copied blindly to every child.",
+        "No implementation, project plan, or orchestration state is modified."
       ]
     }
   ]

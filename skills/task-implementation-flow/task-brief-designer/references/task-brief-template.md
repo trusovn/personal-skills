@@ -1,6 +1,62 @@
 # Task Brief: `<TASK-ID>` — `<imperative title>`
 
-Status: `ready | ready_for_preflight | blocked_design`
+Status: `ready | ready_for_preflight | decomposed | blocked_design`
+
+Task kind: `executable | composite`
+
+When the status is `decomposed`, do not use the executable template below.
+Emit a composite parent using this form:
+
+```markdown
+# Task Brief: `<TASK-ID>` — `<imperative title>`
+
+Status: `decomposed`
+Task kind: `composite`
+
+## Outcome
+
+`<The original testable outcome preserved across the child set.>`
+
+## Authority and scope
+
+- Authority: `<user request, issue, plan/spec path and section, or other source>`
+- Parent plan task / stable refs: `<task ID plus relevant FLOW/ART/IF/INV refs>`
+- Original scope: `<bounded scope before splitting>`
+- Out of scope: `<unchanged adjacent work>`
+
+## Execution sizing
+
+- Sizing policy: `<active-profile>@<config-version>`
+- Original estimated agent calls: `<integer>`
+- Original estimated implementation duration: `<integer minutes>`
+- Original required execution profile: `<agent_tier>/<reasoning>`
+- Estimate confidence: `<low | medium | high>`
+- Triggered decomposition rules: `<configured rule names>`
+
+## Decomposition
+
+| Child | Responsibility / owned output | Depends on | Brief |
+|---|---|---|---|
+| `<TASK-ID.1>` | `<coherent bounded outcome>` | `<IDs or none>` | `<path>` |
+
+## Coverage and closure
+
+- Parent requirement / AC coverage: `<map every parent requirement or AC to one or more children>`
+- Shared artifacts/interfaces/invariants: `<owner child for each cross-child surface>`
+- Integration closure: `<final executable integration child, or why child-local proof is sufficient>`
+- Leaf sizing: `<all leaves fit active policy, or exact permitted override(s)>`
+
+## Handoff
+
+Implement dependency-ready executable leaves only. Never hand this composite
+parent to `bounded-task-implementer`. The parent is complete only when every
+mapped leaf has completed its own required implementation and review route,
+and the integration-closure child, when present, has completed its own route.
+```
+
+A composite parent has no launch metadata and no readiness route. If governing
+direction applies, preserve the relevant approved decisions in the parent and
+each affected child; decomposition does not create authority to change them.
 
 When the status is `blocked_design`, do not use the implementation template
 below. Emit only this abbreviated design-block form and stop:
@@ -37,6 +93,21 @@ current manual routing. Use the profile approved by the authority; do not
 present `reasoning` or another value as observed runtime configuration unless
 it was supplied. Treat the budget as a soft checkpoint unless authority makes
 it hard.
+
+## Execution sizing
+
+- Sizing policy: `<active-profile>@<config-version>`
+- Estimated agent calls: `<integer>`
+- Estimated implementation duration: `<integer minutes>`
+- Estimate confidence: `<low | medium | high>`
+- Policy result: `fits | override_cannot_split_safely`
+- Triggered limits: `none | <configured rule names>`
+- Decomposition override: `none | cannot_split_safely — <concrete reason and residual risk>`
+
+These estimates cover implementation-agent work only. If the active policy
+requires decomposition and no permitted override applies, stop using this
+executable template: emit a `decomposed` composite parent plus independently
+estimated child briefs instead.
 
 ## Readiness route
 

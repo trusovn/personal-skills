@@ -1,0 +1,17 @@
+version: 1
+active_profile: default
+
+profiles:
+  default:
+    decomposition:
+      trigger: any
+      comparison: split_only_when_greater_than_maximum
+      max_agent_calls: 15
+      max_duration_minutes: 40
+      disallowed_execution_profiles:
+        - agent_tier: strong
+          reasoning: high
+      recursive: true
+      unsplittable_override:
+        allowed: true
+        require_reason: true

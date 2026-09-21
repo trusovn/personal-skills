@@ -35,6 +35,12 @@ and current Git state. Ask only when a missing product, architecture,
 compatibility, scope, ownership, or permission decision could materially change
 the result.
 
+Before accepting a task brief, reject it as non-executable when it declares
+`Task kind: composite` and `Status: decomposed`. Read `docs/tasks/index.json`
+when present to identify its dependency-ready executable leaf, then reroute the
+caller to that leaf (or report that no dependency-ready leaf is available).
+Never implement a decomposed parent.
+
 ### High-assurance inputs
 
 Require:

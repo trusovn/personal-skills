@@ -410,6 +410,126 @@ def retention_gap() -> None:
     commit(root)
 
 
+def sizing_decomposition() -> None:
+    root = WORK / "decomposition"
+    initialize(root)
+    write(
+        root,
+        "AGENTS.md",
+        """
+        # Fixture rules
+
+        Durable task-design artifacts may be written under `docs/tasks/`.
+        Do not edit project planning artifacts or implementation.
+        """,
+    )
+    write(
+        root,
+        "docs/project-plan.md",
+        """
+        # Project plan
+
+        ## TASK-40 — Import a local bundle
+
+        Import one local bundle through three coherent boundaries:
+
+        1. Parse and normalize the bundle into ART-40 through IF-40.
+        2. Persist ART-40 transactionally while preserving INV-40.
+        3. Wire the public `bundle import` command and prove FLOW-40 end to end.
+
+        The final observable result is that a valid bundle is imported once and
+        can be retrieved unchanged; invalid input has no persisted side effect.
+
+        Approved sizing input for task-brief design: the unsplit task is
+        estimated at 24 implementation-agent calls and 65 implementation
+        minutes with a standard/medium execution profile.
+        """,
+    )
+    write(
+        root,
+        "docs/task-map.json",
+        """
+        {
+          "tasks": [
+            {
+              "id": "TASK-40",
+              "depends_on": [],
+              "flows": ["FLOW-40"],
+              "artifacts": ["ART-40"],
+              "interfaces": ["IF-40"],
+              "invariants": ["INV-40"]
+            }
+          ]
+        }
+        """,
+    )
+    commit(root)
+
+
+def sizing_boundary() -> None:
+    root = WORK / "sizing-boundary"
+    initialize(root)
+    write(
+        root,
+        "AGENTS.md",
+        """
+        # Fixture rules
+
+        Durable task-design artifacts may be written under `docs/tasks/`.
+        Do not edit implementation or the source request.
+        """,
+    )
+    write(
+        root,
+        "docs/requests/CACHE-15.md",
+        """
+        # CACHE-15 — Add deterministic cache invalidation
+
+        Add one bounded invalidation rule with one public observable behavior
+        and one negative case. No cross-task interface is introduced.
+
+        Approved sizing input for task-brief design: 15 implementation-agent
+        calls, 40 implementation minutes, strong agent tier, medium reasoning.
+        """,
+    )
+    commit(root)
+
+
+def sizing_strong_high() -> None:
+    root = WORK / "sizing-strong-high"
+    initialize(root)
+    write(
+        root,
+        "AGENTS.md",
+        """
+        # Fixture rules
+
+        Durable task-design artifacts may be written under `docs/tasks/`.
+        Do not edit implementation or the source plan.
+        """,
+    )
+    write(
+        root,
+        "docs/project-plan.md",
+        """
+        # Project plan
+
+        ## TASK-51 — Reconcile imported state
+
+        The approved outcome has two independently verifiable ownership
+        boundaries: normalize an imported state snapshot, then reconcile that
+        normalized snapshot into current state while preserving INV-51.
+        The second boundary consumes the first boundary's immutable artifact.
+
+        Approved sizing input for the combined task: 12 implementation-agent
+        calls, 35 implementation minutes, strong agent tier, high reasoning.
+        The two boundaries may be planned as dependent implementation tasks;
+        no product or architecture decision is missing.
+        """,
+    )
+    commit(root)
+
+
 SCENARIOS = {
     "direction-gap": direction_gap,
     "direction-trace": direction_trace,
@@ -418,6 +538,9 @@ SCENARIOS = {
     "process-tree": process_tree,
     "retention-gap": retention_gap,
     "existing-brief": existing_brief,
+    "sizing-decomposition": sizing_decomposition,
+    "sizing-boundary": sizing_boundary,
+    "sizing-strong-high": sizing_strong_high,
 }
 
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:

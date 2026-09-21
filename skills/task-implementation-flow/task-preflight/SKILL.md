@@ -30,6 +30,11 @@ exact freshness/ownership evidence is proportionate to the task's risk.
   effort; it is not a readiness status or a required machine-schema field.
 - The standalone stage is optional; `bounded-task-implementer` may perform the
   same compact self-preflight.
+- Before preflighting a task brief, reject it as non-executable when it declares
+  `Task kind: composite` and `Status: decomposed`. Read `docs/tasks/index.json`
+  when present to identify its dependency-ready executable leaf, then reroute
+  the caller to that leaf (or report that no dependency-ready leaf is
+  available). Never preflight a decomposed parent.
 
 Classify `standalone_preflight_value` as:
 

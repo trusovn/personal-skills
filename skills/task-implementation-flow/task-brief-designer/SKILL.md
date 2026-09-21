@@ -1,6 +1,6 @@
 ---
 name: task-brief-designer
-description: Create, tighten, or gap-check one bounded implementation task from a user request, issue, approved plan, specification, or existing brief. Use when asked to make work implementation-ready, define acceptance criteria and verification, split a task, prepare an agent handoff, or repair a task contract. Prefer a lightweight delta over rewriting an adequate brief. Do not implement, certify current repository readiness, or invent unresolved product or architecture decisions.
+description: Create, tighten, or gap-check one bounded implementation task from a user request, issue, approved plan, specification, or existing brief. Use when asked to make work implementation-ready, define acceptance criteria and verification, estimate and recursively split oversized work into bounded child briefs, prepare an agent handoff, or repair a task contract. Prefer a lightweight delta over rewriting an adequate brief. Do not implement, certify current repository readiness, or invent unresolved product or architecture decisions.
 ---
 
 # Task Brief Designer
@@ -49,6 +49,21 @@ concurrency, multi-writer, or similar risk.
 Do not upgrade a routine task merely because a fuller template exists. If a
 guided task discovers a genuine high-assurance need, name the reason and the
 smallest additional artifact or decision required.
+
+## Load flow policy
+
+Before estimating a task that could become implementation-ready, read
+`references/task-sizing.yaml` and use its active profile. The numeric thresholds
+live there intentionally; do not copy them into this skill or silently replace
+them with personal defaults.
+
+Each configured maximum is exclusive: split only when the corresponding
+estimate is greater than that maximum. An estimate equal to a maximum fits.
+
+When creating durable task artifacts and repository or user authority does not
+name another layout, read `references/task-artifact-layout.md`. Explicit paths
+from repository or user authority override that default. A surgical gap-check
+on an existing brief should not migrate it merely to satisfy the default layout.
 
 ## Minimum inputs
 
@@ -140,8 +155,10 @@ an unapproved premise.
      required environments, decision owner, and handoff. Classify the missing
      verification capability as prerequisite/uncertain feasibility; do not
      silently assign a reusable helper to either implementer.
-   Split other work only when pieces can be implemented and verified
-   independently. Avoid handoffs whose only result is more coordination.
+   After this capability classification, apply the sizing/decomposition
+   contract below before finalizing any implementation-ready leaf.
+   Verification prerequisite tasks are not a way to evade sizing, and sizing
+   is not a way to hide unresolved authority or feasibility.
 5. Expand finite material risks when authority contains a universal or
    lifecycle claim whose cases are both enumerable and consequential. Name
    every approved artifact family, ordered publication prefix, exact
@@ -169,7 +186,9 @@ an unapproved premise.
    budget: <tool calls> / <time> / <context>
    ```
 
-   Treat `agent_tier`, `reasoning`, and `review` as intended launch guidance
+   For executable leaves, choose this block after sizing. A composite parent
+   uses status `decomposed` and does not carry launch metadata or a readiness
+   route. Treat `agent_tier`, `reasoning`, and `review` as intended launch guidance
    for future automated or current manual routing, and use the values the task
    authority actually calls for. They are not claims about the eventual
    runtime configuration; do not claim to have observed a runtime reasoning
@@ -192,6 +211,78 @@ an unapproved premise.
     dependency, not a readiness route.
 11. Read `references/task-brief-template.md`. Use only the core sections for a
    guided brief; add the high-assurance sections only for that profile.
+
+## Sizing and decomposition contract
+
+Treat the execution estimate as a decomposition gate, not merely descriptive
+metadata.
+
+1. Estimate the candidate implementation task after its authority, outcome,
+   scope, acceptance criteria, and decisive verification are clear. Estimate
+   only the implementation-agent work: focused repository discovery, production
+   edits, task-owned tests, and implementation verification. Exclude separate
+   preflight, maintainability review, contract-registry synchronization,
+   acceptance review, and orchestrator/controller work.
+2. Record a numeric estimated agent-call count, numeric implementation duration
+   in minutes, estimate confidence, and the intended `agent_tier` /
+   `reasoning` pair. Then evaluate the active profile from
+   `references/task-sizing.yaml`. A configured execution-profile trigger
+   applies to the complete pair; for example, a `strong` + `high` rule means
+   both values together, not either value independently. Numeric maxima trigger
+   only when the estimate is greater than the maximum; equality fits.
+3. When any active decomposition trigger matches, split by default. Prefer
+   coherent behavioral, ownership, interface, state-transition, or artifact
+   boundaries whose outputs can be consumed explicitly by later work. Do not
+   split by arbitrary file halves, architectural layers, equal call counts, or
+   a detached "write tests" task merely to force estimates below a threshold.
+4. The original task becomes a `composite` parent with status `decomposed`.
+   It is a coordination/coverage contract and is never a launch target for
+   `bounded-task-implementer`. Give child IDs stable numeric suffixes such as
+   `TASK-017.1`, `TASK-017.2`, and nested suffixes only when recursive
+   decomposition is actually needed.
+5. Give every child the same executable-brief contract as an ordinary task:
+   authority, relevant direction trace, bounded scope, consumes/produces
+   relationships, interfaces/invariants, acceptance criteria, verification,
+   stops, launch metadata, and sizing evidence. Preserve relevant stable
+   project-plan IDs rather than inventing child-local replacements for flows,
+   artifacts, interfaces, or invariants.
+6. Re-estimate every child independently and recursively apply the active sizing
+   profile. Only leaf tasks may be handed to implementation. A decomposition is
+   not successful merely because the parent was renamed: it must reduce the
+   triggering work and leave each leaf within the active envelope, unless the
+   explicit unsplittable override below applies.
+7. If a parent-level acceptance criterion can only be proven after sibling work
+   composes, create a final executable integration child that owns that proof
+   and any required wiring. Do not invent a special composite-parent
+   implementation or acceptance-review stage.
+8. Use an unsplittable override only when the active sizing profile allows it
+   and further decomposition would destroy a real atomic boundary or create
+   coordination-only handoffs. The executable leaf must record
+   `decomposition_override: cannot_split_safely`, the triggered limit(s), the
+   concrete reason, and residual execution risk. Strong reasoning by itself is
+   not evidence that a task is irreducible.
+9. Before writing the decomposition package, verify:
+   - children collectively cover the parent outcome and every parent AC;
+   - no approved requirement, invariant, interface, or contract impact
+     disappeared during splitting;
+   - every produced shared artifact/state/interface has one clear owning child;
+   - dependencies are acyclic and do not require a child to consume unavailable
+     work; and
+   - each leaf fits the active profile or carries the permitted explicit
+     override.
+10. For a multi-brief decomposition, use the artifact layout's composite/child
+    paths and create or update its structural `docs/tasks/index.json` unless
+    repository authority declares an equivalent index. This index describes
+    task structure only; do not mutate `docs/task-map.json`,
+    `docs/project-plan.md`, review history, or runtime orchestration state.
+    For an unsplit explicit-path gap-check, do not create or migrate an index
+    merely for ceremony.
+
+For surgical gap-checks of an existing executable brief, sizing remains
+mandatory. Add the execution-sizing evidence as the smallest local addition;
+if its estimate triggers decomposition, replace the executable handoff with a
+composite parent and bounded child briefs. Do not use the gap-check form to
+avoid a triggered split.
 
 ## Finite-risk coverage contract
 
@@ -275,11 +366,17 @@ direction was supplied, include its `Direction trace` section and require
 `New direction decisions required: None`; any other value requires the
 direction-delta-needed response instead of a ready brief. Use one status:
 
-- `ready`: guided implementation may begin after its recommended readiness
+- `ready`: an executable guided leaf may begin after its recommended readiness
   route is satisfied;
-- `ready_for_preflight`: high-assurance design is complete but current
-  executability still requires preflight;
+- `ready_for_preflight`: an executable high-assurance leaf is designed but
+  current executability still requires preflight;
+- `decomposed`: the original task is a non-executable composite parent whose
+  child briefs are the only implementation launch targets;
 - `blocked_design`: a material decision or authority gap prevents safe work.
+
+Use task kind `executable` with `ready` / `ready_for_preflight`, and
+`composite` with `decomposed`. Do not attach executable launch metadata to a
+composite parent.
 
 For `blocked_design`, return only the requested outcome as stated, the missing
 decisions or authority, their owner, and the smallest planning action. Omit
@@ -305,8 +402,10 @@ design task.
   direction-delta-needed form rather than silently resolving them in a
   technical brief.
 - Route wider scope or new shared infrastructure back through brief design.
-- Do not implement, accept the result, update trackers, launch subagents, or
-  modify orchestration state.
+- Do not implement, accept the result, launch subagents, or modify runtime
+  orchestration state. The structural task index defined by the artifact layout
+  is the only task-index write owned here when creating or decomposing durable
+  briefs.
 
 ## Definition of done
 
@@ -319,6 +418,10 @@ design task.
   `New direction decisions required: None`; otherwise brief design stopped
   with a direction delta.
 - Guided briefs avoid high-assurance artifact ceremony unless risk justifies it.
+- Every executable leaf records sizing evidence and fits the active sizing
+  profile or carries the allowed explicit unsplittable override.
+- Every composite parent has complete child coverage, explicit dependencies,
+  and no implementation handoff of its own.
 - High-assurance briefs preserve exact stage and evidence contracts.
 
 

@@ -32,6 +32,47 @@ handoffs, exact freshness evidence, and machine-readable results.
 `architecture-guardrails` is a foundation/setup skill, not a per-task reviewer. It
 materializes the deterministic gate and short repo-local contract that this flow
 can consume.
+## Task sizing, decomposition, and durable artifact discovery
+
+`task-brief-designer` treats its execution estimate as a decomposition gate.
+The authoritative, packaged policy files are intentionally external to the
+skill body:
+
+- sizing policy: [`task-brief-designer/references/task-sizing.yaml`](task-brief-designer/references/task-sizing.yaml)
+- durable artifact layout: [`task-brief-designer/references/task-artifact-layout.md`](task-brief-designer/references/task-artifact-layout.md)
+
+This keeps calibration editable without rewriting the skill. A task that
+matches any active decomposition trigger becomes a non-executable composite
+parent plus full executable child briefs. Children are re-estimated
+recursively; only leaf briefs are implementation launch targets. If an
+end-to-end criterion requires work after siblings compose, model that as a
+final executable integration child rather than a special parent-review stage.
+
+The default project-level discovery layout keeps planning truth, task execution
+contracts, and review evidence separate:
+
+```text
+docs/project-plan.md
+docs/task-map.json
+docs/project-plan-review.md
+
+docs/tasks/
+  index.json
+  <TASK-ID>/
+    brief.md
+    preflight.md                  # only when a durable preflight artifact is needed
+    reviews/
+      maintainability-01.md       # only when a durable report is written
+      acceptance-01.md
+```
+
+Explicit repository/user paths override these defaults, and existing adequate
+briefs are not migrated merely for consistency. `docs/task-map.json` remains
+the verified project-planning graph; `docs/tasks/index.json` is only the
+structural execution/decomposition index. Review artifacts never rewrite the
+brief or master plan, and numbered durable reviews preserve prior verdict
+provenance across correction cycles.
+
 ## Guided profile: default
 
 Use guided mode for most ordinary bounded tasks, especially when a person is

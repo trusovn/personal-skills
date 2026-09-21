@@ -35,18 +35,37 @@ and current Git state. Ask only when a missing product, architecture,
 compatibility, scope, ownership, or permission decision could materially change
 the result.
 
+When the caller supplies a durable task brief, require it to be the `brief.md`
+inside one dedicated task package. Refuse a direct legacy brief such as
+`docs/tasks/API-31.md` even when no `verification.md` exists, and route it to
+`task-brief-designer` for package normalization. A bounded conversational user
+request is not a durable brief and may still be implemented directly.
+
 Before accepting a task brief, reject it as non-executable when it declares
 `Task kind: composite` and `Status: decomposed`. Read `docs/tasks/index.json`
 when present to identify its dependency-ready executable leaf, then reroute the
 caller to that leaf (or report that no dependency-ready leaf is available).
 Never implement a decomposed parent.
 
+When the executable task folder contains `verification.md`, or the caller
+supplies a verification-design artifact, require its `Source brief:` declaration
+to resolve to the package's `brief.md`, then read it before inventing task-local
+tests. Treat it as derived guidance under the brief: preserve its scenario/AC
+coverage unless repository facts make a scenario infeasible, but do not let it
+override the brief or constrain concrete test structure unnecessarily. If the
+brief only recommends a separate verification-design pass and no artifact
+exists, implementation may still proceed unless the caller or repository made
+that recommendation mandatory.
+
 ### High-assurance inputs
 
 Require:
 
 - one fresh preflight packet with status `ready`;
-- its referenced task brief and run policy;
+- its referenced packaged `brief.md` and run policy; a packet that references a
+  direct legacy brief routes to `task-brief-designer` for normalization and
+  then fresh `task-preflight`;
+- its referenced verification-design artifact when the packet records one;
 - the supplied worker-result schema and durable result path; and
 - for correction, the acceptance findings and prior checkpoint/result.
 
@@ -56,8 +75,9 @@ mode.
 
 ## Guided workflow
 
-1. Read applicable instructions and the task authority. State a brief
-   verification plan before editing.
+1. Read applicable instructions, the task authority, and any task-local
+   `verification.md` supplied or present in the executable task package. State
+   a brief verification plan before editing.
 2. Perform a compact self-preflight:
    - inspect `git status --short` and preserve user-owned work;
    - identify the bounded change area and prohibited adjacent work;
@@ -68,7 +88,9 @@ mode.
    the request and state them briefly. Include the positive behavior and the
    most credible failure, unchanged-state, compatibility, or lifecycle case.
    Do not invent a materially ambiguous requirement.
-4. When the authority supplies a finite high-risk matrix or named universal
+4. When a task-local verification design is present, map its scenario IDs to
+   planned evidence before editing and preserve coverage of every material AC.
+   When the authority also supplies a finite high-risk matrix or named universal
    cases, map every row or case to existing or planned evidence before editing.
    Keep this concise for guided work and do not expand it into a generic risk
    inventory. Make omitted, unchecked, or blocked rows visible in the final AC
@@ -96,14 +118,24 @@ mode.
 
 ## High-assurance additions
 
-Before editing, recalculate every packet freshness field exactly: brief bytes,
-`HEAD`, short status, separate index/worktree identities for dirty paths,
-dependency/instruction/policy digests, and task-specific environment
-fingerprints. Any unexplained mismatch routes to fresh `task-preflight`.
+Before editing, require the packet at the task package's `preflight.md` and
+recalculate every packet freshness field exactly: brief bytes,
+verification-design bytes when present, `HEAD`, the recorded post-packet short
+status, separate
+index/worktree identities for dirty paths, dependency/instruction/policy
+digests, and task-specific environment fingerprints. Any unexplained mismatch
+routes to fresh `task-preflight`.
+
+The packet's own creation is the one expected baseline delta: its recorded
+post-write status must equal current status before implementation, and all
+non-packet paths and identities must still match the pre-write baseline. Do not
+require the canonical packet to be ignored or status-neutral.
 
 Treat the packet as the discovery and permission boundary:
 
 - inspect and change only declared paths and cited context;
+- map every recorded verification scenario to planned implementation evidence
+  before editing, preserving blocked or unchecked coverage explicitly;
 - establish the packet's highest-risk fail-first evidence;
 - run its exact commands in order and record every attempted or required-but-
   skipped command truthfully;

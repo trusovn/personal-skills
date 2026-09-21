@@ -77,10 +77,10 @@ def queue_task() -> None:
     root = WORK / "queue-runner"
     initialize(root)
     policy = install_contracts()
-    write(root, "AGENTS.md", "# Fixture rules\n\nEdit only packet-authorized paths. Preserve pre-existing user work. Runtime artifacts live outside the repository.")
+    write(root, "AGENTS.md", "# Fixture rules\n\nEdit only packet-authorized paths. Preserve pre-existing user work. Durable preflight lives in the task package; machine results remain runtime artifacts.")
     write(
         root,
-        "docs/tasks/QR-12.md",
+        "docs/tasks/QR-12/brief.md",
         """
         # QR-12 — Repeated queue selection
 
@@ -89,6 +89,25 @@ def queue_task() -> None:
         AC-01: two consecutive public invocations persist state and claim TASK-1 then TASK-2.
         AC-02: an empty queue returns no claim and does not rewrite state.
         Legacy sweep: inspect guards that stop when any task is already running.
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/QR-12/verification.md",
+        """
+        # Verification Design: QR-12 — Repeated queue selection
+
+        Source brief: docs/tasks/QR-12/brief.md
+        Status: ready
+
+        ### V-01 — Consecutive public invocations claim different tasks
+        Covers: AC-01
+        Oracle / boundary: invoke the public operation twice and observe TASK-1,
+        TASK-2, and both persisted state transitions.
+
+        ### V-02 — Empty queue is byte-for-byte unchanged
+        Covers: AC-02
+        Oracle / boundary: compare state bytes before and after the public call.
         """,
     )
     write(root, ".runner/tracker.json", '{"complete": ["QR-11"]}')
@@ -153,17 +172,26 @@ def queue_task() -> None:
     run_dir = RUNS / "QR-12"
     run_dir.mkdir(parents=True, exist_ok=True)
     index_bytes = subprocess.run(["git", "-C", str(root), "show", ":notes/local.md"], check=True, capture_output=True).stdout
+    packet_path = root / "docs/tasks/QR-12/preflight.md"
+    pre_packet_status = git(root, "status", "--short")
     packet = f"""# Task Preflight Packet: QR-12
 
 Artifact status: ready
 Repository root: {root}
-Task brief: docs/tasks/QR-12.md
-Task brief SHA-256: {file_sha(root / 'docs/tasks/QR-12.md')}
+Task brief: docs/tasks/QR-12/brief.md
+Task brief SHA-256: {file_sha(root / 'docs/tasks/QR-12/brief.md')}
+Verification design: docs/tasks/QR-12/verification.md
+Verification design SHA-256: {file_sha(root / 'docs/tasks/QR-12/verification.md')}
 HEAD: {git(root, 'rev-parse', 'HEAD')}
-Exact git status --short:
+Pre-write git status --short:
 ```
-{git(root, 'status', '--short')}
+{pre_packet_status}
 ```
+Post-write git status --short:
+```
+__POST_PACKET_STATUS__
+```
+Packet artifact delta: ?? docs/tasks/QR-12/preflight.md
 Dirty path: notes/local.md
 Index SHA-256: {sha(index_bytes)}
 Worktree SHA-256: {file_sha(root / 'notes/local.md')}
@@ -172,12 +200,12 @@ Instruction SHA-256: {file_sha(root / 'AGENTS.md')}
 Dependency SHA-256: {file_sha(root / '.runner/tracker.json')}
 Run policy: {policy}
 Run policy SHA-256: {file_sha(policy)}
-Packet path: {run_dir / 'preflight.md'} (outside repository)
+Packet path: docs/tasks/QR-12/preflight.md
 Allowed paths: src/queue/run_next.py; tests/integration/test_run_next.py
 Schema: {SCHEMA}
 Result path: {run_dir / 'worker-result.json'}
-AC-01 oracle: add and first run `python -m unittest tests.integration.test_run_next.RunNextTest.test_two_consecutive_public_invocations`; it must fail because the second claim is absent, then pass with TASK-1/TASK-2 and persisted state.
-AC-02 oracle: empty state remains byte-for-byte unchanged.
+V-01 / AC-01 oracle: add and first run `python -m unittest tests.integration.test_run_next.RunNextTest.test_two_consecutive_public_invocations`; it must fail because the second claim is absent, then pass with TASK-1/TASK-2 and persisted state.
+V-02 / AC-02 oracle: empty state remains byte-for-byte unchanged.
 CMD-01 targeted: python -m unittest tests.integration.test_run_next.RunNextTest.test_two_consecutive_public_invocations
 CMD-02 owning: python -m unittest tests.integration.test_run_next
 CMD-03 broader: python -m unittest discover -s tests
@@ -185,7 +213,12 @@ Working directory for all commands: {root}
 Permissions: only allowed paths and runtime result; no network, install, commit, or other writes.
 Next route after complete: task-acceptance-review.
 """
-    (run_dir / "preflight.md").write_text(packet, encoding="utf-8")
+    packet_path.write_text(packet, encoding="utf-8")
+    post_packet_status = git(root, "status", "--short")
+    packet_path.write_text(
+        packet.replace("__POST_PACKET_STATUS__", post_packet_status),
+        encoding="utf-8",
+    )
 
 
 def scheduler_resume() -> None:
@@ -193,7 +226,7 @@ def scheduler_resume() -> None:
     initialize(root)
     policy = install_contracts()
     write(root, "AGENTS.md", "# Fixture rules\n\nPreserve same-thread partial changes and obey the two-strike stop.")
-    write(root, "docs/tasks/SCH-09.md", "# SCH-09\n\nArtifact status: ready_for_preflight\nAC-01: two coordinated workers never claim the same job.\nAllowed paths: src/scheduler/claim.py; tests/integration/test_claim.py")
+    write(root, "docs/tasks/SCH-09/brief.md", "# SCH-09\n\nArtifact status: ready_for_preflight\nAC-01: two coordinated workers never claim the same job.\nAllowed paths: src/scheduler/claim.py; tests/integration/test_claim.py")
     write(root, "src/scheduler/claim.py", "def claim(job):\n    return job['id']")
     write(root, "tests/integration/test_claim.py", "import unittest\n\nclass ClaimTest(unittest.TestCase):\n    def test_exclusive_claim(self):\n        self.fail('both workers claimed JOB-1')")
     write(root, "tests/__init__.py", "")
@@ -206,11 +239,14 @@ def scheduler_resume() -> None:
     write(root, "tests/integration/test_claim.py", "import unittest\n\nclass ClaimTest(unittest.TestCase):\n    def test_exclusive_claim(self):\n        self.fail('trace: both workers claimed JOB-1 after conditional update')")
     run_dir = RUNS / "SCH-09"
     run_dir.mkdir(parents=True, exist_ok=True)
-    (run_dir / "preflight.md").write_text(f"""# Task Preflight Packet: SCH-09
+    packet_path = root / "docs/tasks/SCH-09/preflight.md"
+    packet_path.write_text(f"""# Task Preflight Packet: SCH-09
 Artifact status: ready
 Repository root: {root}
 Baseline HEAD: {baseline_head}
 Baseline status: clean
+Post-packet status: ?? docs/tasks/SCH-09/preflight.md
+Packet path: docs/tasks/SCH-09/preflight.md
 Allowed paths: src/scheduler/claim.py; tests/integration/test_claim.py
 Targeted command: python -m unittest tests.integration.test_claim.ClaimTest.test_exclusive_claim
 Run policy: {policy}
@@ -249,7 +285,7 @@ def api_guided() -> None:
     )
     write(
         root,
-        "docs/tasks/API-31.md",
+        "docs/tasks/API-31/brief.md",
         """
         # API-31 — Reject expired sessions
 
@@ -312,7 +348,7 @@ def api_immediate() -> None:
     )
     write(
         root,
-        "docs/tasks/API-32.md",
+        "docs/tasks/API-32/brief.md",
         """
         # API-32 — Reject expired sessions
 
@@ -391,7 +427,7 @@ def record_correction() -> None:
     ).encode()
     write(
         root,
-        "docs/tasks/REC-44.md",
+        "docs/tasks/REC-44/brief.md",
         """
         # REC-44 — Bind the complete result record
 
@@ -475,11 +511,11 @@ def record_correction() -> None:
     )
     write(
         root,
-        "docs/reviews/REC-44-review.md",
+        "docs/tasks/REC-44/reviews/acceptance-01.md",
         """
         # REC-44 acceptance review
 
-        Authoritative brief: docs/tasks/REC-44.md
+        Authoritative brief: docs/tasks/REC-44/brief.md
         Preceding verdict: CHANGES_REQUESTED
         Complete finding: the validator checks only `task_id`, so coherent changes to other bytes are accepted.
         Reviewer reproducer: python -m unittest tests.test_record_integrity.RecordIntegrityTest.test_coherent_mutation_is_rejected

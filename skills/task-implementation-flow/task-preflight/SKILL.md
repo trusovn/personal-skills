@@ -23,7 +23,16 @@ exact freshness/ownership evidence is proportionate to the task's risk.
 
 - Accept a `ready` task brief or a bounded user request with clear authority and
   scope.
+- When the caller supplies a durable task brief, require the package form
+  `<task-package>/brief.md`. Refuse a direct legacy brief such as
+  `docs/tasks/API-31.md`, even when no `verification.md` exists, and route it to
+  `task-brief-designer` for package normalization. A bounded conversational
+  request is not a durable brief.
 - Return a compact inline readiness result unless the user requests a file.
+- When the executable task package contains `verification.md`, or the caller
+  supplies it, require its `Source brief:` declaration to resolve to the
+  package's `brief.md`. Only then read it as derived guidance and preserve its
+  scenario/AC coverage without treating it as requirements authority.
 - Inspect the minimum current state needed to protect ownership and identify
   concrete readiness uncertainty, then classify the standalone preflight's
   value before doing broader readiness work. This classification guides
@@ -54,8 +63,15 @@ the route merely because the brief named it.
 
 ### High assurance
 
-- Require the `ready_for_preflight` brief, run policy, dependency source, and an
-  authorized durable packet path.
+- Require the packaged `ready_for_preflight` `brief.md`, run policy, dependency
+  source, and an authorized durable packet path. Refuse a direct legacy brief
+  and route it to `task-brief-designer` for package normalization. The packet
+  path must be `preflight.md` beside the package's `brief.md`.
+- When the executable task package contains `verification.md`, or the caller
+  supplies a verification-design artifact, treat it as a derived packet input:
+  require its `Source brief:` declaration to resolve to the package's
+  `brief.md`, preserve its scenario/AC coverage, and record its exact path and
+  digest. Record `none` when no artifact applies.
 - Capture exact baseline and content identities so another agent or process can
   safely rely on the packet later.
 - Produce the complete packet from
@@ -63,9 +79,10 @@ the route merely because the brief named it.
 
 ## Guided workflow
 
-1. Read applicable instructions and the task/request. Confirm the expected
-   behavior is sufficiently clear; route a material product or architecture
-   gap back to the owner rather than guessing.
+1. Read applicable instructions, the task/request, and any applicable
+   task-local verification design. Confirm the expected behavior is
+   sufficiently clear; route a material product or architecture gap back to the
+   owner rather than guessing.
 2. Inspect `git status --short`, the intended change area, and any declared
    multi-writer ownership signal. Identify pre-existing user changes and stop
    on ownership overlap that cannot be safely separated.
@@ -80,10 +97,11 @@ the route merely because the brief named it.
 5. Resolve the relevant implementation paths, closest tests, public entry
    point, and lowest-cost targeted command. Focused discovery is allowed; do
    not perform generic repository archaeology.
-6. For each acceptance criterion, confirm an observable oracle. Require the
-   real boundary only where unit/module evidence cannot prove wiring,
-   persistence, process, database, filesystem, concurrency, recovery,
-   authorization, or another material behavior.
+6. For each acceptance criterion, confirm an observable oracle. When
+   verification design applies, account for every scenario ID and keep blocked
+   coverage visible. Require the real boundary only where unit/module evidence
+   cannot prove wiring, persistence, process, database, filesystem,
+   concurrency, recovery, authorization, or another material behavior.
 7. Run an authorized cheap local baseline only when it distinguishes a broken
    environment from the intended fail-first state or freshness is an entry
    criterion. Do not run a broad or aggregate baseline to make the result look
@@ -114,20 +132,25 @@ Block when:
 - safe execution needs an unauthorized destructive, privileged, live, or
   networked action.
 
-Do not block guided work solely because there is no external packet directory,
+Do not block guided work solely because there is no durable packet,
 content-digest ledger, worker-result schema, exact broader gate, or separate
 preflight artifact. Record relevant uncertainty and let implementation resolve
 ordinary local details before editing.
 
 ## High-assurance workflow
 
-1. Read the complete brief, cited authority, applicable instructions,
-   dependency source, and run policy. Confirm status `ready_for_preflight`.
-2. Resolve the durable packet path first. It must be outside the repository or
-   already ignored and status-neutral; otherwise return blocked content without
-   writing it.
+1. Read the complete brief, any applicable task-local verification design,
+   cited authority, applicable instructions, dependency source, and run policy.
+   Confirm status `ready_for_preflight`. Treat verification design as derived
+   guidance under the brief rather than independent requirements authority.
+2. Resolve the durable packet path first. It must be the executable task
+   package's `preflight.md`. A different path is a contract error: return
+   blocked content without writing it and route package normalization or a
+   corrected invocation to the owner.
 3. Capture before checks:
    - brief bytes and lowercase SHA-256;
+   - applicable verification-design path and lowercase SHA-256, or explicit
+     `none`;
    - `HEAD` or `unborn` and exact `git status --short`;
    - separate index-blob and worktree digests/states for every pre-existing
      dirty path, including absent/deleted/not-applicable states;
@@ -140,12 +163,16 @@ ordinary local details before editing.
    not new implementation scope.
 5. Resolve every required targeted and broader command as copy-pasteable text
    with working directory, environment, purpose, expected signal, cost,
-   authorization, whether it ran, and truthful result.
+   authorization, whether it ran, and truthful result. When verification design
+   applies, map its scenario IDs to those commands/oracles and leave any blocked
+   or not-yet-executable scenario visible rather than silently dropping it.
 6. Run only authorized cheap local baselines, narrowest first. Record incidental
    artifacts and do not claim a clean baseline until their disposition is
    explicit.
-7. Recapture all freshness values before and after packet creation. Any
-   unexplained change or status-affecting packet write blocks readiness.
+7. Recapture all freshness values before and after packet creation. Record both
+   exact status snapshots and attribute the new/modified `preflight.md` entry.
+   Any change beyond that one packet artifact, or any changed non-packet
+   identity, blocks readiness. The packet need not be ignored or status-neutral.
 8. Write exactly one packet using
    `references/execution-packet-template.md`.
 

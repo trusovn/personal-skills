@@ -1,0 +1,90 @@
+{
+  "skill_name": "task-verification-designer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create the separate verification design recommended by `docs/tasks/IMP-21/brief.md`. Use the task brief and its cited authority, write only `docs/tasks/IMP-21/verification.md`, and do not implement tests or production code.",
+      "expected_output": "A compact implementation-neutral verification design that maps every AC and finite-risk row, distinguishes first import from retry/resume behavior, proves invalid input has no durable side effect at the public filesystem boundary, and does not invent cases outside the approved task.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "lifecycle"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/lifecycle"
+      },
+      "expectations": [
+        "The output creates only `docs/tasks/IMP-21/verification.md` and leaves the brief, authority, production code, tests, dependencies, and orchestration state unchanged.",
+        "The coverage summary maps AC-01, AC-02, AC-03, and both named finite-risk rows to stable scenario IDs without adding requirements.",
+        "The scenarios distinguish the first successful import, the next legitimate retry or resume occurrence, and invalid-input unchanged state rather than repeating one happy path.",
+        "Each scenario states a falsifiable intent, Given/When/Then behavior, and a decisive oracle at the public command plus persisted-filesystem boundary.",
+        "The artifact remains implementation-neutral: it does not prescribe test names, file placement, mocking, helpers, framework structure, or production architecture."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Design verification for `docs/tasks/RET-8/brief.md` before implementation. Do not repair missing product decisions inside the verification artifact.",
+      "expected_output": "A concise `needs_brief_revision` result that identifies the unresolved retention behavior and owner, and does not create or overwrite `verification.md`.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "ambiguous"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/ambiguous"
+      },
+      "expectations": [
+        "The result uses `needs_brief_revision` and identifies that the brief does not decide which backups may be deleted or whether deletion is automatic.",
+        "It routes the missing retention decision to the brief owner or decision owner with the smallest next action.",
+        "It does not create `docs/tasks/RET-8/verification.md` or modify the existing marker file elsewhere in the task folder.",
+        "It does not invent a retention count, deletion schedule, architecture, acceptance criterion, test, implementation path, or command."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Use task-verification-designer for the executable brief at `docs/tasks/API-5/brief.md`. The caller explicitly wants a separate artifact even though the change is small. Keep the result proportionate and do verification design only.",
+      "expected_output": "One small verification artifact with the minimum positive and unchanged-state scenarios needed for the supplied ACs, without generic test catalogs or implementation prescriptions.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "small-explicit"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/small-explicit"
+      },
+      "expectations": [
+        "The output honors the explicit request and writes `docs/tasks/API-5/verification.md` beside the executable brief.",
+        "The artifact covers both supplied ACs with stable scenario IDs and observable public-result oracles.",
+        "It stays compact and does not add performance, concurrency, security, migration, recovery, or cross-task scenarios absent from the brief.",
+        "It leaves concrete test structure and implementation choices to `bounded-task-implementer`."
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Task implementation flow
 
-These six task skills provide a reusable implementation discipline without
+These seven task skills provide a reusable implementation discipline without
 making every task carry an orchestration-grade artifact chain. The default is a
 lightweight guided flow. Repositories that enable maintainability guardrails can
 insert a focused architecture gate before functional acceptance. A
@@ -24,6 +24,7 @@ handoffs, exact freshness evidence, and machine-readable results.
 |---|---|---|
 | `task-brief-designer` | Create or tighten a bounded task contract. It defaults to a delta check when a useful brief already exists. | The user request already gives an unambiguous outcome, scope, and acceptance criteria for a small task. |
 | `task-preflight` | Check readiness, ownership, commands, and decisive evidence when dirty ownership, dependencies, environment, permissions, helpers, fixtures, real-boundary capability, or a durable handoff creates material uncertainty. | A routine guided task can perform the same compact self-check inside the implementer. |
+| `task-verification-designer` | Optionally turn one executable brief into a separate task-local verification design with AC coverage, discriminating scenarios, and decisive oracles before implementation. | The task is small and its decisive tests/oracles are already obvious from the brief. |
 | `bounded-task-implementer` | Implement one bounded task with risk-based tests, progressive verification, and a useful handoff. | The request is planning, review-only, or too ambiguous to implement safely. |
 | `task-maintainability-review` | Independently assess the changed design for concrete maintainability regression after the repo's deterministic architecture gate. | The repo does not require maintainability review and the user/task does not request it. |
 | `task-contract-registry-updater` | Synchronize implemented-contract discovery after maintainability review. | The repository does not use implemented-contract discovery, or the task did not change a durable cross-task contract. |
@@ -60,18 +61,29 @@ docs/tasks/
   index.json
   <TASK-ID>/
     brief.md
+    verification.md               # only when separate verification design is used
     preflight.md                  # only when a durable preflight artifact is needed
     reviews/
       maintainability-01.md       # only when a durable report is written
       acceptance-01.md
 ```
 
-Explicit repository/user paths override these defaults, and existing adequate
-briefs are not migrated merely for consistency. `docs/task-map.json` remains
-the verified project-planning graph; `docs/tasks/index.json` is only the
-structural execution/decomposition index. Review artifacts never rewrite the
-brief or master plan, and numbered durable reviews preserve prior verdict
-provenance across correction cycles.
+Repository/user authority may choose a different task-package root or directory
+name, but every durable task keeps `brief.md` and its optional artifacts inside
+one dedicated package directory. `docs/task-map.json` remains the verified
+project-planning graph; `docs/tasks/index.json` is only the structural
+execution/decomposition index. Review artifacts never rewrite the brief or
+master plan, and numbered durable reviews preserve prior verdict provenance
+across correction cycles.
+
+This package rule also applies to high-assurance work. Its durable preflight is
+the package's `preflight.md`, and durable semantic reviews use the next unused
+numbered file under `reviews/`. Creating one of those files is an expected,
+attributed repository-status change: freshness compares the exact pre-write and
+post-write states and permits only that artifact delta. External run policy,
+schema, disposable probe state, and machine worker-result locations may remain
+runtime inputs/outputs; they are not substitutes for the canonical durable task
+artifacts above.
 
 ## Guided profile: default
 
@@ -82,6 +94,8 @@ launching the skill directly.
 existing request or brief
         ↓
 fill only meaningful contract gaps
+        ↓
+optional task-verification-designer when the brief recommends it
         ↓
 implementer self-preflight
         ↓
@@ -119,9 +133,24 @@ repo-local contract (normally cohesion, change locality, explicit/narrow
 dependencies, testability, and no speculative abstraction) and let the
 canonical gate plus `task-maintainability-review` enforce the deeper policy.
 
-The brief designer and standalone preflight are optional in guided mode. Use
-them when they reduce ambiguity or risk; do not create artifacts merely to
-satisfy the diagram.
+The brief designer, verification-design pass, and standalone preflight are
+optional in guided mode. Use them when they reduce ambiguity, verification
+reasoning load, or readiness risk; do not create artifacts merely to satisfy
+the diagram.
+
+### When separate verification design adds value
+
+A ready executable brief explicitly recommends either `inline` verification
+design or `separate — <reason>`. Use `task-verification-designer` for the
+separate route when task-local semantics are non-obvious enough that asking the
+implementation agent to invent the decisive scenarios while coding would add
+avoidable cognitive load. The skill writes `verification.md` in the executable
+task package and leaves concrete test implementation to
+`bounded-task-implementer`.
+
+This recommendation is advisory. Small changes with an obvious regression and
+oracle should stay inline. The initial verification-designer contract is
+task-local and does not own cross-child or parent-level integration-test design.
 ### When standalone preflight adds value
 
 Use the implementer's compact self-preflight for routine guided work. Use
@@ -229,6 +258,8 @@ High-assurance mode uses the complete chain:
 ```text
 task brief (`ready_for_preflight`)
         ↓
+optional task-local verification design when recommended
+        ↓
 fresh preflight packet (`ready`)
         ↓
 bounded implementation + structured worker result
@@ -243,10 +274,17 @@ orchestrator or human advancement
 If the repo does not require maintainability review, omit that stage rather than
 manufacturing policy for the task.
 
-High-assurance mode may require exact digests, durable external artifacts, a
-supplied result schema, and strict entry/exit statuses. A guided run that
+High-assurance mode may require exact digests, package-contained durable task
+artifacts, external runtime policy/schema/result state, and strict entry/exit
+statuses. A guided run that
 encounters one of these needs should pause and recommend the smallest
 escalation rather than silently rebuilding the entire chain.
+
+When a task-local `verification.md` exists, preflight records its path and
+digest as a derived input, maps its scenario IDs to packet commands/oracles,
+and the implementer revalidates those bytes before editing. The task brief
+remains normative; carrying the artifact through the packet must not promote it
+into a second requirements source.
 ## Task metadata
 
 Durable briefs put this compact block near the top:

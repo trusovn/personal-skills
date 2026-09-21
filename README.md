@@ -42,6 +42,7 @@ Current source skills:
 - `task-contract-registry-updater`
 - `task-maintainability-review`
 - `task-preflight`
+- `task-verification-designer`
 - `task-orchestrator`
 - `testing-discipline`
 ## How the skills fit together
@@ -97,6 +98,8 @@ The normal human-driven path is deliberately lightweight:
 ```text
 clear request or task brief
   -> task-brief-designer       when the implementation contract has gaps
+  -> task-verification-designer
+                               when task-local verification semantics are non-obvious
   -> task-preflight            when readiness needs an independent check
   -> bounded-task-implementer  implementation and progressive verification
   -> architecture gate + task-maintainability-review

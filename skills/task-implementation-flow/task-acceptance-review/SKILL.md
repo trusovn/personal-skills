@@ -11,7 +11,8 @@ entire process. Account for the task's explicit finite risks before spending
 the review budget on broad regression.
 
 Repository and user instructions outrank this skill. Preserve pre-existing user
-work. Ordinary review is read-only except for an authorized report artifact.
+work. Ordinary review is read-only except for an authorized canonical report
+artifact in the task package.
 
 ## Establish reviewer provenance first
 
@@ -34,8 +35,8 @@ whether this session authored any production bytes in the reviewed diff.
 ## Choose the profile
 
 Use `guided` by default. Use `high-assurance` when explicitly requested or when
-the review is given a preflight packet, machine worker result, run policy, and
-durable acceptance path from an orchestrated flow.
+the review is given a package-contained preflight packet, machine worker
+result, run policy, and durable acceptance path from an orchestrated flow.
 
 ### Guided inputs
 
@@ -52,9 +53,12 @@ Git state and the task conversation/artifact when it is safely separable.
 
 ### High-assurance inputs
 
-Require the exact task brief, ready preflight packet, worker result, recorded
-baseline, run policy, and authorized report path. Inconsistency, stale authority,
-or an inseparable baseline is `INCONCLUSIVE`; do not downgrade silently.
+Require the exact packaged `brief.md`, its ready `preflight.md`, worker result,
+recorded baseline, run policy, and the next unused
+`<task-package>/reviews/acceptance-NN.md` report path. A direct legacy brief or
+an external/noncanonical preflight or report path is a contract error;
+inconsistency, stale authority, or an inseparable baseline is `INCONCLUSIVE`.
+Do not downgrade silently.
 
 Treat implementer summaries and passing commands as submitted claims, not
 independent proof in either profile.
@@ -230,6 +234,12 @@ For high-assurance review, read
 include the full baseline/freshness and command records. The report is the only
 intentional write during the verdict phase; the separately authorized
 post-verdict tests-only protocol is the sole later exception.
+
+Write that report to the next unused numbered acceptance path under the task
+package's `reviews/` directory. Record the exact reviewed status before the
+write and the status afterward; only the new report entry may differ. Never
+overwrite an earlier review or redirect the durable report to an external
+runtime directory.
 
 Give a fresh reviewer the task brief, current scoped diff, preceding verdict and
 continuation block, reviewer regression paths/commands, and every

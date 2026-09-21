@@ -8,7 +8,7 @@
 | Review iteration | `<first review or correction number>` |
 | Created at | `<ISO-8601 timestamp with timezone>` |
 | Repository root | `<absolute path>` |
-| Durable report path | `<authorized runtime path>` |
+| Durable report path | `<task-package>/reviews/acceptance-NN.md` |
 | Task brief | `<exact path and preflight-recorded SHA-256>` |
 | Preflight packet | `<exact path>` |
 | Implementer result | `<exact corrected/current path and status>` |
@@ -106,11 +106,15 @@ once, after reviewer regressions and all required targeted rows are clean.
 | Item | Preflight baseline | Current reviewed state | Classification / evidence |
 |---|---|---|---|
 | `HEAD` | `<SHA or unborn>` | `<SHA or unborn>` | `<expected or unexplained>` |
-| Exact `git status --short` | `<verbatim baseline or clean>` | `<verbatim current>` | `<task, user, runtime, unexplained>` |
+| Exact `git status --short` | `<preflight post-write snapshot>` | `<exact reviewed state before this report>` | `<task, user, packet, unexplained>` |
 | Dirty path index/worktree identities | `<separate states/digests>` | `<separate states/digests>` | `<ownership/separability>` |
 | Task-owned paths | `<allowed paths>` | `<scoped diff and worker files_changed>` | `<in scope or mismatch>` |
-| Runtime artifacts | `<declared paths>` | `<observed paths>` | `<authorized/disposition>` |
+| Durable package artifacts | `<brief, verification, and preflight paths>` | `<observed paths>` | `<canonical/current or mismatch>` |
 | Authority / policy / dependencies | `<recorded identities>` | `<current comparison>` | `<unchanged or invalidation>` |
+
+After completing the verdict, record the post-report `git status --short` and
+confirm that the new `reviews/acceptance-NN.md` entry is the only change from
+the reviewed state. The report does not review or authenticate itself.
 
 State the exact diff/range/files reviewed. Do not absorb pre-existing user work.
 

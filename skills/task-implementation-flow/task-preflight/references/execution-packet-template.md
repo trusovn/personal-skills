@@ -42,8 +42,9 @@ Include every section below only for a high-assurance packet.
 | Task ID | `<stable ID>` |
 | Producing stage | `task-preflight` |
 | Created at | `<ISO-8601 timestamp with timezone>` |
-| Durable packet path | `<external or proved ignored/status-neutral path>` |
+| Durable packet path | `<task-package>/preflight.md` |
 | Task brief | `<exact path and lowercase SHA-256>` |
+| Verification design | `<exact path and lowercase SHA-256, or none>` |
 | Primary authority | `<path>#<section> and digest>` |
 | Dependency source | `<path, digest, and state>` |
 | Instructions | `<applicable paths and digests>` |
@@ -55,9 +56,10 @@ Include every section below only for a high-assurance packet.
 | Field | Value |
 |---|---|
 | `HEAD` | `<commit SHA or unborn>` |
-| Exact `git status --short` | `<verbatim snapshot or clean>` |
-| Packet-path neutrality | `<outside repository or ignored/status-neutral before and after>` |
-| Final baseline recapture | `<unchanged or exact blocker>` |
+| Pre-write `git status --short` | `<verbatim snapshot or clean>` |
+| Post-write `git status --short` | `<verbatim snapshot including only the attributed packet delta>` |
+| Packet artifact delta | `<new or modified <task-package>/preflight.md>` |
+| Final non-packet baseline recapture | `<unchanged or exact blocker>` |
 | Incidental artifacts | `<paths/disposition or none>` |
 
 | Status entry / path | Index SHA-256 or state | Worktree SHA-256 or state | Ownership | Task overlap | Evidence / disposition |
@@ -82,7 +84,10 @@ combinations, renames, and deletions even when short-status text is unchanged.
 ### Implementer contract
 
 Before the first edit, the implementer must recalculate the recorded brief,
-Git, dirty-path, dependency, instruction, policy, and environment identities.
+verification-design (when present), Git, dirty-path, dependency, instruction,
+policy, and environment identities. It must also match the recorded post-write
+status and confirm that the packet artifact is the only delta from the
+pre-write baseline.
 It may change only allowed paths, must preserve pre-existing work, run exact
 commands progressively, and produce the supplied structured result. Any
 unexplained freshness mismatch routes to fresh preflight.

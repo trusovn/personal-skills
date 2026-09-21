@@ -47,7 +47,7 @@
     },
     {
       "id": 3,
-      "prompt": "Our current direction is `docs/project-direction.md`. The draft technical brief at `docs/tasks/FLOW-2.md` now proposes defenses against a malicious local user. Correction: the local user is trusted; we only need to contain agent mistakes and accidental corruption. Write an owner-confirmed delta at `docs/direction-delta.md`, identify downstream material that needs review, and do not rewrite the technical brief or invent a cryptographic mechanism.",
+      "prompt": "Our current direction is `docs/project-direction.md`. The draft technical brief at `docs/tasks/FLOW-2/brief.md` now proposes defenses against a malicious local user. Correction: the local user is trusted; we only need to contain agent mistakes and accidental corruption. Write an owner-confirmed delta at `docs/direction-delta.md`, identify downstream material that needs review, and do not rewrite the technical brief or invent a cryptographic mechanism.",
       "expected_output": "Creates a concise owner-confirmed direction delta that changes the trust and assurance boundary, preserves unchanged direction, explains practical impact, names the downstream brief for review, and does not rewrite technical plans or select an implementation.",
       "files": [
         "evals/files/setup_fixture.py"

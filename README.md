@@ -79,9 +79,19 @@ Current shared integrations:
 
 `workflow_version.py` supports both this source repository layout
 (`skills/` + `scripts/`) and the project-local installation layout
-(`.agents/skills/` + `.agents/scripts/`). An unchanged copied skill therefore
-keeps the same fingerprint because absolute filesystem location is not part of
-the fingerprint.
+(`.agents/skills/` + `.agents/scripts/`). Shared tooling is resolved from the
+same installation root as the active skills tree: `scripts/` beside `skills/`
+in this source repository, or `.agents/scripts/` beside `.agents/skills/` in a
+project-local installation. Task skills should refer to that canonical shared
+tooling convention rather than hardcode repository-root script paths.
+
+An unchanged copied skill keeps the same fingerprint because absolute
+filesystem location is not part of the fingerprint. For source-repository
+skills, Git-aware tracked/non-ignored-untracked discovery remains authoritative.
+For an explicit project-local installed skills tree, package files are read from
+the installed skill directory itself using the same skill-owned exclusions, so
+an application repository may ignore `.agents/` without erasing workflow
+identity.
 
 `bounded-task-implementer` remains usable without the run-evidence integration.
 Missing optional shared tooling must not accidentally turn a normal standalone
@@ -102,11 +112,13 @@ python3 scripts/workflow_version.py bounded-task-implementer
 
 The tool prints JSON with the skill ID, a SHA-256 fingerprint, the current Git
 commit, current branch (or `null` for detached HEAD), repository dirty state,
-and workflow dirty state. The fingerprint is derived from the current contents
+and workflow dirty state. For source-repository skills, the fingerprint is derived from the current contents
 and relative paths of tracked plus non-ignored untracked files inside that skill
-directory, excluding obvious transient files such as `__pycache__`, `*.pyc`,
-`.DS_Store`, and `node_modules`, plus root-level development-only `evals/`
-and `tests/` directories.
+directory. For an explicit installed skills tree beside the active shared scripts,
+the same fingerprint framing reads the installed package files directly instead
+of applying the target application's Git ignore policy. Both modes exclude obvious
+transient files such as `__pycache__`, `*.pyc`, `.DS_Store`, and `node_modules`, plus
+root-level development-only `evals/` and `tests/` directories.
 
 This fingerprint answers "what workflow definition is present?" and is kept
 separate from repository provenance. `repository_commit` and

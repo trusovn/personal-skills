@@ -223,5 +223,42 @@ class WorkflowVersionTests(unittest.TestCase):
             self.assertFalse(info["workflow_dirty"])
 
 
+    def test_project_local_agents_install_discovers_skills_beside_shared_script(self):
+        source_fingerprint = self.version()["fingerprint"]
+
+        with tempfile.TemporaryDirectory() as target_dir:
+            target_repo = Path(target_dir)
+            git(target_repo, "init")
+            git(target_repo, "config", "user.email", "target@example.com")
+            git(target_repo, "config", "user.name", "Target Repo Tests")
+
+            target_skill = target_repo / ".agents" / "skills" / "bounded-task-implementer"
+            (target_skill / "references").mkdir(parents=True)
+            (target_skill / "SKILL.md").write_bytes((self.skill / "SKILL.md").read_bytes())
+            (target_skill / "references" / "rules.md").write_bytes(
+                (self.skill / "references" / "rules.md").read_bytes()
+            )
+
+            target_scripts = target_repo / ".agents" / "scripts"
+            target_scripts.mkdir(parents=True)
+            target_script = target_scripts / "workflow_version.py"
+            target_script.write_bytes(MODULE_PATH.read_bytes())
+
+            git(target_repo, "add", ".")
+            git(target_repo, "commit", "-m", "install selected workflow under .agents")
+
+            result = subprocess.run(
+                ["python3", str(target_script), "bounded-task-implementer"],
+                cwd=target_repo,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            info = json.loads(result.stdout)
+
+            self.assertEqual(source_fingerprint, info["fingerprint"])
+            self.assertFalse(info["workflow_dirty"])
+
+
 if __name__ == "__main__":
     unittest.main()

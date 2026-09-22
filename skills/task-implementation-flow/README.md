@@ -33,6 +33,17 @@ handoffs, exact freshness evidence, and machine-readable results.
 `architecture-guardrails` is a foundation/setup skill, not a per-task reviewer. It
 materializes the deterministic gate and short repo-local contract that this flow
 can consume.
+
+## Workflow identity
+
+When a task run needs to record which implementation workflow was used, obtain
+the identity from the repository-level `scripts/workflow_version.py` utility.
+It returns machine-readable JSON and is the single canonical fingerprint
+implementation. Task skills should not duplicate version calculation or
+maintain manual version numbers. Future run-evidence collection should call
+that utility rather than infer workflow identity from prose or repository HEAD
+alone.
+
 ## Task sizing, decomposition, and durable artifact discovery
 
 `task-brief-designer` treats its execution estimate as a decomposition gate.

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "runtime-context.schema.v1.json",
+  "title": "Agent Runtime Context",
+  "description": "Provider-neutral external identity for one agent invocation. Values must come from trusted launcher/runtime metadata, never LLM self-identification.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "runner",
+    "provider",
+    "model",
+    "variant",
+    "effort",
+    "session_id",
+    "identity_source"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "runner": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "provider": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "model": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "variant": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "effort": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "session_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "identity_source": {
+      "type": "string",
+      "enum": [
+        "launcher",
+        "runner_api",
+        "runner_event",
+        "adapter",
+        "unavailable"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "identity_source": {
+            "const": "unavailable"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "runner": {
+            "type": "null"
+          },
+          "provider": {
+            "type": "null"
+          },
+          "model": {
+            "type": "null"
+          },
+          "variant": {
+            "type": "null"
+          },
+          "effort": {
+            "type": "null"
+          },
+          "session_id": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

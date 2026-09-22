@@ -60,8 +60,22 @@ def _skill_name(skill_md: Path) -> str:
     raise WorkflowVersionError(f"Missing skill name in frontmatter: {skill_md}")
 
 
+def workflow_skills_root(repo_root: Path) -> Path:
+    """Resolve skills beside the installed shared scripts when they live in this repo."""
+    repo_root = Path(repo_root).resolve()
+    script_path = Path(__file__).resolve()
+    try:
+        script_path.relative_to(repo_root)
+    except ValueError:
+        return repo_root / "skills"
+
+    installed_root = script_path.parent.parent
+    installed_skills = installed_root / "skills"
+    return installed_skills if installed_skills.is_dir() else repo_root / "skills"
+
+
 def discover_workflows(repo_root: Path) -> dict[str, Path]:
-    skills_root = repo_root / "skills"
+    skills_root = workflow_skills_root(repo_root)
     workflows: dict[str, Path] = {}
 
     for skill_md in sorted(skills_root.rglob("SKILL.md")):

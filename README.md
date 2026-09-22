@@ -49,6 +49,48 @@ Current source skills:
 - `task-orchestrator`
 - `testing-discipline`
 
+## Installation and shared integrations
+
+This source repository keeps editable skills under `skills/` and shared tooling
+under `scripts/`. For a project-local manual installation, use the project's
+`.agents/` namespace rather than adding agent infrastructure to the
+application's own top-level directories:
+
+```text
+project/
+└── .agents/
+    ├── skills/
+    │   └── <selected skills>
+    └── scripts/
+        └── <shared tooling required by those skills>
+```
+
+A skill-owned directory is the complete package only for files owned by that
+skill. Shared scripts/schemas explicitly named by the skill or flow are separate
+runtime dependencies and must be copied when that integration is wanted.
+
+Current shared integrations:
+
+| Capability | Project-local files | Required? |
+| --- | --- | --- |
+| Workflow fingerprinting | `.agents/scripts/workflow_version.py` | Only when workflow identity/fingerprinting is wanted |
+| Generic runtime identity | `.agents/scripts/runtime_context.py`, `.agents/scripts/runtime-context.schema.v1.json` | Only when trusted runtime identity is supplied/consumed |
+| Bounded-run evidence | `.agents/scripts/run_evidence.py` plus the workflow-version and runtime-context files above | Optional in ordinary guided use; may be made mandatory by an explicit repository/user/machine contract |
+
+`workflow_version.py` supports both this source repository layout
+(`skills/` + `scripts/`) and the project-local installation layout
+(`.agents/skills/` + `.agents/scripts/`). An unchanged copied skill therefore
+keeps the same fingerprint because absolute filesystem location is not part of
+the fingerprint.
+
+`bounded-task-implementer` remains usable without the run-evidence integration.
+Missing optional shared tooling must not accidentally turn a normal standalone
+bounded task into a formal/orchestrated workflow.
+
+See `scripts/runtime-context.md` for the runtime identity contract and
+`scripts/run-evidence.md` for evidence lifecycle, snapshot, recovery, and
+deterministic-check semantics.
+
 ## Workflow version fingerprints
 
 Every directory containing a `SKILL.md` is versionable through one canonical
@@ -74,15 +116,6 @@ workflow differs from committed state. Unrelated repository changes therefore
 do not change a skill fingerprint. There are no manually incremented per-skill
 versions.
 
-For manual installation into another Git repository, copy the selected skill
-directories together with `scripts/workflow_version.py` when workflow
-fingerprinting is required. Also copy any repository-level shared scripts or
-schemas explicitly named by the selected skill/flow as runtime dependencies.
-The copied fingerprint utility then fingerprints the installed skill packages
-in that target repository and reports Git provenance for that target repository.
-An unchanged copied skill keeps the same fingerprint because absolute filesystem
-location is not part of the fingerprint.
-
 Fingerprint semantics are a compatibility contract. Changes to input
 selection/exclusion, path normalization, canonical ordering, hash framing, or
 the hash algorithm can redefine fingerprints even when skill contents have not
@@ -107,9 +140,25 @@ Runtime identity is optional. Missing trusted context normalizes to
 self-identification is never canonical identity. See
 `scripts/runtime-context.md` for the trust boundary, API, and CLI.
 
-For a manual copy that needs runtime-context support, copy both
-`scripts/runtime_context.py` and `scripts/runtime-context.schema.v1.json`.
-They are shared runtime dependencies rather than skill-owned files.
+## Optional bounded-run evidence
+
+`scripts/run_evidence.py` can capture raw begin/finish facts around
+`bounded-task-implementer` invocations without changing the normal guided
+workflow contract. It records Git-local run state, immutable begin/finish
+worktree snapshot identities, canonical workflow fingerprint, optional runtime
+context, optional task association, and raw deterministic-check execution
+facts. It does not generate diffs, change statistics, scores, or acceptance
+verdicts.
+
+Evidence storage lives under the worktree's Git metadata and does not require a
+`.gitignore` change. In ordinary guided use, instrumentation is best-effort:
+missing or failed evidence tooling does not make an otherwise valid bounded
+implementation fail. A repository/user/machine contract may opt into stricter
+requirements separately.
+
+Parallel multi-agent execution against one worktree is not supported by this
+iteration of run evidence. Concurrent run claiming and its coordination must be
+implemented separately before multi-agent use is treated as supported.
 
 ## How the skills fit together
 
@@ -201,8 +250,8 @@ flow directly under human coordination.
 - `session-handoff` preserves verified context between sessions or agents.
 - `skill-creator` creates, validates, and evaluates skills in this source repo.
 
-Installed copies under `~/.agents/skills`, `~/.codex/skills`, or a project are
-distribution targets. Edit here, validate here, and redistribute from here.
+Edit skills in this source repository, validate them here, and redistribute
+using the installation conventions defined above.
 
 
 <!-- contract-registry-flow:root-readme:begin -->

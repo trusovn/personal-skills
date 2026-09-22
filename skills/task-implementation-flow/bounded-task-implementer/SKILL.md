@@ -57,6 +57,41 @@ brief only recommends a separate verification-design pass and no artifact
 exists, implementation may still proceed unless the caller or repository made
 that recommendation mandatory.
 
+## Optional run evidence
+
+When repository-level `scripts/run_evidence.py` is available, ordinary guided
+execution uses it as best-effort sidecar instrumentation. Evidence collection
+does not invalidate an otherwise executable bounded task when the tooling is
+missing or fails. Only a repository, user, or machine contract that explicitly
+requires instrumentation may make collection mandatory.
+
+Do not create a task brief, task ID, task package, runtime identity, or other
+formal artifact solely for evidence collection. Pass task metadata only when it
+already exists. Runtime identity is optional and must come through the shared
+runtime-context contract, never model self-identification.
+
+After the compact self-preflight and before the first implementation edit:
+
+- query the current worktree for an active evidence run;
+- when taking over an open run whose original invocation never finished,
+  recover that run before starting a new one, preserving the recovery boundary
+  as uncertain rather than attributing all intervening changes to the prior
+  agent;
+- begin one new evidence run for this implementer invocation; and
+- if any best-effort evidence operation fails in guided mode, continue the task
+  and report the missing instrumentation truthfully when useful.
+
+On normal completion, close the evidence run with outcome `completed`. When
+intentionally stopping or handing off before completion, close it with
+`reported_interrupted` or `failed` as factually appropriate. A killed agent
+may leave the run open; a later invocation may recover it before editing.
+
+When the flow already requires one canonical deterministic architecture command
+and an evidence run is active, that command may be executed once through
+`run_evidence.py check ... --kind architecture -- <command>` so raw command,
+timing, exit status, stdout, and stderr are captured. Do not add a duplicate
+architecture execution only for evidence.
+
 ### High-assurance inputs
 
 Require:

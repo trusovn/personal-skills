@@ -163,7 +163,7 @@ def direction_delta() -> None:
     )
     write(
         root,
-        "docs/tasks/FLOW-2.md",
+        "docs/tasks/FLOW-2/brief.md",
         """
         # FLOW-2 — Protect flow records
 

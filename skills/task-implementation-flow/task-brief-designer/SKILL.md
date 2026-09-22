@@ -60,10 +60,11 @@ them with personal defaults.
 Each configured maximum is exclusive: split only when the corresponding
 estimate is greater than that maximum. An estimate equal to a maximum fits.
 
-When creating durable task artifacts and repository or user authority does not
-name another layout, read `references/task-artifact-layout.md`. Explicit paths
-from repository or user authority override that default. A surgical gap-check
-on an existing brief should not migrate it merely to satisfy the default layout.
+When creating or updating durable task artifacts, read
+`references/task-artifact-layout.md`. Repository or user authority may choose a
+different task-package root or directory name, but every durable task must keep
+its `brief.md` and optional artifacts inside one dedicated package directory.
+Do not create or consume direct briefs under the shared task root.
 
 ## Minimum inputs
 
@@ -209,8 +210,18 @@ an unapproved premise.
     implementer or orchestrator to escalate the recommendation at execution
     time. A prerequisite feasibility/proof task from step 4 is a design
     dependency, not a readiness route.
-11. Read `references/task-brief-template.md`. Use only the core sections for a
-   guided brief; add the high-assurance sections only for that profile.
+11. Explicitly classify whether a separate `task-verification-designer` pass
+    is recommended before implementation:
+    - `inline` when the task is small and its decisive tests/oracles are
+      obvious from the brief;
+    - `separate — <reason>` when non-obvious negative/lifecycle semantics,
+      finite material cases, boundary behavior, or multiple plausible-wrong
+      implementations make a focused verification-design pass useful.
+    This is a recommendation, not a mandatory stage. Do not recommend it merely
+    because the skill exists, and do not use it to compensate for ambiguous
+    requirements that should block or return to the decision owner.
+12. Read `references/task-brief-template.md`. Use only the core sections for a
+    guided brief; add the high-assurance sections only for that profile.
 
 ## Sizing and decomposition contract
 
@@ -333,7 +344,10 @@ For a gap check, report only:
 - concrete missing or contradictory items;
 - the smallest proposed edits; and
 - whether guided implementation may begin or high-assurance preflight is
-  warranted; and
+  warranted;
+- whether verification design should stay inline or use a separate
+  `task-verification-designer` pass, with the concrete reason when separate;
+  and
 - when `review: immediate`, the ordered handoff from implementation or
   correction to fresh independent acceptance review immediately afterward.
 
@@ -411,7 +425,8 @@ design task.
 
 - The task is independently understandable without this conversation.
 - Every changed or added line in an existing brief closes a concrete gap.
-- Outcome, scope, ACs, evidence, metadata, stops, and next action are clear.
+- Outcome, scope, ACs, evidence, metadata, stops, readiness route, verification-
+  design recommendation, and next action are clear.
 - When direction is supplied, the contribution, user-observable effect or
   enabled outcome, sequencing reason, and approved decisions are traceable.
 - Every ready brief with supplied governing direction says

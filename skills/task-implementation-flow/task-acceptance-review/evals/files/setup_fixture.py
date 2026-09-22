@@ -45,7 +45,7 @@ def file_sha(path: Path) -> str:
 def policy(authorized_test_path: str | None = None) -> Path:
     path = RUNS / "policies/local-review-v1.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    allow = ["cheap local tests", "disposable probes outside repository", "one acceptance report"]
+    allow = ["cheap local tests", "disposable probes outside repository", "one canonical task-package acceptance report"]
     deny = ["source/test edits", "network", "dependency installation", "commits", "tracker updates"]
     if authorized_test_path is not None:
         allow.append(f"post-verdict tests_only_reproducer write to {authorized_test_path}")
@@ -87,9 +87,9 @@ def queue_defect(*, authorize_reproducer: bool = False) -> None:
             "`tests/integration/test_run_next.py`. Production remains read-only."
         )
     else:
-        fixture_rule = f"# Fixture rules\n\nAcceptance is read-only. Write reports and disposable probe state only under `{RUNS}/`."
+        fixture_rule = "# Fixture rules\n\nAcceptance is read-only except for the next numbered report under the task package's `reviews/` directory."
     write(root, "AGENTS.md", fixture_rule)
-    write(root, "docs/tasks/QR-12.md", "# QR-12\n\nArtifact status: ready_for_preflight\nAC-01: two consecutive public invocations persist state and claim TASK-1 then TASK-2.\nAllowed paths: src/queue/run_next.py; tests/integration/test_run_next.py")
+    write(root, "docs/tasks/QR-12/brief.md", "# QR-12\n\nArtifact status: ready_for_preflight\nAC-01: two consecutive public invocations persist state and claim TASK-1 then TASK-2.\nAllowed paths: src/queue/run_next.py; tests/integration/test_run_next.py")
     write(root, "src/__init__.py", "")
     write(root, "src/queue/__init__.py", "")
     write(root, "src/queue/run_next.py", "def run_next(path):\n    raise NotImplementedError")
@@ -104,17 +104,20 @@ def queue_defect(*, authorize_reproducer: bool = False) -> None:
     packet = f"""# Task Preflight Packet: QR-12
 Artifact status: ready
 Repository root: {root}
-Task brief: docs/tasks/QR-12.md
-Task brief SHA-256: {file_sha(root / 'docs/tasks/QR-12.md')}
+Task brief: docs/tasks/QR-12/brief.md
+Task brief SHA-256: {file_sha(root / 'docs/tasks/QR-12/brief.md')}
 Baseline HEAD: {head}
 Baseline exact git status --short: clean
 Allowed paths: src/queue/run_next.py; tests/integration/test_run_next.py
 Run policy: {run_policy}
-Report path: {run_dir / 'acceptance.md'}
+Packet path: docs/tasks/QR-12/preflight.md
+Post-packet status: ?? docs/tasks/QR-12/preflight.md
+Report path: docs/tasks/QR-12/reviews/acceptance-01.md
 AC-01 requires an independent two-invocation public-entry probe in disposable state.
 Legacy finding: trace guards that compare against any initially running task.
 """
-    (run_dir / "preflight.md").write_text(packet, encoding="utf-8")
+    packet_path = root / "docs/tasks/QR-12/preflight.md"
+    packet_path.write_text(packet, encoding="utf-8")
     write(
         root,
         "src/queue/run_next.py",
@@ -174,8 +177,8 @@ def exporter_accept() -> None:
     root = WORK / "exporter"
     initialize(root)
     run_policy = policy()
-    write(root, "AGENTS.md", "# Fixture rules\n\nAcceptance is read-only. Preserve user notes and use disposable state outside the repository.")
-    write(root, "docs/tasks/EXP-08.md", "# EXP-08\n\nArtifact status: ready_for_preflight\nAC-01: `exportctl resume` appends remaining rows after checkpoint.\nAC-02: retry adds no duplicate rows.\nAllowed paths: src/exporter/resume.py; tests/integration/test_resume.py")
+    write(root, "AGENTS.md", "# Fixture rules\n\nAcceptance may write only the next numbered task-package report. Preserve user notes and use disposable probe state outside the repository.")
+    write(root, "docs/tasks/EXP-08/brief.md", "# EXP-08\n\nArtifact status: ready_for_preflight\nAC-01: `exportctl resume` appends remaining rows after checkpoint.\nAC-02: retry adds no duplicate rows.\nAllowed paths: src/exporter/resume.py; tests/integration/test_resume.py")
     write(root, "notes/local.md", "baseline note")
     write(root, "src/__init__.py", "")
     write(root, "src/exporter/__init__.py", "")
@@ -193,23 +196,32 @@ def exporter_accept() -> None:
     baseline_status = git(root, "status", "--short")
     run_dir = RUNS / "EXP-08"
     run_dir.mkdir(parents=True, exist_ok=True)
-    (run_dir / "preflight.md").write_text(f"""# Task Preflight Packet: EXP-08
+    packet_path = root / "docs/tasks/EXP-08/preflight.md"
+    packet_path.write_text(f"""# Task Preflight Packet: EXP-08
 Artifact status: ready
 Repository root: {root}
-Task brief: docs/tasks/EXP-08.md
-Task brief SHA-256: {file_sha(root / 'docs/tasks/EXP-08.md')}
+Task brief: docs/tasks/EXP-08/brief.md
+Task brief SHA-256: {file_sha(root / 'docs/tasks/EXP-08/brief.md')}
 Baseline HEAD: {git(root, 'rev-parse', 'HEAD')}
 Baseline exact git status --short:\n{baseline_status}
+Post-packet git status --short:\n__POST_PACKET_STATUS__
 Pre-existing path: notes/local.md
 Index SHA-256: {sha(index_bytes)}
 Worktree SHA-256: {file_sha(root / 'notes/local.md')}
 Ownership: user; task overlap: no
 Allowed paths: src/exporter/resume.py; tests/integration/test_resume.py
 Run policy: {run_policy}
-Report path: {run_dir / 'acceptance.md'}
+Packet path: docs/tasks/EXP-08/preflight.md
+Report path: docs/tasks/EXP-08/reviews/acceptance-01.md
 Targeted: python -m unittest tests.integration.test_resume
 Public probe: python -m src.exporter.resume INPUT CHECKPOINT OUTPUT
 """, encoding="utf-8")
+    packet_path.write_text(
+        packet_path.read_text(encoding="utf-8").replace(
+            "__POST_PACKET_STATUS__", git(root, "status", "--short")
+        ),
+        encoding="utf-8",
+    )
     write(
         root,
         "src/exporter/resume.py",
@@ -266,7 +278,7 @@ def scheduler_inconclusive() -> None:
     initialize(root)
     run_policy = policy()
     write(root, "AGENTS.md", "# Fixture rules\n\nAcceptance may not invent missing concurrency infrastructure or use live services.")
-    write(root, "docs/tasks/SCH-09.md", "# SCH-09\n\nArtifact status: ready_for_preflight\nAC-01: two coordinated workers cannot claim the same job.\nRequired helper: tests/helpers/concurrent_claims.py")
+    write(root, "docs/tasks/SCH-09/brief.md", "# SCH-09\n\nArtifact status: ready_for_preflight\nAC-01: two coordinated workers cannot claim the same job.\nRequired helper: tests/helpers/concurrent_claims.py")
     write(root, "src/scheduler/claim.py", "def claim(job):\n    return job['id']")
     write(root, "tests/helpers/concurrent_claims.py", "def coordinated_claims(claim):\n    return claim(), claim()")
     write(root, "tests/test_claim.py", "import unittest\n\nclass ClaimTest(unittest.TestCase):\n    def test_unit(self):\n        self.assertTrue(True)")
@@ -275,18 +287,27 @@ def scheduler_inconclusive() -> None:
     helper_digest = file_sha(root / "tests/helpers/concurrent_claims.py")
     run_dir = RUNS / "SCH-09"
     run_dir.mkdir(parents=True, exist_ok=True)
-    (run_dir / "preflight.md").write_text(f"""# Task Preflight Packet: SCH-09
+    packet_path = root / "docs/tasks/SCH-09/preflight.md"
+    packet_path.write_text(f"""# Task Preflight Packet: SCH-09
 Artifact status: ready
 Repository root: {root}
-Task brief: docs/tasks/SCH-09.md
+Task brief: docs/tasks/SCH-09/brief.md
 Baseline HEAD: {git(root, 'rev-parse', 'HEAD')}
 Baseline status: clean
+Post-packet git status --short: __POST_PACKET_STATUS__
 Required helper: tests/helpers/concurrent_claims.py
 Helper SHA-256: {helper_digest}
 Allowed paths: src/scheduler/claim.py; tests/test_claim.py
 Run policy: {run_policy}
-Report path: {run_dir / 'acceptance.md'}
+Packet path: docs/tasks/SCH-09/preflight.md
+Report path: docs/tasks/SCH-09/reviews/acceptance-01.md
 """, encoding="utf-8")
+    packet_path.write_text(
+        packet_path.read_text(encoding="utf-8").replace(
+            "__POST_PACKET_STATUS__", git(root, "status", "--short")
+        ),
+        encoding="utf-8",
+    )
     write(root, "src/scheduler/claim.py", "def claim(job):\n    # worker implementation\n    return job['id']")
     (root / "tests/helpers/concurrent_claims.py").unlink()
     worker(run_dir, "SCH-09", ["src/scheduler/claim.py"], ["python -m unittest tests.test_claim"])
@@ -313,7 +334,7 @@ def ledger_defects() -> None:
     )
     write(
         root,
-        "docs/tasks/LED-04.md",
+        "docs/tasks/LED-04/brief.md",
         """
         # LED-04 — Enforce ledger coherence
 
@@ -402,7 +423,7 @@ def authored_production_self_check() -> None:
     )
     write(
         root,
-        "docs/tasks/PRICE-02.md",
+        "docs/tasks/PRICE-02/brief.md",
         """
         # PRICE-02 — Add the approved service fee
 
@@ -439,7 +460,7 @@ def workflow_matrix_defects() -> None:
     write(root, "AGENTS.md", "# Fixture rules\n\nAcceptance is read-only. Use only disposable copies of case state for probes.")
     write(
         root,
-        "docs/tasks/WF-21.md",
+        "docs/tasks/WF-21/brief.md",
         """
         # WF-21 — Validate persisted workflow state before execution
 
@@ -638,7 +659,7 @@ def process_cleanup_defects() -> None:
     write(root, "AGENTS.md", "# Fixture rules\n\nUse bounded process probes. Every probe must clean its process group in `finally`.")
     write(
         root,
-        "docs/tasks/PROC-17.md",
+        "docs/tasks/PROC-17/brief.md",
         """
         # PROC-17 — Clean an entire timed-out process tree
 

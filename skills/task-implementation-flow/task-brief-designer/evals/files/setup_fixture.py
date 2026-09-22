@@ -117,7 +117,7 @@ def existing_brief() -> None:
     write(root, "AGENTS.md", "# Fixture rules\n\nPreserve adequate task content. Edit planning artifacts only under `docs/tasks/`.")
     write(
         root,
-        "docs/tasks/API-31.md",
+        "docs/tasks/API-31/brief.md",
         """
         # API-31 — Reject expired sessions
 

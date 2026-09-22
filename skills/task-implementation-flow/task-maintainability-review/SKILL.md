@@ -57,6 +57,13 @@ Required when available:
 - `.quality/gates.yaml` or repo-equivalent command registry when present
 - current architecture-gate output
 
+When a durable task brief is supplied, require the package form
+`<task-package>/brief.md`; route a direct legacy brief to
+`task-brief-designer` for normalization. When a durable maintainability report
+is requested, write only the next unused
+`<task-package>/reviews/maintainability-NN.md`. Never overwrite a prior report
+or use an external runtime directory as the durable report location.
+
 Read immediate neighboring modules/interfaces only when needed to understand the changed dependency or responsibility.
 
 Do **not** begin with a repo-wide architecture survey.
@@ -285,6 +292,10 @@ FINDINGS:
 ```
 
 and do not issue an independent verdict.
+
+When repository/user authority requires a durable report, store this output at
+the canonical numbered path above. Record exact Git status before and after the
+write and permit only the new report entry; the report does not review itself.
 
 ## Correction loop
 

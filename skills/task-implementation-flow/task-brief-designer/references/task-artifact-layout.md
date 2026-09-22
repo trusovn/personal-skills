@@ -1,9 +1,10 @@
 # Task implementation artifact layout
 
-This document defines the default durable locations used by
-`task-implementation-flow`. Repository or user authority may declare different
-canonical paths; explicit authority wins. Do not migrate an existing adequate
-artifact solely to match this default.
+This document defines the durable repository locations used by
+`task-implementation-flow`. Every durable task uses one dedicated task package
+directory. Repository or user authority may declare a different package root
+or directory naming convention, but it must preserve that one-directory-per-task
+structure and the fixed artifact names below.
 
 ## Planning authority remains separate
 
@@ -29,6 +30,7 @@ docs/tasks/
   index.json
   TASK-017/
     brief.md
+    verification.md
     preflight.md
     reviews/
       maintainability-01.md
@@ -41,9 +43,19 @@ docs/tasks/
     brief.md
 ```
 
+Only create `verification.md` when a separate `task-verification-designer`
+pass is actually used. Do not create an empty placeholder when verification
+design stays inline.
+
 Only create `preflight.md` when standalone/high-assurance preflight actually
 produces a durable artifact. Guided review remains conversational unless the
 user, repository, or high-assurance route requires a report.
+
+High-assurance freshness does not require these canonical files to be ignored
+or Git-status-neutral. The producing stage records exact status before and
+after its write, attributes only the new or modified artifact, and confirms
+that every non-artifact path and content identity is unchanged. A later stage
+matches the recorded post-write state before acting.
 
 When a review is durable, keep it separate from the brief. Use numbered
 immutable review names such as `maintainability-01.md`,
@@ -96,11 +108,12 @@ Do not put attempt status, controller state, worker ownership, timestamps, or
 review verdicts in this index. Those belong to the active orchestrator/controller
 or the review artifacts themselves.
 
-If a caller explicitly requests a legacy/direct brief path such as
-`docs/tasks/API-31.md`, honor it. Do not create the index for a surgical
-single-file gap-check unless the repository already uses the index. When one
-task is decomposed into multiple durable briefs and no equivalent repository
-index exists, create this index so agents have one predictable discovery point.
+Do not create or consume direct task briefs at
+`docs/tasks/<TASK-ID>.md`. Normalize every durable task to a package at
+`docs/tasks/<TASK-ID>/brief.md`. A surgical gap-check does not require creating
+the index unless the repository already uses it. When one task is decomposed
+into multiple durable briefs and no equivalent repository index exists, create
+this index so agents have one predictable discovery point.
 
 ## Task identity and decomposition
 
@@ -130,10 +143,11 @@ inventing a special parent implementation/review stage.
 - `project-plan-verification`: owns `docs/project-plan-review.md`.
 - `task-brief-designer`: owns task brief design, decomposition, and structural
   `docs/tasks/index.json` entries it creates.
+- `task-verification-designer`: owns a durable `verification.md` in the
+  executable task package only when the optional stage is used.
 - `task-preflight`: owns a durable `preflight.md` only when its invocation
   requires one.
 - semantic reviewers: own separate numbered review artifacts only when a durable
   report is required.
 - runtime orchestration: owns execution state elsewhere; workers/reviewers do
   not mutate the structural index as a status tracker.
-

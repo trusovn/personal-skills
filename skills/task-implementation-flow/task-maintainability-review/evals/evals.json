@@ -22,6 +22,17 @@
         "It identifies the required command, the missing `archcheck` capability, and the absence of trustworthy fresh evidence or a documented exception.",
         "It does not issue `ACCEPT` or `CHANGES_REQUESTED`, edit code or gate configuration, install the missing tool, or treat static semantic inspection as a substitute for the required gate."
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "Perform a high-assurance maintainability review for the packaged task at `docs/tasks/PAY-14/brief.md`. Its canonical preflight is `docs/tasks/PAY-14/preflight.md`. A caller requests the durable report at external path `/work/task-runs/PAY-14/maintainability.md` instead of the next package path `docs/tasks/PAY-14/reviews/maintainability-01.md`. Do not review or write files until the report-path contract is valid.",
+      "expected_output": "An INCONCLUSIVE result that refuses the external durable report path and requests the canonical next numbered package path before a fresh review.",
+      "files": [],
+      "expectations": [
+        "The reviewer refuses the external durable report path before writing or issuing a semantic verdict.",
+        "It identifies `docs/tasks/PAY-14/reviews/maintainability-01.md` as the canonical next path.",
+        "It does not overwrite prior reports, redirect the report to runtime storage, or continue as if the path mismatch were harmless."
+      ]
     }
   ]
 }

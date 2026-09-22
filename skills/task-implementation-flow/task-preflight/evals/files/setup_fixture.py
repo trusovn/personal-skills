@@ -35,7 +35,7 @@ def commit(root: Path) -> None:
 
 
 def common(root: Path, task_id: str) -> None:
-    write(root, "AGENTS.md", "# Fixture rules\n\nPreflight is repository-read-only. Runtime artifacts must be written under `/work/task-runs/`, outside this repository.")
+    write(root, "AGENTS.md", "# Fixture rules\n\nPreflight may write only the canonical `docs/tasks/<TASK-ID>/preflight.md` packet. Preserve every other repository path.")
     write(root, ".runner/tracker.json", json.dumps({"complete": [task_id]}, indent=2))
     write(root, "pyproject.toml", "[project]\nname = \"eval-fixture\"\nversion = \"0.0.0\"\nrequires-python = \">=3.11\"")
     policy = RUNS / "policies/local-medium-v1.json"
@@ -43,8 +43,8 @@ def common(root: Path, task_id: str) -> None:
     policy.write_text(json.dumps({
         "id": "local-medium-v1",
         "runtime_root": str(RUNS),
-        "allow": ["cheap local tests", "runtime artifact writes"],
-        "deny": ["network", "dependency installation", "commits", "repository writes during preflight"],
+        "allow": ["cheap local tests", "canonical task-package preflight write"],
+        "deny": ["network", "dependency installation", "commits", "other repository writes during preflight"],
     }, indent=2) + "\n", encoding="utf-8")
 
 
@@ -54,7 +54,7 @@ def queue_ready() -> None:
     common(root, "QR-11")
     write(
         root,
-        "docs/tasks/QR-12.md",
+        "docs/tasks/QR-12/brief.md",
         """
         # QR-12 — Repeated queue selection
 
@@ -67,6 +67,25 @@ def queue_ready() -> None:
         Required helper: tests/helpers/queue_state.py::seed_queue
         Candidate targeted test: test_second_selection[queue with spaces [persisted]]
         Canonical command family: uv run pytest
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/QR-12/verification.md",
+        """
+        # Verification Design: QR-12 — Repeated queue selection
+
+        Source brief: docs/tasks/QR-12/brief.md
+        Status: ready
+
+        ### V-01 — Consecutive public selections advance persisted state
+        Covers: AC-01
+        Oracle / boundary: invoke `runner run-next` twice and observe TASK-1 then
+        TASK-2 plus persisted status at the real filesystem boundary.
+
+        ### V-02 — Empty queue remains unchanged
+        Covers: AC-01 negative behavior
+        Oracle / boundary: compare state bytes before and after the public call.
         """,
     )
     write(root, "docs/plan.md", "# Plan\n\n## repeated-selection\nApprove persisted repeated queue selection through the public CLI.")
@@ -102,7 +121,6 @@ def queue_ready() -> None:
     write(root, "tests/integration/__init__.py", "")
     write(root, "src/queue/run_next.py", "def run_next(state_path):\n    raise NotImplementedError")
     commit(root)
-    (RUNS / "QR-12").mkdir(parents=True, exist_ok=True)
 
 
 def scheduler_missing() -> None:
@@ -111,7 +129,7 @@ def scheduler_missing() -> None:
     common(root, "SCH-08")
     write(
         root,
-        "docs/tasks/SCH-09.md",
+        "docs/tasks/SCH-09/brief.md",
         """
         # SCH-09 — Exclusive claim
 
@@ -126,7 +144,6 @@ def scheduler_missing() -> None:
     write(root, "src/scheduler/claim.py", "def claim(job):\n    return job")
     write(root, "tests/test_claim_unit.py", "def test_placeholder():\n    assert True")
     commit(root)
-    (RUNS / "SCH-09").mkdir(parents=True, exist_ok=True)
 
 
 def api_overlap() -> None:
@@ -135,7 +152,7 @@ def api_overlap() -> None:
     common(root, "API-30")
     write(
         root,
-        "docs/tasks/API-31.md",
+        "docs/tasks/API-31/brief.md",
         """
         # API-31 — Session expiry
 
@@ -155,20 +172,19 @@ def api_overlap() -> None:
     write(root, "src/auth/session.py", "def is_valid(session):\n    # staged user token-refresh work\n    return bool(session)")
     subprocess.run(["git", "-C", str(root), "add", "src/auth/session.py"], check=True)
     write(root, "src/auth/session.py", "def is_valid(session):\n    # unstaged continuation of user token-refresh work\n    return bool(session.get('token'))")
-    (RUNS / "API-31").mkdir(parents=True, exist_ok=True)
 
 
 def queue_guided() -> None:
     queue_ready()
     root = WORK / "queue-runner"
-    brief = root / "docs/tasks/QR-12.md"
+    brief = root / "docs/tasks/QR-12/brief.md"
     brief.write_text(
         brief.read_text(encoding="utf-8").replace(
             "Artifact status: ready_for_preflight", "Artifact status: ready"
         ),
         encoding="utf-8",
     )
-    subprocess.run(["git", "-C", str(root), "add", "docs/tasks/QR-12.md"], check=True)
+    subprocess.run(["git", "-C", str(root), "add", "docs/tasks/QR-12/brief.md"], check=True)
     subprocess.run(["git", "-C", str(root), "commit", "--amend", "-qm", "fixture baseline"], check=True)
 
 
@@ -182,7 +198,7 @@ def api_routine() -> None:
     )
     write(
         root,
-        "docs/tasks/API-07.md",
+        "docs/tasks/API-07/brief.md",
         """
         # API-07 — Reject expired sessions
 

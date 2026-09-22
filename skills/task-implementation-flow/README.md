@@ -36,13 +36,18 @@ can consume.
 
 ## Workflow identity
 
-When a task run needs to record which implementation workflow was used, obtain
-the identity from the repository-level `scripts/workflow_version.py` utility.
-It returns machine-readable JSON and is the single canonical fingerprint
-implementation. Task skills should not duplicate version calculation or
-maintain manual version numbers. Future run-evidence collection should call
-that utility rather than infer workflow identity from prose or repository HEAD
-alone.
+When a task run records which implementation workflow was used, obtain the
+identity from the canonical shared `workflow_version.py` installed alongside the
+active skill installation. In this source repository the shared tooling lives under
+`scripts/`; in the preferred project-local installation it lives under
+`.agents/scripts/` beside `.agents/skills/`, as defined by the root README.
+
+`bounded-task-implementer` currently uses the shared `run_evidence.py` integration
+best-effort in ordinary guided execution. That collector consumes
+`workflow_version.py` and the generic runtime-context helper/schema; task skills do
+not duplicate fingerprint calculation or maintain manual version numbers. Missing
+optional evidence tooling does not make a standalone bounded task fail unless an
+explicit repository/user/machine contract makes instrumentation mandatory.
 
 ## Task sizing, decomposition, and durable artifact discovery
 

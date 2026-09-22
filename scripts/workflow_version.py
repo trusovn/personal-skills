@@ -100,7 +100,38 @@ def _is_excluded(relative_path: Path) -> bool:
     return relative_path.suffix in EXCLUDED_SUFFIXES
 
 
+def _is_explicit_installed_workflow(repo_root: Path, skill_dir: Path) -> bool:
+    """Return whether the active workflow comes from a sibling installed skills tree."""
+    source_skills = (Path(repo_root).resolve() / "skills").resolve()
+    active_skills = workflow_skills_root(repo_root).resolve()
+    if active_skills == source_skills:
+        return False
+
+    try:
+        Path(skill_dir).resolve().relative_to(active_skills)
+    except ValueError:
+        return False
+    return True
+
+
+def _installed_workflow_files(skill_dir: Path) -> list[Path]:
+    """Enumerate explicit installed-package bytes independently of app Git ignore policy."""
+    skill_dir = Path(skill_dir).resolve()
+    files = [
+        path
+        for path in skill_dir.rglob("*")
+        if path.is_file() and not _is_excluded(path.relative_to(skill_dir))
+    ]
+    return sorted(files, key=lambda path: path.relative_to(skill_dir).as_posix())
+
+
 def workflow_files(repo_root: Path, skill_dir: Path) -> list[Path]:
+    repo_root = Path(repo_root).resolve()
+    skill_dir = Path(skill_dir).resolve()
+
+    if _is_explicit_installed_workflow(repo_root, skill_dir):
+        return _installed_workflow_files(skill_dir)
+
     skill_rel = skill_dir.relative_to(repo_root).as_posix()
     output = _git(
         repo_root,
@@ -131,6 +162,7 @@ def workflow_files(repo_root: Path, skill_dir: Path) -> list[Path]:
 # DO NOT CHANGE INPUT SELECTION, PATH NORMALIZATION, ORDERING, HASH FRAMING,
 # OR HASH ALGORITHM WITHOUT AN EXPLICIT COMPATIBILITY/VERSIONING DECISION.
 def fingerprint_workflow(repo_root: Path, skill_dir: Path) -> str:
+    skill_dir = Path(skill_dir).resolve()
     hasher = hashlib.sha256()
 
     for path in workflow_files(repo_root, skill_dir):

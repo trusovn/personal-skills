@@ -59,8 +59,10 @@ that recommendation mandatory.
 
 ## Optional run evidence
 
-When repository-level `scripts/run_evidence.py` is available, ordinary guided
-execution uses it as best-effort sidecar instrumentation. Evidence collection
+When the canonical run-evidence shared tooling for this skill installation is
+available, ordinary guided execution uses it as best-effort sidecar instrumentation.
+Resolve shared tooling by the installation convention documented in the root README;
+do not assume it must live at the target repository root. Evidence collection
 does not invalidate an otherwise executable bounded task when the tooling is
 missing or fails. Only a repository, user, or machine contract that explicitly
 requires instrumentation may make collection mandatory.

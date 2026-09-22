@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -217,6 +218,116 @@ class RunEvidenceTests(unittest.TestCase):
         self.assertIn("task package", text)
         self.assertIn("solely for evidence collection", text)
         self.assertIn("Runtime identity is optional", text)
+
+
+    def test_ignored_agents_install_runs_copied_tooling_end_to_end(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            target_repo = root / "target-repo"
+            target_repo.mkdir()
+            git(target_repo, "init", "-q")
+            git(target_repo, "config", "user.email", "target@example.com")
+            git(target_repo, "config", "user.name", "Installed Tooling Tests")
+            (target_repo / ".gitignore").write_text(".agents/\n", encoding="utf-8")
+            (target_repo / "app.txt").write_text("baseline\n", encoding="utf-8")
+            git(target_repo, "add", ".")
+            git(target_repo, "commit", "-qm", "application baseline")
+
+            target_skill = (
+                target_repo
+                / ".agents"
+                / "skills"
+                / "task-implementation-flow"
+                / "bounded-task-implementer"
+            )
+            shutil.copytree(SKILL_PATH.parent, target_skill)
+
+            target_scripts = target_repo / ".agents" / "scripts"
+            target_scripts.mkdir(parents=True)
+            for name in (
+                "workflow_version.py",
+                "runtime_context.py",
+                "runtime-context.schema.v1.json",
+                "run_evidence.py",
+            ):
+                shutil.copy2(SCRIPTS / name, target_scripts / name)
+
+            runtime_path = root / "runtime-context.json"
+            runtime = {
+                "schema_version": 1,
+                "runner": "test-runner",
+                "provider": "test-provider",
+                "model": "test-model",
+                "variant": None,
+                "effort": None,
+                "session_id": "session-installed",
+                "identity_source": "adapter",
+            }
+            runtime_path.write_text(json.dumps(runtime), encoding="utf-8")
+
+            self.assertEqual("", git(target_repo, "status", "--porcelain=v1"))
+
+            version_result = subprocess.run(
+                [
+                    sys.executable,
+                    str(target_scripts / "workflow_version.py"),
+                    "bounded-task-implementer",
+                ],
+                cwd=target_repo,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            version = json.loads(version_result.stdout)
+            self.assertTrue(version["fingerprint"].startswith("sha256:"))
+            self.assertNotEqual(
+                "sha256:" + __import__("hashlib").sha256().hexdigest(),
+                version["fingerprint"],
+            )
+
+            begin_result = subprocess.run(
+                [
+                    sys.executable,
+                    str(target_scripts / "run_evidence.py"),
+                    "--repo",
+                    str(target_repo),
+                    "begin",
+                    "--runtime-context",
+                    str(runtime_path),
+                ],
+                cwd=target_repo,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            begun = json.loads(begin_result.stdout)
+            manifest_path = Path(begun["manifest"])
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(version["fingerprint"], manifest["workflow"]["fingerprint"])
+            self.assertEqual(runtime, manifest["runtime"])
+            self.assertEqual("", git(target_repo, "status", "--porcelain=v1"))
+
+            finish_result = subprocess.run(
+                [
+                    sys.executable,
+                    str(target_scripts / "run_evidence.py"),
+                    "--repo",
+                    str(target_repo),
+                    "finish",
+                    begun["run_id"],
+                    "--outcome",
+                    "completed",
+                ],
+                cwd=target_repo,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            finished = json.loads(finish_result.stdout)
+            self.assertEqual("explicit_finish", finished["closure"]["kind"])
+            self.assertEqual("completed", finished["closure"]["outcome"])
+            self.assertIsNotNone(finished["repository_finish"]["snapshot"])
+            self.assertEqual("", git(target_repo, "status", "--porcelain=v1"))
 
 
 if __name__ == "__main__":

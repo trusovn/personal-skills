@@ -26,7 +26,7 @@ def git(repo: Path, *args: str) -> str:
 class WorkflowVersionTests(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
-        self.repo = Path(self.tempdir.name)
+        self.repo = Path(self.tempdir.name).resolve()
         git(self.repo, "init")
         git(self.repo, "config", "user.email", "tests@example.com")
         git(self.repo, "config", "user.name", "Workflow Version Tests")
@@ -258,6 +258,54 @@ class WorkflowVersionTests(unittest.TestCase):
 
             self.assertEqual(source_fingerprint, info["fingerprint"])
             self.assertFalse(info["workflow_dirty"])
+
+
+    def test_ignored_project_local_agents_install_keeps_workflow_identity(self):
+        source_fingerprint = self.version()["fingerprint"]
+
+        with tempfile.TemporaryDirectory() as target_dir:
+            target_repo = Path(target_dir)
+            git(target_repo, "init")
+            git(target_repo, "config", "user.email", "target@example.com")
+            git(target_repo, "config", "user.name", "Target Repo Tests")
+            (target_repo / ".gitignore").write_text(".agents/\n", encoding="utf-8")
+            (target_repo / "app.txt").write_text("application\n", encoding="utf-8")
+            git(target_repo, "add", ".")
+            git(target_repo, "commit", "-m", "application baseline")
+
+            target_skill = target_repo / ".agents" / "skills" / "bounded-task-implementer"
+            (target_skill / "references").mkdir(parents=True)
+            (target_skill / "SKILL.md").write_bytes((self.skill / "SKILL.md").read_bytes())
+            (target_skill / "references" / "rules.md").write_bytes(
+                (self.skill / "references" / "rules.md").read_bytes()
+            )
+            (target_skill / "evals").mkdir()
+            (target_skill / "evals" / "ignored.json").write_text("ignored\n", encoding="utf-8")
+
+            target_scripts = target_repo / ".agents" / "scripts"
+            target_scripts.mkdir(parents=True)
+            target_script = target_scripts / "workflow_version.py"
+            target_script.write_bytes(MODULE_PATH.read_bytes())
+
+            self.assertEqual("", git(target_repo, "status", "--porcelain=v1"))
+
+            result = subprocess.run(
+                ["python3", str(target_script), "bounded-task-implementer"],
+                cwd=target_repo,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            info = json.loads(result.stdout)
+
+            self.assertEqual(source_fingerprint, info["fingerprint"])
+            self.assertNotEqual(
+                "sha256:" + __import__("hashlib").sha256().hexdigest(),
+                info["fingerprint"],
+            )
+            self.assertFalse(info["workflow_dirty"])
+            self.assertFalse(info["repository_dirty"])
+            self.assertEqual("", git(target_repo, "status", "--porcelain=v1"))
 
 
 if __name__ == "__main__":

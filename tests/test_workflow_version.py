@@ -141,6 +141,87 @@ class WorkflowVersionTests(unittest.TestCase):
         self.assertEqual(first["fingerprint"], second["fingerprint"])
         self.assertNotEqual(first["repository_commit"], second["repository_commit"])
 
+    def test_repository_branch_is_reported(self):
+        branch = git(self.repo, "branch", "--show-current").strip()
+
+        info = self.version()
+
+        self.assertEqual(branch, info["repository_branch"])
+
+    def test_detached_head_reports_null_branch(self):
+        commit = git(self.repo, "rev-parse", "HEAD").strip()
+        git(self.repo, "checkout", "--detach", commit)
+
+        info = self.version()
+
+        self.assertIsNone(info["repository_branch"])
+        self.assertEqual(commit, info["repository_commit"])
+
+    def test_fingerprint_is_independent_of_discovery_order(self):
+        canonical = workflow_version.fingerprint_workflow(self.repo, self.skill)
+        expected_files = workflow_version.workflow_files(self.repo, self.skill)
+        reversed_git_output = "\0".join(
+            path.relative_to(self.repo).as_posix()
+            for path in reversed(expected_files)
+        ) + "\0"
+        original_git = workflow_version._git
+
+        def git_with_reversed_discovery(repo_root, *args):
+            if args and args[0] == "ls-files":
+                return reversed_git_output
+            return original_git(repo_root, *args)
+
+        try:
+            workflow_version._git = git_with_reversed_discovery
+            reversed_order = workflow_version.fingerprint_workflow(
+                self.repo, self.skill
+            )
+        finally:
+            workflow_version._git = original_git
+
+        self.assertEqual(canonical, reversed_order)
+
+    def test_copied_skill_is_portable_to_standalone_repository(self):
+        source_fingerprint = self.version()["fingerprint"]
+
+        with tempfile.TemporaryDirectory() as target_dir:
+            target_repo = Path(target_dir)
+            git(target_repo, "init")
+            git(target_repo, "config", "user.email", "target@example.com")
+            git(target_repo, "config", "user.name", "Target Repo Tests")
+
+            target_skill = target_repo / "skills" / "bounded-task-implementer"
+            (target_skill / "references").mkdir(parents=True)
+            (target_skill / "SKILL.md").write_bytes((self.skill / "SKILL.md").read_bytes())
+            (target_skill / "references" / "rules.md").write_bytes(
+                (self.skill / "references" / "rules.md").read_bytes()
+            )
+
+            target_scripts = target_repo / "scripts"
+            target_scripts.mkdir()
+            target_script = target_scripts / "workflow_version.py"
+            target_script.write_bytes(MODULE_PATH.read_bytes())
+
+            git(target_repo, "add", ".")
+            git(target_repo, "commit", "-m", "install selected workflow")
+            target_commit = git(target_repo, "rev-parse", "HEAD").strip()
+            target_branch = git(target_repo, "branch", "--show-current").strip()
+
+            result = subprocess.run(
+                ["python3", str(target_script), "bounded-task-implementer"],
+                cwd=target_repo,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            info = json.loads(result.stdout)
+
+            self.assertEqual(source_fingerprint, info["fingerprint"])
+            self.assertEqual(target_commit, info["repository_commit"])
+            self.assertEqual(target_branch, info["repository_branch"])
+            self.assertFalse(info["repository_dirty"])
+            self.assertFalse(info["workflow_dirty"])
+
 
 if __name__ == "__main__":
     unittest.main()

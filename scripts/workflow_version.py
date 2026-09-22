@@ -113,6 +113,9 @@ def workflow_files(repo_root: Path, skill_dir: Path) -> list[Path]:
     return sorted(files, key=lambda path: path.relative_to(skill_dir).as_posix())
 
 
+# IMPORTANT: FINGERPRINT SEMANTICS ARE A COMPATIBILITY CONTRACT.
+# DO NOT CHANGE INPUT SELECTION, PATH NORMALIZATION, ORDERING, HASH FRAMING,
+# OR HASH ALGORITHM WITHOUT AN EXPLICIT COMPATIBILITY/VERSIONING DECISION.
 def fingerprint_workflow(repo_root: Path, skill_dir: Path) -> str:
     hasher = hashlib.sha256()
 
@@ -156,6 +159,11 @@ def workflow_dirty(repo_root: Path, skill_dir: Path) -> bool:
     return False
 
 
+def repository_branch(repo_root: Path) -> str | None:
+    branch = _git(repo_root, "branch", "--show-current").strip()
+    return branch or None
+
+
 def get_workflow_version(repo_root: Path, workflow_id: str) -> dict[str, object]:
     repo_root = Path(repo_root).resolve()
     workflows = discover_workflows(repo_root)
@@ -172,6 +180,7 @@ def get_workflow_version(repo_root: Path, workflow_id: str) -> dict[str, object]
         "workflow": workflow_id,
         "fingerprint": fingerprint_workflow(repo_root, skill_dir),
         "repository_commit": _git(repo_root, "rev-parse", "HEAD").strip(),
+        "repository_branch": repository_branch(repo_root),
         "repository_dirty": bool(
             _git(repo_root, "status", "--porcelain=v1", "--untracked-files=all").strip()
         ),

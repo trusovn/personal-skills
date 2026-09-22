@@ -45,6 +45,33 @@ Current source skills:
 - `task-verification-designer`
 - `task-orchestrator`
 - `testing-discipline`
+
+## Workflow version fingerprints
+
+Every directory containing a `SKILL.md` is versionable through one canonical
+deterministic tool:
+
+```bash
+python3 scripts/workflow_version.py bounded-task-implementer
+```
+
+The tool prints JSON with the skill ID, a SHA-256 fingerprint, the current Git
+commit, repository dirty state, and workflow dirty state. The fingerprint is
+derived from the current contents and relative paths of tracked plus
+non-ignored untracked files inside that skill directory, excluding obvious
+transient files such as `__pycache__`, `*.pyc`, `.DS_Store`, and
+`node_modules`, plus root-level development-only `evals/` and `tests/` directories.
+
+This fingerprint answers "what workflow definition is present?" and is kept
+separate from the repository commit, which answers "where in repository history
+did it originate?". Unrelated repository changes therefore do not change a
+skill fingerprint. There are no manually incremented per-skill versions.
+
+The mechanism intentionally versions only the skill-owned package in this
+iteration. Do not add ad-hoc external dependency rules to individual skills;
+extend the canonical tool later if a concrete shared runtime dependency makes
+that necessary.
+
 ## How the skills fit together
 
 These skills are a toolkit, not one mandatory pipeline. Start at the point that

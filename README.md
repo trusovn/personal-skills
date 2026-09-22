@@ -16,9 +16,12 @@ skills/
         └── <skill-owned references, scripts, fixtures, or evals>
 ```
 
-Each directory containing a `SKILL.md` is a complete skill package. Its
+Each directory containing a `SKILL.md` is the complete skill-owned package. Its
 frontmatter `name` is the identifier used by workbench profiles and installers.
-Keep files used only by one skill inside that skill's directory.
+Keep files used only by one skill inside that skill's directory. Shared
+repository-level runtime tooling is separate: when a skill or flow explicitly
+names a shared script/schema as a dependency, that dependency must also be
+installed or copied.
 
 Current source skills:
 - `architecture-guardrails`
@@ -72,11 +75,13 @@ do not change a skill fingerprint. There are no manually incremented per-skill
 versions.
 
 For manual installation into another Git repository, copy the selected skill
-directories together with `scripts/workflow_version.py`. The copied utility
-then fingerprints the installed skill packages in that target repository and
-reports Git provenance for that target repository. An unchanged copied skill
-keeps the same fingerprint because absolute filesystem location is not part of
-the fingerprint.
+directories together with `scripts/workflow_version.py` when workflow
+fingerprinting is required. Also copy any repository-level shared scripts or
+schemas explicitly named by the selected skill/flow as runtime dependencies.
+The copied fingerprint utility then fingerprints the installed skill packages
+in that target repository and reports Git provenance for that target repository.
+An unchanged copied skill keeps the same fingerprint because absolute filesystem
+location is not part of the fingerprint.
 
 Fingerprint semantics are a compatibility contract. Changes to input
 selection/exclusion, path normalization, canonical ordering, hash framing, or
@@ -88,6 +93,23 @@ The mechanism intentionally versions only the skill-owned package in this
 iteration. Do not add ad-hoc external dependency rules to individual skills;
 extend the canonical tool later if a concrete shared runtime dependency makes
 that necessary.
+
+## Shared agent runtime context
+
+External agent runtime identity uses a small provider-neutral contract in
+`scripts/runtime-context.schema.v1.json` with loading/validation support in
+`scripts/runtime_context.py`. Launcher-specific adapters may later normalize
+trusted launcher/session metadata into that contract; consumers do not need
+Codex-, OpenCode-, Ollama-, or provider-specific branches.
+
+Runtime identity is optional. Missing trusted context normalizes to
+`identity_source: "unavailable"` with unknown fields left `null`; LLM
+self-identification is never canonical identity. See
+`scripts/runtime-context.md` for the trust boundary, API, and CLI.
+
+For a manual copy that needs runtime-context support, copy both
+`scripts/runtime_context.py` and `scripts/runtime-context.schema.v1.json`.
+They are shared runtime dependencies rather than skill-owned files.
 
 ## How the skills fit together
 

@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "tasks": {
+    "W1": {
+      "kind": "executable",
+      "source_plan_task": "W1",
+      "brief": "docs/tasks/W1/brief.md",
+      "parent": null,
+      "children": [],
+      "depends_on": []
+    },
+    "W2": {
+      "kind": "composite",
+      "source_plan_task": "W2",
+      "brief": "docs/tasks/W2/brief.md",
+      "parent": null,
+      "children": ["W2.1", "W2.2", "W2.3"],
+      "depends_on": ["W1"]
+    },
+    "W2.1": {
+      "kind": "executable",
+      "source_plan_task": "W2",
+      "brief": "docs/tasks/W2.1/brief.md",
+      "parent": "W2",
+      "children": [],
+      "depends_on": ["W1"]
+    },
+    "W2.2": {
+      "kind": "executable",
+      "source_plan_task": "W2",
+      "brief": "docs/tasks/W2.2/brief.md",
+      "parent": "W2",
+      "children": [],
+      "depends_on": ["W2.1"]
+    },
+    "W2.3": {
+      "kind": "executable",
+      "source_plan_task": "W2",
+      "brief": "docs/tasks/W2.3/brief.md",
+      "parent": "W2",
+      "children": [],
+      "depends_on": ["W2.2"]
+    }
+  }
+}

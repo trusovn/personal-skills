@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "execution-evidence.schema.v2.json",
+  "title": "Execution evidence v2 shared envelope and ProjectSnapshot",
+  "type": "object",
+  "required": ["schema_version", "record_type", "artifacts"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "record_type": {"const": "ProjectSnapshot"},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["logical_name", "content_ref"],
+        "properties": {
+          "logical_name": {"type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!.*[\\\\/]).+$"},
+          "content_ref": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "collector_fingerprint": {
+      "anyOf": [{"type": "null"}, {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}]
+    }
+  },
+  "additionalProperties": false
+}

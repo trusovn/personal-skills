@@ -1,12 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "execution-evidence.schema.v2.json",
-  "title": "Execution evidence v2 shared envelope and ProjectSnapshot",
-  "type": "object",
-  "required": ["schema_version", "record_type", "artifacts"],
+  "title": "Execution evidence v2 ProjectSnapshot and TaskRevision",
   "properties": {
-    "schema_version": {"const": 2},
-    "record_type": {"const": "ProjectSnapshot"},
     "artifacts": {
       "type": "array",
       "items": {
@@ -18,10 +14,91 @@
           "content_ref": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
         }
       }
-    },
-    "collector_fingerprint": {
-      "anyOf": [{"type": "null"}, {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}]
     }
   },
-  "additionalProperties": false
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["schema_version", "record_type", "artifacts"],
+      "properties": {
+        "schema_version": {"const": 2},
+        "record_type": {"const": "ProjectSnapshot"},
+        "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}},
+        "collector_fingerprint": {
+          "anyOf": [{"type": "null"}, {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}]
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": ["schema_version", "record_type", "task_id", "task_brief_ref", "artifact_refs"],
+      "properties": {
+        "schema_version": {"const": 2},
+        "record_type": {"const": "TaskRevision"},
+        "task_id": {"type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!.*[\\/]).+$"},
+        "task_brief_ref": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "artifact_refs": {"type": "array", "items": {"$ref": "#/$defs/artifact"}},
+        "planning_project_snapshot_ref": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}]},
+        "planning": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "task_type": {},
+            "intended_scope": {},
+            "behavioral_scope": {},
+            "transformation_type": {},
+            "implementation_precedent": {},
+            "state_or_compatibility_constraints": {},
+            "verification_work": {},
+            "discovery_uncertainty": {},
+            "expected_calls": {},
+            "expected_duration": {},
+            "confidence": {},
+            "planner_recommended_profile": {},
+            "reasoning_effort": {},
+            "split_decision": {},
+            "provenance": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "knowledge_status": {
+                  "type": "string",
+                  "enum": ["observed", "mechanically_extracted", "planner_declared", "planner_estimated", "externally_supplied", "inferred", "unknown", "not_applicable"]
+                },
+                "source": {"type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!.*[\\/]).+$"}
+              }
+            }
+          }
+        },
+        "decomposition": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "parent_task_id": {"type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!.*[\\/]).+$"},
+            "child_task_ids": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!.*[\\/]).+$"}
+            },
+            "source_plan_ref": {"type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!.*[\\/]).+$"}
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logical_name", "content_ref"],
+      "properties": {
+        "logical_name": {"type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!.*[\\/]).+$"},
+        "content_ref": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    }
+  }
 }

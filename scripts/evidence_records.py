@@ -378,3 +378,362 @@ def create_task_revision(
         planning=planning,
         decomposition=decomposition,
     ).persist(store)
+
+
+EXECUTION_ATTEMPT_NAMESPACE = "attempt"
+EXECUTION_ATTEMPT_TYPE = "ExecutionAttempt"
+ASSOCIATION_NAMESPACE = "association"
+ASSOCIATION_TYPE = "Association"
+
+_ATTEMPT_RELATIONS = {
+    "retry_of",
+    "correction_of",
+    "continuation_of",
+    "profile_replay_of",
+    "calibration_of",
+}
+
+
+def compute_collector_fingerprint(
+    *,
+    file_contents: Mapping[str, bytes | str] | None = None,
+    file_paths: list[str | Path] | None = None,
+    config: Any = None,
+) -> str:
+    """Return a deterministic fingerprint over explicitly selected collector semantics.
+
+    Ordering of inputs is irrelevant and absolute locations are ignored; every
+    selected file participates under one unambiguous logical name. Duplicate
+    logical names across all input forms are rejected rather than shadowed.
+    """
+    semantic: dict[str, Any] = {}
+    if file_contents:
+        for logical_name, data in file_contents.items():
+            _validate_stable_id(logical_name, "collector file logical_name")
+            key = f"file:{logical_name}"
+            if key in semantic:
+                raise EvidenceRecordError(f"Collector file logical_name collision: {logical_name}")
+            semantic[key] = data if isinstance(data, str) else data.hex()
+    if file_paths:
+        for path in file_paths:
+            resolved = Path(path)
+            if not resolved.is_file():
+                raise EvidenceRecordError(f"Collector file is not a regular file: {resolved}")
+            logical_name = resolved.name
+            _validate_stable_id(logical_name, "collector file logical_name")
+            key = f"file:{logical_name}"
+            if key in semantic:
+                raise EvidenceRecordError(f"Collector file logical_name collision: {logical_name}")
+            semantic[key] = resolved.read_bytes().hex()
+    if config is not None:
+        semantic["config"] = config
+    return content_id({"collector_semantics": semantic})
+
+
+def validate_execution_attempt(value: Any) -> dict[str, Any]:
+    record = _require_mapping(value, "ExecutionAttempt")
+    required = {"attempt_id", "schema_version", "record_type", "task", "pre_run", "execution", "post_run", "evidence"}
+    allowed = required | {"execution_project_snapshot_ref", "related_attempts"}
+    missing = required - set(record)
+    extra = set(record) - allowed
+    if missing or extra:
+        raise EvidenceRecordError(f"Invalid ExecutionAttempt fields; missing={sorted(missing)}, extra={sorted(extra)}")
+    if isinstance(record["schema_version"], bool) or record["schema_version"] != SCHEMA_VERSION:
+        raise EvidenceRecordError(f"Unsupported schema_version {record['schema_version']!r}; expected {SCHEMA_VERSION}")
+    if record["record_type"] != EXECUTION_ATTEMPT_TYPE:
+        raise EvidenceRecordError("ExecutionAttempt record_type is invalid")
+    attempt_id = _validate_stable_id(record["attempt_id"], "ExecutionAttempt attempt_id")
+
+    task = _require_mapping(record["task"], "ExecutionAttempt task")
+    task_keys = set(task) - {"direct_input_ref", "task_revision_ref"}
+    if task_keys:
+        raise EvidenceRecordError("ExecutionAttempt task contains unsupported fields")
+    direct_ref = task.get("direct_input_ref")
+    revision_ref = task.get("task_revision_ref")
+    if (direct_ref is not None) == (revision_ref is not None):
+        raise EvidenceRecordError("ExecutionAttempt task must use exactly one of direct_input_ref or task_revision_ref")
+    normalized_task: dict[str, Any] = {}
+    if direct_ref is not None:
+        normalized_task["direct_input_ref"] = _validate_sha256_or_none(direct_ref, "direct_input_ref")
+        if normalized_task["direct_input_ref"] is None:
+            raise EvidenceRecordError("direct_input_ref is required when supplied")
+    else:
+        normalized_task["task_revision_ref"] = _validate_sha256_or_none(revision_ref, "task_revision_ref")
+        if normalized_task["task_revision_ref"] is None:
+            raise EvidenceRecordError("task_revision_ref is required when supplied")
+
+    result: dict[str, Any] = {
+        "attempt_id": attempt_id,
+        "schema_version": SCHEMA_VERSION,
+        "record_type": EXECUTION_ATTEMPT_TYPE,
+        "task": normalized_task,
+        "pre_run": _validate_pre_run(record["pre_run"]),
+        "execution": _validate_execution(record["execution"]),
+        "post_run": _validate_post_run(record["post_run"]),
+        "evidence": _validate_evidence(record["evidence"]),
+    }
+    if "execution_project_snapshot_ref" in record:
+        result["execution_project_snapshot_ref"] = _validate_sha256_or_none(
+            record["execution_project_snapshot_ref"], "execution_project_snapshot_ref"
+        )
+    if "related_attempts" in record:
+        related = record["related_attempts"]
+        if not isinstance(related, list):
+            raise EvidenceRecordError("related_attempts must be a list")
+        normalized_related = []
+        for relation in related:
+            if not isinstance(relation, Mapping):
+                raise EvidenceRecordError("Each related_attempts entry must be an object")
+            if set(relation) != {"relation", "attempt_id"}:
+                raise EvidenceRecordError("related_attempts entry must contain relation and attempt_id only")
+            if relation["relation"] not in _ATTEMPT_RELATIONS:
+                raise EvidenceRecordError(f"Unsupported attempt relation: {relation['relation']!r}")
+            normalized_related.append({
+                "relation": relation["relation"],
+                "attempt_id": _validate_stable_id(relation["attempt_id"], "related attempt_id"),
+            })
+        result["related_attempts"] = normalized_related
+    return result
+
+
+def _validate_pre_run(value: Any) -> dict[str, Any]:
+    pre_run = _require_mapping(value, "ExecutionAttempt pre_run")
+    expected = {"repository_state", "workflow_identity", "actual_runtime_identity"}
+    allowed = expected | {"intended_execution_profile", "assignment_provenance", "conditions"}
+    missing = expected - set(pre_run)
+    extra = set(pre_run) - allowed
+    if missing or extra:
+        raise EvidenceRecordError(f"Invalid pre_run fields; missing={sorted(missing)}, extra={sorted(extra)}")
+    result: dict[str, Any] = {}
+    for field in ("repository_state", "workflow_identity", "actual_runtime_identity"):
+        if not isinstance(pre_run[field], Mapping):
+            raise EvidenceRecordError(f"pre_run {field} must be an object")
+        result[field] = deepcopy(pre_run[field])
+    if "intended_execution_profile" in pre_run:
+        if not isinstance(pre_run["intended_execution_profile"], Mapping):
+            raise EvidenceRecordError("pre_run intended_execution_profile must be an object")
+        result["intended_execution_profile"] = deepcopy(pre_run["intended_execution_profile"])
+    if "assignment_provenance" in pre_run:
+        if not isinstance(pre_run["assignment_provenance"], Mapping):
+            raise EvidenceRecordError("pre_run assignment_provenance must be an object")
+        result["assignment_provenance"] = deepcopy(pre_run["assignment_provenance"])
+    if "conditions" in pre_run:
+        if not isinstance(pre_run["conditions"], Mapping):
+            raise EvidenceRecordError("pre_run conditions must be an object")
+        result["conditions"] = deepcopy(pre_run["conditions"])
+    return result
+
+
+def _validate_execution(value: Any) -> dict[str, Any]:
+    execution = _require_mapping(value, "ExecutionAttempt execution")
+    expected = {"started_at", "termination_state"}
+    allowed = expected | {"finished_at", "terminated_at", "checks", "telemetry"}
+    missing = expected - set(execution)
+    extra = set(execution) - allowed
+    if missing or extra:
+        raise EvidenceRecordError(f"Invalid execution fields; missing={sorted(missing)}, extra={sorted(extra)}")
+    result: dict[str, Any] = {"started_at": execution["started_at"]}
+    if not isinstance(result["started_at"], str) or not result["started_at"].strip():
+        raise EvidenceRecordError("execution started_at must be a non-empty string")
+    termination_state = execution["termination_state"]
+    if not isinstance(termination_state, str) or not termination_state.strip():
+        raise EvidenceRecordError("execution termination_state must be a non-empty string")
+    result["termination_state"] = termination_state
+    for field in ("finished_at", "terminated_at"):
+        if field in execution:
+            value_at = execution[field]
+            if not isinstance(value_at, str) or not value_at.strip():
+                raise EvidenceRecordError(f"execution {field} must be a non-empty string")
+            result[field] = value_at
+    if "checks" in execution:
+        checks = execution["checks"]
+        if not isinstance(checks, list):
+            raise EvidenceRecordError("execution checks must be a list")
+        normalized_checks = []
+        for check in checks:
+            if not isinstance(check, Mapping):
+                raise EvidenceRecordError("Each execution check must be an object")
+            normalized_checks.append(deepcopy(check))
+        result["checks"] = normalized_checks
+    if "telemetry" in execution:
+        if not isinstance(execution["telemetry"], Mapping):
+            raise EvidenceRecordError("execution telemetry must be an object")
+        result["telemetry"] = deepcopy(execution["telemetry"])
+    return result
+
+
+def _validate_post_run(value: Any) -> dict[str, Any]:
+    post_run = _require_mapping(value, "ExecutionAttempt post_run")
+    if set(post_run) != {"repository_state"}:
+        raise EvidenceRecordError("post_run must contain repository_state only")
+    if not isinstance(post_run["repository_state"], Mapping):
+        raise EvidenceRecordError("post_run repository_state must be an object")
+    return {"repository_state": deepcopy(post_run["repository_state"])}
+
+
+def _validate_evidence(value: Any) -> dict[str, Any]:
+    evidence = _require_mapping(value, "ExecutionAttempt evidence")
+    if set(evidence) != {"schema_version", "collector_fingerprint"}:
+        raise EvidenceRecordError("evidence must contain schema_version and collector_fingerprint only")
+    if isinstance(evidence["schema_version"], bool) or evidence["schema_version"] != SCHEMA_VERSION:
+        raise EvidenceRecordError(f"Unsupported evidence schema_version {evidence['schema_version']!r}; expected {SCHEMA_VERSION}")
+    fingerprint = evidence["collector_fingerprint"]
+    if fingerprint is not None and not _is_sha256_reference(fingerprint):
+        raise EvidenceRecordError("evidence collector_fingerprint must be a sha256 reference or null")
+    return {"schema_version": SCHEMA_VERSION, "collector_fingerprint": fingerprint}
+
+
+class ExecutionAttempt:
+    """Validated ExecutionAttempt value; lifecycle persistence is delegated to later work."""
+
+    def __init__(self, record: Mapping[str, Any]):
+        self._record = validate_execution_attempt(record)
+        self.id = self._record["attempt_id"]
+
+    @property
+    def attempt_id(self) -> str:
+        return self._record["attempt_id"]
+
+    @property
+    def record(self) -> dict[str, Any]:
+        return deepcopy(self._record)
+
+    def create_in_store(self, store: EvidenceStore) -> "ExecutionAttempt":
+        store.create_attempt(self.attempt_id, self._record)
+        return self
+
+
+def validate_association(value: Any) -> dict[str, Any]:
+    record = _require_mapping(value, "Association")
+    required = {
+        "association_id",
+        "attempt_id",
+        "schema_version",
+        "record_type",
+        "type",
+        "producer",
+        "outcome_status",
+        "collected_at",
+    }
+    allowed = required | {"durable_artifact_ref", "provenance"}
+    missing = required - set(record)
+    extra = set(record) - allowed
+    if missing or extra:
+        raise EvidenceRecordError(f"Invalid Association fields; missing={sorted(missing)}, extra={sorted(extra)}")
+    if isinstance(record["schema_version"], bool) or record["schema_version"] != SCHEMA_VERSION:
+        raise EvidenceRecordError(f"Unsupported schema_version {record['schema_version']!r}; expected {SCHEMA_VERSION}")
+    if record["record_type"] != ASSOCIATION_TYPE:
+        raise EvidenceRecordError("Association record_type is invalid")
+    association_id = _validate_stable_id(record["association_id"], "Association association_id")
+    attempt_id = _validate_stable_id(record["attempt_id"], "Association attempt_id")
+    association_type = _validate_stable_id(record["type"], "Association type")
+    if not isinstance(record["producer"], Mapping):
+        raise EvidenceRecordError("Association producer must be an object")
+    if not isinstance(record["outcome_status"], Mapping):
+        raise EvidenceRecordError("Association outcome_status must be an object")
+    collected_at = record["collected_at"]
+    if not isinstance(collected_at, str) or not collected_at.strip():
+        raise EvidenceRecordError("Association collected_at must be a non-empty string")
+    result: dict[str, Any] = {
+        "association_id": association_id,
+        "attempt_id": attempt_id,
+        "schema_version": SCHEMA_VERSION,
+        "record_type": ASSOCIATION_TYPE,
+        "type": association_type,
+        "producer": deepcopy(record["producer"]),
+        "outcome_status": deepcopy(record["outcome_status"]),
+        "collected_at": collected_at,
+    }
+    if "durable_artifact_ref" in record:
+        artifact_ref = record["durable_artifact_ref"]
+        if artifact_ref is not None and not _is_sha256_reference(artifact_ref):
+            raise EvidenceRecordError("Association durable_artifact_ref must be a sha256 reference or null")
+        result["durable_artifact_ref"] = artifact_ref
+    if "provenance" in record:
+        if not isinstance(record["provenance"], Mapping):
+            raise EvidenceRecordError("Association provenance must be an object")
+        result["provenance"] = deepcopy(record["provenance"])
+    return result
+
+
+def _association_record(
+    association_id: str,
+    attempt_id: str,
+    record_type: str,
+    association_type: str,
+    producer: Mapping[str, Any],
+    outcome_status: Mapping[str, Any],
+    collected_at: str,
+    *,
+    durable_artifact_ref: str | None | object = _MISSING,
+    provenance: Mapping[str, Any] | object = _MISSING,
+) -> dict[str, Any]:
+    record: dict[str, Any] = {
+        "association_id": association_id,
+        "attempt_id": attempt_id,
+        "schema_version": SCHEMA_VERSION,
+        "record_type": record_type,
+        "type": association_type,
+        "producer": producer,
+        "outcome_status": outcome_status,
+        "collected_at": collected_at,
+    }
+    if durable_artifact_ref is not _MISSING:
+        record["durable_artifact_ref"] = durable_artifact_ref
+    if provenance is not _MISSING:
+        record["provenance"] = provenance
+    return record
+
+
+class Association:
+    """Validated immutable Association value persisted beside an attempt."""
+
+    def __init__(self, record: Mapping[str, Any]):
+        self._record = validate_association(record)
+
+    @property
+    def association_id(self) -> str:
+        return self._record["association_id"]
+
+    @property
+    def attempt_id(self) -> str:
+        return self._record["attempt_id"]
+
+    @property
+    def record(self) -> dict[str, Any]:
+        return deepcopy(self._record)
+
+    @classmethod
+    def create(
+        cls,
+        attempt_id: str,
+        association_id: str,
+        association_type: str,
+        producer: Mapping[str, Any],
+        outcome_status: Mapping[str, Any],
+        collected_at: str,
+        *,
+        durable_artifact_ref: str | None | object = _MISSING,
+        provenance: Mapping[str, Any] | object = _MISSING,
+    ) -> "Association":
+        return cls(_association_record(
+            association_id,
+            attempt_id,
+            ASSOCIATION_TYPE,
+            association_type,
+            producer,
+            outcome_status,
+            collected_at,
+            durable_artifact_ref=durable_artifact_ref,
+            provenance=provenance,
+        ))
+
+    def persist(self, store: EvidenceStore) -> "Association":
+        store.put_immutable_record(
+            ASSOCIATION_NAMESPACE, (self.attempt_id, self.association_id), self._record
+        )
+        return self
+
+
+def create_association(store: EvidenceStore, record: Mapping[str, Any]) -> Association:
+    return Association(record).persist(store)

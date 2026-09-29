@@ -86,7 +86,10 @@ class RunEvidenceAvailabilityTests(unittest.TestCase):
             self.assertTrue(info["available"])
             self.assertEqual([], info["missing"])
             self.assertIsNone(info["reason"])
-            self.assertEqual(str(repo / ".agents"), info["installation_root"])
+            self.assertEqual(
+                (repo / ".agents").resolve(),
+                Path(info["installation_root"]).resolve(),
+            )
             self.assertTrue(info["workflow"]["fingerprint"].startswith("sha256:"))
             self.assertEqual(before, after)
 
@@ -156,7 +159,10 @@ class RunEvidenceAvailabilityTests(unittest.TestCase):
             self.assertEqual(0, result.returncode, result.stderr)
             info = json.loads(result.stdout)
             self.assertTrue(info["available"])
-            self.assertEqual(str(repo / ".agents"), info["installation_root"])
+            self.assertEqual(
+                (repo / ".agents").resolve(),
+                Path(info["installation_root"]).resolve(),
+            )
 
     def test_git_metadata_failure_is_classified_as_unavailable(self):
         with tempfile.TemporaryDirectory() as tempdir:
@@ -190,11 +196,12 @@ class RunEvidenceAvailabilityTests(unittest.TestCase):
 
     def test_skill_declares_repo_local_precedence_and_single_skip(self):
         text = (SKILL / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("Repository-local `.agents/skills/` takes precedence", text)
-        self.assertIn("Do not probe a user-global skill path", text)
-        self.assertIn("run_evidence.py --repo <worktree> availability", text)
-        self.assertIn("do not retry evidence operations during this invocation", text)
-        self.assertIn("explicit repository, user, or machine", text)
+        normalized = " ".join(text.split())
+        self.assertIn("Repository-local `.agents/skills/` takes precedence", normalized)
+        self.assertIn("Do not probe a user-global skill path", normalized)
+        self.assertIn("run_evidence.py --repo <worktree> availability", normalized)
+        self.assertIn("do not retry evidence operations during this invocation", normalized)
+        self.assertIn("explicit repository, user, or machine", normalized)
 
 
 if __name__ == "__main__":

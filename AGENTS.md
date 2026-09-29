@@ -10,6 +10,12 @@
 - Resolve shared tooling from the same installation root as the active skill. For a project-local `.agents/skills/` installation, use only the sibling `.agents/scripts/`; do not mix project-local skills with user-global helpers or vice versa.
 - If optional shared tooling is missing or unavailable, follow the active skill's documented fallback behavior. Do not silently replace it with tooling from another installation root.
 
+## Development-profile installer maintenance
+
+- `scripts/install_development_skills.py` is the canonical installer for the predefined project-local development profile. When changing, renaming, moving, adding, or removing a skill that belongs in that profile, or when changing a shared runtime dependency required by those installed skills, inspect the installer in the same change.
+- Keep `DEVELOPMENT_SKILL_SOURCES`, `SHARED_SCRIPT_FILES`, focused installer tests, and README installation documentation synchronized. Do not assume that editing a source skill or shared script automatically updates the installation profile.
+- Preserve the installer's narrow ownership boundary: it may replace only the profile-selected skill directories, the explicitly managed shared script files, and its marked block in target `AGENTS.md`. Do not broaden it into a generic package manager unless a separate task explicitly requires that.
+
 ## Working on a specific named task (from official plan docs)
 
 - When finishing a task, do not update existing plan documents - write your results next to them either per task or in a dedicated file, if already present.

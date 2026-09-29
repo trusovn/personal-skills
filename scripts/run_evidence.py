@@ -17,15 +17,17 @@ import time
 from typing import Any
 import uuid
 
-from runtime_context import RuntimeContextError, load_runtime_context
-from workflow_version import WorkflowVersionError, get_workflow_version
-
 
 SCHEMA_VERSION = 1
 WORKFLOW_ID = "bounded-task-implementer"
 CLOSURE_OUTCOMES = ("completed", "reported_interrupted", "failed")
 SNAPSHOT_REF_PREFIX = "refs/personal-skills/run-evidence"
 RUN_ID_RE = re.compile(r"^run-[0-9]{8}T[0-9]{6}Z-[0-9a-f]{12}$")
+SHARED_DEPENDENCY_FILES = (
+    "workflow_version.py",
+    "runtime_context.py",
+    "runtime-context.schema.v1.json",
+)
 
 
 class RunEvidenceError(RuntimeError):
@@ -57,6 +59,51 @@ def _git(repo_root: Path, *args: str, env: dict[str, str] | None = None) -> str:
     return result.stdout
 
 
+def _shared_scripts_root() -> Path:
+    return Path(__file__).resolve().parent
+
+
+def _installation_root() -> Path:
+    return _shared_scripts_root().parent
+
+
+def _missing_shared_dependencies() -> list[str]:
+    scripts_root = _shared_scripts_root()
+    return [
+        name
+        for name in SHARED_DEPENDENCY_FILES
+        if not (scripts_root / name).is_file()
+    ]
+
+
+def _get_workflow_version(repo_root: Path, workflow_id: str) -> dict[str, object]:
+    try:
+        from workflow_version import WorkflowVersionError, get_workflow_version
+    except ImportError as exc:
+        raise RunEvidenceError(
+            f"Cannot load workflow-version helper beside run_evidence.py: {exc}"
+        ) from exc
+
+    try:
+        return get_workflow_version(repo_root, workflow_id)
+    except WorkflowVersionError as exc:
+        raise RunEvidenceError(str(exc)) from exc
+
+
+def _load_runtime_context(runtime_context_path: str | Path | None) -> dict[str, Any]:
+    try:
+        from runtime_context import RuntimeContextError, load_runtime_context
+    except ImportError as exc:
+        raise RunEvidenceError(
+            f"Cannot load runtime-context helper beside run_evidence.py: {exc}"
+        ) from exc
+
+    try:
+        return load_runtime_context(runtime_context_path)
+    except RuntimeContextError as exc:
+        raise RunEvidenceError(str(exc)) from exc
+
+
 def repository_root(start: str | Path = ".") -> Path:
     start_path = Path(start).resolve()
     root = _git(start_path, "rev-parse", "--show-toplevel").strip()
@@ -66,15 +113,74 @@ def repository_root(start: str | Path = ".") -> Path:
 def storage_root(repo_root: Path) -> Path:
     git_dir = _git(repo_root, "rev-parse", "--absolute-git-dir").strip()
     root = Path(git_dir) / "personal-skills" / "run-evidence"
-    root.mkdir(parents=True, exist_ok=True)
+    try:
+        root.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise RunEvidenceError(
+            f"Cannot prepare run-evidence storage under Git metadata at {root}: {exc}"
+        ) from exc
     return root
 
 
+def evidence_availability(repo_root: Path) -> dict[str, Any]:
+    """Return one cheap preflight result without starting or mutating a run."""
+    repo_root = Path(repo_root).resolve()
+    missing = _missing_shared_dependencies()
+    base = {
+        "available": False,
+        "installation_root": str(_installation_root()),
+        "scripts_root": str(_shared_scripts_root()),
+        "missing": missing,
+    }
+    if missing:
+        return {
+            **base,
+            "reason": "missing_shared_dependencies",
+            "error": "Missing shared run-evidence dependencies: " + ", ".join(missing),
+        }
+
+    try:
+        workflow = _get_workflow_version(repo_root, WORKFLOW_ID)
+    except RunEvidenceError as exc:
+        return {
+            **base,
+            "reason": "workflow_unavailable",
+            "error": str(exc),
+        }
+
+    try:
+        root = storage_root(repo_root)
+        probe = root / f".availability-{os.getpid()}-{uuid.uuid4().hex}.tmp"
+        probe.write_text("availability\n", encoding="utf-8")
+        probe.unlink()
+    except (RunEvidenceError, OSError) as exc:
+        return {
+            **base,
+            "reason": "git_metadata_unwritable",
+            "error": str(exc),
+        }
+
+    return {
+        **base,
+        "available": True,
+        "reason": None,
+        "error": None,
+        "storage_root": str(root),
+        "workflow": {
+            "id": WORKFLOW_ID,
+            "fingerprint": workflow["fingerprint"],
+        },
+    }
+
+
 def _atomic_write_json(path: Path, value: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
-    temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    os.replace(temporary, path)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
+        temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        os.replace(temporary, path)
+    except OSError as exc:
+        raise RunEvidenceError(f"Cannot write run evidence at {path}: {exc}") from exc
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -84,6 +190,8 @@ def _read_json(path: Path) -> dict[str, Any]:
         raise RunEvidenceError(f"Run evidence file does not exist: {path}") from exc
     except json.JSONDecodeError as exc:
         raise RunEvidenceError(f"Run evidence file is invalid JSON: {path}: {exc}") from exc
+    except OSError as exc:
+        raise RunEvidenceError(f"Cannot read run evidence file {path}: {exc}") from exc
     if not isinstance(value, dict):
         raise RunEvidenceError(f"Run evidence file must contain a JSON object: {path}")
     return value
@@ -162,7 +270,10 @@ def _snapshot_ref(run_id: str, boundary: str) -> str:
 def _capture_worktree_tree(repo_root: Path, run_id: str, boundary: str) -> str:
     root = storage_root(repo_root)
     tmp_root = root / "tmp"
-    tmp_root.mkdir(parents=True, exist_ok=True)
+    try:
+        tmp_root.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise RunEvidenceError(f"Cannot prepare snapshot workspace at {tmp_root}: {exc}") from exc
     with tempfile.TemporaryDirectory(prefix="snapshot-", dir=tmp_root) as tempdir:
         index_path = Path(tempdir) / "index"
         env = os.environ.copy()
@@ -221,8 +332,8 @@ def begin_run(
         raise ActiveRunError(existing)
 
     run_id = _new_run_id()
-    workflow = get_workflow_version(repo_root, WORKFLOW_ID)
-    runtime = load_runtime_context(runtime_context_path)
+    workflow = _get_workflow_version(repo_root, WORKFLOW_ID)
+    runtime = _load_runtime_context(runtime_context_path)
     manifest = {
         "schema_version": SCHEMA_VERSION,
         "run_id": run_id,
@@ -277,7 +388,10 @@ def _clear_active(root: Path, run_id: str) -> None:
         return
     active = _read_json(path)
     if active.get("run_id") == run_id:
-        path.unlink()
+        try:
+            path.unlink()
+        except OSError as exc:
+            raise RunEvidenceError(f"Cannot clear active run marker {path}: {exc}") from exc
 
 
 def finish_run(repo_root: Path, run_id: str, outcome: str) -> dict[str, Any]:
@@ -385,6 +499,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo", default=".", help="Path inside the target Git worktree")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    subparsers.add_parser(
+        "availability",
+        help="Check shared dependencies, workflow discovery, and Git-metadata writability",
+    )
+
     begin = subparsers.add_parser("begin", help="Capture the beginning of one implementation run")
     begin.add_argument("--task-id")
     begin.add_argument("--task-brief")
@@ -413,6 +532,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         repo_root = _cli_repo(args)
+        if args.command == "availability":
+            result = evidence_availability(repo_root)
+            _print_json(result)
+            return 0 if result["available"] else 2
         if args.command == "begin":
             manifest = begin_run(
                 repo_root,
@@ -481,8 +604,14 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 3
-    except (RunEvidenceError, RuntimeContextError, WorkflowVersionError) as exc:
+    except RunEvidenceError as exc:
         print(json.dumps({"error": str(exc), "ok": False}, sort_keys=True), file=sys.stderr)
+        return 2
+    except OSError as exc:
+        print(
+            json.dumps({"error": f"OS error during run-evidence operation: {exc}", "ok": False}, sort_keys=True),
+            file=sys.stderr,
+        )
         return 2
     return 2
 

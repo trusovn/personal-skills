@@ -51,6 +51,50 @@ Current source skills:
 
 ## Installation and shared integrations
 
+### Preferred development-profile installation
+
+For another local Git repository that should receive the normal bounded-development
+skill set, use the canonical installer rather than manually copying individual
+skills and shared helpers:
+
+```bash
+python3 /path/to/personal-skills/scripts/install_development_skills.py \
+  /path/to/personal-skills \
+  /path/to/target-repo
+```
+
+The predefined `development` profile installs the seven task-implementation-flow
+skills plus `senior-code-review`, `testing-discipline`, and `session-handoff`.
+It also installs the shared workflow/runtime/evidence files required by the
+current bounded implementation integration. `task-orchestrator`, foundation
+skills, planning skills, and other source skills remain explicit installs rather
+than silently expanding this everyday profile.
+
+The installer:
+
+- copies complete selected skill packages into `.agents/skills/` while preserving
+  their source-relative nested layout;
+- replaces only those selected skill directories on rerun, so stale files inside
+  a managed package are removed without deleting unrelated local skills;
+- updates only the explicitly managed shared files under `.agents/scripts/`;
+- preserves existing target `AGENTS.md` content and adds/updates one marked
+  project-local skill-resolution block;
+- validates the staged evidence/runtime installation before replacing managed
+  targets and runs the installed `run_evidence.py ... availability` check again
+  after replacement; and
+- is safe to rerun as the normal update mechanism for this profile.
+
+**Maintenance contract for future skill changes:**
+`scripts/install_development_skills.py` is part of the distribution surface.
+Any change that renames, moves, adds, or removes a skill that belongs in the
+`development` profile, or changes shared runtime files required by those skills,
+must inspect and, when needed, update `DEVELOPMENT_SKILL_SOURCES`,
+`SHARED_SCRIPT_FILES`, `tests/test_install_development_skills.py`, and this
+installation documentation in the same change. Root `AGENTS.md` repeats this
+rule so an agent working on future skill updates sees it before finishing.
+
+### Manual/project-specific installation
+
 This source repository keeps editable skills under `skills/` and shared tooling
 under `scripts/`. For a project-local manual installation, use the project's
 `.agents/` namespace rather than adding agent infrastructure to the

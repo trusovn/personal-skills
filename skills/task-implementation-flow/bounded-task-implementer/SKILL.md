@@ -61,18 +61,48 @@ that recommendation mandatory.
 
 When the canonical run-evidence shared tooling for this skill installation is
 available, ordinary guided execution uses it as best-effort sidecar instrumentation.
-Resolve shared tooling by the installation convention documented in the root README;
-do not assume it must live at the target repository root. Evidence collection
-does not invalidate an otherwise executable bounded task when the tooling is
-missing or fails. Only a repository, user, or machine contract that explicitly
-requires instrumentation may make collection mandatory.
+Resolve the active installation before invoking evidence tooling. Repository-local `.agents/skills/` takes precedence over user-global skill installations for work in that repository. When a matching `bounded-task-implementer` exists under the
+repository's `.agents/skills/` tree, read and use that copy and resolve shared
+tooling only from the sibling `.agents/scripts/` directory. Do not probe a
+user-global skill path after a repository-local matching skill has been found.
+
+For this source repository, the equivalent installation root is the repository
+itself: skills live under `skills/` and shared tooling under `scripts/`. Do not
+assume shared tooling lives at an application's repository root and do not mix a
+skill from one installation root with helper scripts from another.
+
+Before the first evidence lifecycle operation, perform one cheap availability
+check for the resolved installation:
+
+1. confirm that the resolved shared-scripts directory contains
+   `run_evidence.py`, `workflow_version.py`, `runtime_context.py`, and
+   `runtime-context.schema.v1.json`;
+2. if they are present, run
+   `python3 <resolved-scripts>/run_evidence.py --repo <worktree> availability`;
+3. treat a successful `available: true` result as permission to use the normal
+   evidence lifecycle for this invocation.
+
+If the helper set is incomplete, the availability probe reports unavailable, or
+the first best-effort evidence operation still fails, mark optional evidence as
+unavailable for the remainder of this guided implementer invocation. Continue
+the task and do not retry evidence operations during this invocation. Report the
+missing instrumentation truthfully when useful. This skip-once behavior is
+invocation-local only; it does not create repository state or disable evidence
+for later invocations.
+
+Evidence collection does not invalidate an otherwise executable bounded task
+when tooling is missing or fails. An explicit repository, user, or machine
+contract that requires instrumentation remains strict: an unavailable or failed
+availability check is then a blocking instrumentation failure rather than a
+best-effort skip.
 
 Do not create a task brief, task ID, task package, runtime identity, or other
 formal artifact solely for evidence collection. Pass task metadata only when it
 already exists. Runtime identity is optional and must come through the shared
 runtime-context contract, never model self-identification.
 
-After the compact self-preflight and before the first implementation edit:
+After the compact self-preflight and before the first implementation edit, when
+evidence remains available:
 
 - query the current worktree for an active evidence run;
 - when taking over an open run whose original invocation never finished,
@@ -80,8 +110,8 @@ After the compact self-preflight and before the first implementation edit:
   as uncertain rather than attributing all intervening changes to the prior
   agent;
 - begin one new evidence run for this implementer invocation; and
-- if any best-effort evidence operation fails in guided mode, continue the task
-  and report the missing instrumentation truthfully when useful.
+- if any best-effort evidence operation fails in guided mode, apply the
+  invocation-local skip above and continue the task.
 
 On normal completion, close the evidence run with outcome `completed`. When
 intentionally stopping or handing off before completion, close it with

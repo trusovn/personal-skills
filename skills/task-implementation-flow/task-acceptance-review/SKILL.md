@@ -103,6 +103,18 @@ independent proof in either profile.
    state change, then execute the next real occurrence in authorized disposable
    state. Do not infer the second occurrence from a pure function or worker
    claim.
+
+   When a required/material row depends on a machine-readable schema or other
+   executable validator contract, independently exercise that validator rather
+   than treating schema text, producer-side validation, deserialization, or an
+   unrelated passing suite as proof. Use at least one instance that should be
+   valid and one deliberately invalid instance that targets the changed or
+   acceptance-relevant constraint, and confirm the validator accepts and rejects
+   them respectively. For JSON Schema, use a validator that implements the
+   schema's declared draft (for example Draft 2020-12 when the schema declares
+   it). If the required validator boundary cannot be executed, keep that ledger
+   row `blocked` or `unchecked` with the concrete reason; it cannot support
+   `ACCEPT`.
 6. Decide broad-gate ownership explicitly:
    - Immediately before launching a broad gate, reconcile the frozen ledger
      against the task contract and scoped diff. Proceed only when every safely
@@ -284,6 +296,10 @@ write exception is the explicit post-verdict tests-only protocol above.
 - Scope is safely separated from user work.
 - Every required/material ledger row is `pass`, `fail`, `blocked`, or
   `unchecked` with a reason, using current evidence for the reviewed bytes.
+- Any required/material executable schema boundary has current validator
+  evidence from both a valid instance and a deliberately invalid instance that
+  targets the relevant constraint; otherwise its row remains blocked/unchecked
+  and cannot support `ACCEPT`.
 - Relevant lifecycle and interacting-state risks receive adversarial evidence.
 - Independent findings are batched where safe; findings name the invariant and
   bounded sibling surface and carry stable IDs; clean work gets no invented

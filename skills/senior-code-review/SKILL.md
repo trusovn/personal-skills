@@ -39,7 +39,9 @@ If requirements are incomplete, infer only what established code, tests, contrac
 
 ## 2. Build a change and risk map
 
-Read the complete diff before commenting line by line. Summarize privately:
+Before substantive review reasoning, candidate-finding generation, or dimension selection, read [references/review-dimensions.md](references/review-dimensions.md). This reference read is a mandatory prerequisite for every invocation of this skill, not an optional checklist step. Apply every relevant dimension and skip only dimensions that cannot affect the scoped change.
+
+Then read the complete diff before commenting line by line. Summarize privately:
 
 - behavior added, removed, or altered;
 - entry points and affected callers;
@@ -51,8 +53,6 @@ Read the complete diff before commenting line by line. Summarize privately:
 - tests changed and important behavior left untested.
 
 Prioritize review effort by blast radius and irreversibility. Authentication, authorization, money, destructive writes, migrations, shared state, public APIs, and silent data corruption deserve deeper tracing than local formatting changes.
-
-Read [references/review-dimensions.md](references/review-dimensions.md) and apply every relevant dimension. Skip dimensions that cannot affect the scoped change.
 
 ## 3. Trace behavior through the system
 
@@ -149,6 +149,7 @@ Keep the report concise enough to act on. Explain why each finding matters; do n
 
 Before returning:
 
+- `references/review-dimensions.md` was read in this invocation before substantive review reasoning, and every dimension relevant to the scoped change was considered.
 - The scope and merge base are explicit.
 - Intent and material assumptions are explicit.
 - Relevant high-risk paths were traced end to end.

@@ -1,11 +1,11 @@
 import importlib.util
 import json
-import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -77,33 +77,16 @@ def init_repo(repo: Path, *, ignore_agents: bool = True, agents_text: str | None
     git(repo, "commit", "-qm", "baseline")
 
 
-def run_installer(source_repo: Path, target_repo: Path) -> subprocess.CompletedProcess[str]:
+def run_installer(
+    target_repo: Path, *, cwd: Path = ROOT, extra_args: tuple[str, ...] = ()
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [sys.executable, str(INSTALLER_PATH), str(source_repo), str(target_repo)],
-        cwd=ROOT,
+        [sys.executable, str(INSTALLER_PATH), str(target_repo), *extra_args],
+        cwd=cwd,
         capture_output=True,
         text=True,
         check=False,
     )
-
-
-def create_source_repo(repo: Path) -> None:
-    for _, relative in EXPECTED_DEVELOPMENT_SKILL_SOURCES:
-        source = ROOT / relative
-        destination = repo / relative
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(source, destination)
-
-    scripts = repo / "scripts"
-    scripts.mkdir(parents=True)
-    for name in installer.SHARED_SCRIPT_FILES:
-        shutil.copy2(ROOT / "scripts" / name, scripts / name)
-
-    guide = repo / installer.PROFILE_SKILLS_README
-    guide.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / installer.PROFILE_SKILLS_README, guide)
-
-    init_repo(repo, agents_text="# Source repository\n")
 
 
 class DevelopmentSkillInstallerTests(unittest.TestCase):
@@ -135,7 +118,7 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
             repo = Path(tempdir)
             init_repo(repo, agents_text="# Project instructions\n\nKeep this line.\n")
 
-            result = run_installer(ROOT, repo)
+            result = run_installer(repo)
 
             self.assertEqual(0, result.returncode, result.stderr)
             info = json.loads(result.stdout)
@@ -203,7 +186,7 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
             repo = Path(tempdir)
             init_repo(repo)
 
-            first = run_installer(ROOT, repo)
+            first = run_installer(repo)
             self.assertEqual(0, first.returncode, first.stderr)
 
             bounded = (
@@ -227,7 +210,7 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
             unmanaged_script.write_text("VALUE = 1\n", encoding="utf-8")
 
             agents_before = (repo / "AGENTS.md").read_text(encoding="utf-8")
-            second = run_installer(ROOT, repo)
+            second = run_installer(repo)
 
             self.assertEqual(0, second.returncode, second.stderr)
             self.assertFalse((bounded / "stale-file.txt").exists())
@@ -241,36 +224,31 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
             self.assertEqual(agents_before, agents_after)
             self.assertEqual(1, agents_after.count(installer.AGENTS_BEGIN))
 
-    def test_source_repository_can_install_profile_into_itself(self):
-        with tempfile.TemporaryDirectory() as tempdir:
-            repo = Path(tempdir)
-            create_source_repo(repo)
-            source_skill = repo / "skills" / "ai-flow-foundation" / "SKILL.md"
-            source_bytes = source_skill.read_bytes()
-            source_guide = repo / installer.PROFILE_SKILLS_README
-            source_guide_bytes = source_guide.read_bytes()
+    def test_source_repository_is_inferred_from_installer_when_cwd_differs(self):
+        with (
+            tempfile.TemporaryDirectory() as target_dir,
+            tempfile.TemporaryDirectory() as cwd_dir,
+        ):
+            target = Path(target_dir)
+            init_repo(target)
 
-            result = run_installer(repo, repo)
+            result = run_installer(target, cwd=Path(cwd_dir))
 
             self.assertEqual(0, result.returncode, result.stderr)
             info = json.loads(result.stdout)
-            self.assertEqual(str(repo.resolve()), info["source_repo"])
-            self.assertEqual(str(repo.resolve()), info["target_repo"])
-            self.assertEqual(source_bytes, source_skill.read_bytes())
-            self.assertEqual(source_guide_bytes, source_guide.read_bytes())
-            self.assertEqual(
-                source_bytes,
-                (
-                    repo / ".agents" / "skills" / "ai-flow-foundation" / "SKILL.md"
-                ).read_bytes(),
-            )
-            self.assertEqual(
-                source_guide_bytes,
-                (repo / ".agents" / "skills" / "README.md").read_bytes(),
-            )
-            agents_text = (repo / "AGENTS.md").read_text(encoding="utf-8")
-            self.assertIn("# Source repository", agents_text)
-            self.assertEqual(1, agents_text.count(installer.AGENTS_BEGIN))
+            self.assertEqual(str(ROOT), info["source_repo"])
+            self.assertEqual(str(target.resolve()), info["target_repo"])
+
+    def test_cli_rejects_the_removed_source_repository_argument(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            target = Path(tempdir)
+            init_repo(target)
+
+            result = run_installer(target, extra_args=(str(target),))
+
+            self.assertEqual(2, result.returncode)
+            self.assertIn("unrecognized arguments", result.stderr)
+            self.assertFalse((target / ".agents").exists())
 
     def test_missing_source_dependency_fails_before_target_installation(self):
         with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
@@ -278,10 +256,12 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
             target = Path(target_dir)
             init_repo(target, agents_text="# Existing\n")
 
-            result = run_installer(source, target)
+            with mock.patch.object(installer, "SOURCE_REPO", source):
+                with self.assertRaisesRegex(
+                    installer.InstallError, "missing development-profile inputs"
+                ):
+                    installer.install(target)
 
-            self.assertEqual(2, result.returncode)
-            self.assertIn("missing development-profile inputs", result.stderr)
             self.assertFalse((target / ".agents").exists())
             self.assertEqual(
                 "# Existing\n",
@@ -300,7 +280,7 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
                 ),
             )
 
-            result = run_installer(ROOT, repo)
+            result = run_installer(repo)
 
             self.assertEqual(2, result.returncode)
             self.assertIn("malformed development-install markers", result.stderr)

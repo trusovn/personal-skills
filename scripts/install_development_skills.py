@@ -14,6 +14,7 @@ from pathlib import Path
 
 
 PROFILE_NAME = "development"
+SOURCE_REPO = Path(__file__).resolve().parents[1]
 
 # MAINTENANCE CONTRACT:
 # When a selected skill is renamed/moved/added/removed, or when its shared runtime
@@ -270,8 +271,8 @@ def _write_agents(target_repo: Path, content: str) -> None:
         raise
 
 
-def install(source_repo: Path, target_repo: Path) -> dict[str, object]:
-    source_repo = source_repo.expanduser().resolve()
+def install(target_repo: Path) -> dict[str, object]:
+    source_repo = SOURCE_REPO
     target_repo = target_repo.expanduser().resolve()
 
     _validate_source(source_repo)
@@ -317,12 +318,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Install the predefined personal-skills development profile."
     )
-    parser.add_argument("source_repo", help="Path to the personal-skills source repository")
     parser.add_argument("target_repo", help="Path to the target Git repository root")
     args = parser.parse_args()
 
     try:
-        result = install(Path(args.source_repo), Path(args.target_repo))
+        result = install(Path(args.target_repo))
     except (InstallError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

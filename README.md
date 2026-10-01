@@ -60,7 +60,6 @@ manually copying individual skills and shared helpers:
 
 ```bash
 python3 /path/to/personal-skills/scripts/install_development_skills.py \
-  /path/to/personal-skills \
   /path/to/target-repo
 ```
 
@@ -76,6 +75,7 @@ integration.
 
 The installer:
 
+- locates source skills and shared helpers relative to its own script path;
 - copies complete selected skill packages into `.agents/skills/` while preserving
   their source-relative nested layout;
 - copies `skills/README.md` to `.agents/skills/README.md` as the concise usage,
@@ -95,7 +95,7 @@ The installer:
 To refresh the project-local installation in this source repository itself, run:
 
 ```bash
-python3 scripts/install_development_skills.py . .
+python3 scripts/install_development_skills.py .
 ```
 
 **Maintenance contract for future skill changes:**

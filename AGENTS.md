@@ -13,8 +13,8 @@
 ## Development-profile installer maintenance
 
 - `scripts/install_development_skills.py` is the canonical installer for the predefined project-local development profile. When changing, renaming, moving, adding, or removing a skill that belongs in that profile, or when changing a shared runtime dependency required by those installed skills, inspect the installer in the same change.
-- Keep `DEVELOPMENT_SKILL_SOURCES`, `SHARED_SCRIPT_FILES`, focused installer tests, and README installation documentation synchronized. Do not assume that editing a source skill or shared script automatically updates the installation profile.
-- Preserve the installer's narrow ownership boundary: it may replace only the profile-selected skill directories, the explicitly managed shared script files, and its marked block in target `AGENTS.md`. Do not broaden it into a generic package manager unless a separate task explicitly requires that.
+- Keep `DEVELOPMENT_SKILL_SOURCES`, `PROFILE_SKILLS_README`, `SHARED_SCRIPT_FILES`, focused installer tests, and README installation documentation synchronized. Do not assume that editing a source skill or shared script automatically updates the installation profile.
+- Preserve the installer's narrow ownership boundary: it may replace only the profile-selected skill directories, the explicitly managed profile guide, the explicitly managed shared script files, and its marked block in target `AGENTS.md`. Do not broaden it into a generic package manager unless a separate task explicitly requires that.
 
 ## Working on a specific named task (from official plan docs)
 

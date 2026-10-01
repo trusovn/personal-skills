@@ -6,6 +6,7 @@ agent skills used by the Local Workbench.
 
 ```text
 skills/
+├── README.md
 ├── <skill-name>/
 │   ├── SKILL.md
 │   └── <skill-owned references, scripts, fixtures, or evals>
@@ -53,9 +54,9 @@ Current source skills:
 
 ### Preferred development-profile installation
 
-For another local Git repository that should receive the normal bounded-development
-skill set, use the canonical installer rather than manually copying individual
-skills and shared helpers:
+For a local Git repository that should receive the normal development skill set,
+including this source repository, use the canonical installer rather than
+manually copying individual skills and shared helpers:
 
 ```bash
 python3 /path/to/personal-skills/scripts/install_development_skills.py \
@@ -63,17 +64,22 @@ python3 /path/to/personal-skills/scripts/install_development_skills.py \
   /path/to/target-repo
 ```
 
-The predefined `development` profile installs the seven task-implementation-flow
-skills plus `senior-code-review`, `testing-discipline`, and `session-handoff`.
-It also installs the shared workflow/runtime/evidence files required by the
-current bounded implementation integration. `task-orchestrator`, foundation
-skills, planning skills, and other source skills remain explicit installs rather
-than silently expanding this everyday profile.
+The predefined development profile (`development`) starts at repository-stage
+project direction and installs the foundation and delivery-planning skills,
+the seven task-implementation-flow skills, `senior-code-review`,
+`testing-discipline`, and `session-handoff`. Pre-repository idea work
+(`ask-user-questions`, `idea-challenger`, `idea-investigator`, and `idea-brief`),
+the specialist `skill-creator`, and the explicitly invoked `task-orchestrator`
+remain separate installs. The profile also installs the shared
+workflow/runtime/evidence files required by the current bounded implementation
+integration.
 
 The installer:
 
 - copies complete selected skill packages into `.agents/skills/` while preserving
   their source-relative nested layout;
+- copies `skills/README.md` to `.agents/skills/README.md` as the concise usage,
+  input, output, and call-order guide for the installed profile;
 - replaces only those selected skill directories on rerun, so stale files inside
   a managed package are removed without deleting unrelated local skills;
 - updates only the explicitly managed shared files under `.agents/scripts/`;
@@ -81,17 +87,26 @@ The installer:
   project-local skill-resolution block;
 - validates the staged evidence/runtime installation before replacing managed
   targets and runs the installed `run_evidence.py ... availability` check again
-  after replacement; and
+  after replacement;
+- supports using the source repository as the target because all selected files
+  are staged before managed destinations are replaced; and
 - is safe to rerun as the normal update mechanism for this profile.
+
+To refresh the project-local installation in this source repository itself, run:
+
+```bash
+python3 scripts/install_development_skills.py . .
+```
 
 **Maintenance contract for future skill changes:**
 `scripts/install_development_skills.py` is part of the distribution surface.
 Any change that renames, moves, adds, or removes a skill that belongs in the
 `development` profile, or changes shared runtime files required by those skills,
 must inspect and, when needed, update `DEVELOPMENT_SKILL_SOURCES`,
-`SHARED_SCRIPT_FILES`, `tests/test_install_development_skills.py`, and this
-installation documentation in the same change. Root `AGENTS.md` repeats this
-rule so an agent working on future skill updates sees it before finishing.
+`PROFILE_SKILLS_README`, `SHARED_SCRIPT_FILES`,
+`tests/test_install_development_skills.py`, and this installation documentation
+in the same change. Root `AGENTS.md` repeats this rule so an agent working on
+future skill updates sees it before finishing.
 
 ### Manual/project-specific installation
 

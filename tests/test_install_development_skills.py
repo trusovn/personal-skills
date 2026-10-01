@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -14,6 +15,43 @@ SPEC = importlib.util.spec_from_file_location("install_development_skills", INST
 installer = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
 SPEC.loader.exec_module(installer)
+
+
+EXPECTED_DEVELOPMENT_SKILL_SOURCES = (
+    ("project-direction", "skills/project-direction"),
+    ("project-bootstrap", "skills/project-bootstrap"),
+    ("ai-flow-foundation", "skills/ai-flow-foundation"),
+    ("repo-foundation", "skills/repo-foundation"),
+    ("architecture-guardrails", "skills/architecture-guardrails"),
+    ("foundation-readiness-review", "skills/foundation-readiness-review"),
+    ("project-delivery-plan", "skills/project-delivery-plan"),
+    ("project-plan-verification", "skills/project-plan-verification"),
+    ("task-brief-designer", "skills/task-implementation-flow/task-brief-designer"),
+    ("task-preflight", "skills/task-implementation-flow/task-preflight"),
+    (
+        "task-verification-designer",
+        "skills/task-implementation-flow/task-verification-designer",
+    ),
+    (
+        "bounded-task-implementer",
+        "skills/task-implementation-flow/bounded-task-implementer",
+    ),
+    (
+        "task-maintainability-review",
+        "skills/task-implementation-flow/task-maintainability-review",
+    ),
+    (
+        "task-contract-registry-updater",
+        "skills/task-implementation-flow/task-contract-registry-updater",
+    ),
+    (
+        "task-acceptance-review",
+        "skills/task-implementation-flow/task-acceptance-review",
+    ),
+    ("senior-code-review", "skills/senior-code-review"),
+    ("testing-discipline", "skills/testing-discipline"),
+    ("session-handoff", "skills/session-handoff"),
+)
 
 
 def git(repo: Path, *args: str) -> str:
@@ -49,7 +87,49 @@ def run_installer(source_repo: Path, target_repo: Path) -> subprocess.CompletedP
     )
 
 
+def create_source_repo(repo: Path) -> None:
+    for _, relative in EXPECTED_DEVELOPMENT_SKILL_SOURCES:
+        source = ROOT / relative
+        destination = repo / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(source, destination)
+
+    scripts = repo / "scripts"
+    scripts.mkdir(parents=True)
+    for name in installer.SHARED_SCRIPT_FILES:
+        shutil.copy2(ROOT / "scripts" / name, scripts / name)
+
+    guide = repo / installer.PROFILE_SKILLS_README
+    guide.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / installer.PROFILE_SKILLS_README, guide)
+
+    init_repo(repo, agents_text="# Source repository\n")
+
+
 class DevelopmentSkillInstallerTests(unittest.TestCase):
+    def test_profile_contains_repo_stage_and_bounded_delivery_skills(self):
+        self.assertEqual(
+            EXPECTED_DEVELOPMENT_SKILL_SOURCES,
+            installer.DEVELOPMENT_SKILL_SOURCES,
+        )
+
+    def test_profile_guide_covers_every_installed_skill_and_usage_contract(self):
+        guide = (ROOT / installer.PROFILE_SKILLS_README).read_text(encoding="utf-8")
+
+        self.assertIn("## Recommended flow", guide)
+        self.assertIn("## Skill reference", guide)
+        for name, _ in EXPECTED_DEVELOPMENT_SKILL_SOURCES:
+            self.assertIn(f"| `{name}` |", guide)
+        for name in (
+            "ask-user-questions",
+            "idea-challenger",
+            "idea-investigator",
+            "idea-brief",
+        ):
+            self.assertNotIn(f"| `{name}` |", guide)
+        for heading in ("Skill", "What it does", "Requires", "Produces"):
+            self.assertIn(heading, guide)
+
     def test_installs_profile_preserves_agents_text_and_final_availability(self):
         with tempfile.TemporaryDirectory() as tempdir:
             repo = Path(tempdir)
@@ -85,6 +165,12 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
                     installed.read_bytes(),
                     name,
                 )
+
+            installed_guide = repo / ".agents" / "skills" / "README.md"
+            self.assertEqual(
+                (ROOT / installer.PROFILE_SKILLS_README).read_bytes(),
+                installed_guide.read_bytes(),
+            )
 
             agents_text = (repo / "AGENTS.md").read_text(encoding="utf-8")
             self.assertIn("# Project instructions", agents_text)
@@ -128,6 +214,8 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
                 / "bounded-task-implementer"
             )
             (bounded / "stale-file.txt").write_text("stale\n", encoding="utf-8")
+            installed_guide = repo / ".agents" / "skills" / "README.md"
+            installed_guide.write_text("stale guide\n", encoding="utf-8")
 
             unmanaged_skill = repo / ".agents" / "skills" / "custom-local-skill"
             unmanaged_skill.mkdir(parents=True)
@@ -143,11 +231,46 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
 
             self.assertEqual(0, second.returncode, second.stderr)
             self.assertFalse((bounded / "stale-file.txt").exists())
+            self.assertEqual(
+                (ROOT / installer.PROFILE_SKILLS_README).read_bytes(),
+                installed_guide.read_bytes(),
+            )
             self.assertTrue((unmanaged_skill / "SKILL.md").is_file())
             self.assertEqual("VALUE = 1\n", unmanaged_script.read_text(encoding="utf-8"))
             agents_after = (repo / "AGENTS.md").read_text(encoding="utf-8")
             self.assertEqual(agents_before, agents_after)
             self.assertEqual(1, agents_after.count(installer.AGENTS_BEGIN))
+
+    def test_source_repository_can_install_profile_into_itself(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            repo = Path(tempdir)
+            create_source_repo(repo)
+            source_skill = repo / "skills" / "ai-flow-foundation" / "SKILL.md"
+            source_bytes = source_skill.read_bytes()
+            source_guide = repo / installer.PROFILE_SKILLS_README
+            source_guide_bytes = source_guide.read_bytes()
+
+            result = run_installer(repo, repo)
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            info = json.loads(result.stdout)
+            self.assertEqual(str(repo.resolve()), info["source_repo"])
+            self.assertEqual(str(repo.resolve()), info["target_repo"])
+            self.assertEqual(source_bytes, source_skill.read_bytes())
+            self.assertEqual(source_guide_bytes, source_guide.read_bytes())
+            self.assertEqual(
+                source_bytes,
+                (
+                    repo / ".agents" / "skills" / "ai-flow-foundation" / "SKILL.md"
+                ).read_bytes(),
+            )
+            self.assertEqual(
+                source_guide_bytes,
+                (repo / ".agents" / "skills" / "README.md").read_bytes(),
+            )
+            agents_text = (repo / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("# Source repository", agents_text)
+            self.assertEqual(1, agents_text.count(installer.AGENTS_BEGIN))
 
     def test_missing_source_dependency_fails_before_target_installation(self):
         with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
@@ -190,6 +313,7 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
         for text in (agents, readme):
             self.assertIn("scripts/install_development_skills.py", text)
             self.assertIn("DEVELOPMENT_SKILL_SOURCES", text)
+            self.assertIn("PROFILE_SKILLS_README", text)
             self.assertIn("SHARED_SCRIPT_FILES", text)
 
         self.assertIn("same change", agents)

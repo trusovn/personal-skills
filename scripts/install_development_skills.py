@@ -17,9 +17,17 @@ PROFILE_NAME = "development"
 
 # MAINTENANCE CONTRACT:
 # When a selected skill is renamed/moved/added/removed, or when its shared runtime
-# dependencies change, update this profile, the focused installer tests, and the
-# installation documentation in the same change.
+# dependencies change, update this profile, the profile guide, the focused
+# installer tests, and the installation documentation in the same change.
 DEVELOPMENT_SKILL_SOURCES: tuple[tuple[str, str], ...] = (
+    ("project-direction", "skills/project-direction"),
+    ("project-bootstrap", "skills/project-bootstrap"),
+    ("ai-flow-foundation", "skills/ai-flow-foundation"),
+    ("repo-foundation", "skills/repo-foundation"),
+    ("architecture-guardrails", "skills/architecture-guardrails"),
+    ("foundation-readiness-review", "skills/foundation-readiness-review"),
+    ("project-delivery-plan", "skills/project-delivery-plan"),
+    ("project-plan-verification", "skills/project-plan-verification"),
     ("task-brief-designer", "skills/task-implementation-flow/task-brief-designer"),
     ("task-preflight", "skills/task-implementation-flow/task-preflight"),
     ("task-verification-designer", "skills/task-implementation-flow/task-verification-designer"),
@@ -31,6 +39,8 @@ DEVELOPMENT_SKILL_SOURCES: tuple[tuple[str, str], ...] = (
     ("testing-discipline", "skills/testing-discipline"),
     ("session-handoff", "skills/session-handoff"),
 )
+
+PROFILE_SKILLS_README = "skills/README.md"
 
 SHARED_SCRIPT_FILES: tuple[str, ...] = (
     "run_evidence.py",
@@ -89,6 +99,9 @@ def _validate_source(source_repo: Path) -> None:
         if not (source_repo / "scripts" / name).is_file():
             missing.append(f"scripts/{name}")
 
+    if not (source_repo / PROFILE_SKILLS_README).is_file():
+        missing.append(PROFILE_SKILLS_README)
+
     if missing:
         joined = ", ".join(sorted(missing))
         raise InstallError(f"source repository is missing development-profile inputs: {joined}")
@@ -125,6 +138,12 @@ def _validate_target(target_repo: Path) -> None:
             raise InstallError(f"refusing to replace symlinked shared script: {destination}")
         if destination.exists() and not destination.is_file():
             raise InstallError(f"shared script destination is not a file: {destination}")
+
+    skills_readme = target_repo / ".agents" / "skills" / "README.md"
+    if skills_readme.is_symlink():
+        raise InstallError(f"refusing to replace symlinked profile guide: {skills_readme}")
+    if skills_readme.exists() and not skills_readme.is_file():
+        raise InstallError(f"profile guide destination is not a file: {skills_readme}")
 
     agents_md = target_repo / "AGENTS.md"
     if agents_md.is_symlink():
@@ -175,6 +194,8 @@ def _copy_profile_to_stage(source_repo: Path, stage_root: Path) -> None:
     for name in SHARED_SCRIPT_FILES:
         shutil.copy2(source_repo / "scripts" / name, scripts_root / name)
 
+    shutil.copy2(source_repo / PROFILE_SKILLS_README, skills_root / "README.md")
+
 
 def _run_availability(stage_root: Path, target_repo: Path) -> dict[str, object]:
     script = stage_root / "scripts" / "run_evidence.py"
@@ -222,6 +243,8 @@ def _replace_managed_profile(stage_root: Path, target_repo: Path) -> None:
         destination = target_scripts / name
         os.replace(staged, destination)
 
+    os.replace(stage_root / "skills" / "README.md", target_skills / "README.md")
+
 
 def _write_agents(target_repo: Path, content: str) -> None:
     destination = target_repo / "AGENTS.md"
@@ -250,9 +273,6 @@ def _write_agents(target_repo: Path, content: str) -> None:
 def install(source_repo: Path, target_repo: Path) -> dict[str, object]:
     source_repo = source_repo.expanduser().resolve()
     target_repo = target_repo.expanduser().resolve()
-
-    if source_repo == target_repo:
-        raise InstallError("source and target repositories must be different")
 
     _validate_source(source_repo)
     _validate_target(target_repo)

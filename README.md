@@ -244,7 +244,7 @@ raw idea
   -> idea-brief             portable early planning seed
   -> project-direction      owner-editable goals, priorities, and boundaries
   -> project-bootstrap      project charter and minimum foundation plan
-  -> ai-flow-foundation     only when AI participates in the data/process flow
+  -> ai-flow-foundation     only when the product/runtime calls a model in its data/process flow
   -> repo-foundation        materialize the approved repository foundation
        -> architecture-guardrails when maintainability guardrails are planned
   -> foundation-readiness-review
@@ -254,9 +254,12 @@ raw idea
 Not every project needs every idea stage. Enter at `project-direction` when the
 desired experience and tradeoffs need clarification, or at `project-bootstrap`
 when the objective and repository scaffold are already clear. Run
-`ai-flow-foundation` before foundation materialization for AI-bearing projects
-so provider, validation, deterministic-test, retry, and side-effect boundaries
-are part of the materialization handoff.
+`ai-flow-foundation` before foundation materialization only when the product
+or runtime itself has model-dependent behavior, so provider, validation,
+deterministic-test, retry, and side-effect boundaries are part of the
+materialization handoff. Coding-agent development or maintenance alone does not
+trigger it; `repo-foundation` owns agent-legible repository setup for every
+project.
 
 `project-bootstrap` decides whether maintainability/architecture guardrails are
 needed; `repo-foundation` owns their repository placement and integration. When
@@ -332,7 +335,7 @@ For projects that enable machine-readable contract discovery, the end-to-end flo
 
 ```text
 project-bootstrap
-  -> ai-flow-foundation (when applicable)
+  -> ai-flow-foundation (when the product/runtime calls a model)
   -> repo-foundation
   -> foundation-readiness-review
   -> project-delivery-plan

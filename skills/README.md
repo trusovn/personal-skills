@@ -12,7 +12,7 @@ For a new repository:
 ```text
 project-direction
   -> project-bootstrap
-  -> ai-flow-foundation                 (only when AI is in the product flow)
+  -> ai-flow-foundation                 (only when the product/runtime calls a model)
   -> repo-foundation
        + architecture-guardrails        (when the foundation plan requires them)
   -> foundation-readiness-review
@@ -41,7 +41,7 @@ rather than as mandatory stages in either flow.
 | --- | --- | --- | --- |
 | `project-direction` | Sets owner-readable goals, priorities, scope, and boundaries. | A project objective, notes, or existing plans to extract/audit. | A direction document, normally `docs/direction-<name>.md`, or a direction delta. |
 | `project-bootstrap` | Defines the minimum charter and engineering-foundation work before product planning. | A high-level objective and an existing repository or scaffold. | `docs/project-charter.md` and `docs/foundation-plan.md`. |
-| `ai-flow-foundation` | Defines deterministic seams and safety boundaries for AI-dependent behavior. | The charter/foundation plan and the intended AI role in the flow. | `docs/ai-foundation.md`. |
+| `ai-flow-foundation` | Defines deterministic seams and safety boundaries for model-dependent product/runtime behavior; coding-agent maintenance alone does not trigger it. | The charter/foundation plan and the intended model role in the system flow. | `docs/ai-foundation.md`. |
 | `repo-foundation` | Materializes the approved repository layout, commands, guidance, and foundation tooling. | The repository plus `docs/project-charter.md`, `docs/foundation-plan.md`, and `docs/ai-foundation.md` when applicable. | The planned repository foundation changes and their verification evidence. |
 | `architecture-guardrails` | Adds or repairs deterministic dependency, boundary, or maintainability checks. | Explicit architecture invariants and the repository/tooling they govern. | A canonical architecture gate, its rules/configuration, and concise usage guidance. |
 | `foundation-readiness-review` | Checks that a new agent can navigate, run, test, and safely change the repository. | The materialized foundation and its authoritative documents/commands. | `docs/foundation-review.md` with findings and the recommended delivery route. |

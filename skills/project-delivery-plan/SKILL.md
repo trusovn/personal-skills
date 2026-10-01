@@ -26,7 +26,7 @@ Typical route:
 ```text
 project-direction / approved concept
     -> project-bootstrap
-    -> ai-flow-foundation          when AI participates in the flow
+    -> ai-flow-foundation          when the product/runtime calls a model
     -> repo-foundation
     -> foundation-readiness-review
     -> project-delivery-plan       THIS SKILL

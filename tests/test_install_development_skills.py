@@ -113,6 +113,21 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
         for heading in ("Skill", "What it does", "Requires", "Produces"):
             self.assertIn(heading, guide)
 
+    def test_ai_flow_routing_distinguishes_product_model_use_from_coding_agents(self):
+        bootstrap = (ROOT / "skills/project-bootstrap/SKILL.md").read_text(encoding="utf-8")
+        ai_flow = (ROOT / "skills/ai-flow-foundation/SKILL.md").read_text(encoding="utf-8")
+        foundation_plan = (
+            ROOT / "skills/project-bootstrap/templates/foundation-plan.md"
+        ).read_text(encoding="utf-8")
+        guide = (ROOT / installer.PROFILE_SKILLS_README).read_text(encoding="utf-8")
+
+        self.assertIn("system being built calls an AI/LLM/model", bootstrap)
+        self.assertIn("coding-agent use", bootstrap)
+        self.assertIn("AI/model behavior **inside the system being built**", ai_flow)
+        self.assertIn("coding agents will develop or maintain", ai_flow)
+        self.assertIn("Product/runtime calls AI/LLM/model", foundation_plan)
+        self.assertIn("coding-agent maintenance alone does not trigger it", guide)
+
     def test_installs_profile_preserves_agents_text_and_final_availability(self):
         with tempfile.TemporaryDirectory() as tempdir:
             repo = Path(tempdir)

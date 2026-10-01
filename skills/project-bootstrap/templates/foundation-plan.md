@@ -10,7 +10,7 @@
 - Existing CI:
 - Config/state:
 - Development diagnostics:
-- AI in data/process flow: yes / no / unknown
+- Product/runtime calls AI/LLM/model in data/process flow: yes / no / unknown
 
 ## Capability decisions
 
@@ -22,7 +22,7 @@
 | Development diagnostics | | | | |
 | Configuration/state | | | | |
 | Automation/CI | | | | |
-| AI foundation | | | | |
+| Product/runtime AI foundation | | | | |
 | Maintainability / architecture guardrails | | | | |
 
 ## Authorized foundation changes

@@ -1,11 +1,12 @@
 ---
 name: ai-flow-foundation
 description: >
-  Use during pre-planning foundation work when AI/LLM behavior will participate in the application's
-  data or process flow. Establish testable boundaries, deterministic validation, fake/provider seams,
-  eval/trace locations, retry/idempotency constraints, and safe side-effect boundaries BEFORE detailed
-  prompt/workflow/feature design. Produces docs/ai-foundation.md. Do not use to optimize prompts or
-  design detailed agent behavior.
+  Use during pre-planning foundation work when the product or runtime itself will call an AI/LLM/model
+  as part of its data or process flow. Establish testable boundaries, deterministic validation,
+  fake/provider seams, eval/trace locations, retry/idempotency constraints, and safe side-effect
+  boundaries BEFORE detailed prompt/workflow/feature design. Produces docs/ai-foundation.md. Do not
+  use merely because coding agents will develop or maintain the repository; repo-foundation owns
+  agent-legible repository setup. Do not use to optimize prompts or design detailed agent behavior.
 ---
 
 # AI Flow Foundation
@@ -14,6 +15,11 @@ Create the minimum engineering substrate needed to build and verify software who
 LLM/agent/model-dependent steps.
 
 This is a **foundation skill**, not an AI feature-design skill.
+
+The trigger is AI/model behavior **inside the system being built**. The presence of a coding agent
+working on the repository is not an AI flow in this sense. Use `project-bootstrap` to plan general
+engineering readiness and `repo-foundation` to materialize agent-legible repository structure,
+commands, guidance, and verification.
 
 ## Core stance
 

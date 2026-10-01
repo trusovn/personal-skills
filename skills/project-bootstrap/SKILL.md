@@ -5,9 +5,10 @@ description: >
   objective and repository/scaffold are available but BEFORE detailed product specification,
   architecture design, roadmap creation, task decomposition, or implementation. Establish the
   minimum project charter and engineering-foundation plan another agent needs to work effectively.
-  Produces docs/project-charter.md and docs/foundation-plan.md. For AI projects, route through
-  ai-flow-foundation before handing repo-level materialization to repo-foundation; route non-AI
-  projects directly to repo-foundation. Do not use this skill to plan features.
+  Produces docs/project-charter.md and docs/foundation-plan.md. When the product or runtime itself
+  includes model-dependent behavior, route through ai-flow-foundation before handing repo-level
+  materialization to repo-foundation; otherwise route directly to repo-foundation. Do not use this
+  skill to plan features.
 ---
 # Project Bootstrap
 
@@ -47,8 +48,10 @@ Do not materialize unrelated feature code.
 
 After these artifacts are ready:
 
-- for AI projects, use `ai-flow-foundation` before `repo-foundation`
-- for non-AI projects, use `repo-foundation` directly
+- when the product/runtime itself calls an AI/LLM/model, use `ai-flow-foundation` before
+  `repo-foundation`
+- otherwise use `repo-foundation` directly, including when coding agents will develop or maintain
+  the repository
 
 ## Protocol
 ### 1. Read authority before inventing anything
@@ -137,8 +140,11 @@ Use these capability groups:
    - local scripts/Make/Just/package commands
    - CI only if it catches real project-relevant failures
 
-7. **AI foundation**
-   - if AI/LLM is in the process/data flow, mark `ai-flow-foundation: REQUIRED`
+7. **Product/runtime AI foundation**
+   - if the system being built calls an AI/LLM/model in its process or data flow, mark
+     `ai-flow-foundation: REQUIRED`
+   - coding-agent use for repository development or maintenance does not make this capability
+     required
    - do not design AI internals here
 
 8. **Maintainability / architecture guardrails**
@@ -190,7 +196,8 @@ If `ai-flow-foundation: REQUIRED`, use `ai-flow-foundation` first to create
 the provider adapter, validation, retry/idempotency, and deterministic test-seam decisions. If the
 required skill is unavailable, stop and report the missing prerequisite.
 
-For non-AI projects, hand off directly to `repo-foundation`.
+When the product/runtime has no model-dependent boundary, hand off directly to `repo-foundation`.
+This is also the route for making any repository legible and effective for future coding agents.
 After the applicable route is complete, use `repo-foundation` as the governing skill for
 materialization when it is available.
 
@@ -227,8 +234,9 @@ Recommended next step after materialization:
 - Maintainability/architecture guardrails are explicitly classified, and any planned guardrail names the risk/invariant to control without prematurely prescribing product architecture.
 - Unknowns are explicit rather than guessed.
 - Product design, roadmap, and task planning have not started.
-- AI projects have completed `ai-flow-foundation` and produced `docs/ai-foundation.md` before the
-  `repo-foundation` handoff; non-AI projects hand off directly.
+- Projects whose product/runtime includes model-dependent behavior have completed
+  `ai-flow-foundation` and produced `docs/ai-foundation.md` before the `repo-foundation` handoff;
+  all other projects hand off directly, even when coding agents will maintain them.
 - The materialization handoff is narrow enough for `repo-foundation`.
 ## Anti-patterns
 - Writing a detailed master plan before understanding the scaffold.

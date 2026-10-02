@@ -88,7 +88,8 @@ class OllamaDelegateTests(unittest.TestCase):
             self.assertEqual("completed", result["status"])
             self.assertEqual("review complete", result["final_message"])
             self.assertEqual("read_file", result["tool_calls"][0]["tool"])
-            self.assertIn("evidence", result["tool_calls"][0]["result"])
+            self.assertEqual(len("1: evidence"), result["tool_calls"][0]["result_chars"])
+            self.assertNotIn("result", result["tool_calls"][0])
 
     def test_development_installer_carries_skill_runtime_and_config(self):
         installer_path = ROOT / "scripts" / "install_development_skills.py"

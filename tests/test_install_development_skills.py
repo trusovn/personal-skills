@@ -49,6 +49,7 @@ EXPECTED_DEVELOPMENT_SKILL_SOURCES = (
         "skills/task-implementation-flow/task-acceptance-review",
     ),
     ("senior-code-review", "skills/senior-code-review"),
+    ("ollama-delegate", "skills/ollama-delegate"),
     ("testing-discipline", "skills/testing-discipline"),
     ("session-handoff", "skills/session-handoff"),
 )

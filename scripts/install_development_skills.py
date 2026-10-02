@@ -37,6 +37,7 @@ DEVELOPMENT_SKILL_SOURCES: tuple[tuple[str, str], ...] = (
     ("task-contract-registry-updater", "skills/task-implementation-flow/task-contract-registry-updater"),
     ("task-acceptance-review", "skills/task-implementation-flow/task-acceptance-review"),
     ("senior-code-review", "skills/senior-code-review"),
+    ("ollama-delegate", "skills/ollama-delegate"),
     ("testing-discipline", "skills/testing-discipline"),
     ("session-handoff", "skills/session-handoff"),
 )
@@ -48,6 +49,8 @@ SHARED_SCRIPT_FILES: tuple[str, ...] = (
     "workflow_version.py",
     "runtime_context.py",
     "runtime-context.schema.v1.json",
+    "ollama_delegate.py",
+    "ollama-models.json",
 )
 
 AGENTS_BEGIN = "<!-- personal-skills:development-install:begin -->"

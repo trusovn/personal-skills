@@ -33,6 +33,7 @@ Current source skills:
 - `idea-brief`
 - `idea-challenger`
 - `idea-investigator`
+- `ollama-delegate`
 - `project-delivery-plan`
 - `project-direction`
 - `project-bootstrap`
@@ -66,12 +67,13 @@ python3 /path/to/personal-skills/scripts/install_development_skills.py \
 The predefined development profile (`development`) starts at repository-stage
 project direction and installs the foundation and delivery-planning skills,
 the seven task-implementation-flow skills, `senior-code-review`,
-`testing-discipline`, and `session-handoff`. Pre-repository idea work
-(`ask-user-questions`, `idea-challenger`, `idea-investigator`, and `idea-brief`),
-the specialist `skill-creator`, and the explicitly invoked `task-orchestrator`
-remain separate installs. The profile also installs the shared
-workflow/runtime/evidence files required by the current bounded implementation
-integration.
+`ollama-delegate`, `testing-discipline`, and `session-handoff`. Pre-repository
+idea work (`ask-user-questions`, `idea-challenger`, `idea-investigator`, and
+`idea-brief`), the specialist `skill-creator`, and the explicitly invoked
+`task-orchestrator` remain separate installs. The profile also installs the
+shared workflow/runtime/evidence files required by the current bounded
+implementation integration plus the Ollama delegation runtime and its local
+model-alias configuration.
 
 The installer:
 
@@ -135,6 +137,7 @@ Current shared integrations:
 | Workflow fingerprinting | `.agents/scripts/workflow_version.py` | Only when workflow identity/fingerprinting is wanted |
 | Generic runtime identity | `.agents/scripts/runtime_context.py`, `.agents/scripts/runtime-context.schema.v1.json` | Only when trusted runtime identity is supplied/consumed |
 | Bounded-run evidence | `.agents/scripts/run_evidence.py` plus the workflow-version and runtime-context files above | Optional in ordinary guided use; may be made mandatory by an explicit repository/user/machine contract |
+| Ollama cloud delegation | `.agents/skills/ollama-delegate/`, `.agents/scripts/ollama_delegate.py`, `.agents/scripts/ollama-models.json` | Only when a bounded task should be delegated to an Ollama-backed model through the configured local daemon |
 
 `workflow_version.py` supports both this source repository layout
 (`skills/` + `scripts/`) and the project-local installation layout
@@ -143,6 +146,14 @@ same installation root as the active skills tree: `scripts/` beside `skills/`
 in this source repository, or `.agents/scripts/` beside `.agents/skills/` in a
 project-local installation. Task skills should refer to that canonical shared
 tooling convention rather than hardcode repository-root script paths.
+
+`ollama-delegate` follows the same installation-root rule. Its adjacent
+`ollama-models.json` is intentionally a small, editable provider-specific alias
+file rather than a permanent catalog. The skill documents how an agent should
+check the current official Ollama cloud catalog, distinguish it from locally
+known models, request a one-time `ollama pull <model>:cloud` from the user when
+needed, and update the JSON deliberately rather than silently substituting a
+model.
 
 An unchanged copied skill keeps the same fingerprint because absolute
 filesystem location is not part of the fingerprint. For source-repository
@@ -301,7 +312,9 @@ maintainability gate, run that gate and a fresh `task-maintainability-review`
 before functional acceptance. Use `testing-discipline` alongside implementation
 or review when behavioral evidence, test design, or QA risk is material. Use
 `senior-code-review` for general diff/PR review when the stricter focused review
-contracts are not needed.
+contracts are not needed. Use `ollama-delegate` when a separate Ollama-backed
+model should independently inspect the repository under one of the installed
+skill contracts; its V1 repository tools are intentionally read-only.
 
 The detailed guided, maintainability-gated, and high-assurance variants are
 documented in
@@ -321,6 +334,8 @@ flow directly under human coordination.
 
 - `ask-user-questions` supplies a consistent clarification protocol when a
   consequential decision cannot safely be inferred.
+- `ollama-delegate` runs a bounded second-model repository inspection through a
+  configured Ollama daemon without granting write or shell tools.
 - `session-handoff` preserves verified context between sessions or agents.
 - `skill-creator` creates, validates, and evaluates skills in this source repo.
 

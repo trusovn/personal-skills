@@ -60,15 +60,20 @@ Treat the result as another agent's evidence or review, not as automatically aut
 When a requested model is missing, stale, or no longer available:
 
 1. Check the **current official Ollama model/cloud catalog** first when web access is available. Do not assume the checked-in JSON is current.
-2. Use `ollama list` only to inspect models currently known to the local Ollama installation. It is **not** an exhaustive list of all cloud models available from Ollama.
-3. For a newly selected Ollama Cloud model, use the exact cloud model identifier published by Ollama, normally a name with the `:cloud` variant.
-4. If the local Ollama installation must fetch/register that model before use, it is acceptable to stop and ask the user to run the one-time command:
+2. Use `ollama ls` only to inspect models currently known to the local Ollama installation. It is **not** an exhaustive list of all cloud models available from Ollama.
+3. For a newly selected Ollama Cloud model, use the exact cloud model identifier published by Ollama, normally a name with a `:cloud` variant.
+4. If cloud inference reports that the local Ollama client is not authenticated, it is acceptable to stop and ask the user to run the one-time interactive command:
    ```bash
-   ollama pull <model>:cloud
+   ollama signin
    ```
-   Then retry after the user confirms it completed.
-5. Add or update a concise alias entry in the adjacent `ollama-models.json`. Keep provider-specific names there rather than spreading them through skills.
-6. Validate with:
+   Then retry after the user confirms sign-in completed.
+5. If the local Ollama installation must fetch/register the selected model before API use, it is acceptable to stop and ask the user to run:
+   ```bash
+   ollama pull <exact-cloud-model-id>
+   ```
+   Example shape: `ollama pull some-model:cloud`. Then retry after the command completes.
+6. Add or update a concise alias entry in the adjacent `ollama-models.json`. Keep provider-specific names there rather than spreading them through skills.
+7. Validate with:
    ```bash
    python3 .agents/scripts/ollama_delegate.py models
    ```
@@ -96,6 +101,7 @@ Keep the configuration provider-specific and small. Do not add benchmark artifac
 ## Failure handling
 
 - Connection failure: report the endpoint and let the caller/user fix sandbox or daemon access.
+- Cloud authentication failure: ask the user to run `ollama signin` if interactive sign-in is required.
 - Unknown alias: list configured aliases and update the JSON only after confirming the current Ollama identifier.
 - Missing skill: list installed skill IDs; do not fall back across installation roots.
 - Tool/path denial: report it as a bounded read limitation.

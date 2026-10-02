@@ -21,6 +21,8 @@ TEXT_SUFFIXES = {
 }
 MAX_SKILL_FILE_BYTES = 256_000
 MAX_SEARCH_MATCHES = 200
+MAX_SEARCH_LINE_CHARS = 2_000
+MAX_TOOL_RESULT_CHARS = 20_000
 
 TOOL_SCHEMAS = [
     {
@@ -60,6 +62,11 @@ TOOL_SCHEMAS = [
                     "path": {"type": "string"},
                     "start_line": {"type": "integer", "minimum": 1},
                     "end_line": {"type": "integer", "minimum": 1},
+                    "offset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Character offset into the rendered result for the same line range.",
+                    },
                 },
                 "required": ["path"],
             },
@@ -70,6 +77,30 @@ TOOL_SCHEMAS = [
 
 class DelegateError(RuntimeError):
     pass
+
+
+def bounded_items_json(key: str, items: list[Any], *, truncated: bool = False) -> str:
+    low = 0
+    high = len(items)
+    while low < high:
+        midpoint = (low + high + 1) // 2
+        candidate = json.dumps({key: items[:midpoint], "truncated": truncated or midpoint < len(items)})
+        if len(candidate) <= MAX_TOOL_RESULT_CHARS:
+            low = midpoint
+        else:
+            high = midpoint - 1
+    return json.dumps({key: items[:low], "truncated": truncated or low < len(items)})
+
+
+def bounded_text(value: str, *, offset: int = 0) -> str:
+    remaining = value[offset:]
+    if len(remaining) <= MAX_TOOL_RESULT_CHARS:
+        return remaining
+    longest_marker = f"\n...[truncated; next_offset={len(value)}]"
+    available = max(0, MAX_TOOL_RESULT_CHARS - len(longest_marker))
+    next_offset = offset + available
+    marker = f"\n...[truncated; next_offset={next_offset}]"
+    return remaining[:available] + marker[: MAX_TOOL_RESULT_CHARS - available]
 
 
 def installation_root(script_path: Path) -> Path:
@@ -168,7 +199,9 @@ class ReadOnlyTools:
             raise DelegateError(f"path does not exist: {relative}")
         return candidate
 
-    def execute(self, name: str, args: dict[str, Any]) -> str:
+    def execute(self, name: str, args: Any) -> str:
+        if not isinstance(args, dict):
+            return json.dumps({"error": "tool arguments must be a JSON object"})
         try:
             if name == "list_files":
                 return self.list_files(args.get("path", "."))
@@ -179,9 +212,10 @@ class ReadOnlyTools:
                     args["path"],
                     int(args.get("start_line", 1)),
                     int(args["end_line"]) if args.get("end_line") is not None else None,
+                    int(args.get("offset", 0)),
                 )
             raise DelegateError(f"unknown tool: {name}")
-        except (KeyError, ValueError, OSError, UnicodeError, DelegateError) as exc:
+        except (KeyError, TypeError, ValueError, OSError, UnicodeError, DelegateError) as exc:
             return json.dumps({"error": str(exc)})
 
     def list_files(self, relative: str) -> str:
@@ -195,7 +229,7 @@ class ReadOnlyTools:
             if any(part in TRANSIENT_PARTS for part in rel.parts):
                 continue
             files.append(rel.as_posix())
-        return json.dumps({"files": sorted(files)})
+        return bounded_items_json("files", sorted(files))
 
     def search_text(self, query: str, relative: str) -> str:
         if not query:
@@ -219,20 +253,45 @@ class ReadOnlyTools:
                     if len(matches) >= MAX_SEARCH_MATCHES:
                         truncated = True
                         break
-                    matches.append({"path": rel.as_posix(), "line": number, "text": line})
+                    column = line.find(query)
+                    text = line
+                    if len(text) > MAX_SEARCH_LINE_CHARS:
+                        visible_query = min(len(query), MAX_SEARCH_LINE_CHARS)
+                        context_before = (MAX_SEARCH_LINE_CHARS - visible_query) // 2
+                        start = max(0, column - context_before)
+                        end = min(len(line), start + MAX_SEARCH_LINE_CHARS)
+                        start = max(0, end - MAX_SEARCH_LINE_CHARS)
+                        text = line[start:end]
+                        if start:
+                            text = "...[line starts earlier]" + text
+                        if end < len(line):
+                            text += "...[line continues]"
+                    matches.append({
+                        "path": rel.as_posix(),
+                        "line": number,
+                        "column": column + 1,
+                        "text": text,
+                    })
             if truncated:
                 break
-        return json.dumps({"matches": matches, "truncated": truncated})
+        return bounded_items_json("matches", matches, truncated=truncated)
 
-    def read_file(self, relative: str, start: int = 1, end: int | None = None) -> str:
-        if start < 1 or (end is not None and end < start):
+    def read_file(
+        self,
+        relative: str,
+        start: int = 1,
+        end: int | None = None,
+        offset: int = 0,
+    ) -> str:
+        if start < 1 or (end is not None and end < start) or offset < 0:
             raise DelegateError("invalid line range")
         path = self._path(relative)
         if not path.is_file():
             raise DelegateError(f"not a file: {relative}")
         lines = path.read_text(encoding="utf-8").splitlines()
         final = min(end if end is not None else len(lines), len(lines))
-        return "\n".join(f"{i}: {lines[i - 1]}" for i in range(start, final + 1))
+        rendered = "\n".join(f"{i}: {lines[i - 1]}" for i in range(start, final + 1))
+        return bounded_text(rendered, offset=offset)
 
 
 def build_system_prompt(skill_id: str, package: str) -> str:
@@ -333,9 +392,19 @@ def run_delegate(
     final = ""
     for turn in range(1, max_turns + 1):
         event = ollama_complete(endpoint, model_cfg, messages, timeout=timeout)
-        message = event.get("message") or {}
+        if not isinstance(event, dict):
+            raise DelegateError("Ollama returned a malformed response")
+        if event.get("error"):
+            raise DelegateError(f"Ollama returned an error: {event['error']}")
+        if event.get("done") is not True:
+            raise DelegateError("Ollama returned an incomplete response")
+        message = event.get("message")
+        if not isinstance(message, dict):
+            raise DelegateError("Ollama response is missing a valid message")
         final = message.get("content") or ""
         calls = message.get("tool_calls") or []
+        if not isinstance(final, str) or not isinstance(calls, list):
+            raise DelegateError("Ollama response contains an invalid message")
         assistant: dict[str, Any] = {"role": "assistant", "content": final}
         if message.get("thinking"):
             assistant["thinking"] = message["thinking"]
@@ -343,6 +412,8 @@ def run_delegate(
             assistant["tool_calls"] = calls
         messages.append(assistant)
         if not calls:
+            if not final.strip():
+                raise DelegateError("Ollama returned an empty final message")
             return {
                 "status": "completed",
                 "model_alias": alias,
@@ -359,14 +430,20 @@ def run_delegate(
                 },
             }
         for call in calls:
-            function = call.get("function") or {}
+            if not isinstance(call, dict):
+                raise DelegateError("Ollama response contains an invalid tool call")
+            function = call.get("function")
+            if not isinstance(function, dict):
+                raise DelegateError("Ollama response contains an invalid tool call")
             name = function.get("name", "")
-            args = function.get("arguments") or {}
+            if not isinstance(name, str) or not name:
+                raise DelegateError("Ollama response contains an invalid tool call")
+            args = function.get("arguments", {})
             if isinstance(args, str):
                 try:
                     args = json.loads(args)
-                except json.JSONDecodeError as exc:
-                    args = {"_invalid_json": str(exc)}
+                except json.JSONDecodeError:
+                    pass
             result = tools.execute(name, args)
             tool_log.append({"tool": name, "arguments": args, "result_chars": len(result)})
             messages.append({

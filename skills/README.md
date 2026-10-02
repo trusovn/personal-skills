@@ -32,8 +32,8 @@ task-brief-designer
   -> task-acceptance-review             (when policy or risk requires it; fresh reviewer)
 ```
 
-Use `senior-code-review`, `testing-discipline`, and `session-handoff` on demand
-rather than as mandatory stages in either flow.
+Use `senior-code-review`, `ollama-delegate`, `testing-discipline`, and
+`session-handoff` on demand rather than as mandatory stages in either flow.
 
 ## Skill reference
 
@@ -55,5 +55,6 @@ rather than as mandatory stages in either flow.
 | `task-contract-registry-updater` | Synchronizes discoverable current-state contracts after implementation. | Task authority, scoped diff, task-map entry when present, and existing contract records. | Updated contract registry/discovery references and a synchronization result. |
 | `task-acceptance-review` | Independently checks a bounded implementation against its contract and material risks. | The request/brief, current diff, tests, and implementation evidence; use a fresh reviewer. | `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`, with findings and coverage status. |
 | `senior-code-review` | Performs a rigorous read-only merge-readiness review. | A PR, commit, branch range, working-tree diff, patch, or named files plus their intent. | Prioritized findings and a merge-readiness assessment. |
+| `ollama-delegate` | Delegates a bounded read-only repository task to an Ollama-backed cloud model using another installed skill. | Ollama HTTP access, a configured model alias, the target repository, and a selected installed skill. | The delegated model's final report plus bounded tool-call metadata. |
 | `testing-discipline` | Designs, adds, or reviews the smallest risk-based test evidence that proves behavior. | The behavior contract, relevant code/tests, and repository test conventions. | Tests and verification evidence, or a focused test strategy/review when requested. |
 | `session-handoff` | Preserves actionable context so work can continue in a new session. | The current goal, decisions, changed files, commands, results, and open issues. | A copy/paste-ready handoff packet and, when useful, a companion Markdown file. |

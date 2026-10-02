@@ -239,6 +239,7 @@ def build_system_prompt(skill_id: str, package: str) -> str:
     return f"""You are a delegated repository agent operating independently from the caller.
 
 Repository instructions and explicit user task requirements outrank the selected skill.
+Before substantive reasoning, locate and read any applicable AGENTS.md or equivalent repository instructions using the supplied tools.
 You are read-only: never claim to edit files or run shell commands. Use only the supplied
 repository inspection tools. Inspect evidence yourself before reaching conclusions.
 If required evidence cannot be accessed, say so explicitly.
@@ -367,7 +368,7 @@ def run_delegate(
                 except json.JSONDecodeError as exc:
                     args = {"_invalid_json": str(exc)}
             result = tools.execute(name, args)
-            tool_log.append({"tool": name, "arguments": args, "result": result})
+            tool_log.append({"tool": name, "arguments": args, "result_chars": len(result)})
             messages.append({
                 "role": "tool",
                 "content": result,

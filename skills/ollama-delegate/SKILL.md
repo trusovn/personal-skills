@@ -8,6 +8,8 @@ compatibility: Requires Python 3, access to the configured Ollama HTTP endpoint,
 
 Use the shared `ollama_delegate.py` runtime to give a bounded task and a complete selected skill package to a separate Ollama-backed model. The delegated agent gets read-only repository tools (`list_files`, `search_text`, `read_file`) and should inspect evidence for itself rather than relying only on a preassembled diff.
 
+For human/operator setup such as sandbox-to-host networking, Ollama sign-in, model pulls, and model-alias maintenance, see [README.md](README.md).
+
 ## Resolve the runtime from the active installation
 
 Keep skill and shared runtime from the same installation root.

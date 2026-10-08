@@ -1,0 +1,11 @@
+REFERENCE_UPDATE: UPDATED
+
+- Contract delta: `catalog.select_names(names, prefix="")` now performs case-sensitive prefix selection; order, duplicates, and input non-mutation remain invariant.
+- Registry changed: `docs/contracts/catalog.json`.
+- Index regenerated: `docs/contracts/index.json` (no content change required).
+- Reference changed: `README.md`.
+- Plan IDs preserved: none.
+- Validation passed:
+  - `PYTHONDONTWRITEBYTECODE=1 python3 tools/check_contracts.py --root . --write-index`
+  - `PYTHONDONTWRITEBYTECODE=1 python3 tools/check_contracts.py --root .`
+  - `git diff --check`

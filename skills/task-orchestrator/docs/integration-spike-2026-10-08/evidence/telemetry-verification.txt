@@ -1,0 +1,1 @@
+PASS: telemetry summaries match all seven original transport usage records; ten issue records present. Shared collector lifecycle remains untested.

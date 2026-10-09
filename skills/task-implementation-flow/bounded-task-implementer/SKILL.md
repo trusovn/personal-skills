@@ -16,30 +16,35 @@ work and never claim ownership of it.
 
 Use `guided` by default.
 
-Use `high-assurance` when the user requests it or supplies a ready preflight
-packet, worker-result schema, orchestrator invocation, or other machine
-contract. If guided work discovers security, migration, destructive-state,
-concurrency, multi-writer, or audit requirements that the current inputs cannot
-safely support, pause and recommend the smallest escalation rather than
-silently building the full artifact chain.
+Use `high-assurance` when the user requests it or the caller supplies a machine
+contract: a worker-result schema with a durable result path, an orchestrator
+invocation, or another strict freshness/result contract. Supplying a ready task
+package alone — including its canonical `preflight.md` — is compact guided
+readiness, not a high-assurance packet; such an invocation stays guided and
+never selects the high-assurance profile. If guided work discovers security,
+migration, destructive-state, concurrency, multi-writer, or audit requirements
+that the current inputs cannot safely support, pause and recommend the smallest
+escalation rather than silently building the full artifact chain.
 
 ### Guided inputs
 
-Require enough to identify the repository, bounded outcome, and authority. A
-user request or `ready` task brief is sufficient when it makes the intended
-behavior clear. A separate preflight packet, result schema, run directory, and
-tracker are not required.
+Two entry routes share the guided profile; they never merge.
 
-Use focused local discovery to resolve relevant paths, nearby tests, commands,
-and current Git state. Ask only when a missing product, architecture,
-compatibility, scope, ownership, or permission decision could materially change
-the result.
+#### Conversational direct edits
 
-When the caller supplies a durable task brief, require it to be the `brief.md`
-inside one dedicated task package. Refuse a direct legacy brief such as
-`docs/tasks/API-31.md` even when no `verification.md` exists, and route it to
-`task-brief-designer` for package normalization. A bounded conversational user
-request is not a durable brief and may still be implemented directly.
+A bounded conversational user request with no durable task package may be
+implemented directly. Require enough to identify the repository, bounded
+outcome, and authority; a small clear request is sufficient when it makes the
+intended behavior clear. No preflight packet, result schema, run directory, or
+tracker is required for these requests; the compact self-preflight and
+verification discipline still apply.
+
+#### Packaged guided entry
+
+A durable task brief is only accepted as the `brief.md` inside one dedicated
+task package. Refuse a direct legacy brief such as `docs/tasks/API-31.md` even when no `verification.md` exists, and route it to `task-brief-designer` for
+package normalization. A package cannot be relabeled a conversational request
+to bypass these prerequisites.
 
 Before accepting a task brief, reject it as non-executable when it declares
 `Task kind: composite` and `Status: decomposed`. Read `docs/tasks/index.json`
@@ -47,15 +52,47 @@ when present to identify its dependency-ready executable leaf, then reroute the
 caller to that leaf (or report that no dependency-ready leaf is available).
 Never implement a decomposed parent.
 
+Before any package implementation edit, check entry applicability against the
+current package state. For the executable leaf, entry requires:
+
+- a `verification.md` whose `Source brief:` declaration resolves to the
+  package's `brief.md`, at a verification revision the readiness references;
+  missing or mismatched derived verification routes to
+  `task-verification-designer` and then current `task-preflight`;
+- a current applicable ready `preflight.md` bound to the same brief,
+  verification revision, authority, and scope; missing, blocked, or stale
+  readiness routes to `task-preflight` as the readiness owner; and
+- matching authority and scope. Composite or blocked-design tasks, legacy
+  direct briefs, and readiness naming another task, revision, or scope route to
+  `task-brief-designer` or the authority owner, followed by affected
+  preparation.
+
+The implementer is not the readiness owner and does not repeat broad
+discovery. Within the bounded preflight context, re-check only the recorded
+current material facts: dependency availability, ownership overlaps,
+permissions, decisive capabilities, and authority revisions. Expected
+implementation or report effects alone do not stale guided readiness; a
+material dependency, ownership, permission, capability, or authority change,
+or a verification scenario revision, prevents reuse of affected obsolete
+readiness and routes to focused `task-preflight`. A feasible task-owned future
+test whose setup, tools, and observation boundary stay within scope may be
+implemented; its absence is not a missing decisive capability. Packaged guided
+entry requires no worker-result schema, exact digest chain, run directory, or
+tracker; optional evidence instrumentation stays best-effort.
+
 When the executable task folder contains `verification.md`, or the caller
 supplies a verification-design artifact, require its `Source brief:` declaration
 to resolve to the package's `brief.md`, then read it before inventing task-local
 tests. Treat it as derived guidance under the brief: preserve its scenario/AC
 coverage unless repository facts make a scenario infeasible, but do not let it
-override the brief or constrain concrete test structure unnecessarily. If the
-brief only recommends a separate verification-design pass and no artifact
-exists, implementation may still proceed unless the caller or repository made
-that recommendation mandatory.
+override the brief or constrain concrete test structure unnecessarily. A package
+whose brief recommends a separate verification-design pass but has no artifact
+routes to `task-verification-designer` before entry.
+
+Use focused local discovery to resolve relevant paths, nearby tests, commands,
+and current Git state. Ask only when a missing product, architecture,
+compatibility, scope, ownership, or permission decision could materially change
+the result.
 
 ## Optional run evidence
 
@@ -327,13 +364,19 @@ Implemented: <outcome, READY_FOR_REVIEW, or non-complete status>
 
 - Changed: <paths or none>
 - Verified: <exact commands and results>
-- AC evidence: <concise mapping>
+- AC evidence: <every verification scenario ID mapped to its current command, setup/oracle, and result, or an explicit blocked/unchecked reason and next owner>
+- Preflight/context reference: <exact paths of the consumed readiness and context artifacts>
+- Remaining obligations: <unfinished task obligations carried forward, or none>
 - Residual risks / skipped checks: <none or specifics>
 - Next: <fresh task-acceptance-review, user decision, fresh preflight, or complete>
 ```
 
 Omit empty bullets when prose is clearer. Link to created artifacts rather than
-embedding their serialized contents. For guided `review: immediate` work, use
+embedding their serialized contents. Green tests cannot excuse an omitted AC or
+scenario. Every scenario ID of the consumed verification design must be
+accounted for with current evidence or an explicit blocked/unchecked reason and
+next owner; implementer claims remain submission evidence, not independent
+acceptance. For guided `review: immediate` work, use
 `READY_FOR_REVIEW` as the submission state and exactly name a fresh
 `task-acceptance-review` as next owner, then end the response without a review
 verdict. Retain the existing human result semantics for milestone or no-review

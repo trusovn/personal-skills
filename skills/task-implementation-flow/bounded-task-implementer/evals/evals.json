@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "The fixture has staged the queue-runner repository at `queue-runner/`, with its package-contained packet plus external schema and run policy. Implement task `QR-12` in `queue-runner/` from `queue-runner/docs/tasks/QR-12/preflight.md`. It authorizes edits only to `src/queue/run_next.py` and `tests/integration/test_run_next.py`, references `docs/tasks/QR-12/brief.md`, and supplies the required schema and result path. Add the approved behavior so two consecutive public invocations claim different ready tasks through persisted state. Preserve the pre-existing `MM notes/local.md` user change by comparing its separate index/worktree fingerprints. Confirm that the packet is the sole expected baseline delta, then follow its exact fail-first, targeted, owning-suite, and broader commands from the declared working directory; network, dependency installation, commits, and other paths are forbidden.",
+      "prompt": "The fixture has staged the queue-runner repository at `queue-runner/`, with its package-contained packet plus external schema and run policy. Implement task `QR-12` in `queue-runner/` from `queue-runner/docs/tasks/QR-12/preflight.md`. It authorizes edits only to `src/queue/run_next.py` and `tests/integration/test_run_next.py`, references `docs/tasks/QR-12/brief.md` and its bound `verification.md`, and supplies the required schema and result path. Add the approved behavior so two consecutive public invocations claim different ready tasks through persisted state. Preserve the pre-existing `MM notes/local.md` user change by comparing its separate index/worktree fingerprints. Confirm that the packet is the sole expected baseline delta, then follow its exact fail-first, targeted, owning-suite, and broader commands from the declared working directory; network, dependency installation, commits, and other paths are forbidden.",
       "expected_output": "A minimal implementation confined to the two allowed paths, with intended fail-first evidence for the repeated public-entry flow, targeted-to-broader verification in packet order, and a schema-valid `complete` worker result submitted for independent acceptance review.",
       "files": ["evals/files/setup_fixture.py"],
       "execution": {
@@ -46,8 +46,8 @@
     },
     {
       "id": 3,
-      "prompt": "The fixture has staged the current api-guided repository. Implement `docs/tasks/API-31/brief.md` using the guided profile. There is intentionally no preflight packet, worker-result schema, run directory, or tracker. Perform the compact self-preflight, add fail-first coverage for expired sessions, make the minimum fix, run the brief's targeted command before its broader suite, and finish with a concise human-readable summary rather than raw JSON.",
-      "expected_output": "A minimal guided implementation confined to the two brief paths, with fail-first regression evidence, targeted-to-broader verification, and a useful conversational summary without creating orchestration artifacts.",
+      "prompt": "The fixture has staged the current api-guided repository. Implement `docs/tasks/API-31/brief.md` using the guided profile. The package supplies a ready preflight and a bound verification design; validate applicable entry before editing. There is no worker-result schema, run directory, or tracker, and none is required for guided work. Perform the compact self-preflight, add fail-first coverage for expired sessions, make the minimum fix, run the brief's targeted command before its broader suite, and finish with a concise human-readable summary that maps every verification scenario ID to current evidence rather than raw JSON.",
+      "expected_output": "A minimal guided implementation confined to the two brief paths, with applicable entry validation, fail-first regression evidence, targeted-to-broader verification, and a useful conversational summary that maps every scenario ID without creating orchestration artifacts.",
       "files": ["evals/files/setup_fixture.py"],
       "execution": {
         "setup": {
@@ -58,11 +58,11 @@
         "workspace": "{run_root}/work/api-guided"
       },
       "expectations": [
-        "The implementer proceeds from the clear `ready` brief without requiring a preflight packet, schema, run directory, or tracker.",
+        "The implementer validates applicable entry for the package before editing: executable leaf, bound verification design with matching revision, and current ready preflight; it does not redo broad discovery or become the readiness owner.",
         "Only `src/auth/session.py` and `tests/auth/test_session.py` are changed.",
         "A focused expired-session regression fails for the intended reason before the production fix and proves the token remains unchanged.",
         "The exact targeted test runs first and passes, followed by the broader discovered suite.",
-        "The final response is human-readable and reports outcome, changed paths, commands/results, AC evidence, risks, and next action without embedding raw JSON."
+        "The final human-readable summary maps every verification scenario ID (V-01, V-02) to current commands, setup/oracle, and results, carries the preflight/context reference and remaining obligations, and does not embed raw JSON."
       ]
     },
     {
@@ -88,7 +88,7 @@
     },
     {
       "id": 5,
-      "prompt": "The fixture has staged the current api-immediate repository. Implement `docs/tasks/API-32/brief.md` using the guided profile. Complete fail-first, targeted, and owning-suite checks. A labeled implementation self-check is permitted, but `review: immediate` requires a fresh-review handoff.",
+      "prompt": "The fixture has staged the current api-immediate repository. Implement `docs/tasks/API-32/brief.md` using the guided profile. The package supplies a ready preflight and a bound verification design; validate applicable entry before editing. Complete fail-first, targeted, and owning-suite checks, then map every verification scenario ID in the submission. A labeled implementation self-check is permitted, but `review: immediate` requires a fresh-review handoff.",
       "expected_output": "A minimal expired-session fix with behavioral evidence that ends in the guided `READY_FOR_REVIEW` submission state and routes to a fresh task-acceptance-review without loading or performing the acceptance-review role.",
       "files": ["evals/files/setup_fixture.py"],
       "execution": {
@@ -100,8 +100,10 @@
         "workspace": "{run_root}/work/api-immediate"
       },
       "expectations": [
+        "The implementer validates applicable entry for the package before editing: executable leaf, bound verification design with matching revision, and current ready preflight; it does not redo broad discovery or become the readiness owner.",
         "Only `src/auth/session.py` and `tests/auth/test_session.py` are changed, and the new expired-session regression fails for the missing expiration check before production is edited.",
         "The exact targeted command `python -m unittest tests.auth.test_session.SessionTest.test_expired_session_is_invalid` passes before the owning command `python -m unittest tests.auth.test_session`.",
+        "The submission maps every verification scenario ID (V-01, V-02) to current commands, setup/oracle, and results, and carries the preflight/context reference before the READY_FOR_REVIEW handoff.",
         "The final guided result uses `READY_FOR_REVIEW` and names a fresh `task-acceptance-review` as the next action.",
         "The implementer does not emit `ACCEPT`, claim independent review, or load, quote, or execute the task-acceptance-review role in the authoring session.",
         "Any self-check is explicitly labeled as implementation evidence rather than an acceptance verdict."
@@ -109,7 +111,7 @@
     },
     {
       "id": 6,
-      "prompt": "The fixture has staged correction task `REC-44` in the current result-record repository. Continue from `docs/tasks/REC-44/brief.md`, the preceding `CHANGES_REQUESTED` verdict and complete ledger in `docs/tasks/REC-44/reviews/acceptance-01.md`, and the reviewer-added scoped diff. Before any edit, explicitly map every supplied ledger row to planned implementation evidence or fresh-review coverage. Then correct the invariant, retain review-continuation state, run the reviewer regression followed by the owning suite, and hand the corrected bytes to a fresh reviewer using the correction-specific output format with exact authority and command fields.",
+      "prompt": "The fixture has staged correction task `REC-44` in the current result-record repository. Validate applicable guided entry from `docs/tasks/REC-44/brief.md`, its ready `preflight.md` and bound `verification.md` before any correction edit. Continue from the preceding `CHANGES_REQUESTED` verdict and complete ledger in `docs/tasks/REC-44/reviews/acceptance-01.md`, and the reviewer-added scoped diff. Before any edit, explicitly map every supplied ledger row to planned implementation evidence or fresh-review coverage. Then correct the invariant, retain review-continuation state, run the reviewer regression followed by the owning suite, and hand the corrected bytes to a fresh reviewer using the correction-specific output format with exact authority and command fields.",
       "expected_output": "A minimal exact-byte digest binding with sibling evidence, economical correction verification, and a `READY_FOR_REVIEW` handoff. Before editing it explicitly maps the complete ledger row-by-row; afterward its labeled correction handoff preserves the exact authority path, prior verdict, full ledger, current scoped diff, complete finding, exact commands, evidence, gate ownership, and unchecked row without self-acceptance.",
       "files": ["evals/files/setup_fixture.py"],
       "execution": {
@@ -121,7 +123,7 @@
         "workspace": "{run_root}/work/result-record"
       },
       "expectations": [
-        "Before any production or test edit, the implementer states the exact-byte binding invariant and emits a complete row-to-evidence map: `ROW-EXACT-BYTES` with prior status `failed` maps to the reviewer regression and planned correction evidence, while `ROW-REPLAY-BOUNDARY` with prior status `unchecked` maps to fresh-review coverage.",
+        "Before any production or test edit, the implementer validates applicable entry against the ready preflight and matching verification revision, states the exact-byte binding invariant and emits a complete row-to-evidence map: `ROW-EXACT-BYTES` with prior status `failed` maps to the reviewer regression and planned correction evidence, while `ROW-REPLAY-BOUNDARY` with prior status `unchecked` maps to fresh-review coverage.",
         "The production correction compares the SHA-256 digest of all supplied serialized result bytes with the independent anchor; a one-field equality patch cannot satisfy the final tests.",
         "The reviewer regression is preserved and the allowed test file adds table-driven or otherwise focused sibling evidence for another field mutation or a semantically equivalent byte rewrite using the same oracle.",
         "The exact reviewer regression runs first, then `python -m unittest tests.test_record_integrity`; the unnecessary aggregate gate is not run and its fresh-review ownership is reported.",
@@ -138,6 +140,25 @@
         "It explains that every supplied durable brief must be the `brief.md` inside a dedicated task package.",
         "It routes the caller to `task-brief-designer` for package normalization.",
         "It does not silently treat the legacy file as a conversational request, create package files, or change production/tests."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "The fixture has staged the current entry-cases repository. Attempt to implement `docs/tasks/DOCS/brief.md` in `entry-cases/` as a small conversational direct edit per `entry-cases/requests/relabel.md`. The documentation package has a bound verification design but no ready preflight. Validate entry and route; do not edit any path.",
+      "expected_output": "A non-complete result refusing entry: the documentation package cannot be relabeled a conversational request, its readiness is missing, and the earlier owner is named without any repository edits.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "entry-cases"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/entry-cases"
+      },
+      "expectations": [
+        "The implementer refuses entry for the relabeled documentation package and names `task-preflight` as the earlier owner for the missing ready preflight.",
+        "No repository path is edited and the pre-existing fixture states remain intact.",
+        "The result is non-complete and does not claim implementation or independent acceptance."
       ]
     }
   ]

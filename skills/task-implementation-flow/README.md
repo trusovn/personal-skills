@@ -23,7 +23,7 @@ handoffs, exact freshness evidence, and machine-readable results.
 | Skill | Use it for | Skip it when |
 |---|---|---|
 | `task-brief-designer` | Create or tighten a bounded task contract. It defaults to a delta check when a useful brief already exists. | The user request already gives an unambiguous outcome, scope, and acceptance criteria for a small task. |
-| `task-preflight` | Check readiness, ownership, commands, and decisive evidence when dirty ownership, dependencies, environment, permissions, helpers, fixtures, real-boundary capability, or a durable handoff creates material uncertainty. | A routine guided task can perform the same compact self-check inside the implementer. |
+| `task-preflight` | Check readiness, ownership, commands, and decisive evidence when dirty ownership, dependencies, environment, permissions, helpers, fixtures, real-boundary capability, or a durable handoff creates material uncertainty. | Every executable package requires derived verification and compact canonical readiness; an unpackaged direct request may use implementer self-preflight. |
 | `task-verification-designer` | Turn an executable brief into a separate task-local verification design with AC coverage, discriminating scenarios, and decisive oracles before implementation. It is required for a supplied executable task package. | An unpackaged small direct edit has obvious decisive tests/oracles and does not need a separate design. |
 | `bounded-task-implementer` | Implement one bounded task with risk-based tests, progressive verification, and a useful handoff. | The request is planning, review-only, or too ambiguous to implement safely. |
 | `task-maintainability-review` | Independently assess the changed design for concrete maintainability regression after the repo's deterministic architecture gate. | The repo does not require maintainability review and the user/task does not request it. |
@@ -169,6 +169,17 @@ For a supplied executable task package, this preparation is required even for a
 small change. An unpackaged conversational direct edit with an obvious oracle
 may stay inline. The verification-designer contract remains task-local and does
 not own cross-child or parent-level integration-test design.
+
+Packaged guided readiness uses canonical `preflight.md`, bound to the brief,
+scope and verification revision. Record complete per-AC/scenario authority and
+proof feasibility plus referenced decision context, relevant known issues and
+ordinary assumptions. Feasible future tests may be absent; missing indispensable
+capabilities block with their owner. Coverage revisions retain IDs and need
+focused current readiness; material fact changes need reconsideration, expected
+implementation/report effects alone do not force rediscovery, and requirements
+return to task design. Direct requests may stay inline; package presence alone
+requires no digest ledger or machine schema. Strict high-assurance checks remain.
+
 ### When standalone preflight adds value
 
 Use ready standalone `task-preflight` for an executable task package. An
@@ -184,7 +195,7 @@ standalone pass resolves readiness facts such as:
 A directly requested standalone preflight still returns a truthful readiness
 result even when its incremental value is marginal. It should stay compact,
 avoid broad baseline work without a named readiness reason, and recommend
-implementer self-preflight for the next materially similar task. Explicit
+implementer self-preflight for similar unpackaged direct requests. Explicit
 high-assurance and orchestrated flows continue to require standalone
 preflight.
 ## Maintainability-gated profile
@@ -298,8 +309,9 @@ statuses. A guided run that
 encounters one of these needs should pause and recommend the smallest
 escalation rather than silently rebuilding the entire chain.
 
-When a task-local `verification.md` exists, preflight records its path and
-digest as a derived input, maps its scenario IDs to packet commands/oracles,
+For high-assurance work, preflight records required packaged `verification.md`
+with its path and digest as a derived input, maps its scenario IDs to packet
+commands/oracles,
 and the implementer revalidates those bytes before editing. The task brief
 remains normative; carrying the artifact through the packet must not promote it
 into a second requirements source.

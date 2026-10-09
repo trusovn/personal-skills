@@ -309,7 +309,12 @@ clear request or task brief
 For small, unambiguous **unpackaged conversational** work, go directly to
 `bounded-task-implementer`; it performs a compact self-preflight. A supplied
 executable task package always follows verification design and ready preflight
-first. When the repo declares a required
+first. Packaged guided readiness is compact canonical `preflight.md`, bound to
+the brief, scope and verification revision, with complete proof feasibility and
+referenced decision context. Feasible future tests may be absent; indispensable
+capability gaps block. Reasoned coverage revisions need focused new readiness;
+expected implementation/report effects alone do not force rediscovery.
+When the repo declares a required
 maintainability gate, run that gate and a fresh `task-maintainability-review`
 before functional acceptance. Use `testing-discipline` alongside implementation
 or review when behavioral evidence, test design, or QA risk is material. Use

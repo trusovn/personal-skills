@@ -1,146 +1,120 @@
 # Project Plan Review
 
 Verdict: `ACCEPT`
-Review date/session: `2026-10-08 / /root/plan_reviewer`
+Review date/session: `2026-10-09 / /root/plan_reviewer`
+
+The reviewer is a fresh, separate agent that did not author the plan. This review used the project-local `.agents/skills/project-plan-verification/SKILL.md` and its report template. Planner explanations were checked against the dated proposal and current repository contracts. This is plan verification, not implementation acceptance or behavioral qualification.
 
 ## Reviewed bytes
 
-- `docs/project-plan.md` SHA-256: `0ba98af0ea5f162c64508b634cf46fbf79e0588d27033859f33c0825c003b6b1`
-- `docs/task-map.json` SHA-256: `e487b4b5eb4403b0f6ec577105247b7f8ee308eebacda7f70cf988a95978a046`
-- Repository revision: `d922a1d20cd32483631606c5f752c7af5feb5f30`.
-- Initial worktree: `git status --short` returned `?? docs/`. Both planning inputs were untracked. No tracked changes were present.
-- Independence: this separate reviewer did not author the plan, task map, or implementation. No prior plan verdict was reused. The reviewer wrote only this report.
+- `docs/project-plan.md` SHA-256: `84168fadfc6d0f8b604f0357ef0c29ab01552b10795df70c3d258e430a4f5299`
+- `docs/task-map.json` SHA-256: `2453a8470d0229bbac4b739cceb59e6480b7001c12116130b9141c2c39268e7a`
+- Repository revision: `d2e045144fb2cd186c3ae8c9e64a5a029eb5afa7`.
+- Starting `git status --short`: staged deletion of `docs/project-plan-review.md`; staged modifications to `docs/project-plan.md` and `docs/task-map.json`. The current filesystem bytes were reviewed. The report was absent and was recreated without staging. Neither planning artifact was edited.
 
 ## Authoritative sources reviewed
 
-- Current decision record: `docs/project-plan.md`, section 1, including the explicit mandatory-stage boundary, no new global correction limit, contextual material-risk policy and ordinary-uncertainty rule. Earlier conversation was not available; the user-decision provenance is this durable record, not an independently authenticated chat transcript. Its settled decisions take precedence over choices left proposed in the dated proposal.
-- `skills/task-implementation-flow/docs/verification-and-review-policy-plan-2026-10-08.md`: independently reconstructed the proposed capabilities, confirmed explicit-AC rule and exclusions before comparing the detailed plan.
-- `skills/task-orchestrator/docs/integration-spike-2026-10-08/issues.md`: checked the FLOW-02/FLOW-05/LIVE-01 and SETUP-01/02 boundaries against the deferred executor/version/telemetry work. Issue reports are preserved observations and source inspection, not new reproductions by this reviewer.
-- Root `AGENTS.md` and supplied repository instructions: truthful evidence, bounded scope, installation resolution/ownership and separate results.
-- `skills/task-implementation-flow/README.md` and the seven source task skills: preparation, implementation, maintainability, registry and acceptance responsibilities. Relevant brief layout, preflight packet and acceptance report references were inspected.
-- `README.md`, `skills/README.md`, `scripts/install_development_skills.py`, relevant identity/availability declarations, and focused installer/workflow/availability/review-discipline test definitions.
-- Existing task eval definitions and the acceptance fixture setup: checked preservation of public-boundary, validator, continuation and supplied-fixture obligations. No eval was executed.
+- Supplied repository/user instructions and root `AGENTS.md`.
+- `skills/task-implementation-flow/docs/verification-and-review-policy-plan-2026-10-08.md`, including its confirmed explicit-AC-failure rule. The plan's recorded later user decisions settle the mandatory packaged stages and reject the proposal's global correction limit.
+- `skills/task-orchestrator/docs/integration-spike-2026-10-08/issues.md` for the human FLOW-02/FLOW-05, reproducible-evidence and SETUP-01/02 boundaries.
+- `skills/task-orchestrator/docs/code-guided-orchestration.brief.md` for the separate executor direction and deferred machine/retained-version work; it is a discovery brief, not authority to expand this maintenance plan.
+- Root `README.md`, `skills/README.md`, and `skills/task-implementation-flow/README.md`.
+- Source contracts for `task-brief-designer`, `task-verification-designer`, `task-preflight`, `bounded-task-implementer`, `task-maintainability-review`, `task-contract-registry-updater`, and `task-acceptance-review`; relevant artifact-layout and acceptance-report references.
+- `scripts/install_development_skills.py`; relevant workflow identity/availability seams in `scripts/workflow_version.py` and `scripts/run_evidence.py`.
+- Focused installer, workflow-version, availability and review-discipline test definitions; existing task-skill eval cases and relevant fixture setup definitions. These were inspected as planning context, not executed as behavior evidence.
 
-The maintenance route explicitly uses the existing toolkit foundation. It does not claim an approved new charter or readiness review. No missing charter, AI foundation or full SDD artifact is required for this route. The root README distinguishes coding-agent maintenance from product model integration.
+No charter, AI foundation or foundation-readiness report is required by this maintenance route. The plan names an optional `deferred-work-after-t-o-new-flow.md` companion without a location. It was unavailable at `docs/`, and no alternate path was supplied. No critical contract relies on it; the proposal and plan state the deferral boundary directly. No additional search was performed.
 
 ## Independent reconstruction
 
 ### Product outcome
 
-Make the existing toolkit usable as a reliable human-coordinated task process. A person should be able to prepare an executable task, hand current evidence to independent reviewers, obtain a contextual decision, continue corrections without dropping obligations, and deliberately install and qualify the instructions used. This does not create an executor or automate advancement.
+The existing toolkit should support a dependable task flow coordinated by a person. A packaged task must enter implementation with justified verification and a current readiness decision. Fresh review must establish what the evidence proves before a separate call decides whether the submitted work may advance. Corrections must preserve outstanding obligations and return through the required stages. Maintainers must be able to install the intended profile in a new Git repository, detect drift without changing the target, and refresh it deliberately.
 
 ### Required capabilities / critical journeys
 
-- Prepare a packaged executable leaf through justified verification and ready preflight; reject composite/blocked or materially stale entry. Preserve compact direct edits.
-- Submit implementation to every applicable conditional stage, then independent evidence discovery and separate acceptance. Green tests cannot excuse an actual AC failure or an inadequate oracle.
-- Decide confirmed findings using authority, real operating/consumer context and materiality. Record permissible deferrals before human advancement and reassess relevant issues in later preflight.
-- Correct through the right owner while preserving finding/scenario IDs, unfinished evidence and fresh applicable reviews. Evidence clarification is distinct from a production fix.
-- Install before the first Git commit; compare the complete managed profile without writes; explicitly refresh between calls while preserving unmanaged state.
-- Qualify the composed installed workflow using supplied runnable state and observed results. Distinguish deterministic runtime tests from wording checks and separately authorized agent behavior evals.
+- Prepare an executable leaf: map authority to discriminating scenarios, establish feasible evidence and readiness, and admit only a current implementation entry. A small clear direct edit retains a compact route.
+- Submit and independently review: retain conditional architecture/maintainability and registry duties, produce a complete or explicitly partial discovery ledger, then decide from current evidence and relevant context.
+- Correct or recover evidence: retain every finding and unfinished row, distinguish evidence/authority/scenario/production/reference changes, obtain the affected current proof, and stop without advancement when obligations remain unresolved.
+- Defer a bounded non-material finding: acceptance supplies the disposition, the coordinator records it, and a relevant later task reassesses the affected contract without an undeclared workaround.
+- Install and qualify distribution: exercise genuine unborn and committed repositories, compare the managed projection, refresh explicitly between calls, and preserve unmanaged state.
+- Qualify the composed workflow: supply runnable good/wrong fixtures and actual stage outputs, invoke qualified installed copies in separate consuming calls, and report observed outcomes and unrun gaps honestly.
 
 ### Explicit non-goals / constraints
 
-No controller, typed machine transition redesign, automatic dependency release, global correction counter, retained active-run bundles, concurrency guarantees, telemetry integration or launcher adapters. Keep existing targeted-fix stops and authorization budgets. Source edits do not refresh an active invocation. Installer ownership and fingerprint framing remain narrow and unchanged. Reports remain separate from authority; numbered history is not current proof after relevant bytes change.
+- This plan does not deliver a code executor, typed stage sidecars, automatic advancement, retained runnable versions, telemetry, parallel worktree guarantees or unattended recovery.
+- Brief/user/repository authority stays normative. Scenarios cannot add requirements or excuse an omitted AC failure.
+- Discovery supplies facts; acceptance decides; the coordinator owns advancement and known-issue writes. Role changes in an authoring session do not create independence.
+- Current required evidence is mandatory. Passing ACs cannot excuse demonstrated material operating, business, consumer or maintainability risk; speculative preferences cannot prolong correction.
+- Ordinary uncertainty permits a recorded assumption. A decision-critical unresolved serious consequence or costly later repair follows its owner route, with a focused user question only when existing authority cannot resolve it.
+- Existing task stops and budgets remain; there is no new global correction counter. Expensive/live agent evals need separate authorization.
+- Installer ownership, same-installation-root helper resolution and fingerprint framing remain compatibility constraints.
 
 ## Structural checks
 
-- Bundled verifier: `FAIL`, exit 1, exactly one diagnostic: `project plan missing heading: Risks, assumptions, and delegated choices`.
-- Exact command: `python3 .agents/skills/project-plan-verification/scripts/verify_plan_artifacts.py docs/project-plan.md docs/task-map.json`.
-- Reference integrity: `PASS`; the bundled checker reported no unresolved catalog/task references.
-- Task dependency graph: `PASS`; no cycles or missing dependency IDs were reported.
-- Additional narrow command: `python3 .agents/skills/project-delivery-plan/scripts/validate_task_map.py docs/task-map.json` returned exit 0 and `PASS: task map is structurally consistent`.
-- Section 12 is populated and addresses the required subject. Its title omits the exact comma expected by the checker. This is a heading compatibility defect, not an absent risks/assumptions/delegation section. The original verifier failure remains a failure; it is not relabeled as a pass.
+- Bundled verifier: `PASS` — `python3 .agents/skills/project-plan-verification/scripts/verify_plan_artifacts.py docs/project-plan.md docs/task-map.json`, exit `0`, reported `PASS: planning artifacts are structurally reviewable` and the digests above.
+- Reference integrity: `PASS` for checked plan/task-map IDs and required named repository inputs. The optional companion limitation is recorded above.
+- Task dependency graph: `PASS`; no cycle. The intended order is T-001 → T-002 → T-003 → T-004 → T-005.
 
-These checks establish structural properties only. No implementation behavior, installer repair or agent compliance is certified by this review.
+These checks establish structural reviewability only. The verdict also relies on the semantic traces below. No live/model eval, installer mutation, or broad test suite was run.
 
 ## Coverage summary
 
 | Area | Result | Notes |
 |---|---|---|
-| Scope fidelity | PASS | Proposal and preserved spike boundaries match the recorded current decisions; no executor scope was added. |
-| End-to-end flow completeness | PASS | All five flows terminate in an observable result or an explicit owned stop. |
-| Artifact producer/consumer closure | PASS | ART-001 through ART-012 have legitimate sources, owners and downstream or audit value. |
-| State/lifecycle semantics | PASS | Authority/scenario/byte changes invalidate affected evidence; partial, blocked and stale states cannot grant advancement. |
-| Interface contracts | PASS | IF-001 through IF-008 define role boundaries, evidence admission and important rejection behavior. |
-| Cross-task invariants | PASS | INV-001 through INV-011 have task ownership and discriminating planned cases. |
-| Capability/task coverage | PASS | CAP-001 through CAP-004 and T-001 through T-005 compose; local sizing remains downstream. |
-| Dependency/order composition | PASS | Serialized source changes protect shared contracts; existing foundation sources supply predecessor seams. |
-| Verification coverage | PASS | Required boundary cases and agent-call evidence are planned; authorization/unrun limitations remain explicit. |
-| Planning abstraction | PASS | Behavior/ownership is fixed; CLI, report formatting, concrete tests and splitting remain local choices. |
+| Scope fidelity | PASS | CAP-001 through CAP-004 preserve the standalone proposal scope and recorded amendments; executor requirements stay deferred. |
+| End-to-end flow completeness | PASS | FLOW-001 through FLOW-005 have a trigger, stage ownership, observable terminal outcome and explicit non-success routes. |
+| Artifact producer/consumer closure | PASS | ART-001 through ART-012 have sources, writers, readers and lifecycle rules; external authority and fixture producers are intentional. |
+| State/lifecycle semantics | PASS | Ready/stale, complete/partial, correction/evidence recovery, historical reports and matched/drifted/failure states cannot grant inferred success. |
+| Interface contracts | PASS | IF-001 through IF-008 define the cross-role behavior while leaving formatting, CLI fields and test implementation local. |
+| Cross-task invariants | PASS | INV-001 through INV-011 have affected surfaces, task owners and intended discriminating evidence. |
+| Capability/task coverage | PASS | Every capability has a realizing flow and completion boundary; all five tasks contribute to those flows. |
+| Dependency/order composition | PASS | Shared source edits are ordered; current conditional-stage contracts are legitimate baseline seams, not missing future producers. |
+| Verification coverage | PASS | Section 11 separates task-level proof from actual composed handoffs, real filesystem/Git checks and authorized agent behavior evidence. |
+| Planning abstraction | PASS | The plan settles coordination semantics without choosing private helpers, classes or unnecessary schemas. |
 
 ### Critical flow traces
 
-| Flow / capability | Trigger to terminal outcome | Failure and freshness checks |
-|---|---|---|
-| FLOW-001 / CAP-001 | ART-001/008 -> IF-001 -> ART-002/003 -> IF-002 -> valid entry/submission ART-004; T-001 | Missing authority returns to its owner; composite/blocked packages reject; missing indispensable capability blocks; future tests are permitted. Expected report/correction effects do not alone invalidate readiness. |
-| FLOW-002 / CAP-002 | Current ART-004 -> IF-003 conditional ART-005 -> IF-004 discovery ART-006 -> IF-005 decision ART-007 -> IF-006 coordinator ART-008/advancement; T-002/003 | Required conditional blockers stop before discovery. Partial discovery is not clean evidence. Confirmed AC/gate/unauthorized/material failures block. Acceptance admits current evidence, never a stale verdict or severity label alone. |
-| FLOW-003 / CAP-002 | Blocker/gap -> IF-006 owner -> correction or clarification -> applicable IF-001/003/004/005 -> new decision or unresolved stop; T-001/002/003 | Authority/scenario revisions return to their owners; production corrections repeat applicable reviews. Reference-only routing requires actual effects and valid remaining proof. IDs, unfinished rows, regression evidence and next stage survive cancellation/budget stops. |
-| FLOW-004 / CAP-003 | ART-009 -> explicit IF-007 install ART-010 -> read-only ART-011 -> explicit refresh/recheck or drift/failure; T-004 | Genuine unborn state is distinguished from other Git errors. Complete managed content, helpers/guide and AGENTS block are compared. Unmanaged files remain outside ownership. Match does not promise retained active-run versions. |
-| FLOW-005 / CAP-004 | T-001–004 sources and qualified installation -> IF-008 supplied fixtures/local checks -> authorized separate role calls -> ART-012; T-005 | Good/wrong implementations and explicit context make outcomes exercisable. Unavailable or unauthorized evals remain unrun gaps, not behavioral qualification; required behavior evidence needs execution or an explicit scope-owner revision. |
-
-### Artifact closure and identity checks
-
-| Artifacts | Producer/source and consumers | Lifecycle / lookup result |
-|---|---|---|
-| ART-001 | Authority owner/fixture author -> every stage | Packaged brief and cited authority are normative; derived artifacts cannot silently change ACs. |
-| ART-002/003 | Designer/preflight -> implementer, discovery, acceptance | Fixed package filenames, scenario IDs and source revision allow downstream lookup; freeze and focused readiness revision are explicit. |
-| ART-004 | Implementer/correction owner -> conditional owners/reviewers/coordinator | Scoped bytes, scenario evidence and complete continuation identify the current submission; changed bytes invalidate affected proof. |
-| ART-005 | Gate runner/maintainability reviewer/registry updater -> discovery/acceptance | Conditional ownership and order are preserved; reports remain history after applicable corrections. |
-| ART-006/007 | Separate independent role calls -> acceptance or continuation/coordinator | Numbered report paths and stable finding/coverage IDs preserve provenance; discovery cannot approve, decision cannot routinely repeat discovery. |
-| ART-008 | Coordinator from accepted deferrals -> relevant later preflight/decision/integration | Default known-issues location, stable IDs and reassessment conditions close the feedback path without tracker authority for reviewers. Absence before the first deferral is legitimate. |
-| ART-009/010 | Existing source maintainers/canonical installer -> skill calls/checks | Source-relative selected packages, sibling helpers, guide and marked block define the managed projection. Refresh is explicit; copies are not competing normative authorities. |
-| ART-011/012 | Read-only comparison/qualification observations -> maintainers and later review/planning | Point-in-time identity and reproducible setup bound claims; history remains useful after current qualification becomes stale. |
-
-Stable plan IDs and artifact locations are sufficient to map future implemented contracts into discovery. No future contract needs a present registry entry or an invented implementation path. Human observations and supplied authorities are legitimate external producers; task implementation dependencies are not the runtime loop between repeated task executions.
-
-### Interface, invariant and task composition
-
-IF-001/002 settle required preparation and submission semantics; IF-003 retains conditional gate/registry order; IF-004/005 separate facts from judgment; IF-006 retains human ownership of continuation and known issues; IF-007/008 bind installation identity to truthful qualification. Rejection/correction owners and current-evidence requirements are stated at each boundary. Atomic machine advancement and concurrent refresh are explicitly outside this human-coordinated scope.
-
-INV-001/002 guard authority and packaged entry; INV-003 guards readiness ownership; INV-004/005 guard independence and decisive evidence; INV-006/011 guard contextual disposition and uncertainty; INV-007 closes known-issue consumption; INV-008 guards complete fresh corrections; INV-009 guards distribution ownership; INV-010 prevents unsupported qualification claims. Each has task owners and positive/negative or contrasting-context evidence in section 11 and the task map. No critical implicit invariant was found without equivalent coverage.
-
-| Task | Dependency execution and useful output |
+| Flow / capability | Trace and non-success boundary |
 |---|---|
-| T-001 | Uses existing source/authority and relevant existing issues; defines preparation contracts that T-002/003 consume. Known-issue reading is an explicitly declared seam, later completed by T-002. |
-| T-002 | Depends on T-001; creates discovery/decision/known-issue contracts and distributes the new skill in the same change. ART-005 already exists in the baseline, so its use does not require T-003 first. |
-| T-003 | Depends on T-001/002; closes submission/correction routing against settled role contracts and removes bounded-review truncation without expanding scope. |
-| T-004 | Depends on T-001–003; qualifies the resulting profile rather than guessing later source selection. Existing installer/installed-profile seams supply its starting state. |
-| T-005 | Depends on all source/distribution work; exercises composition across every capability and records observable results/gaps. It does not let each skill's local wording tests substitute for the composed journey. |
+| FLOW-001 / CAP-001 | ART-001/008 → IF-001 → justified ART-002 → feasible ready/blocked ART-003 → IF-002 → ART-004. Composite/blocked authority, unjustified coverage, missing indispensable capability and stale material facts return to named owners. Future tests and expected report effects do not become false blockers. |
+| FLOW-002 / CAP-002 | ART-004 → first outstanding IF-003 stage → ART-005 → fresh IF-004 discovery using ART-003 context → ART-006 → separate IF-005 decision → ART-007 → coordinator IF-006 recording of ART-008 before advancement. Partial proof cannot become clean; confirmed bounded blockers take correction precedence while unfinished proof and authority questions retain their own routes. |
+| FLOW-003 / CAP-002 | Existing IDs/rows → owner classification → clarification or authorized correction → current conditional evidence/discovery/decision. A scenario coverage revision retains IDs, invalidates affected readiness and needs focused preflight plus revised evidence. Changed requirements return to task design. Production corrections invalidate semantic verdicts; a reference-only shortcut needs actual-effect proof and still gets fresh acceptance. Cancellation, budget or repeated-fix stops preserve attempts and gaps. |
+| FLOW-004 / CAP-003 | ART-009 → explicit IF-007 installation → ART-010 → read-only complete managed comparison → ART-011. Genuine unborn identity is separate from Git failure. Drift needs deliberate refresh and recheck between calls; match is a point-in-time projection claim, not retained-version or collector-lifecycle proof. |
+| FLOW-005 / CAP-004 | Supplied authority/implementations/tests and qualified ART-009/010/011 → IF-008 local checks and separately authorized role calls → ART-012 with exact setup, outputs and gaps. Actual preparation, discovery and correction outputs must reach separate consumers; fabricated reports or wording checks cannot prove composition. |
 
-The ordering coordinates edits to the shared source profile and handoff contracts. No task must infer predecessor output from private implementation detail. Local report/CLI/fixture design cannot change the stated cross-task semantics. Planned local deterministic Git/install tests are adequate for filesystem/process claims; separate role-call evals are correctly required for semantic skill behavior. No live-model business-correctness dependency is invented.
+### Ownership, identity and handoff checks
+
+- ART-001 is owner-supplied authority. ART-002 and ART-003 are derived under it, with stable scenarios and distinguishable revisions. ART-004 is a submission claim supported by current code/tests/observations, not a competing requirements source.
+- ART-005 preserves each conditional producer's authority. ART-006 contains current corroboration and the discovery-owned aggregate-gate record. ART-007 admits that evidence without routine duplicate execution. A later omitted material row makes the earlier aggregate premature; targeted proof precedes any justified rerun.
+- ART-008 has a coordinator writer and a specific return path into relevant preflight/acceptance/integration. Optional context links do not grant portfolio authority or turn proposed future work into mitigation. A priority change alone cannot invalidate acceptance; changed material facts can.
+- ART-009 is the versioned source/manifest authority. ART-010 is its explicitly refreshed managed projection. ART-011 compares the full managed contents, guide, helpers and AGENTS block rather than treating runtime fingerprints as profile equivalence.
+- ART-012 preserves observed qualification and its inputs. Changed relevant source or installation makes current claims stale without rewriting history.
+- Stable ART/IF/INV/FLOW/T IDs, scenario/finding IDs, task-package names and numbered reports provide sufficient downstream identity. Future implemented-contract discovery can map these IDs without inventing private implementation paths or demanding registry records for unborn contracts.
+- T-001 can use an empty known-issue set until T-002 introduces deferral production. T-002 consumes existing conditional-stage contracts; T-003 closes their ordered handoffs. These are safe baseline dependencies, not a circular reliance on future behavior. T-002 installs the new discovery package in its own change. T-004 follows source-contract changes, then T-005 qualifies the resulting installed composition.
 
 ## Findings
 
-### F-001 — Required heading spelling fails the bundled checker
-
-Severity: `MINOR`  
-Affected IDs: `T-001 through T-005` (structural handoff only); plan section 12.
-
-**Gap / contradiction**  
-The checker requires `Risks, assumptions, and delegated choices`; section 12 is titled `Risks, assumptions and delegated choices`. The subject and required content are present, but exact-heading recognition fails.
-
-**Why it matters / failure scenario**  
-A caller using the bundled checker as a structural gate receives exit 1 and may stop an otherwise coherent planning handoff. There is no demonstrated missing behavior or task-composition ambiguity. The skill's severity rule for a missing required section does not apply to a populated equivalent section whose title differs only in punctuation.
-
-**Smallest plan-level correction**  
-Use the exact required heading spelling, then rerun the structural verifier. Preserve the section's substance. This reviewer did not edit the plan.
+None.
 
 ## Producer/consumer exceptions checked
 
-- Original authority and existing baseline skills/conditional reports are legitimate pre-existing or human-produced inputs. They do not need new feature-task producers.
-- Known issues need not exist before a deferral; when produced, later relevant preflight and integration consume them.
-- Numbered superseded reviews and qualification results retain audit/provenance value. They cannot serve as current evidence automatically.
-- ART-011 may be transient point-in-time output. Its active purpose is installation/qualification choice, not a mandatory new persistent state store.
-- An ART-012 report containing unrun gaps is an honest terminal result, not a claim that missing required behavioral qualification succeeded.
+- Task owners and qualification fixture authors are legitimate external producers of ART-001 and initial test state; they need no separate product task.
+- Existing architecture/maintainability and registry stages legitimately supply ART-005 before their routing refinements in T-003.
+- Historical submissions, numbered ART-005/006/007 reports and ART-012 results retain audit/provenance value after supersession. They are not current acceptance evidence.
+- ART-011 may be transient point-in-time output or retained evidence. Its consumer value is the explicit match/drift/failure result, not durable transition authority.
+- No ART-008 file is required before a deferral exists. Its optional portfolio use is a future consideration, with no new current consumer or stage.
 
 ## Open system questions
 
-None that block plan acceptance under the recorded current decisions. Agent/model-budget eval authorization remains a named later execution prerequisite. The user-decision provenance limit above is disclosed; no contradictory current repository authority was found.
+- No unresolved question blocks downstream task planning.
+- T-005's behavioral-eval authorization is a later execution prerequisite. Unrun evals may be reported as incomplete qualification; they cannot satisfy required behavior evidence or permit a completed-qualification claim. The plan requires that evidence or an explicit owner revision of scope.
+- The optional companion location remains unavailable. This does not affect scope or composition because the governing documents state the deferred boundary directly.
 
 ## Verdict rationale
 
-No BLOCKER or MAJOR semantic defect was demonstrated. The independently reconstructed maintenance journeys have closed producers/consumers, sufficient role interfaces, current-state rules, ordered task ownership and planned decisive evidence. The one structural heading mismatch is minor because the required section is present and complete. Acceptance applies to these exact plan/task-map bytes and to planning readiness only; it does not certify implementation or agent behavior.
+The plan has no identified BLOCKER or MAJOR defect. It preserves the proposal's applicable standalone goals, settles the cross-role authority and correction semantics, closes artifact ownership and dependencies, and assigns intended evidence at boundaries that can distinguish plausible wrong behavior. The amended preflight-context, aggregate ownership, revision recovery and mixed-condition rules are consistent across prose, task-map interfaces, flows, invariants and planning context. Local implementation choices remain delegated without forcing another task to guess a critical contract.
 
 ## Next action
 
-Feed this verified plan/task map into downstream task planning. The planning owner should correct F-001 before a handoff that requires the bundled structural gate and rerun that check. A changed plan must be assessed against its new bytes; do not silently carry this byte-bound verdict across substantive changes.
+Feed these reviewed plan/task-map bytes into downstream task planning. Obtain separate authorization before behavior evals and retain their gaps until actual qualification evidence exists. Material changes to either planning artifact require a fresh review.

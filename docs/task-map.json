@@ -118,7 +118,7 @@
         "Correction owner",
         "Human coordinator"
       ],
-      "lifecycle": "Compact report or next unused reviews/discovery-NN.md when durable. Every required scenario has pass/fail/blocked/unchecked with reason; confirmed findings have stable IDs, authority relation, trigger, consequence, reproducible evidence, affected and credible sibling surfaces. Partial reports preserve gaps. No acceptance verdict or approved deferral. Changed bytes require current corroboration."
+      "lifecycle": "Compact report or next unused reviews/discovery-NN.md when durable. Every required scenario has pass/fail/blocked/unchecked with reason; confirmed findings have stable IDs, authority relation, trigger, consequence, reproducible evidence, affected and credible sibling surfaces. Partial reports preserve gaps. No acceptance verdict or approved deferral. Changed bytes require current corroboration. Records discovery-owned aggregate-gate command or not run, owner/stage, reason and current evidence under IF-004."
     },
     {
       "id": "ART-007",
@@ -131,20 +131,20 @@
         "Correction owner",
         "Discovery for evidence requests"
       ],
-      "lifecycle": "Current decision binds authority/verification revision, reviewed scope, discovery, applicable stage evidence, and finding dispositions. ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE; an authoring session may only self-check. Numbered durable acceptance reports remain historical after corrections. Each risk disposition names its context, trigger, consequence, impact, likelihood, affected boundary, credible exposure/next-change horizon, existing mitigation and fix-now/deferral rationale. A demonstrated material operational, business or maintainability risk blocks even when explicit ACs pass. Ordinary contextual uncertainty does not force a question or block: continue using a recorded reasonable assumption, and keep unproved concerns separate from confirmed findings. Ask the user only when unresolved uncertainty credibly risks serious consequences from delay or materially more costly later repair, and cannot be resolved within existing authority. Demonstrated AC failures or missing required proof still prevent acceptance and route to correction/evidence owners without routine user prompts."
+      "lifecycle": "Current decision binds authority/verification revision, reviewed scope, discovery, applicable stage evidence, and finding dispositions. ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE; an authoring session may only self-check. Numbered durable acceptance reports remain historical after corrections. Each risk disposition names its context, trigger, consequence, impact, likelihood, affected boundary, credible exposure/next-change horizon, existing mitigation and fix-now/deferral rationale. A demonstrated material operational, business or maintainability risk blocks even when explicit ACs pass. Ordinary contextual uncertainty does not force a question or block: continue using a recorded reasonable assumption, and keep unproved concerns separate from confirmed findings. Ask the user only when unresolved uncertainty credibly risks serious consequences from delay or materially more costly later repair, and cannot be resolved within existing authority. Demonstrated AC failures or missing required proof still prevent acceptance and route to correction/evidence owners without routine user prompts. Mixed-condition verdict/routing precedence follows project-plan section 6; confirmed findings and unfinished evidence rows both survive."
     },
     {
       "id": "ART-008",
       "name": "Project known issues",
       "kind": "persisted",
-      "source_of_truth": "Human coordinator records acceptance-approved deferrals; default docs/known-issues.md subject to repository authority.",
-      "producer": "Human coordinator from ART-007; never discovery acting as a tracker writer",
+      "source_of_truth": "Human coordinator records acceptance-approved deferrals before authorized advancement; default docs/known-issues.md subject to repository authority. This is not the complete open-issue backlog; later portfolio reasoning may also need an authoritative tracker.",
+      "producer": "Human coordinator from ART-007; neither discovery nor acceptance gains general tracker-writing authority",
       "consumers": [
         "Preflight for relevant later tasks",
         "Acceptance",
         "Integration reviewer"
       ],
-      "lifecycle": "Stable project IDs with task/review/finding provenance, trigger, consequence, evidence, impact and likelihood, affected boundary/tasks, deferral basis, follow-up owner/action, and reassessment conditions. Coordinator updates status on resolution or relevant contract/usage/dependency change; unrelated tasks do not reopen issues routinely. Durable once a deferral exists."
+      "lifecycle": "Stable project IDs with task/review/finding provenance, trigger, consequence, evidence, impact and likelihood, affected boundary/tasks, deferral basis, follow-up owner/action, and reassessment conditions. Coordinator updates status on resolution or relevant contract/usage/dependency change; unrelated tasks do not reopen issues routinely. Durable once a deferral exists. Consequential deferrals may carry proportional, already known relevant context links for optional later cross-issue/portfolio reasoning (project-plan section 4): subsystem/area, existing plan/contract IDs, confirmed versus suspected issue relationships, safeguards/assumptions and reassessment triggers, proposed versus approved/committed planned work. Missing links mean unknown; planned work alone does not justify deferral. No formal issue schema or exhaustive relationship tracking is required."
     },
     {
       "id": "ART-009",
@@ -252,13 +252,14 @@
       "inputs": [
         "ART-001",
         "ART-002",
+        "ART-003",
         "ART-004",
         "ART-005"
       ],
       "outputs": [
         "ART-006"
       ],
-      "contract": "Separate role call corroborates required scenarios and performs a bounded investigation; supply complete or explicitly partial ledger, stable finding IDs, reproducible probes and available evidence references. Independent executable validator obligations use relevant valid and invalid instances. Batch safe affordable independent probes despite a finding; suppress aggregate gates after decisive failure unless distinct purpose is authorized. Discovery cannot decide acceptance/deferral or initiate correction. Discovery supplies observed facts and credible sibling surfaces for contextual risk assessment; suggested severity is input, not the disposition."
+      "contract": "Separate role call consumes ART-003 preflight context to select decisive bounded risk probes and corroborates required scenarios and performs a bounded investigation; supply complete or explicitly partial ledger, stable finding IDs, reproducible probes and available evidence references. Independent executable validator obligations use relevant valid and invalid instances. Batch safe affordable independent probes despite a finding; suppress aggregate gates after decisive failure unless distinct purpose is authorized. Discovery cannot decide acceptance/deferral or initiate correction. Discovery supplies observed facts and credible sibling surfaces for contextual risk assessment; suggested severity is input, not the disposition. Discovery owns the justified aggregate gate, including fresh correction discovery, once current targeted evidence is clean and ledger reconciliation permits it (project-plan section 7). Record exact command or not run, owner/stage, reason and current evidence. A later omitted material row makes the earlier gate premature; targeted proof precedes any justified rerun. Conditional gate owners retain IF-003 duties."
     },
     {
       "id": "IF-005",
@@ -277,7 +278,7 @@
       "outputs": [
         "ART-007"
       ],
-      "contract": "Use authority and compact readiness context, then check admitted current evidence. Classify every finding as blocking, deferred-known, or observation with reasons. Explicit AC/required-gate failure and unauthorized effects block. A demonstrated material operational, business, downstream-contract, hard-architecture or maintainability risk also blocks, even when ACs pass. Explain trigger, consequence, impact, likelihood, affected boundary, credible exposure or credible near-future maintenance/planned change, existing mitigation and why correction is needed now. Severity alone is insufficient; low likelihood does not excuse catastrophic consequences. Bounded non-material defects may be deferred only after all required evidence passes and deferral imposes no hidden consumer workaround. Missing decisive required evidence yields INCONCLUSIVE with a focused batched request to the evidence/capability owner, without a routine user prompt. Ordinary contextual uncertainty proceeds under a stated reasonable assumption and is recorded as an observation rather than a confirmed defect. Escalate uncertainty to the user only for credible serious consequences of delay or materially more costly later repair when the agent cannot resolve it within current authority. Do not ask the user to classify every issue; make authorized bounded corrections and evidence clarifications through their owners. Demonstrated bounded defects use CHANGES_REQUESTED when correction is authorized. No routine second broad search or repeated complete suite."
+      "contract": "Use authority and compact readiness context, then check admitted current evidence. Classify every finding as blocking, deferred-known, or observation with reasons. Explicit AC/required-gate failure and unauthorized effects block. A demonstrated material operational, business, downstream-contract, hard-architecture or maintainability risk also blocks, even when ACs pass. Explain trigger, consequence, impact, likelihood, affected boundary, credible exposure or credible near-future maintenance/planned change, existing mitigation and why correction is needed now. Severity alone is insufficient; low likelihood does not excuse catastrophic consequences. Bounded non-material defects may be deferred only after all required evidence passes and deferral imposes no hidden consumer workaround. Missing decisive required evidence without a confirmed blocker eligible for bounded correction yields INCONCLUSIVE with a focused batched request to the evidence/capability owner, without a routine user prompt. Ordinary contextual uncertainty proceeds under a stated reasonable assumption and is recorded as an observation rather than a confirmed defect. Escalate uncertainty to the user only for credible serious consequences of delay or materially more costly later repair when the agent cannot resolve it within current authority. Do not ask the user to classify every issue; make authorized bounded corrections and evidence clarifications through their owners. Demonstrated bounded defects use CHANGES_REQUESTED when correction is authorized. No routine second broad search or repeated complete suite. Apply mixed-condition precedence from project-plan section 6: an admitted confirmed blocker with authorized bounded correction yields CHANGES_REQUESTED despite other missing proof or a separate unresolved material-context question; preserve each finding, unfinished row, reason and correction/evidence/authority route. If authority/scope/permission/dependency prevents that correction route, use INCONCLUSIVE while retaining the blocker. Admit discovery-owned current aggregate evidence without duplicating execution."
     },
     {
       "id": "IF-006",
@@ -368,7 +369,7 @@
         "FLOW-001",
         "FLOW-003"
       ],
-      "verification": "T-001/T-003/T-005: stale scenario/authority, ownership or permission change, valid future test implementation, correction-only changes and attributed report writes."
+      "verification": "T-001/T-003/T-005: stale scenario/authority, ownership or permission change, valid future test implementation, correction-only changes and attributed report writes. Include coverage-gap revision under unchanged authority: retained IDs, obsolete readiness rejection, focused ready and current evidence; contrast changed requirements returning to task design."
     },
     {
       "id": "INV-004",
@@ -395,11 +396,11 @@
         "FLOW-002",
         "FLOW-003"
       ],
-      "verification": "T-002/T-005: weak oracle, absent fixture, missing required row, partial discovery, stale corrected bytes, and valid/invalid validator samples."
+      "verification": "T-002/T-005: weak oracle, absent fixture, missing required row, partial discovery, stale corrected bytes, and valid/invalid validator samples. Failure-to-correction composition proves discovery-owned justified aggregate execution once after clean targeted evidence, with exact command/current evidence and no acceptance duplication."
     },
     {
       "id": "INV-006",
-      "statement": "Explicit AC failures, required-gate failures and unauthorized effects block. Confirmed material operational, business, downstream-contract, hard-architecture or maintainability risks also block, including avoidable refactoring cost tied to a credible same-kind maintenance or planned change grounded in project context. Non-material additional defects may become known issues after required evidence passes; speculative improvements do not force correction.",
+      "statement": "Explicit AC failures, required-gate failures and unauthorized effects block. Confirmed material operational, business, downstream-contract, hard-architecture or maintainability risks also block, including avoidable refactoring cost tied to a credible same-kind maintenance or planned change grounded in project context. Non-material additional defects may become known issues after required evidence passes; speculative improvements do not force correction. Acceptance and portfolio scheduling have separate authority (project-plan section 6); a later priority change alone does not invalidate acceptance or excuse current blockers. New facts invalidating acceptance assumptions or revealing a material violation require focused review under existing authority.",
       "applies_to": [
         "ART-007",
         "ART-008",
@@ -409,7 +410,7 @@
         "ART-003",
         "FLOW-003"
       ],
-      "verification": "T-002/T-005: each disposition branch, including AC-compliant operational/business risk, AC-compliant material refactoring risk, low-likelihood catastrophic consequence, genuine bounded minor issue, speculative preference, and insufficient context. Observe context-based reasons rather than severity-only decisions. Include a cheap reversible uncertain concern that does not block and a costly later-repair concern that warrants timely resolution."
+      "verification": "T-002/T-005: each disposition branch, including AC-compliant operational/business risk, AC-compliant material refactoring risk, low-likelihood catastrophic consequence, genuine bounded minor issue, speculative preference, and insufficient context. Observe context-based reasons rather than severity-only decisions. Include a cheap reversible uncertain concern that does not block and a costly later-repair concern that warrants timely resolution. Include passing ACs with material exposure stated only in preflight and a decisive discovery probe; mixed confirmed AC failure plus unrunnable required row follows section 6 precedence and retains all routes."
     },
     {
       "id": "INV-007",
@@ -437,7 +438,7 @@
         "FLOW-002",
         "FLOW-003"
       ],
-      "verification": "T-003/T-005: neither/either/both conditional-stage routes; production and reference-only corrections; more than three observable maintainability blockers; correction regression; no unauthorized reviewer launch."
+      "verification": "T-003/T-005: neither/either/both conditional-stage routes; production and reference-only corrections; more than three observable maintainability blockers; correction regression; no unauthorized reviewer launch. Composed revision recovery and mixed-condition continuation preserve IDs, unfinished rows and current readiness/evidence."
     },
     {
       "id": "INV-009",
@@ -623,10 +624,11 @@
         },
         {
           "actor": "Independent discovery call",
-          "action": "Corroborate scenarios and bounded sibling risks; record every confirmed finding and every coverage row, including blocked/unchecked. Preserve exact reproducible probes and available evidence references. No verdict or deferral approval.",
+          "action": "Use preflight context to select decisive probes; corroborate scenarios and bounded sibling risks; record every confirmed finding and every coverage row, including blocked/unchecked. Preserve exact reproducible probes and available evidence references. No verdict or deferral approval. Own and record justified aggregate execution under IF-004.",
           "consumes": [
             "ART-001",
             "ART-002",
+            "ART-003",
             "ART-004",
             "ART-005"
           ],
@@ -647,7 +649,7 @@
         },
         {
           "actor": "Separate acceptance call",
-          "action": "Admit current evidence; classify findings with authority/impact/likelihood/downstream rationale; decide using existing verdicts. Missing evidence returns an exact batched clarification request, not an assumed production fix. Apply the material-risk rubric under referenced operating/business/planned-change context; passing ACs do not waive material risk. Continue through ordinary context uncertainty with recorded assumptions; ask the user only for credible serious-delay consequences or materially costlier later repair that cannot be resolved within current authority.",
+          "action": "Admit current evidence; classify findings with authority/impact/likelihood/downstream rationale; decide using existing verdicts. Missing evidence returns an exact batched clarification request, not an assumed production fix. Apply the material-risk rubric under referenced operating/business/planned-change context; passing ACs do not waive material risk. Continue through ordinary context uncertainty with recorded assumptions; ask the user only for credible serious-delay consequences or materially costlier later repair that cannot be resolved within current authority. Apply section 6 mixed-condition precedence without losing findings or unfinished rows; consume current discovery aggregate evidence without duplicate execution.",
           "consumes": [
             "ART-001",
             "ART-002",
@@ -733,7 +735,7 @@
         },
         {
           "actor": "Owning role",
-          "action": "Clarify evidence without routine production edits; or make authorized bounded correction and map findings/rows to evidence. Coverage-gap revisions stay under existing authority and receive focused preflight. Authority changes return through task design. Reference-only fixes use registry owner when applicable.",
+          "action": "Clarify evidence without routine production edits; or make authorized bounded correction and map findings/rows to evidence. Coverage-gap revisions stay under existing authority, retain existing IDs and invalidate affected obsolete readiness; obtain focused readiness and current revised-scenario evidence before a new decision. Authority changes return through task design. Reference-only fixes use registry owner when applicable.",
           "consumes": [
             "ART-001",
             "ART-002",
@@ -766,7 +768,7 @@
         },
         {
           "actor": "Applicable fresh reviewers / human",
-          "action": "Production corrections re-enter applicable architecture/maintainability and registry stages, then fresh correction-mode discovery and separate acceptance. Reference-only corrections retain narrow updater-to-fresh-acceptance route when existing decisive behavioral evidence remains valid. Check current obligations, regressions, unfinished rows and changed/influenced surfaces. Explain newly found blockers without suppressing them. Newly demonstrated material risk blocks with context and a reason it was not resolved earlier; do not reopen deferred issues without changed exposure or add optional improvements.",
+          "action": "Production corrections re-enter applicable architecture/maintainability and registry stages, then fresh correction-mode discovery and separate acceptance. Reference-only corrections retain narrow updater-to-fresh-acceptance route when existing decisive behavioral evidence remains valid. Check current obligations, regressions, unfinished rows and changed/influenced surfaces. Explain newly found blockers without suppressing them. Newly demonstrated material risk blocks with context and a reason it was not resolved earlier; do not reopen deferred issues without changed exposure or add optional improvements. Fresh discovery owns the justified aggregate gate after clean current targeted evidence under IF-004; acceptance admits its record.",
           "consumes": [
             "ART-001",
             "ART-002",
@@ -927,7 +929,7 @@
         },
         {
           "actor": "Human coordinator / separately launched roles",
-          "action": "Obtain separate authorization before agent/model-budget evals. Exercise preparation, discovery/decision, stage routing, correction and relevant next-task known-issue consumption with independent calls and current installed instructions. If not authorized or a capability is unavailable, record the gap. Exercise contrasting risk contexts and correction stability, including meaningful operational/business/refactoring risk despite passing ACs. Observe absence of routine prompts and focused escalation only for unresolved serious consequences or costly later repair.",
+          "action": "Obtain separate authorization before agent/model-budget evals. Exercise preparation, discovery/decision, stage routing, correction and relevant next-task known-issue consumption with independent calls and current installed instructions. If not authorized or a capability is unavailable, record the gap. Exercise contrasting risk contexts and correction stability, including meaningful operational/business/refactoring risk despite passing ACs. Observe absence of routine prompts and focused escalation only for unresolved serious consequences or costly later repair. Reuse task-level fixtures/results; prove actual producer-to-consumer outputs, preflight-only risk context, aggregate ownership after correction, revision recovery and mixed-condition continuation. Qualified installed skills and sibling helpers must be the copies invoked; fabricated intermediate reports cannot establish composition.",
           "consumes": [
             "ART-009",
             "ART-010",
@@ -1058,7 +1060,7 @@
         "INV-011"
       ],
       "integration_boundary": "Explicit AC failure blocks despite green tests; bounded additional defect may be deferred; missing decisive evidence returns an exact request; discovery cannot decide advancement and acceptance does not repeat a broad search. AC-compliant material operational/business/refactoring risks block; the same concern under materially different stated context receives a reasoned disposition; an ordinary contextual unknown proceeds without prompting, while an unresolved credible serious consequence or costly later repair receives focused escalation only when necessary.",
-      "task_planner_context": "Use task-review-discovery as the planned skill name and compact evidence contract. Preserve independence, public/lifecycle/schema-boundary probes and complete coverage continuation from current acceptance. Carry separate discovery/decision reasoning guidance in human launch instructions, without launcher adapters or extra implementation metadata scalars. Durable discovery reports are numbered; decision and known-issues writer permissions remain narrow. Install the new skill and references in the same change and synchronize installer manifest/guide/tests/docs; never postpone that ownership obligation to T-004. Plan the risk rubric carefully: use task/project direction, operating expectations, credible failure consequences, relevant business priorities, actual/planned consumer contracts, and credible likely maintenance/planned changes. Compare impact and likelihood separately; no invented universal probability/monetary threshold. Material avoidable refactoring/coupling/change-locality risk can block even without a hard rule breach. Discovery provides facts; acceptance owns contextual judgment. No broad context archaeology; uncertain context must relate to a concrete finding. Preserve bounded minor deferral and reject speculative preferences as correction obligations. User clarification is exceptional: decide routine finding disposition using available context and record ordinary uncertainties/assumptions while continuing. Do not invent facts or weaken required proof. Ask only where unresolved uncertainty implies serious consequences of delay or materially costlier later repair and cannot be resolved autonomously within authority. Separate evidence-owner requests from user decision prompts; authorization to fix bounded blockers need not be sought again."
+      "task_planner_context": "Use task-review-discovery as the planned skill name and compact evidence contract. Preserve independence, public/lifecycle/schema-boundary probes and complete coverage continuation from current acceptance. Carry separate discovery/decision reasoning guidance in human launch instructions, without launcher adapters or extra implementation metadata scalars. Durable discovery reports are numbered; decision and known-issues writer permissions remain narrow. Install the new skill and references in the same change and synchronize installer manifest/guide/tests/docs; never postpone that ownership obligation to T-004. Plan the risk rubric carefully: use task/project direction, operating expectations, credible failure consequences, relevant business priorities, actual/planned consumer contracts, and credible likely maintenance/planned changes. Compare impact and likelihood separately; no invented universal probability/monetary threshold. Material avoidable refactoring/coupling/change-locality risk can block even without a hard rule breach. Discovery provides facts; acceptance owns contextual judgment. No broad context archaeology; uncertain context must relate to a concrete finding. Preserve bounded minor deferral and reject speculative preferences as correction obligations. User clarification is exceptional: decide routine finding disposition using available context and record ordinary uncertainties/assumptions while continuing. Do not invent facts or weaken required proof. Ask only where unresolved uncertainty implies serious consequences of delay or materially costlier later repair and cannot be resolved autonomously within authority. Separate evidence-owner requests from user decision prompts; authorization to fix bounded blockers need not be sought again. Make ART-003 an explicit discovery input; preserve discovery aggregate-gate ownership under IF-004 and mixed-condition verdict/routing precedence under IF-005. Prove preflight-only material exposure and mixed confirmed-failure/missing-proof cases; preserve every finding and unfinished row."
     },
     {
       "id": "T-003",
@@ -1108,7 +1110,7 @@
         "INV-011"
       ],
       "integration_boundary": "Immediate-review and correction handoffs take the first outstanding stage for neither/either/both conditional stages; more than three confirmed maintainability blockers remain visible; current evidence supports a fresh decision.",
-      "task_planner_context": "Resolve the human-facing FLOW-02 and FLOW-05 issues only. Preserve complete finding/coverage IDs, correction owner/reason and sibling surfaces. Remove maintainability reporting cap and enough-blockers early stop while retaining bounded authorized scope. Clarifications and ordinary corrections do not restart task design unless authority changes. Preserve actual-effect reference-only routing. No new global round limit; retain existing two-failed-fixes-of-one-target rule and task/user budgets. Update affected usage/profile guidance and focused tests together. Prevent fix-one-more-thing loops by retaining accepted dispositions until relevant context changes and requiring evidence plus contextual materiality for new blockers; this never suppresses a genuine regression or missed required obligation. Do not turn every finding or clarification into a human decision stop; preserve the default to continue for ordinary uncertainty and autonomous authorized correction."
+      "task_planner_context": "Resolve the human-facing FLOW-02 and FLOW-05 issues only. Preserve complete finding/coverage IDs, correction owner/reason and sibling surfaces. Remove maintainability reporting cap and enough-blockers early stop while retaining bounded authorized scope. Clarifications and ordinary corrections do not restart task design unless authority changes. Preserve actual-effect reference-only routing. No new global round limit; retain existing two-failed-fixes-of-one-target rule and task/user budgets. Update affected usage/profile guidance and focused tests together. Prevent fix-one-more-thing loops by retaining accepted dispositions until relevant context changes and requiring evidence plus contextual materiality for new blockers; this never suppresses a genuine regression or missed required obligation. Do not turn every finding or clarification into a human decision stop; preserve the default to continue for ordinary uncertainty and autonomous authorized correction. Prove coverage-gap revision under unchanged authority with retained IDs, obsolete readiness rejection, focused ready and current evidence; contrast requirement changes returning to task design. Preserve aggregate ownership and all mixed-condition routes through correction."
     },
     {
       "id": "T-004",
@@ -1203,7 +1205,7 @@
         "INV-011"
       ],
       "integration_boundary": "Qualified installed copies complete a packaged standalone task, reject inadequate evidence/real AC failure, carry a non-blocking known issue into a relevant next preflight, and preserve current coverage and required stages after correction; each claim has runnable setup and observed evidence.",
-      "task_planner_context": "Supply authority, starting state, implementations/tests and exact probes for every claimed outcome. Keep existing acceptance continuation/public-boundary cases and move expectations with role ownership rather than deleting obligations. Local tests and structural audits come first; live/model-budget evals need separate user authorization, not inferred plan approval. Write new results beside the dated proposal and do not rewrite plans. If agent evals are unrun, report incomplete behavioral qualification rather than claim the flow qualified. Include context-sensitive decision cases: spec-compliant but operational/business/refactoring-risky code, minor bounded debt, speculative redesign, missing material context, changed versus unchanged exposure after correction, and severity-only wrong judgments. Supply explicit fixture context, not unstated evaluator assumptions. Observe prompt behavior: routine uncertain concerns must continue with stated assumptions, while unresolved serious-delay or costly-later-repair risk prompts only when authority cannot resolve it. Missing required proof goes to its evidence owner, not a generic user question."
+      "task_planner_context": "Supply authority, starting state, implementations/tests and exact probes for every claimed outcome. Keep existing acceptance continuation/public-boundary cases and move expectations with role ownership rather than deleting obligations. Local tests and structural audits come first; live/model-budget evals need separate user authorization, not inferred plan approval. Write new results beside the dated proposal and do not rewrite plans. If agent evals are unrun, report incomplete behavioral qualification rather than claim the flow qualified. Include context-sensitive decision cases: spec-compliant but operational/business/refactoring-risky code, minor bounded debt, speculative redesign, missing material context, changed versus unchanged exposure after correction, and severity-only wrong judgments. Supply explicit fixture context, not unstated evaluator assumptions. Observe prompt behavior: routine uncertain concerns must continue with stated assumptions, while unresolved serious-delay or costly-later-repair risk prompts only when authority cannot resolve it. Missing required proof goes to its evidence owner, not a generic user question. Concentrate additional proof on actual producer-to-consumer transitions using task-level fixtures/results (project-plan section 11), rather than repeating every isolated case with fabricated reports. Include preflight-context propagation, failure/correction/clean discovery with one justified aggregate execution and no acceptance duplication, scenario-revision readiness recovery versus changed-authority task design, and mixed blocker/missing-proof continuation. Invoke qualified installed skills and sibling helpers; retain existing decisive cases and public-boundary obligations."
     }
   ],
   "open_system_questions": []

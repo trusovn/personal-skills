@@ -153,9 +153,9 @@ independent proof in either profile.
    `CHANGES_REQUESTED` never means unreported areas are clean. Every stable
    finding/row remains visible with its current result and evidence, or its
    incomplete reason and owner, separate from questions and residual risk.
-   Full contextual and mixed-condition judgment rules arrive with a later
-   stage; this skill establishes admission, reconciliation, and ledger/finding
-   preservation.
+   Apply the contextual disposition contract below to every admitted finding
+   and unfinished row; this skill owns admission, reconciliation,
+   ledger/finding preservation, and contextual judgment.
 8. Decide one verdict under the rules below, using exactly
    `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE` when independent, or
    `SELF_CHECK_ONLY` when provenance requires it. State the broad-gate
@@ -167,6 +167,121 @@ independent proof in either profile.
    consumed aggregate-gate record matches the discovery report's command
    order. Do not compress away a required field in guided output.
 
+## Contextual disposition and coordinator-owned deferrals
+
+Decide every confirmed finding against the admitted authority and the compact
+decision context carried in the readiness evidence: intended use and
+operating envelope, important failure consequences, relevant business
+priorities, required consumers, credible same-kind maintenance or planned
+changes, mitigations, and decision-relevant unknowns. Materiality follows
+supplied context, not reviewer taste. Use supplied facts, distinguish an
+assumption from evidence, and never invent business policy.
+
+### Finding disposition contract
+
+Every confirmed finding states trigger, consequence, affected boundary,
+separate impact and likelihood/exposure, existing mitigation, and a
+contextual fix-now or deferral rationale. Assess impact and likelihood
+separately. Low likelihood cannot erase catastrophic data, security, or
+irreversible-state consequences. Green tests, passing ACs, producer
+self-claims, and suggested-severity labels cannot excuse a demonstrated
+material risk; discovery's suggested severity is an input, not the
+disposition.
+
+| Condition | Disposition |
+|---|---|
+| Demonstrated AC/gate violation or unauthorized effect | Block; cite authority/current evidence even when design omitted the case. |
+| Confirmed material operating or business risk with passing ACs | Fix now; show credible exposure/consequence from the admitted decision context and why mitigation or deferral is inadequate. |
+| Confirmed material maintainability/refactoring risk | Fix now; identify introduced or worsened coupling, duplicated authority, locality, or testability plus a credible same-kind maintenance or planned-change consequence. No formal future ticket is required; speculative redesign is insufficient. A hard-rule breach is sufficient, not necessary. |
+| Bounded non-material confirmed defect; all required evidence passes | `ACCEPT` with an approved known issue may be justified; explain bounded effect, compatible consumers, follow-up, and reassessment conditions. |
+| Preference, polish, or speculative improvement | Observation; never a new correction obligation or a confirmed defect. |
+| Missing decisive required evidence, without a confirmed blocker eligible for bounded correction | `INCONCLUSIVE`; one focused batched request to the discovery, capability, or evidence owner. Do not routinely prompt the user or assume a production fix. |
+| Ordinary uncertainty or unproved minor concern | Continue under a stated reasonable assumption; record an observation. Uncertainty alone is not a confirmed defect or a blocker. |
+| Unresolved uncertainty with credible serious consequences of delay or materially more costly later repair | Resolve within current authority first. If that cannot settle the decision, ask one focused question naming the consequence and the needed fact. |
+
+### Mixed-condition precedence
+
+Admit authority, scope, and current evidence first, then:
+
+- A confirmed blocker with an authorized bounded correction yields
+  `CHANGES_REQUESTED` even when another required row is blocked or
+  unchecked or a separate material-context question is unresolved.
+- Retain every finding and unfinished row with its reason and owner. Route
+  correction, evidence recovery, and any necessary authority question
+  separately through the coordinator; an evidence request is not a
+  production-fix request.
+- If authority, scope, permission, or a dependency prevents that bounded
+  correction route, return `INCONCLUSIVE` while retaining the confirmed
+  blocker.
+- Without a correction-eligible blocker, missing decisive proof or an
+  unresolved decision-critical question yields `INCONCLUSIVE`; ordinary
+  uncertainty alone does not force either verdict.
+- Neither `CHANGES_REQUESTED` nor `INCONCLUSIVE` permits advancement;
+  unfinished rows are never treated as clean.
+
+### Routine autonomy and exceptional escalation
+
+Make routine dispositions and authorized bounded correction or evidence
+requests without a new user confirmation. Continuing under ordinary
+uncertainty never waives a demonstrated AC failure, required gate, or
+decisive proof obligation, and required proof is never waived. Do not ask
+the user to classify every issue; user questions are reserved for unresolved
+uncertainty with credible serious consequences of delay or materially more
+costly later repair that current authority cannot resolve.
+
+### Approved deferrals and known issues
+
+A bounded non-material confirmed defect may receive `ACCEPT` plus an
+approved known issue only when all required evidence passes, the effect is
+bounded, consumers are compatible, and the deferral waives no required AC,
+proof, or demonstrated material risk and imposes no hidden consumer
+workaround. Acceptance decides and proposes the deferral; the human
+coordinator alone records it, before authorized advancement, using
+`docs/known-issues.md` by default or the repository's declared path. No
+known-issues file is required before a deferral exists, and this review,
+acceptance, and discovery never write the tracker or acquire backlog or
+portfolio scheduling authority.
+
+The proposed record carries: a stable project issue ID; task/review/finding
+provenance; trigger, consequence, and evidence; impact and likelihood;
+affected boundary and consumers; deferral rationale; follow-up owner and
+action; and reassessment conditions. For consequential deferrals, optional
+proportional context links may add: subsystem/area; existing
+invariant/interface/contract/flow/plan IDs; related issue IDs distinguishing
+confirmed relationships from suspected similarity; safeguards or explicit
+assumptions with reassessment triggers; and relevant
+migration/refactor/replacement work distinguishing proposed from committed
+work. Missing links mean unknown relationships, not their absence. Planned
+work alone is not existing mitigation. Introduce no formal issue schema,
+mandatory ontology, complete context dossier, or portfolio gate.
+
+### Portfolio authority boundary
+
+Acceptance decides only whether current submitted bytes meet required
+authority, evidence, and contextual material-risk obligations. Portfolio
+scheduling and refactoring choices belong to the project or decision owner:
+an approved bounded deferral may later be promoted, grouped, or rescheduled
+without invalidating acceptance solely because its priority changed. A
+priority change alone does not reopen acceptance; changed material facts
+that invalidate an actual acceptance assumption or reveal a material
+violation can require focused review under existing authority. Portfolio
+choices cannot excuse a demonstrated current AC/gate violation, unauthorized
+effect, or material risk this task was required to resolve. Acceptance
+acquires no portfolio review gate, new verdict, refactoring authority, or
+power to create requirements.
+
+### Stable dispositions across repeated review
+
+Preserve an accepted disposition while its exposure is unchanged; optional
+improvements create no new correction obligation and never restart
+correction. A new blocker requires current proof, contextual materiality,
+and an explicit reason it was not already resolved: correction regression,
+formerly blocked evidence, a missed existing obligation, changed
+context/authority, or newly demonstrated material risk. A stale severity
+label or a prior acceptance alone cannot supply or suppress a new blocker.
+Add no global correction-round limit; the task's existing task-specific
+stop rules remain in force.
+
 ## Verdict and routing rules
 
 An independent reviewer uses exactly one verdict:
@@ -176,11 +291,16 @@ An independent reviewer uses exactly one verdict:
   or unverified required boundary remains.
 - `CHANGES_REQUESTED`: a concrete in-scope production or test defect can be
   corrected without changing authority, scope, dependencies, permissions, or
-  required infrastructure.
+  required infrastructure — including a confirmed blocker whose bounded
+  correction is authorized even when another required row is blocked or
+  unchecked or a material-context question is unresolved.
 - `INCONCLUSIVE`: ambiguous authority, inseparable scope, missing decisive
   capability, stale high-assurance inputs, missing or contradictory discovery
-  evidence, environment/permission failure, or an unverified required boundary
-  prevents a truthful decision.
+  evidence, environment/permission failure, an unverified required boundary, a
+  confirmed blocker whose bounded correction is prevented by
+  authority/scope/permission/dependency, or unresolved decision-critical
+  uncertainty that current authority cannot settle prevents a truthful
+  decision.
 
 `SELF_CHECK_ONLY` sits outside these verdicts. Use it only when the current
 session authored reviewed production bytes; do not mislabel missing
@@ -197,8 +317,10 @@ prior verdict as if it still applied.
 
 Route contract defects to the user or `task-brief-designer`; current-state or
 high-assurance freshness failures to `task-preflight`; and wider scope/shared
-infrastructure back through brief design. Only an `ACCEPT` verdict may advance
-an orchestrated task.
+infrastructure back through brief design. Neither `CHANGES_REQUESTED` nor
+`INCONCLUSIVE` may advance work. Only an independent `ACCEPT` may advance, and
+only after the human coordinator records any acceptance-approved deferral
+(known issues) before authorized advancement.
 
 ## Output contract
 
@@ -210,7 +332,11 @@ or
 SELF_CHECK_ONLY — not an independent verdict
 
 Findings:
-- F-01 [P1] <location, trigger, consequence, evidence, affected AC, broken invariant, explicit sibling surface, direction>
+- F-01 [P1] <location, trigger, consequence, affected boundary, evidence, affected AC, broken invariant, explicit sibling surface, direction; impact and likelihood/exposure assessed separately; existing mitigation; fix-now or deferral rationale tied to supplied context>
+
+Observations / stated assumptions: <preferences, unproved minor concerns, and ordinary-unknown assumptions recorded separately from confirmed findings>
+
+Approved deferrals (for the coordinator to record): <none, or each stable issue ID with task/review/finding provenance, trigger/consequence/evidence, impact/likelihood, affected boundary/consumers, rationale, follow-up owner/action, and reassessment conditions>
 
 Admitted discovery: <report/continuation path or absence, coverage completeness>
 Coverage:
@@ -304,6 +430,13 @@ above.
   and cannot support `ACCEPT`.
 - The consumed aggregate-gate record names the command or `not run`, owner,
   stage, reason, and current evidence, without re-executing the gate.
+- Every confirmed finding carries its contextual disposition fields and a
+  fix-now or deferral rationale; green tests and passing ACs did not excuse
+  demonstrated material risk.
+- Mixed-condition precedence produced the correct verdict with every finding,
+  unfinished row, and unresolved material-context question retained with
+  separate owners; approved deferrals are handed to the coordinator and never
+  written by this review.
 - Every stable finding and unfinished row survives the decision with its
   result or incomplete reason and owner.
 - Exactly one justified verdict or `SELF_CHECK_ONLY`, residual-risk statement,

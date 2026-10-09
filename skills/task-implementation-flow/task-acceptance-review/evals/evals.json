@@ -212,6 +212,463 @@
         "The optional post-verdict section records the authorization source, exact path, command/result, intended signal, verbatim pre-write and post-write `git status --short` as separate fields, diff side effects, and production preservation.",
         "The verdict remains exactly `CHANGES_REQUESTED`; the same session neither fixes production nor accepts corrected bytes, and the exact route is bounded correction followed by fresh discovery and a fresh independent review."
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "The fixture is already staged in the current workspace. Decide task acceptance for `INV-07` using `docs/tasks/INV-07/brief.md`, `docs/tasks/INV-07/preflight.md`, `../task-runs/INV-07/worker-result.json`, and the independent discovery report at `../task-runs/INV-07/discovery-01.md`. All submitted tests and both admitted AC coverage rows pass. Consume the compact decision context in the preflight, including the operating exposure stated only there, and apply the contextual disposition contract to every discovery finding and observation. Do not re-execute probes or any suite, do not rerun fixture setup, do not create or edit `docs/known-issues.md`, and write only `docs/tasks/INV-07/reviews/acceptance-01.md`.",
+      "expected_output": "A contextual `CHANGES_REQUESTED` decision that blocks on all four confirmed material findings despite the passing AC rows and green tests, records the preference and the unproved concern as observations, continues the timezone unknown under a stated assumption without a user prompt, and creates no deferral or known-issues record.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "contextual-risk-blockers-decision"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/contextual-runner"
+      },
+      "expectations": [
+        "Each of INV-F01, INV-F02, INV-F03, and INV-F04 blocks with trigger, consequence, affected boundary, impact, likelihood/exposure assessed separately, existing mitigation, and a contextual fix-now rationale; the passing AC rows and the green aggregate do not excuse them.",
+        "INV-F01's decision uses the nightly-regeneration exposure recorded only in the readiness decision context plus the discovery probe as its consequence basis.",
+        "INV-F02 blocks although its likelihood is low, because the directory-destruction consequence is catastrophic and irreversible; likelihood does not erase it.",
+        "INV-F03 blocks as a declared required-consumer breach even though the brief's AC text never mentions the header.",
+        "INV-F04 blocks as demonstrated duplicated parsing authority with a credible planned same-kind change, without requiring a hard-rule breach or a formal future ticket.",
+        "The pathlib preference and the unproved currency-validation concern remain observations and create no correction obligation; the timezone unknown continues under a stated reasonable assumption with no routine user prompt.",
+        "The verdict is exactly `CHANGES_REQUESTED` routed to bounded correction, then fresh discovery and a fresh acceptance decision; neither this verdict nor its routes advance the task and no known-issues record is created."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "The fixture is already staged in the current workspace. Decide task acceptance for `INV-07` using `docs/tasks/INV-07/brief.md`, `docs/tasks/INV-07/preflight.md`, `../task-runs/INV-07/worker-result.json`, and the independent discovery report at `../task-runs/INV-07/discovery-01.md`. All required evidence passes; the discovery report confirms the bounded footer finding, its probes, and two observation suggestions. Apply the contextual disposition contract, resolve the footer-tolerance question from the declared consumer contract, and route any approved deferral to its recorder. Do not re-execute probes or any suite, do not rerun fixture setup, do not create or edit `docs/known-issues.md`, and write only `docs/tasks/INV-07/reviews/acceptance-01.md`.",
+      "expected_output": "An `ACCEPT` decision that defers the bounded non-material footer defect as an approved known issue handed to the human coordinator with complete record content, keeps the preference and the unproved concern as observations, resolves the footer-tolerance question from the declared consumer contract, and records the timezone assumption without a user prompt.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "contextual-risk-mitigated-decision"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/contextual-runner"
+      },
+      "expectations": [
+        "INV-M01 is classified as a bounded non-material confirmed defect eligible for `ACCEPT` plus an approved known issue because all required evidence passes, its effect is bounded, and the declared consumer treats the footer as informational.",
+        "The proposed known-issue record includes a stable issue ID, INV-07/acceptance-01/INV-M01 provenance, trigger, consequence, evidence, impact and likelihood, affected boundary and consumers, deferral rationale, follow-up owner/action, and reassessment conditions.",
+        "The deferral rationale relies on the existing atomic-write safeguard and the declared consumer contract, not on the proposed (not committed) reporting-v2 migration; planned work alone is not treated as existing mitigation.",
+        "Optional context links may be omitted without failing qualification. If included, they identify the invoices/export subsystem, the suspected related reporting-v2 migration as proposed-not-committed, and the safeguard/assumption with its reassessment trigger; missing links are not treated as absence of relationships.",
+        "The preference and the unproved currency-validation concern stay observations; neither becomes a mandatory fix or a known issue.",
+        "The decision resolves whether the consumer tolerates the footer from the declared consumer contract within current authority, and continues the timezone unknown under a stated reasonable assumption, without a user prompt.",
+        "The decision itself never writes `docs/known-issues.md` or any tracker; the exact route is the human coordinator recording the approved deferral before authorized advancement."
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "The fixture is already staged in the current workspace. Decide task acceptance for `JOB-05` using `docs/tasks/JOB-05/brief.md`, `docs/tasks/JOB-05/preflight.md`, `../task-runs/JOB-05/worker-result.json`, and the explicitly partial discovery report at `../task-runs/JOB-05/discovery-01.md`. The supplied run policy allows a bounded production correction by the owning implementer thread; the required coordinated-pair helper is unavailable, and the cross-file ordering question in the readiness context is unresolved. Use the guided profile explicitly; this is a standalone decision, not an orchestrated high-assurance packet. Apply the mixed-condition precedence contract. Do not rerun fixture setup, repair anything, or re-execute probes; write only `docs/tasks/JOB-05/reviews/acceptance-01.md`.",
+      "expected_output": "A mixed-condition `CHANGES_REQUESTED` decision: the confirmed blocker with an authorized bounded correction yields `CHANGES_REQUESTED` even though the JOB-PAIR row is blocked and the ordering question is unresolved, and every finding, unfinished row, and question survives with separate next owners.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "mixed-conditions-authorized-decision"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/mixed-runner"
+      },
+      "expectations": [
+        "The verdict is exactly `CHANGES_REQUESTED`: the confirmed blocker with an authorized bounded correction yields it even though the JOB-PAIR row is blocked and the unresolved material-context question remains open.",
+        "F-01, the blocked JOB-PAIR row, and the unresolved ordering question are all retained with their IDs, reasons, evidence states, and separate next owners: correction to the owning implementer thread, the missing coordinated-pair capability to the discovery/capability owner, and the consumer-contract question to the coordinator.",
+        "The decision does not merge roles: it requests the missing capability evidence from its owner rather than inventing a helper, and it does not re-execute probes or suites.",
+        "Neither this verdict nor its routes advance the task; unfinished rows are not treated as clean and the blocked row is not dropped."
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "The fixture is already staged in the current workspace. Decide task acceptance for `JOB-05` using `docs/tasks/JOB-05/brief.md`, `docs/tasks/JOB-05/preflight.md`, `../task-runs/JOB-05/worker-result.json`, and the explicitly partial discovery report at `../task-runs/JOB-05/discovery-01.md`. The supplied run policy prevents production edits in this review cycle: corrections route through the coordinator's next authorized batch. The same confirmed blocker, the unavailable coordinated-pair helper, and the unresolved cross-file ordering question remain. Use the guided profile explicitly; this is a standalone decision, not an orchestrated high-assurance packet. Apply the mixed-condition precedence contract. Do not rerun fixture setup, repair anything, or re-execute probes; write only `docs/tasks/JOB-05/reviews/acceptance-01.md`.",
+      "expected_output": "A mixed-condition `INCONCLUSIVE` decision: the run policy prevents the bounded production-correction route, so the confirmed blocker is retained without a correction-authorized `CHANGES_REQUESTED`, and every finding, unfinished row, and question survives with owners.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "mixed-conditions-forbidden-decision"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/mixed-runner"
+      },
+      "expectations": [
+        "The verdict is exactly `INCONCLUSIVE`: the same confirmed blocker remains, but the run policy prevents the bounded production-correction route in this review cycle.",
+        "F-01, the blocked JOB-PAIR row, and the unresolved ordering question are retained with their IDs, reasons, and owners; the correction constraint itself is named with its authority source (the run policy).",
+        "The decision routes the package to the coordinator for correction authorization, then fresh discovery and a new decision; it does not advance work and does not edit production.",
+        "Ordinary uncertainty alone did not force this verdict; the prevented correction route did."
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "The fixture is already staged in the current workspace. Decide task acceptance for `RET-03` using `docs/tasks/RET-03/brief.md`, `docs/tasks/RET-03/preflight.md`, `../task-runs/RET-03/worker-result.json`, and the independent discovery report at `../task-runs/RET-03/discovery-01.md`. The implementation and its tests pass for any configured horizon, but the applicable retention region for this deployment is recorded as unresolved in the readiness context and no supplied authority settles it. Apply the contextual disposition and escalation contract. Do not rerun fixture setup, repair anything, or re-execute probes; write only `docs/tasks/RET-03/reviews/acceptance-01.md`.",
+      "expected_output": "An `INCONCLUSIVE` decision with exactly one focused question: which retention region applies to this deployment, naming the irreversible consequence and the needed fact, routed to the authority owner through the coordinator.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "consequential-uncertainty-decision"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/retention-runner"
+      },
+      "expectations": [
+        "The verdict is exactly `INCONCLUSIVE` with exactly one focused question: which retention region applies to this deployment.",
+        "The question names the consequence (irreversible deletion of invoices under the wrong horizon, with only materially costly offsite archive recovery) and the needed fact, and routes to the authority owner through the coordinator.",
+        "The decision does not invent or assume the applicable region, does not treat the implementation as a production fix, and does not issue a routine permission prompt.",
+        "The admitted probe evidence that the purge honors the configured horizon is recorded without converting the unresolved region into an assumption."
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "The fixture is already staged in the current workspace, including the coordinator-recorded known issue `KI-001` in `docs/known-issues.md` and unrelated staged task packages. Decide task acceptance for `RPT-12B` using `docs/tasks/RPT-12B/brief.md`, `docs/tasks/RPT-12B/preflight.md`, `../task-runs/RPT-12B/worker-result.json`, and the independent discovery report at `../task-runs/RPT-12B/discovery-01.md`. Consume the relevant known issue and reassess it against this task's exposure and obligations. Do not rerun fixture setup, repair anything, re-execute probes, or write any known-issues or tracker file; write only `docs/tasks/RPT-12B/reviews/acceptance-01.md`.",
+      "expected_output": "A `CHANGES_REQUESTED` decision that reassesses the relevant `KI-001` against this task's changed consumer requirement, blocks the hidden workaround that relabels a naive local timestamp as UTC, and routes the changed exposure and the correction separately without reopening unrelated issues.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "known-issue-consumption-decision"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/ledger-consumer"
+      },
+      "expectations": [
+        "The decision consumes the coordinator-recorded KI-001 and reassesses it against this task's exposure: the changed consumer requirement triggers KI-001's reassessment conditions, so the accepted deferral is not silently preserved.",
+        "F-01 blocks: relabelling the naive local footer as UTC is a hidden workaround that violates the consumed consumer contract; the reported instant does not match the supplied true UTC instant.",
+        "The route names the KI-001 follow-up owner (through the coordinator) for the exporter side and bounded correction for the reporting implementation, followed by fresh discovery and a fresh decision.",
+        "The decision performs no broad issue search: unrelated recorded issues and unrelated tasks (such as WEB-02) are not reopened or re-adjudicated, and an unchanged-exposure consumer (such as RPT-12A) would preserve the deferral.",
+        "The decision itself writes no known-issues or tracker updates."
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "The fixture is already staged in the current workspace, including the prior accepted review `docs/tasks/ORD-04/reviews/acceptance-01.md`, the coordinator-recorded `KI-001` in `docs/known-issues.md`, and the current correction's discovery report at `../task-runs/ORD-04/discovery-01.md`. Decide task acceptance for the corrected `ORD-04` bytes using `docs/tasks/ORD-04/brief.md`, `docs/tasks/ORD-04/preflight.md`, `../task-runs/ORD-04/worker-result.json`, and that discovery report. Apply the stable-disposition and new-blocker contract to the correction cycle. Do not rerun fixture setup, repair anything, or re-execute probes; write only `docs/tasks/ORD-04/reviews/acceptance-02.md`.",
+      "expected_output": "A `CHANGES_REQUESTED` decision that treats the retry regression as a new blocker justified by current proof and its correction-regression reason, preserves the accepted `KI-001` disposition because its exposure is unchanged, and never restarts correction for the suggested optional improvement.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "correction-regression-decision"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/correction-runner"
+      },
+      "expectations": [
+        "The verdict is exactly `CHANGES_REQUESTED`: the retry regression is a new blocker justified with current probe proof, contextual materiality, and the explicit reason that the correction introduced it.",
+        "KI-001's accepted log-wording disposition is preserved because its exposure is unchanged; the suggested optional helper rename never restarts correction.",
+        "No global correction-round limit is introduced or referenced as policy; only the task's existing stop rules apply.",
+        "The route is bounded correction, then fresh discovery and a fresh acceptance decision; unfinished rows and finding IDs survive with reasons and owners."
+      ]
+    }
+,
+    {
+      "id": 18,
+      "prompt": "The fixture is staged. Use the guided profile explicitly. Decide acceptance for RET-03 from docs/tasks/RET-03/brief.md, docs/tasks/RET-03/preflight.md, ../task-runs/RET-03/worker-result.json, and ../task-runs/RET-03/discovery-01.md. Resolve the retention-region question by the authorized local read of cases/deployment-policy.json; use the supplied Region B and 3-year horizon without a user question. Do not restage, repair, or re-execute probes. Write only docs/tasks/RET-03/reviews/acceptance-03.md.",
+      "expected_output": "`ACCEPT` with the supplied contextual distinction and owned continuation routes.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "consequential-uncertainty-resolved-decision"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/retention-runner"
+      },
+      "expectations": [
+        "The verdict is exactly `ACCEPT`.",
+        "The supplied local policy settles the consequential region question within existing authority; no permission or region question is asked.",
+        "The passing configured-horizon evidence is retained; no authority fact is invented."
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "The fixture is staged. Use the guided profile explicitly. Decide acceptance for RET-03 from docs/tasks/RET-03/brief.md, docs/tasks/RET-03/preflight.md, ../task-runs/RET-03/worker-result.json, and ../task-runs/RET-03/discovery-01.md. Use cases/deadline.json and readiness context to assess the serious consequences of delay; the region remains unresolved and cannot be settled locally. Do not restage, repair, or re-execute probes. Write only docs/tasks/RET-03/reviews/acceptance-03.md.",
+      "expected_output": "`INCONCLUSIVE` with the supplied contextual distinction and owned continuation routes.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "serious-delay-uncertainty-decision"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/retention-runner"
+      },
+      "expectations": [
+        "The verdict is exactly `INCONCLUSIVE`.",
+        "Exactly one focused region question names the serious contractual delay and service-suspension consequence, as well as the wrong-horizon risk; it routes through the coordinator for expedited authority input.",
+        "The 2-hour deadline and 8-hour authority response are supplied facts; the region is not invented and proof is not waived."
+      ]
+    },
+    {
+      "id": 20,
+      "prompt": "The fixture is staged. Use the guided profile explicitly. Decide acceptance for RPT-12A from docs/tasks/RPT-12A/brief.md, docs/tasks/RPT-12A/preflight.md, ../task-runs/RPT-12A/worker-result.json, and ../task-runs/RPT-12A/discovery-01.md. Consume KI-001 for the unchanged informational-footer consumer, with proposed future work recorded in cases/follow-up.json and the readiness context. Do not restage, repair, or re-execute probes. Write only docs/tasks/RPT-12A/reviews/acceptance-03.md.",
+      "expected_output": "`ACCEPT` with the supplied contextual distinction and owned continuation routes.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "known-issue-proposed-work-decision"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/ledger-consumer"
+      },
+      "expectations": [
+        "The verdict is exactly `ACCEPT`.",
+        "KI-001 retains its accepted disposition under unchanged compatible exposure; proposed or committed work is not existing mitigation because it is not deployed.",
+        "A priority-only change never reopens acceptance; missing optional links mean unknown relations and do not invalidate a complete mandatory record.",
+        "No tracker write, portfolio scheduling, or optional-fix correction is authorized."
+      ]
+    },
+    {
+      "id": 21,
+      "prompt": "The fixture is staged. Use the guided profile explicitly. Decide acceptance for RPT-12A from docs/tasks/RPT-12A/brief.md, docs/tasks/RPT-12A/preflight.md, ../task-runs/RPT-12A/worker-result.json, and ../task-runs/RPT-12A/discovery-01.md. Consume KI-001 for the unchanged informational-footer consumer, with committed future work recorded in cases/follow-up.json and the readiness context. Do not restage, repair, or re-execute probes. Write only docs/tasks/RPT-12A/reviews/acceptance-03.md.",
+      "expected_output": "`ACCEPT` with the supplied contextual distinction and owned continuation routes.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "known-issue-committed-work-decision"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/ledger-consumer"
+      },
+      "expectations": [
+        "The verdict is exactly `ACCEPT`.",
+        "KI-001 retains its accepted disposition under unchanged compatible exposure; proposed or committed work is not existing mitigation because it is not deployed.",
+        "A priority-only change never reopens acceptance; missing optional links mean unknown relations and do not invalidate a complete mandatory record.",
+        "No tracker write, portfolio scheduling, or optional-fix correction is authorized."
+      ]
+    },
+    {
+      "id": 22,
+      "prompt": "The fixture is staged. Use the guided profile explicitly. Decide acceptance for RPT-12A from docs/tasks/RPT-12A/brief.md, docs/tasks/RPT-12A/preflight.md, ../task-runs/RPT-12A/worker-result.json, and ../task-runs/RPT-12A/discovery-01.md. Consume KI-001 for the unchanged informational-footer consumer, with a priority-only change from next to later recorded in cases/follow-up.json and the readiness context. Do not restage, repair, or re-execute probes. Write only docs/tasks/RPT-12A/reviews/acceptance-03.md.",
+      "expected_output": "`ACCEPT` with the supplied contextual distinction and owned continuation routes.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "known-issue-priority-only-decision"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/ledger-consumer"
+      },
+      "expectations": [
+        "The verdict is exactly `ACCEPT`.",
+        "KI-001 retains its accepted disposition under unchanged compatible exposure; proposed or committed work is not existing mitigation because it is not deployed.",
+        "A priority-only change never reopens acceptance; missing optional links mean unknown relations and do not invalidate a complete mandatory record.",
+        "No tracker write, portfolio scheduling, or optional-fix correction is authorized."
+      ]
+    },
+    {
+      "id": 23,
+      "prompt": "The fixture is staged. Use the guided profile explicitly. Decide acceptance for RPT-12A from docs/tasks/RPT-12A/brief.md, docs/tasks/RPT-12A/preflight.md, ../task-runs/RPT-12A/worker-result.json, and ../task-runs/RPT-12A/discovery-01.md. Consume KI-001 for the unchanged informational-footer consumer, with a complete mandatory issue record with no optional links recorded in cases/follow-up.json and the readiness context. Do not restage, repair, or re-execute probes. Write only docs/tasks/RPT-12A/reviews/acceptance-03.md.",
+      "expected_output": "`ACCEPT` with the supplied contextual distinction and owned continuation routes.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "known-issue-no-links-decision"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/ledger-consumer"
+      },
+      "expectations": [
+        "The verdict is exactly `ACCEPT`.",
+        "KI-001 retains its accepted disposition under unchanged compatible exposure; proposed or committed work is not existing mitigation because it is not deployed.",
+        "A priority-only change never reopens acceptance; missing optional links mean unknown relations and do not invalidate a complete mandatory record.",
+        "No tracker write, portfolio scheduling, or optional-fix correction is authorized."
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "The fixture is staged. Use the guided profile explicitly. Decide acceptance for ORD-04 from docs/tasks/ORD-04/brief.md, docs/tasks/ORD-04/preflight.md, ../task-runs/ORD-04/worker-result.json, and ../task-runs/ORD-04/discovery-01.md. Use cases/review-history.json, cases/prior-authority.md, prior reviews acceptance-00.md and acceptance-01.md, and current discovery to reconcile the new-blocker reason formerly-blocked-evidence; prior and current implementation bytes are identical. Do not restage, repair, or re-execute probes. Write only docs/tasks/ORD-04/reviews/acceptance-03.md.",
+      "expected_output": "`CHANGES_REQUESTED` with the supplied contextual distinction and owned continuation routes.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "repeated-review-formerly-blocked-evidence-decision"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/correction-runner"
+      },
+      "expectations": [
+        "The verdict is exactly `CHANGES_REQUESTED`.",
+        "F-02 blocks with current duplicate-row proof and contextual materiality; its explicit reason is formerly-blocked-evidence, not correction regression.",
+        "Formerly blocked or unchecked proof is distinguished from a changed obligation and from newly demonstrated settlement risk despite passing ACs; the supplied prior/current evidence determines the reason.",
+        "KI-001 remains deferred under unchanged log exposure, and the optional rename never restarts correction.",
+        "Route bounded correction, fresh discovery, and fresh acceptance separately; do not advance or create a global round limit."
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "The fixture is staged. Use the guided profile explicitly. Decide acceptance for ORD-04 from docs/tasks/ORD-04/brief.md, docs/tasks/ORD-04/preflight.md, ../task-runs/ORD-04/worker-result.json, and ../task-runs/ORD-04/discovery-01.md. Use cases/review-history.json, cases/prior-authority.md, prior reviews acceptance-00.md and acceptance-01.md, and current discovery to reconcile the new-blocker reason missed-existing-obligation; prior and current implementation bytes are identical. Do not restage, repair, or re-execute probes. Write only docs/tasks/ORD-04/reviews/acceptance-03.md.",
+      "expected_output": "`CHANGES_REQUESTED` with the supplied contextual distinction and owned continuation routes.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "repeated-review-missed-existing-obligation-decision"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/correction-runner"
+      },
+      "expectations": [
+        "The verdict is exactly `CHANGES_REQUESTED`.",
+        "F-02 blocks with current duplicate-row proof and contextual materiality; its explicit reason is missed-existing-obligation, not correction regression.",
+        "Formerly blocked or unchecked proof is distinguished from a changed obligation and from newly demonstrated settlement risk despite passing ACs; the supplied prior/current evidence determines the reason.",
+        "KI-001 remains deferred under unchanged log exposure, and the optional rename never restarts correction.",
+        "Route bounded correction, fresh discovery, and fresh acceptance separately; do not advance or create a global round limit."
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "The fixture is staged. Use the guided profile explicitly. Decide acceptance for ORD-04 from docs/tasks/ORD-04/brief.md, docs/tasks/ORD-04/preflight.md, ../task-runs/ORD-04/worker-result.json, and ../task-runs/ORD-04/discovery-01.md. Use cases/review-history.json, cases/prior-authority.md, prior reviews acceptance-00.md and acceptance-01.md, and current discovery to reconcile the new-blocker reason changed-context-authority; prior and current implementation bytes are identical. Do not restage, repair, or re-execute probes. Write only docs/tasks/ORD-04/reviews/acceptance-03.md.",
+      "expected_output": "`CHANGES_REQUESTED` with the supplied contextual distinction and owned continuation routes.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "repeated-review-changed-context-authority-decision"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/correction-runner"
+      },
+      "expectations": [
+        "The verdict is exactly `CHANGES_REQUESTED`.",
+        "F-02 blocks with current duplicate-row proof and contextual materiality; its explicit reason is changed-context-authority, not correction regression.",
+        "Formerly blocked or unchecked proof is distinguished from a changed obligation and from newly demonstrated settlement risk despite passing ACs; the supplied prior/current evidence determines the reason.",
+        "KI-001 remains deferred under unchanged log exposure, and the optional rename never restarts correction.",
+        "Route bounded correction, fresh discovery, and fresh acceptance separately; do not advance or create a global round limit."
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "The fixture is staged. Use the guided profile explicitly. Decide acceptance for ORD-04 from docs/tasks/ORD-04/brief.md, docs/tasks/ORD-04/preflight.md, ../task-runs/ORD-04/worker-result.json, and ../task-runs/ORD-04/discovery-01.md. Use cases/review-history.json, cases/prior-authority.md, prior reviews acceptance-00.md and acceptance-01.md, and current discovery to reconcile the new-blocker reason newly-demonstrated-material-risk; prior and current implementation bytes are identical. Do not restage, repair, or re-execute probes. Write only docs/tasks/ORD-04/reviews/acceptance-03.md.",
+      "expected_output": "`CHANGES_REQUESTED` with the supplied contextual distinction and owned continuation routes.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "repeated-review-newly-demonstrated-material-risk-decision"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/correction-runner"
+      },
+      "expectations": [
+        "The verdict is exactly `CHANGES_REQUESTED`.",
+        "F-02 blocks with current duplicate-row proof and contextual materiality; its explicit reason is newly-demonstrated-material-risk, not correction regression.",
+        "Formerly blocked or unchecked proof is distinguished from a changed obligation and from newly demonstrated settlement risk despite passing ACs; the supplied prior/current evidence determines the reason.",
+        "KI-001 remains deferred under unchanged log exposure, and the optional rename never restarts correction.",
+        "Route bounded correction, fresh discovery, and fresh acceptance separately; do not advance or create a global round limit."
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "The fixture is staged. Use the guided profile explicitly. Decide acceptance for RET-03 from docs/tasks/RET-03/brief.md, docs/tasks/RET-03/preflight.md, ../task-runs/RET-03/worker-result.json, and ../task-runs/RET-03/discovery-01.md. Use cases/deadline.json to assess the serious-delay consequence, then resolve the region by the authorized local read of cases/deployment-policy.json. Do not restage, repair, or re-execute probes. Write only docs/tasks/RET-03/reviews/acceptance-03.md.",
+      "expected_output": "`ACCEPT` with locally resolved serious-delay uncertainty and no authority question.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "serious-delay-uncertainty-resolved-decision"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/retention-runner"
+      },
+      "expectations": [
+        "The verdict is exactly `ACCEPT`.",
+        "The 2-hour deadline versus 8-hour authority response presents serious contractual delay and service-suspension risk; the authorized local policy settles Region B and its 3-year horizon before escalation.",
+        "No permission or region question is asked; passing configured-horizon proof is retained and no authority fact is invented."
+      ]
     }
   ]
 }

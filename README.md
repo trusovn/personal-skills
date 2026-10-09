@@ -322,7 +322,15 @@ scenario ID to current evidence or an explicit blocked/unchecked reason and
 next owner.
 When the repo declares a required
 maintainability gate, run that gate and a fresh `task-maintainability-review`
-before functional acceptance. Use `testing-discipline` alongside implementation
+before functional acceptance. When acceptance approves a bounded non-material
+deferral, the human coordinator alone records it, before authorized
+advancement, in `docs/known-issues.md` (or the repository's declared path);
+discovery and acceptance never write the tracker. A relevant later preflight
+or acceptance reassesses recorded known issues against its own task's
+exposure and obligations — unchanged compatible exposure preserves the
+deferral, changed exposure routes through the record's follow-up owner, and
+unrelated issues trigger no broad issue search. Use `testing-discipline`
+alongside implementation
 or review when behavioral evidence, test design, or QA risk is material. Use
 `senior-code-review` for general diff/PR review when the stricter focused review
 contracts are not needed. Use `ollama-delegate` when a separate Ollama-backed

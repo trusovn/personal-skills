@@ -405,6 +405,35 @@ verdict. Only a fresh reviewer may return `ACCEPT`, `CHANGES_REQUESTED`, or
 Every `CHANGES_REQUESTED` correction requires fresh review for the affected
 stage, and production corrections invalidate both semantic review verdicts when
 both stages are required. A previous verdict never applies to corrected bytes.
+### Deferrals, known issues, and the human coordinator
+
+Acceptance may approve bounded non-material deferrals, but the human
+coordinator alone records them, before authorized advancement, by default in
+`docs/known-issues.md` (or the repository's declared path). The record
+carries a stable issue ID, task/review/finding provenance,
+trigger/consequence/evidence, impact/likelihood, affected
+boundary/consumers, deferral rationale, follow-up owner/action, and
+reassessment conditions; optional proportional context links may relate it
+to a subsystem, stable contracts/flows/plans, confirmed versus suspected
+related issues, safeguards/assumptions with reassessment triggers, and
+proposed versus committed relevant work. Discovery and acceptance never
+write the tracker or acquire backlog/portfolio scheduling authority, and no
+known-issues file is required before a deferral exists.
+
+A relevant later preflight or acceptance reassesses recorded known issues
+against that task's exposure and obligations: unchanged compatible exposure
+preserves the accepted deferral, changed exposure or a changed consumer
+requirement is routed through the record's follow-up owner for focused
+resolution or review, and unrelated issues never trigger a broad issue
+search. A later priority change alone does not reopen an accepted
+deferral; changed material facts that invalidate an acceptance assumption
+can require focused review under existing authority. A new correction
+blocker needs current proof, materiality, and an explicit reason
+(regression, formerly blocked evidence, a missed existing obligation,
+changed context/authority, or newly demonstrated material risk); optional
+improvements never restart correction, and no global correction-round limit
+is added.
+
 ### Verification gate ownership
 - Initial implementer: fail-first evidence, targeted checks, the nearest owning
   suite, the canonical architecture gate when required, and a broader gate only

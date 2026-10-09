@@ -44,17 +44,48 @@ report's stable finding IDs; do not rename, merge, or drop them.
 | Current location | `<repository-relative path:line>` |
 | Triggering state/input | `<specific reproducible precondition and action>` |
 | Consequence | `<user, data, system, contract, or operational impact>` |
+| Affected boundary | `<interface, consumer, state, or subsystem boundary>` |
 | Evidence | `<admitted discovery trace, probe result, or code fact>` |
+| Impact (assessed separately from likelihood) | `<materiality under supplied decision context, not severity label or reviewer taste>` |
+| Likelihood / exposure | `<credible exposure or next-change horizon; low likelihood cannot erase catastrophic data/security/irreversible-state consequences>` |
+| Existing mitigation | `<existing safeguard actually in effect; planned work is not mitigation>` |
 | Affected AC | `<AC-ID>` |
 | Broken invariant | `<task-authorized property that does not hold>` |
 | Credible sibling surface | `<contract-implied cases sharing that invariant>` |
 | Smallest corrective direction | `<invariant-level bounded direction; no patch or field-local special case>` |
-| Disposition | `<confirmed and routed to correction | retained as unresolved with reason and owner>` |
+| Fix-now / deferral rationale | `<contextual reason tied to supplied operating/business/consumer/maintenance context; passing ACs do not excuse demonstrated material risk>` |
+| Disposition | `<block-fix-now | accepted-deferral candidate | observation | retained as unresolved with reason and owner>` |
 
 Keep confirmed findings separate from unproved questions and from unchecked
 coverage rows. Every confirmed finding and unfinished row from the admitted
 discovery report survives the decision with its current result and evidence,
 or its incomplete reason and owner.
+
+### Accepted deferrals and coordinator recording
+
+A bounded non-material confirmed finding may be accepted with a proposed
+known issue only when all required evidence passes, the effect is bounded,
+consumers are compatible, and the deferral waives no required AC, proof, or
+demonstrated material risk and imposes no hidden consumer workaround. This
+report proposes the deferral; the human coordinator alone records it, before
+authorized advancement, in `docs/known-issues.md` or the repository's
+declared path. The acceptance review never creates or edits that file, and no
+known-issues file is required before a deferral exists.
+
+The proposed record carries: a stable project issue ID; task/review/finding
+provenance; trigger, consequence, and evidence; impact and likelihood;
+affected boundary and consumers; deferral rationale; follow-up owner and
+action; and reassessment conditions. Optional proportional context links may
+add subsystem/area, existing invariant/contract/flow/plan IDs, related issue
+IDs distinguishing confirmed relationships from suspected similarity,
+safeguards or explicit assumptions with reassessment triggers, and relevant
+migration/refactor/replacement work distinguishing proposed from committed
+work. Missing links mean unknown relationships, not their absence; planned
+work alone is not existing mitigation. Preferences, polish, and unproved
+minor concerns are recorded as observations, never as known issues. A later
+priority change alone does not reopen an accepted deferral; changed material
+facts that invalidate an actual acceptance assumption can require focused
+review under existing authority.
 
 ## 3. Admitted evidence ledger and reconciliation
 
@@ -134,12 +165,15 @@ State the exact diff/range/files reviewed. Do not absorb pre-existing user work.
 
 | Type / row ID | Evidence or reason unverified | Blocking? | Owner / follow-up |
 |---|---|---|---|
-| `question | blocked | unchecked | residual risk` | `<observed limit>` | `yes | no` | `<owner/action>` |
+| `question | blocked | unchecked | residual risk | observation / assumption` | `<observed limit or stated reasonable assumption>` | `yes | no` | `<owner/action>` |
 
 A failed required behavior is a finding, not residual risk. A missing required
 oracle is blocking and normally yields `INCONCLUSIVE`. Missing discovery or
 missing decisive validator evidence routes to the discovery owner with the
-exact gap.
+exact gap. Ordinary uncertainty continues under a stated reasonable assumption
+recorded here as an observation; unresolved decision-critical uncertainty with
+credible serious-delay or materially-costlier-later consequences is escalated
+as one focused question naming the consequence and the needed fact.
 
 ## 9. Verdict and next route
 

@@ -29,6 +29,19 @@ DISCOVERY_FIXTURE = DISCOVERY_PACKAGE / "evals" / "files" / "setup_fixture.py"
 ACCEPTANCE_FIXTURE = ACCEPTANCE_PACKAGE / "evals" / "files" / "setup_fixture.py"
 PRESERVED_DISCOVERY_EVAL_IDS = (1, 2, 3, 4, 5, 6, 7, 8, 9)
 NEW_DISCOVERY_EVAL_IDS = (11, 12, 13, 14, 15)
+CONTEXTUAL_CONTRAST_SETUPS = {
+    "consequential-uncertainty-resolved-decision": "uncertainty_contrast",
+    "serious-delay-uncertainty-decision": "uncertainty_contrast",
+    "serious-delay-uncertainty-resolved-decision": "uncertainty_contrast",
+    "known-issue-proposed-work-decision": "known_issue_context",
+    "known-issue-committed-work-decision": "known_issue_context",
+    "known-issue-priority-only-decision": "known_issue_context",
+    "known-issue-no-links-decision": "known_issue_context",
+    "repeated-review-formerly-blocked-evidence-decision": "repeated_review",
+    "repeated-review-missed-existing-obligation-decision": "repeated_review",
+    "repeated-review-changed-context-authority-decision": "repeated_review",
+    "repeated-review-newly-demonstrated-material-risk-decision": "repeated_review",
+}
 ACCEPTANCE_ONLY_SCENARIOS = frozenset(
     {
         "queue-defect-reproducer",
@@ -40,8 +53,16 @@ ACCEPTANCE_ONLY_SCENARIOS = frozenset(
         "ledger-defects-decision",
         "workflow-matrix-defects-decision",
         "process-cleanup-defects-decision",
+        "contextual-risk-blockers-decision",
+        "contextual-risk-mitigated-decision",
+        "mixed-conditions-authorized-decision",
+        "mixed-conditions-forbidden-decision",
+        "consequential-uncertainty-decision",
+        "known-issue-consumption-decision",
+        "correction-regression-decision",
     }
 )
+ACCEPTANCE_ONLY_SCENARIOS |= CONTEXTUAL_CONTRAST_SETUPS.keys()
 ACCEPTANCE_ONLY_FIXTURE_FUNCTIONS = frozenset(
     {
         "discovery_report",
@@ -54,6 +75,24 @@ ACCEPTANCE_ONLY_FIXTURE_FUNCTIONS = frozenset(
         "ledger_defects_decision",
         "workflow_matrix_defects_decision",
         "process_cleanup_defects_decision",
+        "contextual_risk_blockers",
+        "contextual_risk_blockers_decision",
+        "contextual_risk_mitigated",
+        "contextual_risk_mitigated_decision",
+        "mixed_conditions",
+        "mixed_conditions_authorized",
+        "mixed_conditions_authorized_decision",
+        "mixed_conditions_forbidden",
+        "mixed_conditions_forbidden_decision",
+        "consequential_uncertainty",
+        "consequential_uncertainty_decision",
+        "known_issue_consumption",
+        "known_issue_consumption_decision",
+        "correction_regression",
+        "correction_regression_decision",
+        "uncertainty_contrast",
+        "known_issue_context",
+        "repeated_review",
     }
 )
 NEW_DISCOVERY_SCENARIOS = (
@@ -594,6 +633,13 @@ class AcceptanceAdmissionEvalTests(unittest.TestCase):
                 f"eval {item['id']} does not demand a decision",
             )
             if scenario.endswith("-decision"):
+                if scenario in CONTEXTUAL_CONTRAST_SETUPS:
+                    setup = functions[CONTEXTUAL_CONTRAST_SETUPS[scenario]]
+                    self.assertTrue(
+                        "discovery_report(" in setup or "consequential_uncertainty_decision()" in setup,
+                        f"contrast {scenario} does not supply discovery publication",
+                    )
+                    continue
                 wrapper = scenario.replace("-", "_")
                 self.assertIn(wrapper, functions, scenario)
                 inherited = wrapper[: -len("_decision")]
@@ -676,6 +722,825 @@ class DiscoveryLateOmissionFixtureTests(unittest.TestCase):
             {"valid": 0, "boolean": 0, "older-attempt": 2, "second-running": 2},
             exits,
         )
+
+
+class ContextualDispositionContractTests(unittest.TestCase):
+    """Fail-first contract checks for the contextual rubric and recording rules.
+
+    These assertions reject an unconditional ACCEPT-on-green-tests rubric,
+    routine ordinary-unknown prompts, dropped mixed-condition rows, and
+    reviewer-owned tracker writes; they fail against guidance that lacks the
+    contextual disposition contract.
+    """
+
+    def test_green_evidence_cannot_excuse_demonstrated_material_risk(self):
+        text = normalized(ACCEPTANCE_SKILL)
+
+        self.assertIn("## Contextual disposition and coordinator-owned deferrals", text)
+        self.assertIn("Materiality follows supplied context, not reviewer taste", text)
+        self.assertIn(
+            "separate impact and likelihood/exposure, existing mitigation, and a contextual fix-now or deferral rationale",
+            text,
+        )
+        self.assertIn("Assess impact and likelihood separately", text)
+        self.assertIn(
+            "Low likelihood cannot erase catastrophic data, security, or irreversible-state consequences",
+            text,
+        )
+        self.assertIn(
+            "Green tests, passing ACs, producer self-claims, and suggested-severity labels cannot excuse a demonstrated material risk",
+            text,
+        )
+
+    def test_rubric_table_covers_every_disposition_branch(self):
+        text = normalized(ACCEPTANCE_SKILL)
+
+        for token in (
+            "Demonstrated AC/gate violation or unauthorized effect",
+            "Confirmed material operating or business risk with passing ACs",
+            "Confirmed material maintainability/refactoring risk",
+            "Bounded non-material confirmed defect; all required evidence passes",
+            "Preference, polish, or speculative improvement",
+            "Missing decisive required evidence, without a confirmed blocker eligible for bounded correction",
+            "Ordinary uncertainty or unproved minor concern",
+            "Unresolved uncertainty with credible serious consequences of delay or materially more costly later repair",
+            "A hard-rule breach is sufficient, not necessary",
+            "speculative redesign is insufficient",
+        ):
+            self.assertIn(token, text)
+
+    def test_mixed_condition_precedence_and_retained_rows(self):
+        text = normalized(ACCEPTANCE_SKILL)
+
+        self.assertIn(
+            "yields `CHANGES_REQUESTED` even when another required row is blocked or unchecked or a separate material-context question is unresolved",
+            text,
+        )
+        self.assertIn("Retain every finding and unfinished row with its reason and owner", text)
+        self.assertIn(
+            "Route correction, evidence recovery, and any necessary authority question separately through the coordinator",
+            text,
+        )
+        self.assertIn("an evidence request is not a production-fix request", text)
+        self.assertIn("return `INCONCLUSIVE` while retaining the confirmed blocker", text)
+        self.assertIn("ordinary uncertainty alone does not force either verdict", text)
+        self.assertIn("Neither `CHANGES_REQUESTED` nor `INCONCLUSIVE` permits advancement", text)
+        self.assertIn("unfinished rows are never treated as clean", text)
+
+    def test_ordinary_uncertainty_continues_without_routine_prompts(self):
+        text = normalized(ACCEPTANCE_SKILL)
+
+        self.assertIn(
+            "Continue under a stated reasonable assumption; record an observation", text
+        )
+        self.assertIn(
+            "Make routine dispositions and authorized bounded correction or evidence requests without a new user confirmation",
+            text,
+        )
+        self.assertIn("Resolve within current authority first", text)
+        self.assertIn(
+            "ask one focused question naming the consequence and the needed fact", text
+        )
+        self.assertIn("Do not ask the user to classify every issue", text)
+        self.assertIn("required proof is never waived", text)
+
+    def test_deferrals_are_coordinator_recorded_with_complete_provenance(self):
+        text = normalized(ACCEPTANCE_SKILL)
+
+        self.assertIn(
+            "the human coordinator alone records it, before authorized advancement, using `docs/known-issues.md` by default",
+            text,
+        )
+        self.assertIn("No known-issues file is required before a deferral exists", text)
+        self.assertIn(
+            "never write the tracker or acquire backlog or portfolio scheduling authority", text
+        )
+        self.assertIn(
+            "a stable project issue ID; task/review/finding provenance; trigger, consequence, and evidence; impact and likelihood; affected boundary and consumers; deferral rationale; follow-up owner and action; and reassessment conditions",
+            text,
+        )
+        self.assertIn("distinguishing confirmed relationships from suspected similarity", text)
+        self.assertIn("Missing links mean unknown relationships, not their absence", text)
+        self.assertIn("Planned work alone is not existing mitigation", text)
+        self.assertIn("imposes no hidden consumer workaround", text)
+
+    def test_portfolio_priority_change_alone_cannot_reopen_acceptance(self):
+        text = normalized(ACCEPTANCE_SKILL)
+
+        self.assertIn(
+            "without invalidating acceptance solely because its priority changed", text
+        )
+        self.assertIn("A priority change alone does not reopen acceptance", text)
+        self.assertIn(
+            "changed material facts that invalidate an actual acceptance assumption or reveal a material violation can require focused review under existing authority",
+            text,
+        )
+        self.assertIn(
+            "Acceptance acquires no portfolio review gate, new verdict, refactoring authority, or power to create requirements",
+            text,
+        )
+        self.assertIn(
+            "Portfolio choices cannot excuse a demonstrated current AC/gate violation, unauthorized effect, or material risk this task was required to resolve",
+            text,
+        )
+
+    def test_stable_dispositions_and_new_blocker_reasons(self):
+        text = normalized(ACCEPTANCE_SKILL)
+
+        self.assertIn(
+            "Preserve an accepted disposition while its exposure is unchanged", text
+        )
+        self.assertIn(
+            "optional improvements create no new correction obligation and never restart correction",
+            text,
+        )
+        for reason in (
+            "correction regression",
+            "formerly blocked evidence",
+            "a missed existing obligation",
+            "changed context/authority",
+            "newly demonstrated material risk",
+        ):
+            self.assertIn(reason, text)
+        self.assertIn(
+            "A stale severity label or a prior acceptance alone cannot supply or suppress a new blocker",
+            text,
+        )
+        self.assertIn(
+            "Add no global correction-round limit; the task's existing task-specific stop rules remain in force",
+            text,
+        )
+
+    def test_report_template_carries_contextual_fields_and_recording_instructions(self):
+        template = (
+            ACCEPTANCE_PACKAGE / "references" / "acceptance-report-template.md"
+        )
+        text = normalized(template)
+
+        self.assertIn("### Accepted deferrals and coordinator recording", text)
+        self.assertIn(
+            "the human coordinator alone records it, before authorized advancement, in `docs/known-issues.md`",
+            text,
+        )
+        self.assertIn("no known-issues file is required before a deferral exists", text)
+        self.assertIn("Impact (assessed separately from likelihood)", text)
+        self.assertIn("Likelihood / exposure", text)
+        self.assertIn("Existing mitigation", text)
+        self.assertIn("Fix-now / deferral rationale", text)
+        self.assertIn("Affected boundary", text)
+        self.assertIn("planned work alone is not existing mitigation", text)
+        self.assertIn(
+            "Preferences, polish, and unproved minor concerns are recorded as observations, never as known issues",
+            text,
+        )
+
+
+class ContextualRiskFixtureTests(unittest.TestCase):
+    """Runnable probes establish the contrasting staged facts behind the rubric."""
+
+    def stage(self, scenario: str) -> Path:
+        temporary = TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        work = Path(temporary.name)
+        env = dict(os.environ, EVAL_WORK_ROOT=str(work))
+        subprocess.run(
+            [sys.executable, str(ACCEPTANCE_FIXTURE), scenario],
+            check=True,
+            env=env,
+            capture_output=True,
+        )
+        return work
+
+    def run_export(self, root: Path, invoices: Path, out: Path, *extra: str):
+        return subprocess.run(
+            [sys.executable, "-m", "src.invoices.export", str(invoices), str(out), *extra],
+            cwd=root,
+            capture_output=True,
+            text=True,
+        )
+
+    def test_failed_risky_export_destroys_the_existing_ledger(self):
+        work = self.stage("contextual-risk-blockers-decision")
+        root = work / "contextual-runner"
+        out = root / "out" / "ledger.csv"
+        out.parent.mkdir(parents=True)
+        out.write_text("inv-9001,10.00\n")
+        invoices = root / "bad-invoices.json"
+        invoices.write_text(
+            json.dumps([{"id": "inv-1", "amount": "5.25"}, {"id": "inv-2", "amount": "oops"}])
+        )
+        failed = self.run_export(root, invoices, out)
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertEqual(out.read_text(), "")
+
+    def test_failed_mitigated_export_preserves_the_existing_ledger(self):
+        work = self.stage("contextual-risk-mitigated-decision")
+        root = work / "contextual-runner"
+        out = root / "out" / "ledger.csv"
+        out.parent.mkdir(parents=True)
+        out.write_text("inv-9001,10.00\n")
+        invoices = root / "bad-invoices.json"
+        invoices.write_text(
+            json.dumps([{"id": "inv-1", "amount": "5.25"}, {"id": "inv-2", "amount": "oops"}])
+        )
+        failed = self.run_export(root, invoices, out)
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertEqual(out.read_text(), "inv-9001,10.00\n")
+
+    def test_risky_export_breaches_the_declared_consumer_contract(self):
+        work = self.stage("contextual-risk-blockers-decision")
+        root = work / "contextual-runner"
+        out = root / "out" / "ledger.csv"
+        out.parent.mkdir(parents=True)
+        invoices = root / "invoices.json"
+        invoices.write_text(json.dumps([{"id": "inv-1", "amount": "12.75"}]))
+        subprocess.run(
+            [sys.executable, "-m", "src.invoices.export", str(invoices), str(out)],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        )
+        consumer = subprocess.run(
+            [sys.executable, str(root / "consumers" / "report_ledger.py"), str(out)],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(consumer.returncode, 2)
+        self.assertIn("missing required header row", consumer.stdout)
+
+    def test_mitigated_export_satisfies_the_declared_consumer_contract(self):
+        work = self.stage("contextual-risk-mitigated-decision")
+        root = work / "contextual-runner"
+        out = root / "out" / "ledger.csv"
+        out.parent.mkdir(parents=True)
+        invoices = root / "invoices.json"
+        invoices.write_text(json.dumps([{"id": "inv-1", "amount": "12.75"}]))
+        subprocess.run(
+            [sys.executable, "-m", "src.invoices.export", str(invoices), str(out)],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        )
+        consumer = subprocess.run(
+            [sys.executable, str(root / "consumers" / "report_ledger.py"), str(out)],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(consumer.returncode, 0)
+        self.assertIn("report-ledger: ok", consumer.stdout)
+
+    def test_clean_flag_destroys_unrelated_ledgers_only_in_the_risky_variant(self):
+        work = self.stage("contextual-risk-blockers-decision")
+        root = work / "contextual-runner"
+        out = root / "out" / "ledger.csv"
+        yesterday = root / "out" / "yesterday.csv"
+        yesterday.parent.mkdir(parents=True)
+        yesterday.write_text("inv-9000,9.00\n")
+        invoices = root / "invoices.json"
+        invoices.write_text(json.dumps([{"id": "inv-1", "amount": "12.75"}]))
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "src.invoices.export",
+                str(invoices),
+                str(out),
+                "--clean",
+            ],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        )
+        self.assertFalse(yesterday.exists())
+
+        mitigated = self.stage("contextual-risk-mitigated-decision")
+        mitigated_source = (
+            mitigated / "contextual-runner" / "src" / "invoices" / "export.py"
+        ).read_text()
+        self.assertNotIn("rmtree", mitigated_source)
+
+    def test_duplicated_parsing_authority_diverges_only_in_the_risky_variant(self):
+        work = self.stage("contextual-risk-blockers-decision")
+        root = work / "contextual-runner"
+        probe = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from src.invoices.amount import parse_amount; "
+                "from src.invoices.export import _parse_amount; "
+                "print(parse_amount('12.75'), _parse_amount('12.75'))",
+            ],
+            cwd=root,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(probe.returncode, 0)
+        self.assertEqual(probe.stdout.strip(), "12.75 12")
+
+        mitigated = self.stage("contextual-risk-mitigated-decision")
+        mitigated_root = mitigated / "contextual-runner"
+        duplicated = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from src.invoices.amount import parse_amount; "
+                "from src.invoices.export import _parse_amount; print('dup')",
+            ],
+            cwd=mitigated_root,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(duplicated.returncode, 0)
+        single = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from src.invoices.amount import parse_amount; print(parse_amount('12.75'))",
+            ],
+            cwd=mitigated_root,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(single.returncode, 0)
+        self.assertEqual(single.stdout.strip(), "12.75")
+
+    def test_material_exposure_is_stated_only_in_the_readiness_context(self):
+        work = self.stage("contextual-risk-blockers-decision")
+        root = work / "contextual-runner"
+        preflight = normalized(root / "docs" / "tasks" / "INV-07" / "preflight.md")
+        discovery = normalized(work / "task-runs" / "INV-07" / "discovery-01.md")
+        self.assertIn("must not destroy yesterday's paid-invoice ledger", preflight)
+        self.assertIn("the reporting consumer's timezone is not specified", preflight)
+        self.assertIn("gains a mandatory `tax` field next sprint", preflight)
+        self.assertIn("requires the CSV header row `invoice_id,amount`", preflight)
+        self.assertNotIn("must not destroy yesterday's paid-invoice ledger", discovery)
+        self.assertIn("readiness decision context", discovery)
+
+    def test_mixed_conditions_stage_a_real_blocker_blocked_row_and_constraint(self):
+        work = self.stage("mixed-conditions-authorized-decision")
+        root = work / "mixed-runner"
+        state = root / "state.json"
+        state.write_text(
+            json.dumps(
+                {"jobs": [{"id": "JOB-1", "status": "ready"}, {"id": "JOB-2", "status": "ready"}]}
+            )
+        )
+        first = subprocess.run(
+            [sys.executable, "-m", "src.jobs.claim", str(state)],
+            cwd=root,
+            capture_output=True,
+            text=True,
+        )
+        second = subprocess.run(
+            [sys.executable, "-m", "src.jobs.claim", str(state)],
+            cwd=root,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(first.stdout.strip(), "JOB-1")
+        self.assertEqual(second.stdout.strip(), "")
+        self.assertFalse((root / "tests" / "helpers" / "pair_claims.py").exists())
+        policy = json.loads(
+            (work / "task-runs" / "policies" / "local-review-mixed.json").read_text()
+        )
+        self.assertIn(
+            "bounded production correction by the owning implementer thread", policy["allow"]
+        )
+        self.assertIn(
+            "strictly ordered across state files",
+            normalized(root / "docs" / "tasks" / "JOB-05" / "preflight.md"),
+        )
+        authorized_discovery = (work / "task-runs" / "JOB-05" / "discovery-01.md").read_text()
+        self.assertIn("JOB-PAIR=blocked", authorized_discovery)
+
+        forbidden = self.stage("mixed-conditions-forbidden-decision")
+        forbidden_policy = json.loads(
+            (forbidden / "task-runs" / "policies" / "local-review-mixed.json").read_text()
+        )
+        self.assertIn("production edits in this review cycle", forbidden_policy["deny"][0])
+
+    def test_retention_horizon_is_configurable_but_the_region_fact_is_unresolved(self):
+        from datetime import datetime, timedelta
+
+        work = self.stage("consequential-uncertainty-decision")
+        root = work / "retention-runner"
+        old = (datetime.now() - timedelta(days=1460)).isoformat()
+        recent = (datetime.now() - timedelta(days=365)).isoformat()
+        state = root / "state.json"
+
+        state.write_text(
+            json.dumps(
+                {"invoices": [{"id": "INV-OLD", "date": old}, {"id": "INV-NEW", "date": recent}]}
+            )
+        )
+        subprocess.run(
+            [sys.executable, "-m", "src.retention.purge", str(state)],
+            cwd=root,
+            env=dict(os.environ, RETENTION_YEARS="3"),
+            check=True,
+            capture_output=True,
+        )
+        kept = [invoice["id"] for invoice in json.loads(state.read_text())["invoices"]]
+        self.assertEqual(kept, ["INV-NEW"])
+
+        state.write_text(
+            json.dumps(
+                {"invoices": [{"id": "INV-OLD", "date": old}, {"id": "INV-NEW", "date": recent}]}
+            )
+        )
+        subprocess.run(
+            [sys.executable, "-m", "src.retention.purge", str(state)],
+            cwd=root,
+            env=dict(os.environ, RETENTION_YEARS="7"),
+            check=True,
+            capture_output=True,
+        )
+        kept = [invoice["id"] for invoice in json.loads(state.read_text())["invoices"]]
+        self.assertEqual(kept, ["INV-OLD", "INV-NEW"])
+
+        preflight = normalized(root / "docs" / "tasks" / "RET-03" / "preflight.md")
+        self.assertIn("Region A requires 7 years; Region B requires 3 years", preflight)
+        self.assertIn("not specified in any supplied authority", preflight)
+        brief = normalized(root / "docs" / "tasks" / "RET-03" / "brief.md")
+        self.assertNotIn("Region", brief)
+
+    def test_known_issue_record_fields_and_consumer_compatibility_probes(self):
+        work = self.stage("known-issue-consumption-decision")
+        root = work / "ledger-consumer"
+        record = normalized(root / "docs" / "known-issues.md")
+        for field in (
+            "Stable issue ID: KI-001",
+            "Provenance: task INV-07; review acceptance-01; finding INV-M01",
+            "Trigger:",
+            "Consequence:",
+            "Evidence:",
+            "Impact:",
+            "Likelihood/exposure:",
+            "Affected boundary:",
+            "Affected consumers:",
+            "Deferral rationale:",
+            "Follow-up owner/action:",
+            "Reassessment conditions:",
+        ):
+            self.assertIn(field, record)
+        self.assertIn("proposed, not committed", record)
+        self.assertIn("safeguards", record)
+
+        summary = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from src.reporting.summary import summarize; "
+                "from pathlib import Path; "
+                "print(summarize(Path('cases/ledger-local.csv').read_text()))",
+            ],
+            cwd=root,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(summary.returncode, 0)
+        self.assertEqual(summary.stdout.strip(), "1")
+
+        workaround = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from src.reporting.utc_footer import utc_generated_at; "
+                "from pathlib import Path; "
+                "print(utc_generated_at(Path('cases/ledger-local.csv').read_text()))",
+            ],
+            cwd=root,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(workaround.returncode, 0)
+        self.assertEqual(workaround.stdout.strip(), "2026-10-09T09:30:00+00:00")
+        contract = normalized(root / "cases" / "consumer-contract.md")
+        self.assertIn("true UTC instant is 2026-10-09T07:30:00+00:00", contract)
+        self.assertNotEqual(workaround.stdout.strip(), "2026-10-09T07:30:00+00:00")
+
+        discovery = normalized(work / "task-runs" / "RPT-12B" / "discovery-01.md")
+        self.assertIn("changed exposure", discovery)
+        self.assertIn("WEB-02", discovery)
+        self.assertIn("RPT-12A", discovery)
+
+    def test_correction_regression_probe_and_preserved_deferral(self):
+        work = self.stage("correction-regression-decision")
+        root = work / "correction-runner"
+        state = root / "state.json"
+        state.write_text(json.dumps({"pending": [{"id": "ORD-1"}], "output": []}))
+        subprocess.run(
+            [sys.executable, "-m", "src.orders.retry", str(state)],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        )
+        first = json.loads(state.read_text())["output"]
+        subprocess.run(
+            [sys.executable, "-m", "src.orders.retry", str(state)],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        )
+        second = json.loads(state.read_text())["output"]
+        self.assertEqual(first, ["ORD-1,processed"])
+        self.assertEqual(second, ["ORD-1,processed", "ORD-1,processed"])
+
+        self.assertIn("KI-001", normalized(root / "docs" / "known-issues.md"))
+        preflight = normalized(root / "docs" / "tasks" / "ORD-04" / "preflight.md")
+        self.assertIn("exposure is unchanged", preflight)
+        self.assertIn("no global correction-round limit", preflight)
+        prior = normalized(root / "docs" / "tasks" / "ORD-04" / "reviews" / "acceptance-01.md")
+        self.assertIn("`ACCEPT`", prior)
+        discovery = normalized(work / "task-runs" / "ORD-04" / "discovery-01.md")
+        self.assertIn("ORD-RERUN", discovery)
+        self.assertIn("duplicated every row", discovery)
+        self.assertIn("regression was introduced by this correction", discovery)
+
+    def test_prior_retry_is_reproducible_and_retained_log_defect_is_real(self):
+        work = self.stage("correction-regression-decision")
+        root = work / "correction-runner"
+        prior_source = subprocess.run(
+            ["git", "show", "HEAD~1:src/orders/retry.py"], cwd=root,
+            check=True, capture_output=True, text=True,
+        ).stdout
+        current_source = (root / "src/orders/retry.py").read_text()
+        self.assertNotEqual(prior_source, current_source)
+        prior = root / "prior_retry.py"
+        prior.write_text(prior_source)
+        for script, expected_rows in ((prior, 1), (root / "src/orders/retry.py", 2)):
+            with self.subTest(script=script.name):
+                state = root / "history-state.json"
+                state.write_text(json.dumps({"pending": [{"id": "ORD-1"}], "output": []}))
+                for _ in range(2):
+                    probe = subprocess.run(
+                        [sys.executable, str(script), str(state)], cwd=root,
+                        check=True, capture_output=True, text=True,
+                    )
+                    self.assertEqual(probe.stdout.strip(), "processed 1 orders")
+                self.assertEqual(len(json.loads(state.read_text())["output"]), expected_rows)
+
+    def test_authorized_resolution_and_serious_delay_have_decisive_inputs(self):
+        work = self.stage("consequential-uncertainty-resolved-decision")
+        root = work / "retention-runner"
+        authority = json.loads((root / "cases/deployment-policy.json").read_text())
+        self.assertEqual(authority, {"region": "B", "retention_years": 3})
+        self.assertIn("may read", normalized(root / "AGENTS.md"))
+        probe = subprocess.run(
+            [sys.executable, "-m", "unittest", "tests.test_purge"], cwd=root,
+            env=dict(os.environ, RETENTION_YEARS=str(authority["retention_years"])),
+            capture_output=True,
+        )
+        self.assertEqual(probe.returncode, 0, probe.stderr)
+
+        delayed = self.stage("serious-delay-uncertainty-decision")
+        delayed_root = delayed / "retention-runner"
+        deadline = json.loads((delayed_root / "cases/deadline.json").read_text())
+        self.assertLess(deadline["remaining_hours"], deadline["authority_response_hours"])
+        self.assertFalse((delayed_root / "cases/deployment-policy.json").exists())
+        context = normalized(delayed_root / "docs/tasks/RET-03/preflight.md")
+        self.assertIn("serious contractual delay", context)
+        self.assertIn("no supplied authority can settle", context)
+
+    def test_optional_links_future_work_and_priority_only_contrasts(self):
+        for scenario, status in (
+            ("known-issue-proposed-work-decision", "proposed"),
+            ("known-issue-committed-work-decision", "committed"),
+            ("known-issue-priority-only-decision", "committed"),
+            ("known-issue-no-links-decision", "proposed"),
+        ):
+            with self.subTest(scenario=scenario):
+                work = self.stage(scenario)
+                root = work / "ledger-consumer"
+                plan = json.loads((root / "cases/follow-up.json").read_text())
+                self.assertEqual(plan["status"], status)
+                self.assertFalse(plan["deployed"])
+                record = (root / "docs/known-issues.md").read_text()
+                if scenario == "known-issue-no-links-decision":
+                    self.assertNotIn("Optional context links:", record)
+                    self.assertIn("Reassessment conditions:", record)
+                if scenario == "known-issue-priority-only-decision":
+                    self.assertEqual(plan["prior_priority"], "next")
+                    self.assertEqual(plan["current_priority"], "later")
+                probe = subprocess.run(
+                    [sys.executable, "-c", "from src.reporting.summary import summarize; "
+                     "from pathlib import Path; print(summarize(Path('cases/ledger-local.csv').read_text()))"],
+                    cwd=root, capture_output=True, text=True,
+                )
+                self.assertEqual(probe.returncode, 0, probe.stderr)
+                self.assertEqual(probe.stdout.strip(), "1")
+                self.assertIn("# generated_at=2026-10-09T09:30:00\n", (root / "cases/ledger-local.csv").read_text())
+
+    def test_serious_delay_resolves_locally_only_with_supplied_authority(self):
+        for resolved in (False, True):
+            with self.subTest(resolved=resolved):
+                scenario = "serious-delay-uncertainty" + ("-resolved" if resolved else "") + "-decision"
+                work = self.stage(scenario)
+                root = work / "retention-runner"
+                deadline = json.loads((root / "cases/deadline.json").read_text())
+                self.assertEqual(deadline, {"remaining_hours": 2, "authority_response_hours": 8})
+                context = normalized(root / "docs/tasks/RET-03/preflight.md")
+                report = normalized(work / "task-runs/RET-03/discovery-01.md")
+                self.assertIn("serious contractual delay", context)
+                policy = root / "cases/deployment-policy.json"
+                self.assertEqual(policy.exists(), resolved)
+                if resolved:
+                    authority = json.loads(policy.read_text())
+                    self.assertEqual(authority, {"region": "B", "retention_years": 3})
+                    self.assertIn("may read cases/deployment-policy.json", normalized(root / "AGENTS.md"))
+                    self.assertNotIn("no supplied authority can settle", context)
+                    self.assertNotIn("route one expedited region question", report)
+                    self.assertIn("authorized local read settles", report)
+                    probe = subprocess.run(
+                        [sys.executable, "-m", "unittest", "tests.test_purge"], cwd=root,
+                        env=dict(os.environ, RETENTION_YEARS=str(authority["retention_years"])),
+                        capture_output=True,
+                    )
+                    self.assertEqual(probe.returncode, 0, probe.stderr)
+                else:
+                    self.assertIn("no supplied authority can settle", context)
+                    self.assertIn("route one expedited region question", report)
+
+    def test_new_risk_history_keeps_consumer_and_changes_only_available_proof(self):
+        work = self.stage("repeated-review-newly-demonstrated-material-risk-decision")
+        root = work / "correction-runner"
+        consumer = root / "consumers/settle.py"
+        prior_consumer = subprocess.run(
+            ["git", "show", "HEAD~1:consumers/settle.py"], cwd=root,
+            capture_output=True, text=True,
+        )
+        self.assertEqual(prior_consumer.returncode, 0, prior_consumer.stderr)
+        self.assertEqual(prior_consumer.stdout, consumer.read_text())
+        changed = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD~1", "HEAD"], cwd=root,
+            check=True, capture_output=True, text=True,
+        )
+        self.assertEqual(changed.stdout.splitlines(), ["tests/helpers/replay.py"])
+        prior_script = root / "prior-settle.py"
+        prior_script.write_text(prior_consumer.stdout)
+        state = root / "settlement-state.json"
+        state.write_text(json.dumps({"pending": [{"id": "ORD-1"}], "output": []}))
+        for expected_charge in ("10", "20"):
+            subprocess.run(
+                [sys.executable, "-m", "src.orders.retry", str(state)], cwd=root,
+                check=True, capture_output=True,
+            )
+            for script in (prior_script, consumer):
+                with self.subTest(charge=expected_charge, script=script.name):
+                    settlement = subprocess.run(
+                        [sys.executable, str(script), str(state)], cwd=root,
+                        check=True, capture_output=True, text=True,
+                    )
+                    self.assertEqual(settlement.stdout.strip(), expected_charge)
+
+    def test_non_regression_blocker_reasons_have_current_proof_and_prior_context(self):
+        for reason in (
+            "formerly-blocked-evidence", "missed-existing-obligation",
+            "changed-context-authority", "newly-demonstrated-material-risk",
+        ):
+            with self.subTest(reason=reason):
+                work = self.stage("repeated-review-" + reason + "-decision")
+                root = work / "correction-runner"
+                source = (root / "src/orders/retry.py").read_text()
+                committed = subprocess.run(
+                    ["git", "show", "HEAD:src/orders/retry.py"], cwd=root,
+                    check=True, capture_output=True, text=True,
+                ).stdout
+                self.assertEqual(source, committed)
+                state = root / "repeat-state.json"
+                state.write_text(json.dumps({"pending": [{"id": "ORD-1"}], "output": []}))
+                subprocess.run(
+                    [sys.executable, "tests/helpers/replay.py", str(state)], cwd=root,
+                    check=True, capture_output=True,
+                )
+                self.assertEqual(json.loads(state.read_text())["output"], ["ORD-1,processed"] * 2)
+                context = json.loads((root / "cases/review-history.json").read_text())
+                self.assertEqual(context["reason"], reason)
+                self.assertFalse(context["implementation_changed"])
+                self.assertIn(context["prior_ac"], (root / "cases/prior-authority.md").read_text())
+                self.assertIn(context["current_ac"], (root / "docs/tasks/ORD-04/brief.md").read_text())
+                prior_source = subprocess.run(
+                    ["git", "show", "HEAD~1:src/orders/retry.py"], cwd=root,
+                    check=True, capture_output=True, text=True,
+                ).stdout
+                self.assertEqual(prior_source, source)
+                if reason == "formerly-blocked-evidence":
+                    self.assertEqual(context["prior_row"], "blocked")
+                    self.assertTrue((root / "tests/helpers/replay.py").exists())
+                    prior_helper = subprocess.run(
+                        ["git", "cat-file", "-e", "HEAD~1:tests/helpers/replay.py"],
+                        cwd=root, capture_output=True,
+                    )
+                    self.assertNotEqual(prior_helper.returncode, 0)
+                    self.assertIn("INCONCLUSIVE", (root / "docs/tasks/ORD-04/reviews/acceptance-01.md").read_text())
+                elif reason == "missed-existing-obligation":
+                    self.assertEqual(context["prior_row"], "unchecked")
+                    self.assertEqual(context["prior_ac"], context["current_ac"])
+                elif reason == "changed-context-authority":
+                    self.assertNotEqual(context["prior_ac"], context["current_ac"])
+                else:
+                    self.assertEqual(context["prior_ac"], context["current_ac"])
+                    self.assertTrue((root / "consumers/settle.py").exists())
+                    settlement = subprocess.run(
+                        [sys.executable, "consumers/settle.py", str(state)], cwd=root,
+                        check=True, capture_output=True, text=True,
+                    )
+                    self.assertEqual(settlement.stdout.strip(), "20")
+
+    def test_mixed_evals_explicitly_select_guided_profile(self):
+        by_id = {item["id"]: item for item in json.loads(ACCEPTANCE_EVALS.read_text())["evals"]}
+        for eval_id in (13, 14):
+            self.assertIn("Use the guided profile explicitly", by_id[eval_id]["prompt"])
+
+    def test_optional_link_grading_is_conditional(self):
+        item = next(item for item in json.loads(ACCEPTANCE_EVALS.read_text())["evals"] if item["id"] == 12)
+        expectation = next(text for text in item["expectations"] if "Optional context links" in text)
+        self.assertIn("If included", expectation)
+        self.assertIn("may be omitted", expectation)
+
+
+class ContextualDispositionEvalTests(unittest.TestCase):
+    NEW_CONTEXTUAL_EVALS = {
+        11: ("contextual-risk-blockers-decision", "`CHANGES_REQUESTED`"),
+        12: ("contextual-risk-mitigated-decision", "`ACCEPT`"),
+        13: ("mixed-conditions-authorized-decision", "`CHANGES_REQUESTED`"),
+        14: ("mixed-conditions-forbidden-decision", "`INCONCLUSIVE`"),
+        15: ("consequential-uncertainty-decision", "`INCONCLUSIVE`"),
+        16: ("known-issue-consumption-decision", "`CHANGES_REQUESTED`"),
+        17: ("correction-regression-decision", "`CHANGES_REQUESTED`"),
+        18: ("consequential-uncertainty-resolved-decision", "`ACCEPT`"),
+        19: ("serious-delay-uncertainty-decision", "`INCONCLUSIVE`"),
+        20: ("known-issue-proposed-work-decision", "`ACCEPT`"),
+        21: ("known-issue-committed-work-decision", "`ACCEPT`"),
+        22: ("known-issue-priority-only-decision", "`ACCEPT`"),
+        23: ("known-issue-no-links-decision", "`ACCEPT`"),
+        24: ("repeated-review-formerly-blocked-evidence-decision", "`CHANGES_REQUESTED`"),
+        25: ("repeated-review-missed-existing-obligation-decision", "`CHANGES_REQUESTED`"),
+        26: ("repeated-review-changed-context-authority-decision", "`CHANGES_REQUESTED`"),
+        27: ("repeated-review-newly-demonstrated-material-risk-decision", "`CHANGES_REQUESTED`"),
+        28: ("serious-delay-uncertainty-resolved-decision", "`ACCEPT`"),
+    }
+
+    def test_new_contextual_evals_are_registered_with_expected_verdicts(self):
+        acceptance = json.loads(ACCEPTANCE_EVALS.read_text(encoding="utf-8"))
+        by_id = {item["id"]: item for item in acceptance["evals"]}
+        for eval_id, (scenario, verdict) in self.NEW_CONTEXTUAL_EVALS.items():
+            item = by_id[eval_id]
+            self.assertEqual(scenario, item["execution"]["setup"]["command"][2])
+            self.assertEqual(
+                ["python3", "evals/files/setup_fixture.py"],
+                item["execution"]["setup"]["command"][:2],
+            )
+            self.assertEqual(
+                {"EVAL_WORK_ROOT": "{run_root}/work"}, item["execution"]["setup"]["env"]
+            )
+            self.assertTrue(
+                item["execution"]["workspace"].startswith("{run_root}/work/")
+            )
+            self.assertIn("discovery-01.md", json.dumps(item))
+            self.assertIn(verdict, item["expected_output"])
+
+    def test_contextual_evals_reject_permissive_decisions(self):
+        acceptance = json.loads(ACCEPTANCE_EVALS.read_text(encoding="utf-8"))
+        by_id = {item["id"]: item for item in acceptance["evals"]}
+
+        blob11 = json.dumps(by_id[11])
+        self.assertIn("despite the passing AC rows", blob11)
+        self.assertIn("likelihood does not erase", blob11)
+        self.assertIn("without requiring a hard-rule breach", blob11)
+        self.assertIn("no routine user prompt", blob11)
+        self.assertIn("no known-issues record is created", blob11)
+
+        blob12 = json.dumps(by_id[12])
+        self.assertIn(
+            "planned work alone is not treated as existing mitigation", blob12
+        )
+        self.assertIn("stable issue ID", blob12)
+        self.assertIn(
+            "human coordinator recording the approved deferral before authorized advancement",
+            blob12,
+        )
+
+        blob13 = json.dumps(by_id[13])
+        self.assertIn("even though the JOB-PAIR row is blocked", blob13)
+        self.assertIn("separate next owners", blob13)
+
+        blob14 = json.dumps(by_id[14])
+        self.assertIn("prevents the bounded production-correction route", blob14)
+        self.assertIn("Ordinary uncertainty alone did not force this verdict", blob14)
+
+        blob15 = json.dumps(by_id[15])
+        self.assertIn("exactly one focused question", blob15)
+        self.assertIn("does not invent or assume the applicable region", blob15)
+
+        blob16 = json.dumps(by_id[16])
+        self.assertIn("hidden workaround", blob16)
+        self.assertIn("no broad issue search", blob16)
+
+        blob17 = json.dumps(by_id[17])
+        self.assertIn("new blocker", blob17)
+        self.assertIn("exposure is unchanged", blob17)
+        self.assertIn("No global correction-round limit", blob17)
 
 
 if __name__ == "__main__":

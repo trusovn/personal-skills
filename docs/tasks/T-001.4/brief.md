@@ -1,6 +1,6 @@
 # Task Brief: `T-001.4` — Close preparation guidance and installed profile projection
 
-Status: `ready`
+Status: `accepted`
 
 Task kind: `executable`
 

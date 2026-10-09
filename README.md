@@ -367,6 +367,8 @@ project-bootstrap
   -> project-delivery-plan
   -> project-plan-verification
   -> task brief
+  -> separate verification design (required for a supplied executable task package)
+  -> ready preflight
   -> bounded implementation
   -> deterministic architecture validation
   -> maintainability review

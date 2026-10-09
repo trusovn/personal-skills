@@ -444,6 +444,8 @@ For repositories with implemented-contract discovery enabled, the standard bound
 
 ```text
 task brief
+  -> task-verification-designer      (required for a supplied executable task package)
+  -> task-preflight                  (required ready preflight for that package)
   -> bounded-task-implementer
   -> deterministic architecture gate
   -> task-maintainability-review

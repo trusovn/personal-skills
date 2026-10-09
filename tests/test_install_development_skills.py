@@ -55,6 +55,120 @@ EXPECTED_DEVELOPMENT_SKILL_SOURCES = (
 )
 
 
+PREPARATION_PROFILE_SKILLS = (
+    "task-brief-designer",
+    "task-verification-designer",
+    "task-preflight",
+    "bounded-task-implementer",
+)
+
+PREPARATION_SKILL_SOURCES = tuple(
+    source
+    for source in EXPECTED_DEVELOPMENT_SKILL_SOURCES
+    if source[0] in PREPARATION_PROFILE_SKILLS
+)
+
+CROSS_STAGE_GUIDE_PATHS = {
+    "root-readme": "README.md",
+    "profile-guide": "skills/README.md",
+    "task-flow-readme": "skills/task-implementation-flow/README.md",
+}
+
+REQUIRED_PREPARATION_ROUTE_WORDING = {
+    "root-readme": (
+        "required for a supplied executable task package",
+        "required ready preflight for that package",
+        "executable task package always follows verification design and ready preflight",
+        "**unpackaged conversational**",
+        "scenario ID to current evidence or an explicit blocked/unchecked reason and",
+    ),
+    "profile-guide": (
+        "(required for an executable task package)",
+        "(required ready preflight for that package)",
+        "Required derived `<task-package>/verification.md` before packaged implementation.",
+        "Compact canonical `<task-package>/preflight.md` bound to brief/scope/verification revision",
+    ),
+    "task-flow-readme": (
+        "required task-verification-designer for an executable task package",
+        "required before packaged implementation",
+        "required ready preflight before implementation",
+        "Every executable package requires derived verification and compact canonical readiness",
+        "requires no digest ledger or machine schema",
+    ),
+}
+
+FORBIDDEN_OPTIONAL_PREPARATION_WORDING = {
+    "root-readme": (
+        "when task-local verification semantics are non-obvious",
+        "when readiness needs an independent check",
+        "For small, unambiguous work, go directly to `bounded-task-implementer`",
+    ),
+    "profile-guide": (
+        "(when verification is non-obvious)",
+        "(when a separate readiness check adds value)",
+    ),
+    "task-flow-readme": (
+        "optional task-verification-designer",
+        "only when separate verification design is used",
+        "only when a durable preflight artifact is needed",
+        "A routine guided task can perform the same compact self-check inside the implementer.",
+    ),
+}
+
+
+def assert_preparation_route_wording(case: unittest.TestCase, doc: str, text: str) -> None:
+    path = CROSS_STAGE_GUIDE_PATHS[doc]
+    for phrase in REQUIRED_PREPARATION_ROUTE_WORDING[doc]:
+        case.assertIn(phrase, text, f"{path}: missing packaged-route wording")
+    for phrase in FORBIDDEN_OPTIONAL_PREPARATION_WORDING[doc]:
+        case.assertNotIn(phrase, text, f"{path}: stale optional-route wording")
+
+
+VERIFICATION_DESIGN_ROUTE_MARKERS = (
+    "task-verification-designer",
+    "verification design",
+    "verification.md",
+)
+
+TASK_ROUTE_BRIEF_MARKERS = (
+    "task brief",
+    "task-brief",
+    "brief.md",
+    "request or brief",
+)
+
+
+def extract_fenced_blocks(text: str) -> list[str]:
+    blocks: list[str] = []
+    current: list[str] | None = None
+    for line in text.splitlines():
+        if current is None:
+            if line.lstrip().startswith("```"):
+                current = []
+        elif line.lstrip().startswith("```"):
+            blocks.append("\n".join(current))
+            current = None
+        else:
+            current.append(line)
+    return blocks
+
+
+def collect_package_files(root: Path) -> dict[str, bytes]:
+    files: dict[str, bytes] = {}
+    if not root.is_dir():
+        return files
+    for path in sorted(root.rglob("*")):
+        if not path.is_file():
+            continue
+        relative = path.relative_to(root)
+        if any(part in ("__pycache__", "node_modules") for part in relative.parts):
+            continue
+        if path.name == ".DS_Store" or path.name.endswith(".pyc"):
+            continue
+        files[relative.as_posix()] = path.read_bytes()
+    return files
+
+
 def git(repo: Path, *args: str) -> str:
     result = subprocess.run(
         ["git", "-C", str(repo), *args],
@@ -129,6 +243,43 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
         self.assertIn("Product/runtime calls AI/LLM/model", foundation_plan)
         self.assertIn("coding-agent maintenance alone does not trigger it", guide)
 
+    def assert_projected_from_source(self, repo: Path, relative: str) -> None:
+        source = collect_package_files(ROOT / relative)
+        installed = collect_package_files(
+            repo / ".agents" / "skills" / Path(relative).relative_to("skills")
+        )
+        self.assertEqual(
+            sorted(source), sorted(installed), f"managed file set differs for {relative}"
+        )
+        for name, content in source.items():
+            self.assertEqual(
+                content, installed[name], f"managed bytes differ for {relative}/{name}"
+            )
+
+    def test_cross_stage_guides_require_packaged_preparation_route(self):
+        for doc, path in CROSS_STAGE_GUIDE_PATHS.items():
+            assert_preparation_route_wording(
+                self, doc, (ROOT / path).read_text(encoding="utf-8")
+            )
+
+    def test_every_documented_task_route_carries_packaged_preparation(self):
+        for doc, path in CROSS_STAGE_GUIDE_PATHS.items():
+            text = (ROOT / path).read_text(encoding="utf-8")
+            routes = 0
+            for block in extract_fenced_blocks(text):
+                if not any(marker in block for marker in TASK_ROUTE_BRIEF_MARKERS):
+                    continue
+                routes += 1
+                self.assertTrue(
+                    any(marker in block for marker in VERIFICATION_DESIGN_ROUTE_MARKERS),
+                    f"{path}: documented task route omits separate verification design",
+                )
+                self.assertTrue(
+                    "preflight" in block,
+                    f"{path}: documented task route omits ready preflight",
+                )
+            self.assertGreater(routes, 0, f"{path}: no documented task route found")
+
     def test_installs_profile_preserves_agents_text_and_final_availability(self):
         with tempfile.TemporaryDirectory() as tempdir:
             repo = Path(tempdir)
@@ -156,6 +307,11 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
                     (repo / ".agents" / "skills" / relative_under_skills / "SKILL.md").is_file(),
                     relative,
                 )
+
+            for _, relative in PREPARATION_SKILL_SOURCES:
+                self.assert_projected_from_source(repo, relative)
+
+            self.assertEqual(b"baseline\n", (repo / "app.txt").read_bytes())
 
             for name in installer.SHARED_SCRIPT_FILES:
                 installed = repo / ".agents" / "scripts" / name
@@ -200,7 +356,7 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
     def test_rerun_removes_stale_managed_files_and_preserves_unmanaged_installations(self):
         with tempfile.TemporaryDirectory() as tempdir:
             repo = Path(tempdir)
-            init_repo(repo)
+            init_repo(repo, agents_text="# Project instructions\n\nKeep this line.\n")
 
             first = run_installer(repo)
             self.assertEqual(0, first.returncode, first.stderr)
@@ -222,6 +378,11 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
                 "---\nname: custom-local-skill\ndescription: local\n---\nbody\n",
                 encoding="utf-8",
             )
+            (unmanaged_skill / "references").mkdir()
+            (unmanaged_skill / "references" / "note.md").write_text(
+                "note\n", encoding="utf-8"
+            )
+            unmanaged_files = collect_package_files(unmanaged_skill)
             unmanaged_script = repo / ".agents" / "scripts" / "custom_helper.py"
             unmanaged_script.write_text("VALUE = 1\n", encoding="utf-8")
 
@@ -234,11 +395,16 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
                 (ROOT / installer.PROFILE_SKILLS_README).read_bytes(),
                 installed_guide.read_bytes(),
             )
-            self.assertTrue((unmanaged_skill / "SKILL.md").is_file())
+            self.assertEqual(unmanaged_files, collect_package_files(unmanaged_skill))
             self.assertEqual("VALUE = 1\n", unmanaged_script.read_text(encoding="utf-8"))
             agents_after = (repo / "AGENTS.md").read_text(encoding="utf-8")
             self.assertEqual(agents_before, agents_after)
+            self.assertIn("# Project instructions", agents_after)
+            self.assertIn("Keep this line.", agents_after)
             self.assertEqual(1, agents_after.count(installer.AGENTS_BEGIN))
+            self.assertEqual(1, agents_after.count(installer.AGENTS_END))
+            for _, relative in PREPARATION_SKILL_SOURCES:
+                self.assert_projected_from_source(repo, relative)
 
     def test_source_repository_is_inferred_from_installer_when_cwd_differs(self):
         with (

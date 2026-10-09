@@ -51,15 +51,24 @@ explicit repository/user/machine contract makes instrumentation mandatory.
 
 ## Task sizing, decomposition, and durable artifact discovery
 
-`task-brief-designer` treats its execution estimate as a decomposition gate.
-The authoritative, packaged policy files are intentionally external to the
-skill body:
+`task-brief-designer` treats its execution estimate as a boundary-quality
+gate. The authoritative, packaged policy files are intentionally external to
+the skill body:
 
 - sizing policy: [`task-brief-designer/references/task-sizing.yaml`](task-brief-designer/references/task-sizing.yaml)
 - durable artifact layout: [`task-brief-designer/references/task-artifact-layout.md`](task-brief-designer/references/task-artifact-layout.md)
 
-This keeps calibration editable without rewriting the skill. A task that
-matches any active decomposition trigger becomes a non-executable composite
+This keeps calibration editable without rewriting the skill. A matched
+decomposition trigger forces a boundary decision rather than an automatic
+split: before committing to a split, assess clear ownership, stable handoffs,
+independent implementation and verification, shared edit/test surfaces,
+likely contract renegotiation, and net delivery benefit. Prefer a split when
+settled boundaries produce independently verifiable outcomes with cheaper
+coordination than keeping the work whole; a triggered task may remain one
+executable leaf when concrete coupling or coordination/rework costs favor
+keeping it whole, recorded with the triggered rules, the candidate boundary
+considered, the concrete reason, and residual execution risk. When splitting,
+the original becomes a non-executable composite
 parent plus full executable child briefs. Children are re-estimated
 recursively; only leaf briefs are implementation launch targets. If an
 end-to-end criterion requires work after siblings compose, model that as a

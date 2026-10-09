@@ -102,12 +102,14 @@ it hard.
 - Estimate confidence: `<low | medium | high>`
 - Policy result: `fits | override_cannot_split_safely`
 - Triggered limits: `none | <configured rule names>`
-- Decomposition override: `none | cannot_split_safely — <concrete reason and residual risk>`
+- Decomposition override: `none | cannot_split_safely — <candidate boundary considered, concrete coupling or coordination/rework reason, and residual execution risk>`
 
-These estimates cover implementation-agent work only. If the active policy
-requires decomposition and no permitted override applies, stop using this
-executable template: emit a `decomposed` composite parent plus independently
-estimated child briefs instead.
+These estimates cover implementation-agent work only. When a trigger fires,
+apply the boundary decision: emit a `decomposed` composite parent plus
+independently estimated child briefs when the boundary quality favors a
+split, and keep this executable template with the recorded override only when
+the active policy permits the reasoned no-split decision. Do not present a
+trigger as automatically requiring decomposition.
 
 ## Readiness route
 

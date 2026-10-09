@@ -4,6 +4,10 @@ active_profile: default
 profiles:
   default:
     decomposition:
+      # A matched trigger requires boundary-quality evaluation in the skill;
+      # it does not mandate decomposition. A triggered task may remain one
+      # executable leaf when concrete coupling or coordination/rework costs
+      # favor keeping it whole, subject to the override permission below.
       trigger: any
       comparison: split_only_when_greater_than_maximum
       max_agent_calls: 15

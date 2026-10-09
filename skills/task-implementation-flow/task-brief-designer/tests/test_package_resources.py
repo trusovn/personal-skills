@@ -593,6 +593,64 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
 
         self.assertIn("comparison: split_only_when_greater_than_maximum", policy)
 
+    def test_decomposition_trigger_requires_boundary_quality_decision(self):
+        skill = " ".join((CANONICAL / "SKILL.md").read_text(encoding="utf-8").split())
+        contract = skill.split("## Sizing and decomposition contract", 1)[1].split(
+            "## Finite-risk coverage contract", 1
+        )[0]
+        template = " ".join(
+            (CANONICAL / "references/task-brief-template.md").read_text(
+                encoding="utf-8"
+            ).split()
+        )
+        policy = (CANONICAL / "references/task-sizing.yaml").read_text(encoding="utf-8")
+        readme = " ".join((FLOW / "README.md").read_text(encoding="utf-8").split())
+        evals = json.loads(
+            (CANONICAL / "evals/evals.json").read_text(encoding="utf-8")
+        )["evals"]
+        by_id = {case["id"]: case for case in evals}
+
+        self.assertNotIn("split by default", skill)
+        for obligation in (
+            "never split automatically on the trigger alone",
+            "clear single ownership of each child outcome",
+            "stable explicitly consumable handoffs",
+            "independent implementation and verification per child",
+            "shared edit/test surfaces",
+            "likely contract renegotiation",
+            "net delivery benefit including coordination and rework cost",
+            "A component/layer split alone is not sufficient evidence",
+            "even without strict atomicity",
+            "candidate boundary considered",
+            "residual execution risk",
+            "Mere preference or high reasoning alone is insufficient",
+            "Respect explicit hard authority limits",
+        ):
+            self.assertIn(obligation, contract)
+        self.assertIn("candidate boundary considered", template)
+        self.assertIn(
+            "Do not present a trigger as automatically requiring decomposition",
+            template,
+        )
+        self.assertIn("boundary-quality evaluation", policy)
+        self.assertIn("boundary-quality gate", readme)
+        self.assertIn("rather than an automatic split", readme)
+        self.assertIn(
+            "may remain one executable leaf when concrete coupling or "
+            "coordination/rework costs favor keeping it whole",
+            readme,
+        )
+        self.assertNotIn(
+            "as requiring decomposition", " ".join(by_id[9]["expectations"])
+        )
+        self.assertIn(
+            "triggering the boundary decision", " ".join(by_id[9]["expectations"])
+        )
+        self.assertIn(
+            "boundary quality rather than the trigger or high reasoning alone",
+            " ".join(by_id[11]["expectations"]),
+        )
+
     def test_downstream_skills_refuse_decomposed_parents(self):
         for skill_name in (
             "bounded-task-implementer",

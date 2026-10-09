@@ -1,0 +1,1210 @@
+{
+  "schema_version": "1.0",
+  "project": "Standalone task verification and review policy",
+  "plan_path": "docs/project-plan.md",
+  "capabilities": [
+    {
+      "id": "CAP-001",
+      "name": "Prepare executable task packages",
+      "outcome": "Every packaged executable leaf has a justified verification revision and ready preflight before implementation; small direct edits remain lightweight.",
+      "flows": [
+        "FLOW-001"
+      ]
+    },
+    {
+      "id": "CAP-002",
+      "name": "Review, decide, and correct under human coordination",
+      "outcome": "Independent discovery supplies complete bounded evidence; acceptance disposes findings; corrections retain coverage and stage order.",
+      "flows": [
+        "FLOW-002",
+        "FLOW-003"
+      ]
+    },
+    {
+      "id": "CAP-003",
+      "name": "Install and qualify the development profile",
+      "outcome": "New and existing Git repositories receive current managed packages, and explicit read-only checks reveal drift without changing unmanaged work.",
+      "flows": [
+        "FLOW-004"
+      ]
+    },
+    {
+      "id": "CAP-004",
+      "name": "Qualify the composed standalone workflow",
+      "outcome": "Reproducible local checks and separately authorized agent evals establish the claimed policy behavior on installed copies.",
+      "flows": [
+        "FLOW-005"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "ART-001",
+      "name": "Task authority",
+      "kind": "configuration",
+      "source_of_truth": "Task brief and cited repository/user authority; only their proper owners can revise requirements. Relevant project direction, operating expectations, business priorities, architecture rules and declared consumer/planned-change contracts supply decision context; missing domain facts are never invented.",
+      "producer": "Task designer/authority owner; qualification author supplies explicit fixture briefs.",
+      "consumers": [
+        "Verification designer",
+        "Preflight",
+        "Implementer",
+        "Reviewers",
+        "Human coordinator"
+      ],
+      "lifecycle": "Durable packaged brief.md with explicit ACs and executable/composite identity. Composite and blocked briefs cannot start implementation. Revised authority supersedes dependent readiness and review evidence; prior reports remain history."
+    },
+    {
+      "id": "ART-002",
+      "name": "Verification design",
+      "kind": "derived",
+      "source_of_truth": "Verification designer under ART-001; identifies source authority and a distinguishable revision.",
+      "producer": "Verification designer",
+      "consumers": [
+        "Preflight",
+        "Implementer",
+        "Discovery",
+        "Acceptance"
+      ],
+      "lifecycle": "Durable verification.md in each executable package. Stable scenario IDs carry AC/authority, setup, action, expected result, decisive boundary, material variants, and plausible wrong behavior. Frozen at ready preflight; reasoned revisions supersede affected readiness/evidence."
+    },
+    {
+      "id": "ART-003",
+      "name": "Readiness decision",
+      "kind": "derived",
+      "source_of_truth": "Task-preflight owns readiness, dependencies, scope, ownership, capabilities, permissions, commands, and relevant known-issue compatibility.",
+      "producer": "Preflight",
+      "consumers": [
+        "Implementer",
+        "Reviewers",
+        "Human coordinator"
+      ],
+      "lifecycle": "Compact durable preflight.md for packaged work: ready or blocked, tied to authority, scope, and verification revision. Relevant prerequisite/permission/authority changes make ready stale. Expected task/report effects alone do not. Exact high-assurance identity checks remain conditional. Carries a compact context summary with source references: intended use/operating envelope, material failure consequences, relevant business priorities, downstream obligations, credible upcoming maintenance/planned changes, known mitigations and explicit unknowns. Summarize existing authority; do not invent a numeric risk threshold or duplicate project documentation."
+    },
+    {
+      "id": "ART-004",
+      "name": "Implementation submission and continuation",
+      "kind": "output",
+      "source_of_truth": "Implementer owns task changes and submitted claims; code/tests and reproducible observations supply underlying facts.",
+      "producer": "Implementer/correction owner",
+      "consumers": [
+        "Conditional stage owners",
+        "Discovery",
+        "Acceptance",
+        "Human coordinator"
+      ],
+      "lifecycle": "Current scoped diff, scenario-to-evidence mapping, exact commands/probes, results, unfinished rows, finding IDs, and next obligations. Guided summary may be conversational; durable evidence uses the package. Changed reviewed bytes invalidate affected semantic evidence; preserve prior submissions as history when durable."
+    },
+    {
+      "id": "ART-005",
+      "name": "Conditional stage evidence",
+      "kind": "audit",
+      "source_of_truth": "Architecture gate facts, independent maintainability verdict, and registry-updater handoff each remain owned by their producing stage.",
+      "producer": "Architecture gate runner; fresh maintainability reviewer; registry updater, when applicable",
+      "consumers": [
+        "Discovery",
+        "Acceptance",
+        "Human coordinator"
+      ],
+      "lifecycle": "Current scoped evidence; applicable stages cannot be skipped by an immediate-review handoff. Numbered durable reports preserve history. Production/test/executable-contract corrections require applicable gates/reviews again. Reference-only updates retain the existing narrow route when effects prove it."
+    },
+    {
+      "id": "ART-006",
+      "name": "Discovery report",
+      "kind": "audit",
+      "source_of_truth": "Independent task-review-discovery owns corroborated evidence, findings, and coverage; implementer claims are inputs.",
+      "producer": "Fresh discovery session",
+      "consumers": [
+        "Acceptance",
+        "Correction owner",
+        "Human coordinator"
+      ],
+      "lifecycle": "Compact report or next unused reviews/discovery-NN.md when durable. Every required scenario has pass/fail/blocked/unchecked with reason; confirmed findings have stable IDs, authority relation, trigger, consequence, reproducible evidence, affected and credible sibling surfaces. Partial reports preserve gaps. No acceptance verdict or approved deferral. Changed bytes require current corroboration."
+    },
+    {
+      "id": "ART-007",
+      "name": "Acceptance decision",
+      "kind": "audit",
+      "source_of_truth": "Independent task-acceptance-review owns evidence admission, disposition, and existing verdict vocabulary.",
+      "producer": "Separate acceptance call independent of production authorship",
+      "consumers": [
+        "Human coordinator",
+        "Correction owner",
+        "Discovery for evidence requests"
+      ],
+      "lifecycle": "Current decision binds authority/verification revision, reviewed scope, discovery, applicable stage evidence, and finding dispositions. ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE; an authoring session may only self-check. Numbered durable acceptance reports remain historical after corrections. Each risk disposition names its context, trigger, consequence, impact, likelihood, affected boundary, credible exposure/next-change horizon, existing mitigation and fix-now/deferral rationale. A demonstrated material operational, business or maintainability risk blocks even when explicit ACs pass. Ordinary contextual uncertainty does not force a question or block: continue using a recorded reasonable assumption, and keep unproved concerns separate from confirmed findings. Ask the user only when unresolved uncertainty credibly risks serious consequences from delay or materially more costly later repair, and cannot be resolved within existing authority. Demonstrated AC failures or missing required proof still prevent acceptance and route to correction/evidence owners without routine user prompts."
+    },
+    {
+      "id": "ART-008",
+      "name": "Project known issues",
+      "kind": "persisted",
+      "source_of_truth": "Human coordinator records acceptance-approved deferrals; default docs/known-issues.md subject to repository authority.",
+      "producer": "Human coordinator from ART-007; never discovery acting as a tracker writer",
+      "consumers": [
+        "Preflight for relevant later tasks",
+        "Acceptance",
+        "Integration reviewer"
+      ],
+      "lifecycle": "Stable project IDs with task/review/finding provenance, trigger, consequence, evidence, impact and likelihood, affected boundary/tasks, deferral basis, follow-up owner/action, and reassessment conditions. Coordinator updates status on resolution or relevant contract/usage/dependency change; unrelated tasks do not reopen issues routinely. Durable once a deferral exists."
+    },
+    {
+      "id": "ART-009",
+      "name": "Source development profile",
+      "kind": "configuration",
+      "source_of_truth": "Editable skills/, canonical scripts/install_development_skills.py, managed profile guide, selected shared helpers, and installation documentation.",
+      "producer": "Source maintainers via T-001 through T-004",
+      "consumers": [
+        "Canonical installer",
+        "Read-only profile check",
+        "Qualification author"
+      ],
+      "lifecycle": "Versioned source packages and explicit managed selection. Each affected implementation keeps installer constants, guide, focused tests, and README documentation synchronized. Skill-owned eval fixtures may remain development-only. Changes can make an installed copy drift; source changes never auto-refresh a session."
+    },
+    {
+      "id": "ART-010",
+      "name": "Installed development profile",
+      "kind": "configuration",
+      "source_of_truth": "Derived copy of ART-009 under target .agents/skills/ and sibling .agents/scripts/ plus the marked AGENTS.md block.",
+      "producer": "Canonical installer on explicit install/refresh",
+      "consumers": [
+        "Standalone skill calls",
+        "Read-only profile check",
+        "Qualification runs"
+      ],
+      "lifecycle": "Managed projection, refreshed only explicitly between active calls/runs. Installer may replace selected skill directories, managed guide/helper files and its AGENTS block only. Unmanaged files remain intact. No retained-version or concurrent-refresh guarantee is added."
+    },
+    {
+      "id": "ART-011",
+      "name": "Profile qualification result",
+      "kind": "output",
+      "source_of_truth": "Explicit read-only comparison against selected source contents and installer ownership contract.",
+      "producer": "Profile check operation",
+      "consumers": [
+        "Maintainer",
+        "Human coordinator",
+        "Qualification author"
+      ],
+      "lifecycle": "Matched, drifted/missing, or check failure with precise reasons and inspected source/target scope. Covers managed skill content/references, guide, helpers, and expected AGENTS block; distinguishes managed extras from unrelated files. Optional retained output is evidence at that point only; source or installed changes make it stale. Does not mutate target or start a run."
+    },
+    {
+      "id": "ART-012",
+      "name": "Standalone qualification evidence",
+      "kind": "audit",
+      "source_of_truth": "Observed test/eval results with supplied setup, authority, implementations, commands, outputs, and installed-profile qualification.",
+      "producer": "T-005 qualification author; independent reviewers for their own eval calls",
+      "consumers": [
+        "Maintainer",
+        "Later task planners",
+        "Independent acceptance of T-005"
+      ],
+      "lifecycle": "New results document beside the dated proposal, referencing reproducible fixtures and raw evidence. Distinguishes structural checks, deterministic runtime tests, agent behavior evals, and unrun cases. Changed relevant source/installation invalidates claimed current qualification, without rewriting historical results."
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "IF-001",
+      "name": "Authority to frozen verification and readiness",
+      "owner": "Task designer, verification designer, then preflight",
+      "consumer": "Implementer",
+      "inputs": [
+        "ART-001",
+        "ART-008"
+      ],
+      "outputs": [
+        "ART-002",
+        "ART-003"
+      ],
+      "contract": "Each packaged executable leaf requires separate verification design then preflight; small direct edits use a compact safety/verification check. Preflight checks both AC coverage and scenario justification, fixture/command/boundary feasibility, permissions and relevant known issues. Future tests need not exist yet. Unresolved requirements return to their owner; unavailable indispensable capability blocks. Readiness is not a behavior-pass claim. Capture referenced decision context in compact preflight, based on task/project authority and relevant current/planned contracts; identify unknowns without asking speculative questions."
+    },
+    {
+      "id": "IF-002",
+      "name": "Ready entry to implementation submission",
+      "owner": "Implementer",
+      "consumer": "Next applicable stage owner",
+      "inputs": [
+        "ART-001",
+        "ART-002",
+        "ART-003"
+      ],
+      "outputs": [
+        "ART-004"
+      ],
+      "contract": "Entry validates that ready covers current task, authority, scope, verification revision and relevant ownership/permission/capability facts. No duplicate readiness discovery or AC derivation on this path. Map every scenario to current tests/probes and results. Finish at submission when independent review is required; name the first outstanding applicable stage and the full ordered remainder. No reviewer launch or same-session acceptance."
+    },
+    {
+      "id": "IF-003",
+      "name": "Conditional gates to discovery",
+      "owner": "Applicable architecture/maintainability and registry stage owners",
+      "consumer": "Discovery reviewer",
+      "inputs": [
+        "ART-001",
+        "ART-004"
+      ],
+      "outputs": [
+        "ART-005"
+      ],
+      "contract": "Architecture/maintainability run where required; registry sync runs where enabled and durable contract impact warrants it. Preserve stage ownership and current-byte provenance. Existing hard rules still block. Report every confirmed blocker from the bounded safe pass, without a three-blocker cap or an early enough-blockers stop. Missing required evidence cannot be treated as completion."
+    },
+    {
+      "id": "IF-004",
+      "name": "Independent discovery to decision",
+      "owner": "task-review-discovery",
+      "consumer": "task-acceptance-review",
+      "inputs": [
+        "ART-001",
+        "ART-002",
+        "ART-004",
+        "ART-005"
+      ],
+      "outputs": [
+        "ART-006"
+      ],
+      "contract": "Separate role call corroborates required scenarios and performs a bounded investigation; supply complete or explicitly partial ledger, stable finding IDs, reproducible probes and available evidence references. Independent executable validator obligations use relevant valid and invalid instances. Batch safe affordable independent probes despite a finding; suppress aggregate gates after decisive failure unless distinct purpose is authorized. Discovery cannot decide acceptance/deferral or initiate correction. Discovery supplies observed facts and credible sibling surfaces for contextual risk assessment; suggested severity is input, not the disposition."
+    },
+    {
+      "id": "IF-005",
+      "name": "Evidence admission and finding disposition",
+      "owner": "task-acceptance-review",
+      "consumer": "Human coordinator, discovery, or correction owner",
+      "inputs": [
+        "ART-001",
+        "ART-002",
+        "ART-004",
+        "ART-005",
+        "ART-006",
+        "ART-008",
+        "ART-003"
+      ],
+      "outputs": [
+        "ART-007"
+      ],
+      "contract": "Use authority and compact readiness context, then check admitted current evidence. Classify every finding as blocking, deferred-known, or observation with reasons. Explicit AC/required-gate failure and unauthorized effects block. A demonstrated material operational, business, downstream-contract, hard-architecture or maintainability risk also blocks, even when ACs pass. Explain trigger, consequence, impact, likelihood, affected boundary, credible exposure or credible near-future maintenance/planned change, existing mitigation and why correction is needed now. Severity alone is insufficient; low likelihood does not excuse catastrophic consequences. Bounded non-material defects may be deferred only after all required evidence passes and deferral imposes no hidden consumer workaround. Missing decisive required evidence yields INCONCLUSIVE with a focused batched request to the evidence/capability owner, without a routine user prompt. Ordinary contextual uncertainty proceeds under a stated reasonable assumption and is recorded as an observation rather than a confirmed defect. Escalate uncertainty to the user only for credible serious consequences of delay or materially more costly later repair when the agent cannot resolve it within current authority. Do not ask the user to classify every issue; make authorized bounded corrections and evidence clarifications through their owners. Demonstrated bounded defects use CHANGES_REQUESTED when correction is authorized. No routine second broad search or repeated complete suite."
+    },
+    {
+      "id": "IF-006",
+      "name": "Human disposition and continuation",
+      "owner": "Human coordinator",
+      "consumer": "Next stage owner or relevant next-task preflight",
+      "inputs": [
+        "ART-001",
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-005",
+        "ART-006",
+        "ART-007",
+        "ART-008"
+      ],
+      "outputs": [
+        "ART-004",
+        "ART-008"
+      ],
+      "contract": "ACCEPT permits only authorized human advancement after approved known issues are recorded. No automatic task release is implemented. Carry all stable coverage/finding IDs, affected surfaces, correction owner/reason, current evidence and remaining stages. Evidence clarification returns to discovery; requirement changes to authority owner; scenario changes through verification design and focused preflight; implementation defects to implementer; reference-only defects to registry updater. Do not treat prior verdicts as current proof."
+    },
+    {
+      "id": "IF-007",
+      "name": "Source profile to install and read-only qualification",
+      "owner": "Canonical development-profile installer/check",
+      "consumer": "Maintainer and target skill users",
+      "inputs": [
+        "ART-009"
+      ],
+      "outputs": [
+        "ART-010",
+        "ART-011"
+      ],
+      "contract": "Install/refresh is explicit and confined to managed ownership. Genuine unborn HEAD is represented explicitly without a fabricated commit; other Git failures still fail truthfully. Profile check reads all managed content, reports drift/missing/unexpected managed files and comparison failures, and preserves all target state. It uses the canonical manifest, not a generic package manager or source-vs-runtime fingerprint shortcut. Exact CLI/result shape is delegated to T-004; result must distinguish matched, drift, and failure."
+    },
+    {
+      "id": "IF-008",
+      "name": "Qualified installation to behavioral evidence",
+      "owner": "Qualification author and separately launched skill roles",
+      "consumer": "Maintainer and integration reviewer",
+      "inputs": [
+        "ART-009",
+        "ART-010",
+        "ART-011"
+      ],
+      "outputs": [
+        "ART-012"
+      ],
+      "contract": "Run local targeted checks first. Agent/model-budget checks require separate authorization and use supplied runnable setups with independent roles, not bare prompts or syntax assertions. Record tested source/profile, fixtures, exact invocation/probe, outcome and unrun gaps. Qualification never auto-installs or refreshes an active session. Existing current-session instructions stay current for that invocation."
+    }
+  ],
+  "invariants": [
+    {
+      "id": "INV-001",
+      "statement": "Task brief and cited authority remain normative; scenarios cannot add requirements, and missing scenarios cannot excuse demonstrated AC failures.",
+      "applies_to": [
+        "ART-001",
+        "ART-002",
+        "IF-001",
+        "IF-005",
+        "FLOW-001",
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "verification": "T-001/T-002/T-005: omitted AC, unjustified scenario, green tests with actual AC failure, and authority-change fixtures."
+    },
+    {
+      "id": "INV-002",
+      "statement": "Each executable task package has separate verification design and ready preflight, with stable scenario IDs frozen at ready; small direct edits retain a compact route.",
+      "applies_to": [
+        "ART-002",
+        "ART-003",
+        "IF-001",
+        "IF-002",
+        "FLOW-001"
+      ],
+      "verification": "T-001/T-005: packaged leaf, composite rejection, blocked brief, compact documentation package, and small direct edit."
+    },
+    {
+      "id": "INV-003",
+      "statement": "Preflight owns readiness; implementer checks entry validity without repeating readiness/design. Expected task/report effects do not alone invalidate readiness; material prerequisite/authority/capability changes do.",
+      "applies_to": [
+        "ART-003",
+        "ART-004",
+        "IF-001",
+        "IF-002",
+        "FLOW-001",
+        "FLOW-003"
+      ],
+      "verification": "T-001/T-003/T-005: stale scenario/authority, ownership or permission change, valid future test implementation, correction-only changes and attributed report writes."
+    },
+    {
+      "id": "INV-004",
+      "statement": "Discovery and decision are separate calls independent of production authorship; discovery cannot issue verdicts/approve deferral, and acceptance cannot routinely rerun broad discovery.",
+      "applies_to": [
+        "ART-006",
+        "ART-007",
+        "IF-004",
+        "IF-005",
+        "FLOW-002"
+      ],
+      "verification": "T-002/T-005: authoring-session refusal, discovery-only report, clean complete decision with no broad rerun, focused evidence clarification."
+    },
+    {
+      "id": "INV-005",
+      "statement": "Acceptance needs current decisive evidence for all required obligations; every required row retains pass/fail/blocked/unchecked and reason. Setup, oracle meaning and relevant validator accept/reject behavior are evidence obligations.",
+      "applies_to": [
+        "ART-002",
+        "ART-004",
+        "ART-006",
+        "ART-007",
+        "IF-004",
+        "IF-005",
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "verification": "T-002/T-005: weak oracle, absent fixture, missing required row, partial discovery, stale corrected bytes, and valid/invalid validator samples."
+    },
+    {
+      "id": "INV-006",
+      "statement": "Explicit AC failures, required-gate failures and unauthorized effects block. Confirmed material operational, business, downstream-contract, hard-architecture or maintainability risks also block, including avoidable refactoring cost tied to a credible same-kind maintenance or planned change grounded in project context. Non-material additional defects may become known issues after required evidence passes; speculative improvements do not force correction.",
+      "applies_to": [
+        "ART-007",
+        "ART-008",
+        "IF-005",
+        "IF-006",
+        "FLOW-002",
+        "ART-003",
+        "FLOW-003"
+      ],
+      "verification": "T-002/T-005: each disposition branch, including AC-compliant operational/business risk, AC-compliant material refactoring risk, low-likelihood catastrophic consequence, genuine bounded minor issue, speculative preference, and insufficient context. Observe context-based reasons rather than severity-only decisions. Include a cheap reversible uncertain concern that does not block and a costly later-repair concern that warrants timely resolution."
+    },
+    {
+      "id": "INV-007",
+      "statement": "Known issues have stable provenance and an explicit coordinator writer; relevant later preflight reassesses them without imposing undeclared downstream workarounds.",
+      "applies_to": [
+        "ART-008",
+        "IF-001",
+        "IF-006",
+        "FLOW-001",
+        "FLOW-002"
+      ],
+      "verification": "T-002/T-005: accepted minor issue recorded before advancement; affected next-task rejection/reassessment; unrelated task does not reopen it."
+    },
+    {
+      "id": "INV-008",
+      "statement": "Submission and correction handoffs name the first outstanding conditional stage and the full remainder; changed production bytes require applicable fresh reviews, and prior coverage/finding IDs and unfinished rows survive. New correction blockers require a demonstrated material reason and an explanation of why the issue was not already resolved; optional findings cannot restart correction.",
+      "applies_to": [
+        "ART-004",
+        "ART-005",
+        "ART-006",
+        "ART-007",
+        "IF-002",
+        "IF-003",
+        "IF-006",
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "verification": "T-003/T-005: neither/either/both conditional-stage routes; production and reference-only corrections; more than three observable maintainability blockers; correction regression; no unauthorized reviewer launch."
+    },
+    {
+      "id": "INV-009",
+      "statement": "Installation and refresh own only declared managed surfaces; read-only qualification cannot mutate target or auto-refresh calls. Unborn HEAD support is limited to exercised installation/identity boundaries, not full collector lifecycle.",
+      "applies_to": [
+        "ART-009",
+        "ART-010",
+        "ART-011",
+        "IF-007",
+        "FLOW-004"
+      ],
+      "verification": "T-004: real unborn and committed disposable repositories, unchanged fingerprint semantics, deliberate drift and refresh, managed removal, preserved unmanaged bytes, and read-only before/after snapshots."
+    },
+    {
+      "id": "INV-010",
+      "statement": "Qualification claims match supplied inputs, runnable setup, decisive observations and actually executed checks. Structural consistency is never agent behavior proof; expensive/live checks require authorization.",
+      "applies_to": [
+        "ART-011",
+        "ART-012",
+        "IF-008",
+        "FLOW-005"
+      ],
+      "verification": "T-005: audit qualification results against fixtures/raw outputs; keep unrun behavior gaps explicit and distinguish structural from behavioral checks."
+    },
+    {
+      "id": "INV-011",
+      "statement": "Acceptance uses compact referenced context and materiality. Ordinary uncertainty continues under a recorded reasonable assumption; it does not force a prompt, verdict stop, or defect classification. Ask the user only when unresolved uncertainty credibly risks serious consequences from delay or materially more costly later repair and cannot be resolved within current authority. Required AC/evidence obligations remain binding. Optional improvements cannot restart correction.",
+      "applies_to": [
+        "ART-001",
+        "ART-003",
+        "ART-006",
+        "ART-007",
+        "ART-008",
+        "IF-001",
+        "IF-004",
+        "IF-005",
+        "IF-006",
+        "FLOW-001",
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "verification": "T-002/T-005: ordinary ambiguous minor concern continues without prompt; credible serious consequence or costly-to-repair-later uncertainty gets one focused question only if existing authority cannot resolve it; missing required proof routes to evidence owner; stable deferral survives unrelated correction; real material regression still blocks."
+    }
+  ],
+  "flows": [
+    {
+      "id": "FLOW-001",
+      "name": "Prepare and enter standalone implementation",
+      "trigger": "Human supplies an executable task package or a small clear direct edit.",
+      "terminal_outcome": "Packaged task has ready preflight and a valid implementation entry, or a named owner receives a blocker; direct edit has a compact safety/verification check.",
+      "steps": [
+        {
+          "actor": "Task designer / human",
+          "action": "Confirm executable leaf, explicit ACs, ownership and route; consume relevant existing known issues. Composite or missing normative decisions return to owner. Direct-edit branch stays compact only when scope/outcome/oracle are clear and readiness has no material uncertainty.",
+          "consumes": [
+            "ART-001",
+            "ART-008"
+          ],
+          "produces": [],
+          "interfaces": [
+            "IF-001"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-007",
+            "INV-011"
+          ],
+          "state_transition": "designed -> verification design; or direct edit -> compact check",
+          "id": "FLOW-001-S01"
+        },
+        {
+          "actor": "Verification designer",
+          "action": "Create justified scenarios, stable IDs and source revision; do not prescribe test internals or implement behavior. Ambiguous expected behavior returns to authority owner.",
+          "consumes": [
+            "ART-001"
+          ],
+          "produces": [
+            "ART-002"
+          ],
+          "interfaces": [
+            "IF-001"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-011"
+          ],
+          "state_transition": "executable brief -> verification designed",
+          "id": "FLOW-001-S02"
+        },
+        {
+          "actor": "Preflight",
+          "action": "Check AC-to-scenario and scenario-to-authority coverage, setup/boundary capability, prerequisites, ownership, commands, permissions, relevant known issues and required repo gates. Freeze ready revision; not-yet-written tests are normal. Preserve compact referenced operating/business/consumer/planned-change context and concrete unknowns for later acceptance.",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-008"
+          ],
+          "produces": [
+            "ART-003"
+          ],
+          "interfaces": [
+            "IF-001"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-003",
+            "INV-007",
+            "INV-011"
+          ],
+          "state_transition": "verification designed -> ready or blocked",
+          "id": "FLOW-001-S03"
+        },
+        {
+          "actor": "Implementer",
+          "action": "Validate ready entry, then implement under unchanged authority and map scenarios to current evidence. Direct edits use compact safety and risk-based evidence. Stale readiness returns for focused preflight; authority gaps return to owner.",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-003"
+          ],
+          "produces": [
+            "ART-004"
+          ],
+          "interfaces": [
+            "IF-002"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-003",
+            "INV-005",
+            "INV-008"
+          ],
+          "state_transition": "ready -> implementing -> submitted; invalid entry -> owner stop",
+          "id": "FLOW-001-S04"
+        }
+      ]
+    },
+    {
+      "id": "FLOW-002",
+      "name": "Review and decide under human coordination",
+      "trigger": "Implementation submits current scoped bytes for required independent review.",
+      "terminal_outcome": "Current acceptance decision and complete next route; accepted deferrals are recorded before authorized human advancement.",
+      "steps": [
+        {
+          "actor": "Implementer / human coordinator",
+          "action": "Submit claims and exact evidence; name first applicable remaining architecture/maintainability, registry, discovery and acceptance obligations. Do not invoke a reviewer from the authoring session.",
+          "consumes": [
+            "ART-004"
+          ],
+          "produces": [],
+          "interfaces": [
+            "IF-002"
+          ],
+          "invariants": [
+            "INV-004",
+            "INV-008"
+          ],
+          "state_transition": "submitted -> first outstanding stage",
+          "id": "FLOW-002-S01"
+        },
+        {
+          "actor": "Conditional stage owners",
+          "action": "Complete required architecture/maintainability and applicable registry synchronization in order. A blocker returns complete stage evidence for bounded correction; unavailable required proof stops with an owner.",
+          "consumes": [
+            "ART-001",
+            "ART-004"
+          ],
+          "produces": [
+            "ART-005"
+          ],
+          "interfaces": [
+            "IF-003"
+          ],
+          "invariants": [
+            "INV-005",
+            "INV-008"
+          ],
+          "state_transition": "conditional stages outstanding -> complete or correction/evidence stop",
+          "id": "FLOW-002-S02"
+        },
+        {
+          "actor": "Independent discovery call",
+          "action": "Corroborate scenarios and bounded sibling risks; record every confirmed finding and every coverage row, including blocked/unchecked. Preserve exact reproducible probes and available evidence references. No verdict or deferral approval.",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-004",
+            "ART-005"
+          ],
+          "produces": [
+            "ART-006"
+          ],
+          "interfaces": [
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-004",
+            "INV-005",
+            "INV-011"
+          ],
+          "state_transition": "reviewable -> discovery complete or explicitly partial",
+          "id": "FLOW-002-S03"
+        },
+        {
+          "actor": "Separate acceptance call",
+          "action": "Admit current evidence; classify findings with authority/impact/likelihood/downstream rationale; decide using existing verdicts. Missing evidence returns an exact batched clarification request, not an assumed production fix. Apply the material-risk rubric under referenced operating/business/planned-change context; passing ACs do not waive material risk. Continue through ordinary context uncertainty with recorded assumptions; ask the user only for credible serious-delay consequences or materially costlier later repair that cannot be resolved within current authority.",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-004",
+            "ART-005",
+            "ART-006",
+            "ART-008",
+            "ART-003"
+          ],
+          "produces": [
+            "ART-007"
+          ],
+          "interfaces": [
+            "IF-005"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-004",
+            "INV-005",
+            "INV-006",
+            "INV-011"
+          ],
+          "state_transition": "discovery -> ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE",
+          "id": "FLOW-002-S04"
+        },
+        {
+          "actor": "Human coordinator",
+          "action": "Record approved known issues with provenance before authorized advancement. Route evidence gaps to discovery/capability owner, defects to bounded correction, or authority questions to owner. No tracker authority is granted to discovery.",
+          "consumes": [
+            "ART-001",
+            "ART-006",
+            "ART-007",
+            "ART-008"
+          ],
+          "produces": [
+            "ART-008"
+          ],
+          "interfaces": [
+            "IF-006"
+          ],
+          "invariants": [
+            "INV-006",
+            "INV-007",
+            "INV-008",
+            "INV-011"
+          ],
+          "state_transition": "ACCEPT -> issues recorded -> authorized advancement; otherwise routed stop",
+          "id": "FLOW-002-S05"
+        }
+      ]
+    },
+    {
+      "id": "FLOW-003",
+      "name": "Continue after findings or evidence gaps",
+      "trigger": "Conditional review or acceptance supplies a blocker, an evidence request, or a corrected submission.",
+      "terminal_outcome": "Current evidence and fresh applicable review lead to a new decision, or unresolved blockers/gaps and next owner are reported without acceptance.",
+      "steps": [
+        {
+          "actor": "Human coordinator / finding owner",
+          "action": "Classify continuation: evidence clarification, production correction, reference-only correction, scenario coverage gap, or changed authority. Carry stable IDs, all required rows, finding rationale, affected/sibling surfaces, correction owner and smallest next action.",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-003",
+            "ART-004",
+            "ART-005",
+            "ART-006",
+            "ART-007"
+          ],
+          "produces": [],
+          "interfaces": [
+            "IF-006"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-003",
+            "INV-005",
+            "INV-008",
+            "INV-011"
+          ],
+          "state_transition": "non-accepted -> named continuation owner",
+          "id": "FLOW-003-S01"
+        },
+        {
+          "actor": "Owning role",
+          "action": "Clarify evidence without routine production edits; or make authorized bounded correction and map findings/rows to evidence. Coverage-gap revisions stay under existing authority and receive focused preflight. Authority changes return through task design. Reference-only fixes use registry owner when applicable.",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-003",
+            "ART-004",
+            "ART-006",
+            "ART-007"
+          ],
+          "produces": [
+            "ART-002",
+            "ART-003",
+            "ART-004",
+            "ART-005",
+            "ART-006"
+          ],
+          "interfaces": [
+            "IF-001",
+            "IF-002",
+            "IF-006"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-003",
+            "INV-005",
+            "INV-008",
+            "INV-011"
+          ],
+          "state_transition": "evidence request -> clarified report; defect -> corrected submission; changed scenario/authority -> revised readiness",
+          "id": "FLOW-003-S02"
+        },
+        {
+          "actor": "Applicable fresh reviewers / human",
+          "action": "Production corrections re-enter applicable architecture/maintainability and registry stages, then fresh correction-mode discovery and separate acceptance. Reference-only corrections retain narrow updater-to-fresh-acceptance route when existing decisive behavioral evidence remains valid. Check current obligations, regressions, unfinished rows and changed/influenced surfaces. Explain newly found blockers without suppressing them. Newly demonstrated material risk blocks with context and a reason it was not resolved earlier; do not reopen deferred issues without changed exposure or add optional improvements.",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-004",
+            "ART-005",
+            "ART-006",
+            "ART-008",
+            "ART-003"
+          ],
+          "produces": [
+            "ART-005",
+            "ART-006",
+            "ART-007"
+          ],
+          "interfaces": [
+            "IF-003",
+            "IF-004",
+            "IF-005"
+          ],
+          "invariants": [
+            "INV-004",
+            "INV-005",
+            "INV-006",
+            "INV-008",
+            "INV-011"
+          ],
+          "state_transition": "changed bytes -> prior verdict stale -> current review/decision",
+          "id": "FLOW-003-S03"
+        },
+        {
+          "actor": "Human coordinator",
+          "action": "Continue only within authorized scope and budget and existing stop rules; batch evidence clarification to avoid unbounded retries. No new global correction limit. On a stop, preserve unresolved blockers, gaps, attempts and a smallest proposed decision; dependent work cannot advance without acceptance.",
+          "consumes": [
+            "ART-004",
+            "ART-005",
+            "ART-006",
+            "ART-007"
+          ],
+          "produces": [],
+          "interfaces": [
+            "IF-006"
+          ],
+          "invariants": [
+            "INV-005",
+            "INV-008",
+            "INV-011"
+          ],
+          "state_transition": "current decision -> authorized continuation or reported stop",
+          "id": "FLOW-003-S04"
+        }
+      ]
+    },
+    {
+      "id": "FLOW-004",
+      "name": "Install, inspect drift, and refresh explicitly",
+      "trigger": "Maintainer explicitly installs, checks, or refreshes the development profile in a Git repository.",
+      "terminal_outcome": "Managed installed content qualifies against selected source, or precise drift/failure is reported; unmanaged state is preserved.",
+      "steps": [
+        {
+          "actor": "Source maintainer",
+          "action": "Keep selected skills, profile guide, helpers, installer selection and installation docs aligned. Supply complete managed packages including discovery; do not hand-copy into an active invocation.",
+          "consumes": [
+            "ART-009"
+          ],
+          "produces": [],
+          "interfaces": [
+            "IF-007"
+          ],
+          "invariants": [
+            "INV-009"
+          ],
+          "state_transition": "source edit -> distributable profile",
+          "id": "FLOW-004-S01"
+        },
+        {
+          "actor": "Canonical installer",
+          "action": "On explicit install/refresh, stage and install within existing ownership, run required availability boundaries, and represent genuine unborn HEAD explicitly. Report other failures truthfully. Full collector begin/finish on unborn HEAD is not claimed.",
+          "consumes": [
+            "ART-009"
+          ],
+          "produces": [
+            "ART-010"
+          ],
+          "interfaces": [
+            "IF-007"
+          ],
+          "invariants": [
+            "INV-009"
+          ],
+          "state_transition": "absent/drifted installation -> installed or explicit failure",
+          "id": "FLOW-004-S02"
+        },
+        {
+          "actor": "Read-only profile check",
+          "action": "Compare managed package/reference/guide/helper/AGENTS content and selection; report match, drift/missing or inspection failure without writing. Ignore unrelated target skills/helpers/AGENTS text. Runtime fingerprints alone do not prove full profile equivalence.",
+          "consumes": [
+            "ART-009",
+            "ART-010"
+          ],
+          "produces": [
+            "ART-011"
+          ],
+          "interfaces": [
+            "IF-007"
+          ],
+          "invariants": [
+            "INV-009",
+            "INV-010"
+          ],
+          "state_transition": "unchecked -> matched, drifted/missing, or check failure",
+          "id": "FLOW-004-S03"
+        },
+        {
+          "actor": "Maintainer",
+          "action": "If drifted, choose explicit refresh between sessions/runs and check again. A match permits qualification or a new standalone invocation; no active-run retained versions are supplied.",
+          "consumes": [
+            "ART-009",
+            "ART-010",
+            "ART-011"
+          ],
+          "produces": [],
+          "interfaces": [
+            "IF-007"
+          ],
+          "invariants": [
+            "INV-009"
+          ],
+          "state_transition": "drifted -> explicit refresh and recheck; matched -> usable new call",
+          "id": "FLOW-004-S04"
+        }
+      ]
+    },
+    {
+      "id": "FLOW-005",
+      "name": "Qualify the changed standalone flow",
+      "trigger": "The source policy and distribution work is complete and an explicit qualification task is launched.",
+      "terminal_outcome": "A new results document states proved behavior, reproducible evidence and all unrun/blocking gaps; no orchestrator readiness claim.",
+      "steps": [
+        {
+          "actor": "Qualification author",
+          "action": "Supply disposable committed and unborn repositories, runnable task fixtures, good and deliberately wrong implementations, review evidence and expected dispositions. Run narrow local tests first; inspect qualified installed copies. Do not use a bare prompt as a fixture.",
+          "consumes": [
+            "ART-009",
+            "ART-010",
+            "ART-011"
+          ],
+          "produces": [],
+          "interfaces": [
+            "IF-007",
+            "IF-008"
+          ],
+          "invariants": [
+            "INV-009",
+            "INV-010"
+          ],
+          "state_transition": "implemented source -> local fixture/check qualification",
+          "id": "FLOW-005-S01"
+        },
+        {
+          "actor": "Human coordinator / separately launched roles",
+          "action": "Obtain separate authorization before agent/model-budget evals. Exercise preparation, discovery/decision, stage routing, correction and relevant next-task known-issue consumption with independent calls and current installed instructions. If not authorized or a capability is unavailable, record the gap. Exercise contrasting risk contexts and correction stability, including meaningful operational/business/refactoring risk despite passing ACs. Observe absence of routine prompts and focused escalation only for unresolved serious consequences or costly later repair.",
+          "consumes": [
+            "ART-009",
+            "ART-010",
+            "ART-011"
+          ],
+          "produces": [
+            "ART-012"
+          ],
+          "interfaces": [
+            "IF-008"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-003",
+            "INV-004",
+            "INV-005",
+            "INV-006",
+            "INV-007",
+            "INV-008",
+            "INV-010",
+            "INV-011"
+          ],
+          "state_transition": "local checks -> authorized behavioral evidence or explicit unrun gap",
+          "id": "FLOW-005-S02"
+        },
+        {
+          "actor": "Qualification author",
+          "action": "Write a new results document beside the proposal; link setup, exact invocations, observed outputs and profile identity. Distinguish local runtime proof from structural checks and agent behavior. Existing plan documents stay unchanged.",
+          "consumes": [
+            "ART-011",
+            "ART-012"
+          ],
+          "produces": [
+            "ART-012"
+          ],
+          "interfaces": [
+            "IF-008"
+          ],
+          "invariants": [
+            "INV-010"
+          ],
+          "state_transition": "collected evidence -> qualified outcomes or incomplete qualification report",
+          "id": "FLOW-005-S03"
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Make packaged-task preparation binding",
+      "outcome": "Executable packages require verification design then ready preflight; implementer uses an entry-validity check and evidence mapping. Direct edits retain compact self-checks.",
+      "depends_on": [],
+      "capabilities": [
+        "CAP-001"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-008",
+        "ART-009"
+      ],
+      "produces": [
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-009"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-002"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-003",
+        "INV-005",
+        "INV-007",
+        "INV-011"
+      ],
+      "integration_boundary": "A packaged leaf cannot enter without justified current verification and readiness; missing capability blocks, future tests do not; expected correction/report effects do not force full rediscovery.",
+      "task_planner_context": "Own preparation contracts in brief/layout, verification design, preflight/packet, implementer entry and affected usage docs. Compact durable verification.md/preflight.md do not force high-assurance digests or machine outputs. Revise scenarios explicitly under authority and focused readiness. Keep profile guide/installer maintenance synchronized wherever affected. Do not change product ACs or implement controller contracts. Pass compact referenced decision context through preflight, without a new context artifact or invented business policy. Context unknowns are recorded, not automatically converted into blockers or user questions; apply INV-011 when a concrete risk decision needs them."
+    },
+    {
+      "id": "T-002",
+      "title": "Separate discovery from acceptance and govern known issues",
+      "outcome": "A new standalone discovery skill supplies current evidence; separate acceptance admits it and disposes every finding, with coordinator-owned known issues and independent role launch guidance. Acceptance fixes material operational/business/refactoring risks now, while justified non-material findings remain deferred or observations.",
+      "depends_on": [
+        "T-001"
+      ],
+      "capabilities": [
+        "CAP-002"
+      ],
+      "flows": [
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002",
+        "ART-004",
+        "ART-005",
+        "ART-008",
+        "ART-009",
+        "ART-003"
+      ],
+      "produces": [
+        "ART-006",
+        "ART-007",
+        "ART-008",
+        "ART-009"
+      ],
+      "interfaces": [
+        "IF-004",
+        "IF-005",
+        "IF-006"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-004",
+        "INV-005",
+        "INV-006",
+        "INV-007",
+        "INV-011"
+      ],
+      "integration_boundary": "Explicit AC failure blocks despite green tests; bounded additional defect may be deferred; missing decisive evidence returns an exact request; discovery cannot decide advancement and acceptance does not repeat a broad search. AC-compliant material operational/business/refactoring risks block; the same concern under materially different stated context receives a reasoned disposition; an ordinary contextual unknown proceeds without prompting, while an unresolved credible serious consequence or costly later repair receives focused escalation only when necessary.",
+      "task_planner_context": "Use task-review-discovery as the planned skill name and compact evidence contract. Preserve independence, public/lifecycle/schema-boundary probes and complete coverage continuation from current acceptance. Carry separate discovery/decision reasoning guidance in human launch instructions, without launcher adapters or extra implementation metadata scalars. Durable discovery reports are numbered; decision and known-issues writer permissions remain narrow. Install the new skill and references in the same change and synchronize installer manifest/guide/tests/docs; never postpone that ownership obligation to T-004. Plan the risk rubric carefully: use task/project direction, operating expectations, credible failure consequences, relevant business priorities, actual/planned consumer contracts, and credible likely maintenance/planned changes. Compare impact and likelihood separately; no invented universal probability/monetary threshold. Material avoidable refactoring/coupling/change-locality risk can block even without a hard rule breach. Discovery provides facts; acceptance owns contextual judgment. No broad context archaeology; uncertain context must relate to a concrete finding. Preserve bounded minor deferral and reject speculative preferences as correction obligations. User clarification is exceptional: decide routine finding disposition using available context and record ordinary uncertainties/assumptions while continuing. Do not invent facts or weaken required proof. Ask only where unresolved uncertainty implies serious consequences of delay or materially costlier later repair and cannot be resolved autonomously within authority. Separate evidence-owner requests from user decision prompts; authorization to fix bounded blockers need not be sought again."
+    },
+    {
+      "id": "T-003",
+      "title": "Close submission and correction routes",
+      "outcome": "Human handoffs preserve all obligations and evidence through conditional stages and correction; bounded discovery reports all confirmed blockers without arbitrary truncation.",
+      "depends_on": [
+        "T-001",
+        "T-002"
+      ],
+      "capabilities": [
+        "CAP-002"
+      ],
+      "flows": [
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-005",
+        "ART-006",
+        "ART-007",
+        "ART-009"
+      ],
+      "produces": [
+        "ART-004",
+        "ART-005",
+        "ART-006",
+        "ART-007",
+        "ART-009"
+      ],
+      "interfaces": [
+        "IF-002",
+        "IF-003",
+        "IF-004",
+        "IF-005",
+        "IF-006"
+      ],
+      "invariants": [
+        "INV-003",
+        "INV-004",
+        "INV-005",
+        "INV-006",
+        "INV-008",
+        "INV-011"
+      ],
+      "integration_boundary": "Immediate-review and correction handoffs take the first outstanding stage for neither/either/both conditional stages; more than three confirmed maintainability blockers remain visible; current evidence supports a fresh decision.",
+      "task_planner_context": "Resolve the human-facing FLOW-02 and FLOW-05 issues only. Preserve complete finding/coverage IDs, correction owner/reason and sibling surfaces. Remove maintainability reporting cap and enough-blockers early stop while retaining bounded authorized scope. Clarifications and ordinary corrections do not restart task design unless authority changes. Preserve actual-effect reference-only routing. No new global round limit; retain existing two-failed-fixes-of-one-target rule and task/user budgets. Update affected usage/profile guidance and focused tests together. Prevent fix-one-more-thing loops by retaining accepted dispositions until relevant context changes and requiring evidence plus contextual materiality for new blockers; this never suppresses a genuine regression or missed required obligation. Do not turn every finding or clarification into a human decision stop; preserve the default to continue for ordinary uncertainty and autonomous authorized correction."
+    },
+    {
+      "id": "T-004",
+      "title": "Repair and qualify development-profile distribution",
+      "outcome": "Explicit install works before the first commit, and an explicit read-only profile check exposes drift and supports deliberate refresh while preserving unmanaged files.",
+      "depends_on": [
+        "T-001",
+        "T-002",
+        "T-003"
+      ],
+      "capabilities": [
+        "CAP-003"
+      ],
+      "flows": [
+        "FLOW-004"
+      ],
+      "consumes": [
+        "ART-009",
+        "ART-010"
+      ],
+      "produces": [
+        "ART-009",
+        "ART-010",
+        "ART-011"
+      ],
+      "interfaces": [
+        "IF-007"
+      ],
+      "invariants": [
+        "INV-009"
+      ],
+      "integration_boundary": "A real unborn temporary repo installs successfully; deliberate skill/reference/guide/helper/managed-block drift is reported without changes; explicit refresh restores match and preserves unmanaged bytes; ordinary committed installs still work.",
+      "task_planner_context": "Repair SETUP-01 and SETUP-02 only. Use the canonical installer and its managed selection, synchronize DEVELOPMENT_SKILL_SOURCES, PROFILE_SKILLS_README, SHARED_SCRIPT_FILES, focused tests and READMEs. Unborn identity support must not fabricate HEAD or redefine fingerprint framing. Scope shared changes to exercised installer/availability/identity boundaries; keep full collector lifecycle and retained runtime versions deferred. Define the exact check CLI/result locally; no generic package manager, automatic refresh or active-run version storage."
+    },
+    {
+      "id": "T-005",
+      "title": "Qualify standalone policy composition",
+      "outcome": "A supplied, reproducible fixture set and new results report establish exercised standalone behavior or explicitly identify unrun gaps.",
+      "depends_on": [
+        "T-001",
+        "T-002",
+        "T-003",
+        "T-004"
+      ],
+      "capabilities": [
+        "CAP-004"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-002",
+        "FLOW-003",
+        "FLOW-004",
+        "FLOW-005"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-005",
+        "ART-006",
+        "ART-007",
+        "ART-008",
+        "ART-009",
+        "ART-010",
+        "ART-011"
+      ],
+      "produces": [
+        "ART-012"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-002",
+        "IF-003",
+        "IF-004",
+        "IF-005",
+        "IF-006",
+        "IF-007",
+        "IF-008"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-003",
+        "INV-004",
+        "INV-005",
+        "INV-006",
+        "INV-007",
+        "INV-008",
+        "INV-009",
+        "INV-010",
+        "INV-011"
+      ],
+      "integration_boundary": "Qualified installed copies complete a packaged standalone task, reject inadequate evidence/real AC failure, carry a non-blocking known issue into a relevant next preflight, and preserve current coverage and required stages after correction; each claim has runnable setup and observed evidence.",
+      "task_planner_context": "Supply authority, starting state, implementations/tests and exact probes for every claimed outcome. Keep existing acceptance continuation/public-boundary cases and move expectations with role ownership rather than deleting obligations. Local tests and structural audits come first; live/model-budget evals need separate user authorization, not inferred plan approval. Write new results beside the dated proposal and do not rewrite plans. If agent evals are unrun, report incomplete behavioral qualification rather than claim the flow qualified. Include context-sensitive decision cases: spec-compliant but operational/business/refactoring-risky code, minor bounded debt, speculative redesign, missing material context, changed versus unchanged exposure after correction, and severity-only wrong judgments. Supply explicit fixture context, not unstated evaluator assumptions. Observe prompt behavior: routine uncertain concerns must continue with stated assumptions, while unresolved serious-delay or costly-later-repair risk prompts only when authority cannot resolve it. Missing required proof goes to its evidence owner, not a generic user question."
+    }
+  ],
+  "open_system_questions": []
+}

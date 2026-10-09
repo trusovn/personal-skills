@@ -35,9 +35,11 @@ concurrency, multi-writer, or similar risk.
 - If an existing task already has a clear outcome, bounded scope, acceptance
   criteria, and useful verification, do not rewrite it. Return a concise gap
   check or make only the requested/local missing additions.
-- Produce a compact `ready` brief when a durable artifact is useful. The
-  routine readiness route is implementer self-preflight. Recommend standalone
-  guided preflight only for a named material readiness uncertainty.
+- Produce a compact `ready` brief when a durable artifact is useful. Its
+  readiness route is standalone guided preflight after derived verification.
+  Reserve implementer self-preflight for unpackaged conversational direct
+  edits, with standalone preflight there only for a named material
+  readiness uncertainty.
 
 ### High assurance
 
@@ -49,6 +51,19 @@ concurrency, multi-writer, or similar risk.
 Do not upgrade a routine task merely because a fuller template exists. If a
 guided task discovers a genuine high-assurance need, name the reason and the
 smallest additional artifact or decision required.
+
+## Binding packaged preparation
+
+A supplied executable task package always requires a derived `verification.md`,
+then a ready `preflight.md`, before implementation. This applies to compact
+documentation work as well as code changes. A small clear conversational direct
+edit may retain inline verification and a safety check only while no task package
+has been supplied; it cannot use the conversational direct-edit exception to
+bypass packaged preparation.
+
+Composite/decomposed work, blocked design, and direct legacy briefs are not
+prepared as executable packages. Route them to the dependency-ready leaf, the
+task or decision owner, or package normalization respectively.
 
 ## Load flow policy
 
@@ -63,7 +78,8 @@ estimate is greater than that maximum. An estimate equal to a maximum fits.
 When creating or updating durable task artifacts, read
 `references/task-artifact-layout.md`. Repository or user authority may choose a
 different task-package root or directory name, but every durable task must keep
-its `brief.md` and optional artifacts inside one dedicated package directory.
+its `brief.md` and required preparation artifacts inside one dedicated package
+directory.
 Do not create or consume direct briefs under the shared task root.
 
 ## Minimum inputs
@@ -202,24 +218,26 @@ an unapproved premise.
    a generic implementation next action or a review workflow loaded in the
    authoring or implementation session does not state independent acceptance.
 10. Give every durable brief one human-readable readiness route:
-    - `implementer self-preflight` for routine guided work;
-    - `standalone guided preflight — <material uncertainty>` only when naming
-      the concrete uncertainty that makes a separate readiness check useful; or
+    - `standalone guided preflight` for an executable task package, after its
+      derived verification; `— <material uncertainty>` may name the concrete
+      focus of that required check;
+    - `implementer self-preflight` only for an unpackaged conversational
+      direct edit while no task package has been supplied; or
     - `high-assurance preflight` when the selected profile requires it.
     Do not add a route metadata key. Current repository facts may require the
     implementer or orchestrator to escalate the recommendation at execution
     time. A prerequisite feasibility/proof task from step 4 is a design
     dependency, not a readiness route.
-11. Explicitly classify whether a separate `task-verification-designer` pass
-    is recommended before implementation:
+11. Explicitly classify the verification reasoning before implementation:
     - `inline` when the task is small and its decisive tests/oracles are
       obvious from the brief;
     - `separate — <reason>` when non-obvious negative/lifecycle semantics,
       finite material cases, boundary behavior, or multiple plausible-wrong
       implementations make a focused verification-design pass useful.
-    This is a recommendation, not a mandatory stage. Do not recommend it merely
-    because the skill exists, and do not use it to compensate for ambiguous
-    requirements that should block or return to the decision owner.
+    For a supplied executable task package, either classification still requires
+    binding preparation: write the derived `verification.md`, then obtain ready
+    `preflight.md`. Do not use it to compensate for ambiguous requirements that
+    should block or return to the decision owner.
 12. Read `references/task-brief-template.md`. Use only the core sections for a
     guided brief; add the high-assurance sections only for that profile.
 

@@ -299,15 +299,17 @@ The normal human-driven path is deliberately lightweight:
 clear request or task brief
   -> task-brief-designer       when the implementation contract has gaps
   -> task-verification-designer
-                               when task-local verification semantics are non-obvious
-  -> task-preflight            when readiness needs an independent check
+                               required for a supplied executable task package
+  -> task-preflight            required ready preflight for that package
   -> bounded-task-implementer  implementation and progressive verification
   -> architecture gate + task-maintainability-review
                                when repo policy requires maintainability review
   -> task-acceptance-review    fresh independent functional review when risk requires it
 ```
-For small, unambiguous work, go directly to `bounded-task-implementer`; it
-performs a compact self-preflight. When the repo declares a required
+For small, unambiguous **unpackaged conversational** work, go directly to
+`bounded-task-implementer`; it performs a compact self-preflight. A supplied
+executable task package always follows verification design and ready preflight
+first. When the repo declares a required
 maintainability gate, run that gate and a fresh `task-maintainability-review`
 before functional acceptance. Use `testing-discipline` alongside implementation
 or review when behavioral evidence, test design, or QA risk is material. Use

@@ -1,6 +1,10 @@
-from pathlib import Path
 import json
+import os
+from pathlib import Path
 import re
+import subprocess
+import sys
+import tempfile
 import unittest
 
 
@@ -48,7 +52,7 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
                 self.assertIn("docs/tasks/index.json", skill)
                 self.assertIn("dependency-ready executable leaf", skill)
 
-    def test_optional_verification_design_is_discoverable(self):
+    def test_verification_design_resources_are_discoverable(self):
         designer = (CANONICAL / "SKILL.md").read_text(encoding="utf-8")
         template = (CANONICAL / "references/task-brief-template.md").read_text(
             encoding="utf-8"
@@ -84,6 +88,151 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
         self.assertIn("implementation-neutral", verification)
         self.assertIn("does **not** own verification design across sibling", verification)
         self.assertTrue(verification_evals.is_file(), verification_evals)
+
+    def test_packaged_preparation_contract(self):
+        designer = (CANONICAL / "SKILL.md").read_text(encoding="utf-8")
+        template = (CANONICAL / "references/task-brief-template.md").read_text(
+            encoding="utf-8"
+        )
+        layout = (CANONICAL / "references/task-artifact-layout.md").read_text(
+            encoding="utf-8"
+        )
+        verification = (
+            FLOW / "task-verification-designer" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        verification_evals = json.loads(
+            (FLOW / "task-verification-designer" / "evals/evals.json").read_text(
+                encoding="utf-8"
+            )
+        )["evals"]
+
+        self.assertIn("A supplied executable task package always requires", designer)
+        self.assertIn("derived `verification.md`,\nthen a ready `preflight.md`", designer)
+        self.assertIn("derived `verification.md`, then ready", template)
+        self.assertIn("For an executable task package, create derived", layout)
+        self.assertIn("cannot use the conversational direct-edit exception", designer)
+        self.assertIn("source brief and a revision", verification)
+        self.assertIn("retain existing scenario IDs", verification)
+        self.assertIn("focused preflight", verification)
+        self.assertIn("routes to task design or the decision\nowner", verification)
+        self.assertEqual(
+            {"preparation-routes", "coverage-revision"},
+            {
+                case["execution"]["setup"]["command"][-1]
+                for case in verification_evals
+                if case["id"] in {4, 5}
+            },
+        )
+
+    def test_packaged_preparation_evals_cover_every_scenario(self):
+        verification = (
+            FLOW / "task-verification-designer" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        readme = (FLOW / "README.md").read_text(encoding="utf-8")
+        root_readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        evals = json.loads(
+            (FLOW / "task-verification-designer" / "evals/evals.json").read_text(
+                encoding="utf-8"
+            )
+        )["evals"]
+        fixture_by_id = {
+            case["id"]: case["execution"]["setup"]["command"][-1]
+            for case in evals
+            if case["id"] in {4, 5, 6, 7, 8}
+        }
+
+        self.assertEqual(
+            {
+                4: "preparation-routes",
+                5: "coverage-revision",
+                6: "coverage-closure",
+                7: "verification-conflicts",
+                8: "workflow-scope",
+            },
+            fixture_by_id,
+        )
+        expectations_by_id = {
+            case["id"]: "\n".join(case["expectations"])
+            for case in evals
+            if case["id"] in {4, 5, 6, 7, 8}
+        }
+        self.assertIn("ready preflight", expectations_by_id[4])
+        self.assertIn("omitted AC", expectations_by_id[5])
+        self.assertIn("unsupported scenario", expectations_by_id[6])
+        self.assertIn("unchanged", expectations_by_id[7])
+        self.assertIn("high-assurance", expectations_by_id[8])
+        self.assertIn(
+            "Every supplied executable task package uses this stage", verification
+        )
+        self.assertIn("required for a supplied executable task package", readme)
+        self.assertIn("unpackaged conversational", root_readme)
+
+    def test_packaged_preparation_fixtures_supply_discriminating_inputs(self):
+        setup = FLOW / "task-verification-designer/evals/files/setup_fixture.py"
+        expected_inputs = {
+            "preparation-routes": ("docs/tasks/LEGACY.md", "Legacy task"),
+            "coverage-revision": (
+                "docs/tasks/REV-1/changed-requirement.md",
+                "approved retention decision",
+            ),
+            "coverage-closure": (
+                "docs/tasks/COV-WEAK/verification.md",
+                "only that an export file exists",
+            ),
+            "verification-conflicts": (
+                "docs/tasks/CONFLICT-FOREIGN/verification.md",
+                "Preserve foreign declaration bytes.",
+            ),
+            "workflow-scope": (
+                "requests/unpackaged-direct-edit.md",
+                "Correct one heading",
+            ),
+        }
+
+        with tempfile.TemporaryDirectory() as temporary:
+            environment = os.environ | {"EVAL_WORK_ROOT": temporary}
+            for scenario, (relative_path, expected_content) in expected_inputs.items():
+                subprocess.run(
+                    [sys.executable, str(setup), scenario],
+                    check=True,
+                    cwd=ROOT,
+                    env=environment,
+                )
+                fixture_path = Path(temporary) / scenario / relative_path
+                self.assertTrue(fixture_path.is_file(), fixture_path)
+                self.assertIn(expected_content, fixture_path.read_text(encoding="utf-8"))
+
+    def test_guided_readiness_routes_distinguish_packaged_from_unpackaged(self):
+        designer = (CANONICAL / "SKILL.md").read_text(encoding="utf-8")
+        guided_profile = designer.split("### Guided", 1)[1].split(
+            "### High assurance", 1
+        )[0]
+        route_step = designer.split(
+            "10. Give every durable brief one human-readable readiness route:", 1
+        )[1].split("11. Explicitly classify", 1)[0]
+
+        self.assertNotIn(
+            "routine readiness route is implementer self-preflight",
+            guided_profile,
+        )
+        self.assertIn(
+            "readiness route is standalone guided preflight after derived",
+            guided_profile,
+        )
+        self.assertIn(
+            "Reserve implementer self-preflight for unpackaged", guided_profile
+        )
+        self.assertNotIn(
+            "`implementer self-preflight` for routine guided work", route_step
+        )
+        self.assertIn(
+            "`standalone guided preflight` for an executable task package",
+            route_step,
+        )
+        self.assertIn(
+            "`implementer self-preflight` only for an unpackaged conversational",
+            route_step,
+        )
 
     def test_active_skills_use_only_per_task_package_paths(self):
         excluded_parts = {"evaluations", "history"}

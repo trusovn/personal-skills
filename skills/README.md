@@ -24,8 +24,8 @@ For one implementation task:
 
 ```text
 task-brief-designer
-  -> task-verification-designer         (when verification is non-obvious)
-  -> task-preflight                     (when a separate readiness check adds value)
+  -> task-verification-designer         (required for an executable task package)
+  -> task-preflight                     (required ready preflight for that package)
   -> bounded-task-implementer
   -> task-maintainability-review        (when policy or risk requires it; fresh reviewer)
   -> task-contract-registry-updater     (when durable cross-task contracts changed)
@@ -48,8 +48,8 @@ Use `senior-code-review`, `ollama-delegate`, `testing-discipline`, and
 | `project-delivery-plan` | Maps end-to-end flows, artifacts, interfaces, invariants, and composing tasks. | A ready foundation, project authority, and applicable foundation artifacts. | `docs/project-plan.md` and `docs/task-map.json`. |
 | `project-plan-verification` | Independently checks that the delivery plan is coherent and executable. | The project plan, task map, repository, and upstream authority; use a fresh reviewer. | `docs/project-plan-review.md` with `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`. |
 | `task-brief-designer` | Turns one bounded request or plan item into an implementation-ready contract. | A user request, issue, approved plan item, specification, or existing brief. | A concise gap check or `<task-package>/brief.md`; oversized work may be decomposed. |
-| `task-verification-designer` | Defines falsifiable verification scenarios before implementation. | An executable task `brief.md` with clear acceptance criteria. | `<task-package>/verification.md`. |
-| `task-preflight` | Confirms that a bounded task is safe and executable against current repo state. | A bounded request or executable packaged brief, plus the current repository. | An inline ready/blocked result or, for high assurance, `<task-package>/preflight.md`. |
+| `task-verification-designer` | Defines falsifiable verification scenarios before implementation. | An executable task `brief.md` with clear acceptance criteria. | Required derived `<task-package>/verification.md` before packaged implementation. |
+| `task-preflight` | Confirms that a bounded task is safe and executable against current repo state. | A bounded request or executable packaged brief, plus the current repository. | Required ready `<task-package>/preflight.md` before packaged implementation; inline for unpackaged direct edits. |
 | `bounded-task-implementer` | Implements one bounded task with risk-based tests and progressive verification. | A clear bounded request, ready brief, or high-assurance preflight packet. | The scoped code/test/doc changes plus a verification and review handoff result. |
 | `task-maintainability-review` | Independently reviews changed production code for concrete architecture and maintainability regressions. | The task authority, current diff, repository rules, and architecture gate; use a fresh reviewer. | `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`, with focused findings. |
 | `task-contract-registry-updater` | Synchronizes discoverable current-state contracts after implementation. | Task authority, scoped diff, task-map entry when present, and existing contract records. | Updated contract registry/discovery references and a synchronization result. |

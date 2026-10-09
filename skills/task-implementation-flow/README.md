@@ -24,7 +24,7 @@ handoffs, exact freshness evidence, and machine-readable results.
 |---|---|---|
 | `task-brief-designer` | Create or tighten a bounded task contract. It defaults to a delta check when a useful brief already exists. | The user request already gives an unambiguous outcome, scope, and acceptance criteria for a small task. |
 | `task-preflight` | Check readiness, ownership, commands, and decisive evidence when dirty ownership, dependencies, environment, permissions, helpers, fixtures, real-boundary capability, or a durable handoff creates material uncertainty. | A routine guided task can perform the same compact self-check inside the implementer. |
-| `task-verification-designer` | Optionally turn one executable brief into a separate task-local verification design with AC coverage, discriminating scenarios, and decisive oracles before implementation. | The task is small and its decisive tests/oracles are already obvious from the brief. |
+| `task-verification-designer` | Turn an executable brief into a separate task-local verification design with AC coverage, discriminating scenarios, and decisive oracles before implementation. It is required for a supplied executable task package. | An unpackaged small direct edit has obvious decisive tests/oracles and does not need a separate design. |
 | `bounded-task-implementer` | Implement one bounded task with risk-based tests, progressive verification, and a useful handoff. | The request is planning, review-only, or too ambiguous to implement safely. |
 | `task-maintainability-review` | Independently assess the changed design for concrete maintainability regression after the repo's deterministic architecture gate. | The repo does not require maintainability review and the user/task does not request it. |
 | `task-contract-registry-updater` | Synchronize implemented-contract discovery after maintainability review. | The repository does not use implemented-contract discovery, or the task did not change a durable cross-task contract. |
@@ -77,16 +77,16 @@ docs/tasks/
   index.json
   <TASK-ID>/
     brief.md
-    verification.md               # only when separate verification design is used
-    preflight.md                  # only when a durable preflight artifact is needed
+    verification.md               # required before packaged implementation
+    preflight.md                  # required ready preflight before implementation
     reviews/
       maintainability-01.md       # only when a durable report is written
       acceptance-01.md
 ```
 
 Repository/user authority may choose a different task-package root or directory
-name, but every durable task keeps `brief.md` and its optional artifacts inside
-one dedicated package directory. `docs/task-map.json` remains the verified
+name, but every durable task keeps `brief.md`, required preparation artifacts,
+and reviews inside one dedicated package directory. `docs/task-map.json` remains the verified
 project-planning graph; `docs/tasks/index.json` is only the structural
 execution/decomposition index. Review artifacts never rewrite the brief or
 master plan, and numbered durable reviews preserve prior verdict provenance
@@ -111,9 +111,9 @@ existing request or brief
         ↓
 fill only meaningful contract gaps
         ↓
-optional task-verification-designer when the brief recommends it
+required task-verification-designer for an executable task package
         ↓
-implementer self-preflight
+ready packaged preflight
         ↓
 implement + risk-based tests + progressive verification
         ↓
@@ -149,29 +149,31 @@ repo-local contract (normally cohesion, change locality, explicit/narrow
 dependencies, testability, and no speculative abstraction) and let the
 canonical gate plus `task-maintainability-review` enforce the deeper policy.
 
-The brief designer, verification-design pass, and standalone preflight are
-optional in guided mode. Use them when they reduce ambiguity, verification
-reasoning load, or readiness risk; do not create artifacts merely to satisfy
-the diagram.
+The brief designer is optional in guided mode. Once an executable task package
+is supplied, verification design and a durable ready preflight are binding
+preparation before implementation. A small clear conversational direct edit may
+use compact inline checks only while it is not a supplied task package.
 
 ### When separate verification design adds value
 
-A ready executable brief explicitly recommends either `inline` verification
-design or `separate — <reason>`. Use `task-verification-designer` for the
-separate route when task-local semantics are non-obvious enough that asking the
-implementation agent to invent the decisive scenarios while coding would add
-avoidable cognitive load. The skill writes `verification.md` in the executable
-task package and leaves concrete test implementation to
+A ready executable brief may classify its verification reasoning as `inline` or
+`separate — <reason>`, but a supplied executable task package always runs
+`task-verification-designer`. That classification only explains the needed
+scenario depth; it does not permit skipping the required `verification.md` and
+ready preflight route. An unpackaged direct edit may use inline checks when its
+decisive scenarios are obvious. The skill writes `verification.md` in the
+executable task package and leaves concrete test implementation to
 `bounded-task-implementer`.
 
-This recommendation is advisory. Small changes with an obvious regression and
-oracle should stay inline. The initial verification-designer contract is
-task-local and does not own cross-child or parent-level integration-test design.
+For a supplied executable task package, this preparation is required even for a
+small change. An unpackaged conversational direct edit with an obvious oracle
+may stay inline. The verification-designer contract remains task-local and does
+not own cross-child or parent-level integration-test design.
 ### When standalone preflight adds value
 
-Use the implementer's compact self-preflight for routine guided work. Use
-standalone `task-preflight` when a separate readiness pass can resolve a named
-material uncertainty, such as:
+Use ready standalone `task-preflight` for an executable task package. An
+unpackaged direct edit may use the implementer's compact self-preflight. The
+standalone pass resolves readiness facts such as:
 
 - dirty or multi-writer ownership;
 - a required environment, permission, dependency, helper, or fixture;
@@ -274,7 +276,7 @@ High-assurance mode uses the complete chain:
 ```text
 task brief (`ready_for_preflight`)
         ↓
-optional task-local verification design when recommended
+required task-local verification design for a supplied executable task package
         ↓
 fresh preflight packet (`ready`)
         ↓

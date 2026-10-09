@@ -113,20 +113,21 @@ estimated child briefs instead.
 
 `<implementer self-preflight | standalone guided preflight — concrete material uncertainty | high-assurance preflight>`
 
-Use implementer self-preflight for routine guided work. Recommend standalone
-guided preflight only with the concrete material readiness uncertainty that it
-should resolve. Use high-assurance preflight when that profile is required.
-This is human-readable guidance, not a fifth metadata key; current execution
-facts may still require escalation.
+An executable task package requires ready standalone preflight after derived
+verification. An unpackaged direct edit may use implementer self-preflight.
+Use high-assurance preflight when that profile is required. This is
+human-readable guidance, not a fifth metadata key; current execution facts may
+still require escalation.
 
 ## Verification-design recommendation
 
 `<inline | separate — concrete reason>`
 
-Use `inline` when the brief already makes the decisive task-local scenarios
-and oracles obvious. Recommend `separate` only when a dedicated
-`task-verification-designer` pass is likely to reduce implementation risk or
-cognitive load. This is advisory, not a required stage.
+For an executable task package, derived `verification.md`, then ready
+`preflight.md`, are required before implementation. State why the verification
+design needs its scenarios; it must not add requirements or waive omitted ACs.
+A small conversational direct edit may use inline checks only when no package
+has been supplied.
 
 ## Outcome
 

@@ -29,8 +29,33 @@ DISCOVERY_FIXTURE = DISCOVERY_PACKAGE / "evals" / "files" / "setup_fixture.py"
 ACCEPTANCE_FIXTURE = ACCEPTANCE_PACKAGE / "evals" / "files" / "setup_fixture.py"
 PRESERVED_DISCOVERY_EVAL_IDS = (1, 2, 3, 4, 5, 6, 7, 8, 9)
 NEW_DISCOVERY_EVAL_IDS = (11, 12, 13, 14, 15)
-ACCEPTANCE_ONLY_SCENARIO = "queue-defect-reproducer"
-ACCEPTANCE_ONLY_FIXTURE_FUNCTION = "queue_defect_reproducer"
+ACCEPTANCE_ONLY_SCENARIOS = frozenset(
+    {
+        "queue-defect-reproducer",
+        "queue-defect-decision",
+        "queue-defect-reproducer-decision",
+        "exporter-accept-decision",
+        "scheduler-inconclusive-decision",
+        "exporter-restaged-stale-decision",
+        "ledger-defects-decision",
+        "workflow-matrix-defects-decision",
+        "process-cleanup-defects-decision",
+    }
+)
+ACCEPTANCE_ONLY_FIXTURE_FUNCTIONS = frozenset(
+    {
+        "discovery_report",
+        "queue_defect_reproducer",
+        "queue_defect_decision",
+        "queue_defect_reproducer_decision",
+        "exporter_accept_decision",
+        "scheduler_inconclusive_decision",
+        "exporter_restaged_stale_decision",
+        "ledger_defects_decision",
+        "workflow_matrix_defects_decision",
+        "process_cleanup_defects_decision",
+    }
+)
 NEW_DISCOVERY_SCENARIOS = (
     "discovery-prepared-ledger",
     "discovery-correction-gate",
@@ -153,19 +178,60 @@ def fixture_scenarios(text: str) -> set:
 
 
 class ReviewerDisciplineTests(unittest.TestCase):
-    def test_acceptance_review_requires_real_schema_validator_probes(self):
+    def test_acceptance_admits_discovery_evidence_and_routes_missing_discovery(self):
+        text = normalized(ACCEPTANCE_SKILL)
+
+        self.assertIn("Admit the discovery evidence", text)
+        self.assertIn("acceptance does not merge the roles", text)
+        self.assertIn(
+            "request the missing evidence from the discovery owner with the exact gap", text
+        )
+        self.assertIn("guided evidence gap", text)
+        self.assertIn(
+            "does not trigger an orchestrator-packet requirement", text
+        )
+        self.assertIn(
+            "Packaging alone does not require high-assurance digests or machine results", text
+        )
+        self.assertIn("Do not return `INCONCLUSIVE` merely because no preflight packet", text)
+
+    def test_acceptance_reconciles_rows_against_current_bytes(self):
         text = normalized(ACCEPTANCE_SKILL)
 
         self.assertIn(
-            "When a required/material row depends on a machine-readable schema or other executable validator contract",
+            "stays `blocked` or `unchecked` with its exact missing proof and owner", text
+        )
+        self.assertIn("despite green tests, static schema checks, or producer self-validation", text)
+        self.assertIn(
+            "Summaries, old passes, report self-claims, and green tests do not substitute for decisive evidence",
             text,
         )
-        self.assertIn("independently exercise that validator", text)
+        self.assertIn(
+            "matching worktree bytes or short-status text do not prove a matching index blob", text
+        )
+        self.assertIn(
+            "an old pass does not prove changed bytes", text
+        )
+        self.assertIn(
+            "Explicit AC violations block even when submitted tests are green", text
+        )
+        self.assertIn(
+            "does not become a second general maintainability reviewer", text
+        )
+
+    def test_acceptance_requires_admitted_validator_evidence(self):
+        text = normalized(ACCEPTANCE_SKILL)
+
+        self.assertIn(
+            "admitted discovery evidence must include independent validator results", text
+        )
         self.assertIn("at least one instance that should be valid", text)
         self.assertIn("one deliberately invalid instance", text)
         self.assertIn("targets the changed or acceptance-relevant constraint", text)
-        self.assertIn("schema's declared draft", text)
-        self.assertIn("Draft 2020-12", text)
+        self.assertIn("schema text", text)
+        self.assertIn("producer-side validation", text)
+        self.assertIn("deserialization", text)
+        self.assertIn("unrelated passing suite", text)
 
     def test_unexercised_required_schema_boundary_cannot_support_accept(self):
         text = normalized(ACCEPTANCE_SKILL)
@@ -179,13 +245,51 @@ class ReviewerDisciplineTests(unittest.TestCase):
             text,
         )
 
-    def test_acceptance_review_rejects_static_or_producer_side_schema_substitutes(self):
+    def test_acceptance_consumes_aggregate_gate_without_reexecution(self):
         text = normalized(ACCEPTANCE_SKILL)
 
-        self.assertIn("schema text", text)
-        self.assertIn("producer-side validation", text)
-        self.assertIn("deserialization", text)
-        self.assertIn("unrelated passing suite", text)
+        self.assertIn("Consume the discovery-owned aggregate-gate record without executing it", text)
+        self.assertIn(
+            "exact command or `not run`, owner/stage, reason, and current evidence", text
+        )
+        self.assertIn(
+            "Suppression after a decisive targeted failure is retained", text
+        )
+        self.assertIn(
+            "a copied pre-correction pass cannot replace a clean corrected discovery record", text
+        )
+        self.assertIn("a premature gate does not clear an omitted row", text)
+        self.assertIn("only discovery owns a still-justified rerun", text)
+        self.assertIn("Acceptance adds no gate and adds no command", text)
+        self.assertIn("does not routinely rerun public probes, broad searches, or suites", text)
+
+    def test_acceptance_preserves_verdict_vocabulary_and_provenance(self):
+        text = normalized(ACCEPTANCE_SKILL)
+
+        self.assertIn("exactly `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`", text)
+        self.assertIn("`SELF_CHECK_ONLY` is a non-verdict", text)
+        self.assertIn("Loading this skill does not reset authorship", text)
+        self.assertIn("The route is always a fresh reviewer", text)
+        self.assertIn("Missing discovery routes to the discovery owner with the exact gap", text)
+        self.assertIn(
+            "missing or contradictory discovery evidence", text
+        )
+
+    def test_acceptance_preserves_tests_only_exception_and_numbered_reports(self):
+        text = normalized(ACCEPTANCE_SKILL)
+
+        self.assertIn("`tests_only_reproducer`", text)
+        self.assertIn("names the exact writable owning test file", text)
+        self.assertIn(
+            "Task scope, an allowed test path, or `review: immediate` is not write permission",
+            text,
+        )
+        self.assertIn("next unused numbered acceptance path", text)
+        self.assertIn("Never overwrite an earlier review", text)
+        self.assertIn(
+            "Even `ACCEPT` records a decision/route without authorizing tracker mutation",
+            text,
+        )
 
     def test_senior_review_reference_read_is_an_early_mandatory_prerequisite(self):
         text = normalized(SENIOR_REVIEW_SKILL)
@@ -353,7 +457,13 @@ class ReviewDiscoveryDisciplineTests(unittest.TestCase):
             if item["id"] in PRESERVED_DISCOVERY_EVAL_IDS:
                 source = by_id[item["id"]]
                 self.assertEqual(source["files"], item["files"])
-                self.assertEqual(source["execution"]["setup"]["command"], command)
+                source_command = source["execution"]["setup"]["command"]
+                self.assertEqual(["python3", "evals/files/setup_fixture.py"], source_command[:2])
+                self.assertIn(
+                    source_command[2],
+                    {command[2], command[2] + "-decision"},
+                    f"acceptance eval {item['id']} scenario must stay the inherited scenario or its -decision wrapper",
+                )
                 self.assertEqual(
                     source["execution"]["setup"]["env"], item["execution"]["setup"]["env"]
                 )
@@ -402,7 +512,7 @@ class ReviewDiscoveryDisciplineTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            (fixture_scenarios(acceptance_text) - {ACCEPTANCE_ONLY_SCENARIO})
+            (fixture_scenarios(acceptance_text) - ACCEPTANCE_ONLY_SCENARIOS)
             | set(NEW_DISCOVERY_SCENARIOS),
             fixture_scenarios(discovery_text),
         )
@@ -411,7 +521,7 @@ class ReviewDiscoveryDisciplineTests(unittest.TestCase):
         discovery_functions = fixture_functions(discovery_text)
         adapted_functions = fixture_functions(adapt_acceptance_fixture_text(acceptance_text))
         self.assertEqual(
-            {ACCEPTANCE_ONLY_FIXTURE_FUNCTION},
+            ACCEPTANCE_ONLY_FIXTURE_FUNCTIONS,
             set(acceptance_functions) - set(discovery_functions),
         )
         self.assertEqual(
@@ -458,6 +568,54 @@ class ReviewDiscoveryDisciplineTests(unittest.TestCase):
         self.assertIn("This report does not review or authenticate itself.", text)
         self.assertIn("Discovery continuation:", text)
         self.assertIn("SELF_CHECK_ONLY", text)
+
+
+class AcceptanceAdmissionEvalTests(unittest.TestCase):
+    """Decision evals consume staged discovery evidence instead of re-probing."""
+
+    def test_decision_evals_consume_discovery_reports_without_reexecution(self):
+        acceptance = json.loads(ACCEPTANCE_EVALS.read_text(encoding="utf-8"))
+        functions = fixture_functions(ACCEPTANCE_FIXTURE.read_text(encoding="utf-8"))
+
+        for item in acceptance["evals"]:
+            blob = json.dumps(item)
+            scenario = item["execution"]["setup"]["command"][2]
+            if item["id"] == 6:
+                continue
+            self.assertIn("discovery-01.md", blob, f"eval {item['id']} lacks discovery input")
+            self.assertNotIn(
+                "Independently execute", item["prompt"], f"eval {item['id']} re-probes"
+            )
+            self.assertNotIn(
+                "Independently exercise", item["prompt"], f"eval {item['id']} re-probes"
+            )
+            self.assertTrue(
+                any(token in item["expected_output"] for token in ACCEPTANCE_VERDICT_TOKENS),
+                f"eval {item['id']} does not demand a decision",
+            )
+            if scenario.endswith("-decision"):
+                wrapper = scenario.replace("-", "_")
+                self.assertIn(wrapper, functions, scenario)
+                inherited = wrapper[: -len("_decision")]
+                self.assertIn(
+                    inherited + "()",
+                    functions[wrapper],
+                    f"wrapper {wrapper} does not stage the inherited scenario",
+                )
+
+    def test_acceptance_report_template_is_a_decision_admission_contract(self):
+        template = ROOT / "skills" / "task-implementation-flow" / "task-acceptance-review" / "references" / "acceptance-report-template.md"
+        text = normalized(template)
+
+        self.assertIn("| Discovery report |", text)
+        self.assertIn("Admitted evidence ledger and reconciliation", text)
+        self.assertIn("Admitted discovery probes and command records", text)
+        self.assertIn("Admitted aggregate-gate record", text)
+        self.assertIn("admitted without re-execution", text)
+        self.assertIn("Acceptance consumes these records; it does not routinely re-execute", text)
+        self.assertIn("`SELF_CHECK_ONLY`", text)
+        self.assertIn("`ACCEPT | CHANGES_REQUESTED | INCONCLUSIVE | none — SELF_CHECK_ONLY`", text)
+        self.assertIn("Preserve the discovery report's stable finding IDs", text)
 
 
 class DiscoveryLateOmissionFixtureTests(unittest.TestCase):

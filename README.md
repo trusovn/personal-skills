@@ -305,7 +305,8 @@ clear request or task brief
   -> bounded-task-implementer  implementation and progressive verification
   -> architecture gate + task-maintainability-review
                                when repo policy requires maintainability review
-  -> task-acceptance-review    fresh independent functional review when risk requires it
+  -> task-acceptance-review    fresh independent functional decision when risk requires it
+                               (admits discovery evidence when the flow splits it)
 ```
 For small, unambiguous **unpackaged conversational** work, go directly to
 `bounded-task-implementer`; it performs a compact self-preflight. A supplied

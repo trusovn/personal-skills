@@ -950,6 +950,412 @@ def process_cleanup_defects() -> None:
     write(root, "src/process_runner.py", runner_source)
 
 
+def discovery_report(task_id: str, root: Path, completeness: str, body: str) -> None:
+    """Stage the independent discovery report consumed by the decision evals.
+
+    The inherited scenario functions keep their real public/process inputs and
+    outputs untouched; this helper adds the discovery publication on top.
+    """
+    run_dir = RUNS / task_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "discovery-01.md").write_text(
+        "# Task Review Discovery Report: " + task_id + "\n\n"
+        "| Field | Value |\n|---|---|\n"
+        "| Producing stage | `task-review-discovery` |\n"
+        "| Coverage completeness | " + completeness + " |\n"
+        "| Discovery iteration | first independent discovery pass |\n"
+        "| Repository root | " + str(root) + " |\n"
+        "| Durable report path | task-runs/" + task_id + "/discovery-01.md |\n"
+        "| Current submission | task-runs/" + task_id + "/worker-result.json |\n\n"
+        "This report publishes evidence only. It contains no acceptance verdict, no\n"
+        "approved deferral, and no advancement. The separate acceptance decision call\n"
+        "consumes it.\n\n"
+        + textwrap.dedent(body).strip().replace("{head}", git(root, "rev-parse", "HEAD")) + "\n",
+        encoding="utf-8",
+    )
+
+
+def queue_defect_decision() -> None:
+    queue_defect()
+    discovery_report(
+        "QR-12",
+        WORK / "queue-runner",
+        "complete",
+        """
+        ## Coverage ledger
+
+        | Row ID | AC / invariant | Explicit material cases | Setup / oracle | Submitted evidence | Independent probe / current evidence | Result / reason |
+        |---|---|---|---|---|---|---|
+        | QR-RUN1 | AC-01: two consecutive public invocations persist state and claim TASK-1 then TASK-2 | first invocation claims TASK-1 and persists; second claims TASK-2 | disposable persisted state; `runner run-next STATE` twice | worker-observed pass | first invocation claimed TASK-1 and persisted the running state; the second real invocation returned no claim because the first task is still running | fail |
+
+        ## Findings
+
+        ### F-01 [suggested P1] Second invocation cannot claim TASK-2
+
+        | Field | Evidence |
+        |---|---|
+        | Finding ID | `F-01` |
+        | Suggested severity | `P1` |
+        | Current location | `src/queue/run_next.py` |
+        | Triggering state/input | a state file whose first task is still running when `run_next` runs again |
+        | Consequence | the required second consecutive public invocation cannot claim TASK-2 |
+        | Evidence | real public entry `runner run-next` executed twice against persisted disposable state; first invocation claimed TASK-1 and persisted, second returned no claim |
+        | Affected AC | `AC-01` |
+        | Broken invariant | repeated flow must claim both tasks across two consecutive public invocations |
+        | Credible sibling surface | any persisted state whose first task is running hides later ready tasks |
+        | Smallest corrective direction | claim the next ready task across repeated public invocations instead of guarding against any running task |
+
+        ## Aggregate-gate decision
+
+        | Field | Value |
+        |---|---|
+        | Gate / exact command | `python -m unittest discover -s tests` |
+        | Status | `not run` |
+        | Owner and stage | `initial discovery` |
+        | Reason | decisive targeted failure of `QR-RUN1` suppressed the aggregate |
+
+        ## Discovery continuation
+
+        ```markdown
+        Discovery continuation:
+        - Iteration / current byte identity: first discovery pass; HEAD {head}
+        - Coverage rows: QR-RUN1=fail
+        - Finding IDs: F-01 (suggested P1)
+        - Reviewer regressions: none
+        - Aggregate gate: not run after targeted failure; owner: initial discovery
+        - Next: separate acceptance decision call
+        ```
+        """,
+    )
+
+
+def queue_defect_reproducer_decision() -> None:
+    queue_defect_reproducer()
+    discovery_report(
+        "QR-12",
+        WORK / "queue-runner",
+        "complete",
+        """
+        ## Coverage ledger
+
+        | Row ID | AC / invariant | Explicit material cases | Setup / oracle | Submitted evidence | Independent probe / current evidence | Result / reason |
+        |---|---|---|---|---|---|---|
+        | QR-RUN1 | AC-01: two consecutive public invocations persist state and claim TASK-1 then TASK-2 | first invocation claims TASK-1 and persists; second claims TASK-2 | disposable persisted state; `runner run-next STATE` twice | worker-observed pass | first invocation claimed TASK-1 and persisted the running state; the second real invocation returned no claim because the first task is still running | fail |
+
+        ## Findings
+
+        ### F-01 [suggested P1] Second invocation cannot claim TASK-2
+
+        | Field | Evidence |
+        |---|---|
+        | Finding ID | `F-01` |
+        | Suggested severity | `P1` |
+        | Current location | `src/queue/run_next.py` |
+        | Triggering state/input | a state file whose first task is still running when `run_next` runs again |
+        | Consequence | the required second consecutive public invocation cannot claim TASK-2 |
+        | Evidence | real public entry `runner run-next` executed twice against persisted disposable state; first invocation claimed TASK-1 and persisted, second returned no claim |
+        | Affected AC | `AC-01` |
+        | Broken invariant | repeated flow must claim both tasks across two consecutive public invocations |
+        | Credible sibling surface | any persisted state whose first task is running hides later ready tasks |
+        | Smallest corrective direction | claim the next ready task across repeated public invocations instead of guarding against any running task |
+
+        ## Aggregate-gate decision
+
+        | Field | Value |
+        |---|---|
+        | Gate / exact command | `python -m unittest discover -s tests` |
+        | Status | `not run` |
+        | Owner and stage | `initial discovery` |
+        | Reason | decisive targeted failure of `QR-RUN1` suppressed the aggregate |
+
+        ## Discovery continuation
+
+        ```markdown
+        Discovery continuation:
+        - Iteration / current byte identity: first discovery pass; HEAD {head}
+        - Coverage rows: QR-RUN1=fail
+        - Finding IDs: F-01 (suggested P1)
+        - Reviewer regressions: none
+        - Aggregate gate: not run after targeted failure; owner: initial discovery
+        - Next: separate acceptance decision call
+        ```
+        """,
+    )
+
+
+def exporter_accept_decision() -> None:
+    exporter_accept()
+    discovery_report(
+        "EXP-08",
+        WORK / "exporter",
+        "complete",
+        """
+        ## Coverage ledger
+
+        | Row ID | AC / invariant | Explicit material cases | Setup / oracle | Submitted evidence | Independent probe / current evidence | Result / reason |
+        |---|---|---|---|---|---|---|
+        | EXP-RESUME | AC-01: `exportctl resume` appends remaining rows after checkpoint; AC-02: retry adds no duplicate rows | first export; resume appends; retry is idempotent | real public `exportctl resume INPUT CHECKPOINT OUTPUT` in disposable state | worker-observed pass | first export wrote the rows and checkpoint; a resumed run appended only the remaining positional rows; a retry created no duplicate rows | pass |
+        | EXP-SCOPE | clean scoped diff; pre-existing user work untouched | preflight baseline versus current state | separate index/worktree identities for `notes/local.md` | worker claim | index and worktree fingerprints of the pre-existing `MM` user path are unchanged; only allowed task-owned paths changed | pass |
+
+        ## Findings
+
+        No findings.
+
+        ## Aggregate-gate decision
+
+        | Field | Value |
+        |---|---|
+        | Gate / exact command | `python -m unittest discover -s tests` |
+        | Status | `passed` |
+        | Owner and stage | `initial discovery` |
+        | Reason | clean targeted public evidence justified one aggregate |
+        | Current evidence | all tests passed after the clean public resume/retry observations |
+
+        ## Discovery continuation
+
+        ```markdown
+        Discovery continuation:
+        - Iteration / current byte identity: first discovery pass; HEAD {head}
+        - Coverage rows: EXP-RESUME=pass; EXP-SCOPE=pass
+        - Finding IDs: none
+        - Reviewer regressions: none
+        - Aggregate gate: passed; owner: initial discovery
+        - Next: separate acceptance decision call
+        ```
+        """,
+    )
+
+
+def scheduler_inconclusive_decision() -> None:
+    scheduler_inconclusive()
+    discovery_report(
+        "SCH-09",
+        WORK / "scheduler",
+        "partial — blocked capability",
+        """
+        ## Coverage ledger
+
+        | Row ID | AC / invariant | Explicit material cases | Setup / oracle | Submitted evidence | Independent probe / current evidence | Result / reason |
+        |---|---|---|---|---|---|---|
+        | SCH-CLAIM | AC-01: two coordinated workers cannot claim the same job | coordinated pair claiming one job | required helper `tests/helpers/concurrent_claims.py` plus a coordinated run | worker-observed unit pass | the preflight-recorded helper digest exists but the helper file is now absent; the passing unit suite does not exercise two coordinated workers; no decisive concurrency capability is available | blocked — helper removed after preflight |
+
+        ## Findings
+
+        No confirmed findings. The blocked row is an evidence gap, not a defect claim.
+
+        ## Aggregate-gate decision
+
+        | Field | Value |
+        |---|---|
+        | Gate / exact command | `python -m unittest discover -s tests` |
+        | Status | `not run` |
+        | Owner and stage | `initial discovery` |
+        | Reason | blocked decisive capability; the unit suite does not cover the AC |
+
+        ## Discovery continuation
+
+        ```markdown
+        Discovery continuation:
+        - Iteration / current byte identity: first discovery pass; HEAD {head}
+        - Coverage rows: SCH-CLAIM=blocked (helper removed after preflight)
+        - Finding IDs: none
+        - Reviewer regressions: none
+        - Aggregate gate: not run; blocked capability
+        - Next: evidence owner `task-preflight` or the prerequisite capability owner, then renewed discovery and decision
+        ```
+        """,
+    )
+
+
+def exporter_restaged_stale_decision() -> None:
+    exporter_restaged_stale()
+    discovery_report(
+        "EXP-08",
+        WORK / "exporter",
+        "partial — scope gap",
+        """
+        ## Coverage ledger
+
+        | Row ID | AC / invariant | Explicit material cases | Setup / oracle | Submitted evidence | Independent probe / current evidence | Result / reason |
+        |---|---|---|---|---|---|---|
+        | EXP-SCOPE | reconstruct a safe scoped diff from the preflight baseline | index blob versus worktree bytes and short status | preflight-recorded separate index/worktree identities for `notes/local.md` | worker claim | the preflight-recorded index digest differs from the current index blob while worktree bytes and short-status text still match; the baseline is unsafe to reconstruct | blocked — unexplained index state |
+
+        ## Findings
+
+        No confirmed findings. The blocked row is a published scope gap, not a defect claim.
+
+        ## Aggregate-gate decision
+
+        | Field | Value |
+        |---|---|
+        | Gate / exact command | `python -m unittest discover -s tests` |
+        | Status | `not run` |
+        | Owner and stage | `initial discovery` |
+        | Reason | unsafe scope reconstruction precedes any gate |
+
+        ## Discovery continuation
+
+        ```markdown
+        Discovery continuation:
+        - Iteration / current byte identity: first discovery pass; HEAD {head}
+        - Coverage rows: EXP-SCOPE=blocked (unexplained index state)
+        - Finding IDs: none
+        - Reviewer regressions: none
+        - Aggregate gate: not run; scope gap
+        - Next: fresh `task-preflight`, then renewed discovery and decision
+        ```
+        """,
+    )
+
+
+def ledger_defects_decision() -> None:
+    ledger_defects()
+    discovery_report(
+        "LED-04",
+        WORK / "ledger-runner",
+        "complete",
+        """
+        ## Coverage ledger
+
+        All validator rows exercise the staged boundary `validate_ledger` from
+        `src.ledger.state` on the concrete instances named in each row.
+
+        | Row ID | AC / invariant | Explicit material cases | Setup / oracle | Submitted evidence | Independent probe / current evidence | Result / reason |
+        |---|---|---|---|---|---|---|
+        | LED-VALID | a valid running ledger is accepted | valid running ledger with latest attempt | `validate_ledger` from `src.ledger.state` on the staged valid running ledger in `tests/test_state.py`; staged focused check `python -m unittest tests.test_state` exit 0 | worker-observed pass | staged focused check `python -m unittest tests.test_state` exited 0; `validate_ledger` accepted the valid running ledger | pass |
+        | LED-SELECT | a valid selected task cannot hide an invalid non-selected running task | non-selected task also running | invalid instance targeting the constraint | worker claim | validator accepted a running non-selected task alongside a valid selected task | fail |
+        | LED-CARD | a running run has exactly one running task | zero, one, and two running tasks | invalid instances targeting cardinality | worker claim | validator admitted more than one running task | fail |
+        | LED-ORDER | the active attempt is the latest attempt | older, latest, missing attempts | invalid instance targeting ordering | worker claim | validator accepted a non-latest active attempt | fail |
+        | LED-READY | the ready set equals every dependency-ready task | missing and extra ready tasks | invalid instances targeting the ready set | worker claim | validator accepted an inexact ready set | fail |
+        | LED-STOP | a stopped run has no running task | stopped run with completed selected task and running sibling | invalid instance targeting stopped-parent/running-child coherence | worker claim | validator accepted a stopped run with a completed selected task and a running sibling task | fail |
+        | LED-TYPES | revisions are integers and completed_task_ids is an array | boolean revision; string completed_task_ids | invalid instances targeting type strictness | worker claim | validator accepted a boolean revision and a string completed_task_ids | fail |
+
+        ## Findings
+
+        - F-01 [suggested P1] selected/non-selected state coherence: a running non-selected task survives validation; broken invariant: ready/running states must reject incoherent sibling states; credible sibling surface: any non-selected task state; smallest corrective direction: validate every task, not only the selected one.
+        - F-02 [suggested P1] exact cardinality: more than one running task is admitted; broken invariant: exactly one running selected task; sibling surface: zero and two running tasks; direction: enforce the exact running count.
+        - F-07 [suggested P1] stopped-run state coherence: a stopped run with a running non-selected task survives validation; broken invariant: a stopped run has no running task; sibling surface: terminal-parent/non-selected-child coherence; direction: reject any running task in a stopped run, not only the selected one.
+        - F-03 [suggested P2] latest-attempt ordering: a non-latest active attempt is accepted; broken invariant: active attempt is the latest attempt; sibling surface: older, missing, duplicated attempts; direction: compare against the latest attempt.
+        - F-04 [suggested P2] inexact ready set: ready tasks are not compared against dependencies; broken invariant: the ready set equals every dependency-ready task; sibling surface: missing and extra ready tasks; direction: compare the exact ready set.
+        - F-05 [suggested P2] boolean revision accepted as an integer revision; broken invariant: revisions are integers; sibling surface: boolean and string revisions; direction: reject non-integer revisions.
+        - F-06 [suggested P2] string completed_task_ids accepted as an array; broken invariant: completed_task_ids is an array; sibling surface: string and boolean collections; direction: reject non-array completed_task_ids.
+
+        ## Aggregate-gate decision
+
+        | Field | Value |
+        |---|---|
+        | Gate / exact command | `python -m unittest discover -s tests` |
+        | Status | `not run` |
+        | Owner and stage | `initial discovery` |
+        | Reason | decisive targeted validator failures suppressed the aggregate |
+
+        ## Discovery continuation
+
+        ```markdown
+        Discovery continuation:
+        - Iteration / current byte identity: first discovery pass; HEAD {head}
+        - Coverage rows: LED-VALID=pass; LED-SELECT=fail; LED-CARD=fail; LED-ORDER=fail; LED-READY=fail; LED-STOP=fail; LED-TYPES=fail
+        - Finding IDs: F-01, F-02, F-03, F-04, F-05, F-06, F-07
+        - Reviewer regressions: none
+        - Aggregate gate: not run after targeted failures; owner: initial discovery
+        - Next: separate acceptance decision call
+        ```
+        """,
+    )
+
+
+def workflow_matrix_defects_decision() -> None:
+    workflow_matrix_defects()
+    discovery_report(
+        "WF-21",
+        WORK / "workflow-runner",
+        "complete",
+        """
+        ## Coverage ledger
+
+        | Row ID | AC / invariant | Explicit material cases | Setup / oracle | Submitted evidence | Independent probe / current evidence | Result / reason |
+        |---|---|---|---|---|---|---|
+        | WF-TAMPER | prompt and model must match the independently stored authority hashes | coherent prompt+model change with recomputed manifest hashes | public `python -m src.workflow.runner STATE AUTHORITY` on disposable copies | submitted test pass claim | coherent tampering reached execution: the runner returned 0 and appended an execute event | fail |
+        | WF-REPLAY | an existing execution publication is reused after verifier drift; execution_count stays one | verifier drift with a prior execution publication | public entry on disposable copies | submitted claim | verifier drift replayed execution: execution_count incremented and a second execute event was appended | fail |
+        | WF-DECISION | publication order is a legal prefix of execution, verification, decision, ledger | decision-only artifact | public entry on disposable copies | submitted claim | the decision-only artifact reached execution and writes instead of being rejected | fail |
+
+        ## Findings
+
+        - WF-F1 [suggested P1] coherent tampering reaches execution; broken invariant: only independently authorized prompt/model pairs may execute; sibling surface: any coherent prompt+model rewrite with matching manifest hashes; direction: verify against the independent authority, not the mutable manifest.
+        - WF-F2 [suggested P1] verifier drift replays execution; broken invariant: an existing execution publication is reused, execution_count stays one; sibling surface: missing, duplicated, and drifted execution records; direction: reuse the publication instead of re-executing after drift.
+        - WF-F3 [suggested P2] decision-only artifacts are not rejected; broken invariant: publication order is a legal prefix; sibling surface: any out-of-order publication set; direction: reject illegal publication prefixes before execution or writes.
+
+        ## Aggregate-gate decision
+
+        | Field | Value |
+        |---|---|
+        | Gate / exact command | `python -m unittest discover -s tests` |
+        | Status | `not run` |
+        | Owner and stage | `initial discovery` |
+        | Reason | decisive targeted failures suppressed the aggregate |
+
+        ## Discovery continuation
+
+        ```markdown
+        Discovery continuation:
+        - Iteration / current byte identity: first discovery pass; HEAD {head}
+        - Coverage rows: WF-TAMPER=fail; WF-REPLAY=fail; WF-DECISION=fail
+        - Finding IDs: WF-F1, WF-F2, WF-F3
+        - Reviewer regressions: tests.test_contract_probes.WorkflowContractProbe.test_wf_replay_reuses_execution_after_verifier_drift
+        - Aggregate gate: not run after targeted failures; owner: initial discovery
+        - Next: separate acceptance decision call
+        ```
+        """,
+    )
+
+
+def process_cleanup_defects_decision() -> None:
+    process_cleanup_defects()
+    discovery_report(
+        "PROC-17",
+        WORK / "process-runner",
+        "complete",
+        """
+        ## Coverage ledger
+
+        | Row ID | AC / invariant | Explicit material cases | Setup / oracle | Submitted evidence | Independent probe / current evidence | Result / reason |
+        |---|---|---|---|---|---|---|
+        | PROC-RESIST | a descendant that ignores SIGTERM is killed after leader timeout | resistant descendant | real local process boundary with file events and bounded polling | submitted claim | the resistant descendant survived the leader termination and the cleanup probe failed; bounded cleanup confirmed the group afterwards | fail |
+        | PROC-PIPE | an exited leader releases inherited output pipes | leader exits while a descendant holds inherited pipes | real local process boundary with bounded waits | submitted claim | inherited output pipes remained open after the leader exited; cleanup probe failed | fail |
+        | PROC-RACE | descendant visibility is rechecked as the leader exits | transient leader/descendant visibility | real local process boundary with observable synchronization | submitted claim | a descendant appeared after the leader exit and was not reaped; cleanup probe failed | fail |
+
+        ## Findings
+
+        - PROC-F1 [suggested P1] resistant descendant survives timeout; broken invariant: timeout or leader exit must terminate and reap the whole process group and release inherited pipes; sibling surfaces: PROC-PIPE and PROC-RACE; direction: terminate the full process group on timeout and leader exit.
+        - PROC-F2 [suggested P1] inherited pipes remain open after leader exit; broken invariant: same cleanup invariant; sibling surfaces: PROC-RESIST and PROC-RACE; direction: close and release inherited pipes for the whole group.
+        - PROC-F3 [suggested P2] transient descendant visibility defeats cleanup; broken invariant: same cleanup invariant; sibling surfaces: PROC-RESIST and PROC-PIPE; direction: recheck descendants after leader exit and reap any late-visible child.
+
+        ## Aggregate-gate decision
+
+        | Field | Value |
+        |---|---|
+        | Gate / exact command | `python -m unittest discover -s tests` |
+        | Status | `not run` |
+        | Owner and stage | `initial discovery` |
+        | Reason | decisive targeted process failures suppressed the aggregate |
+
+        ## Discovery continuation
+
+        ```markdown
+        Discovery continuation:
+        - Iteration / current byte identity: first discovery pass; HEAD {head}
+        - Coverage rows: PROC-RESIST=fail; PROC-PIPE=fail; PROC-RACE=fail
+        - Finding IDs: PROC-F1, PROC-F2, PROC-F3
+        - Reviewer regressions: none
+        - Aggregate gate: not run after targeted failures; owner: initial discovery
+        - Next: separate acceptance decision call
+        ```
+
+        No fixture process survives discovery.
+        """,
+    )
+
+
 SCENARIOS = {
     "queue-defect": queue_defect,
     "queue-defect-reproducer": queue_defect_reproducer,
@@ -960,6 +1366,14 @@ SCENARIOS = {
     "authored-production-self-check": authored_production_self_check,
     "workflow-matrix-defects": workflow_matrix_defects,
     "process-cleanup-defects": process_cleanup_defects,
+    "queue-defect-decision": queue_defect_decision,
+    "queue-defect-reproducer-decision": queue_defect_reproducer_decision,
+    "exporter-accept-decision": exporter_accept_decision,
+    "scheduler-inconclusive-decision": scheduler_inconclusive_decision,
+    "exporter-restaged-stale-decision": exporter_restaged_stale_decision,
+    "ledger-defects-decision": ledger_defects_decision,
+    "workflow-matrix-defects-decision": workflow_matrix_defects_decision,
+    "process-cleanup-defects-decision": process_cleanup_defects_decision,
 }
 
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:

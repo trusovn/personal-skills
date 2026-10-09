@@ -1,17 +1,19 @@
 ---
 name: task-acceptance-review
-description: Independently review one bounded implementation against its request or task brief, scoped diff, tests, and material risks, then return ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE. Use for direct manual implementations as well as orchestrated worker results, especially when task metadata requires immediate review or behavior crosses stateful, public, security, concurrency, recovery, or migration boundaries. Default to a concise guided review; require full packet/digest reconstruction only for explicit high-assurance work.
+description: Decide whether one bounded implementation is safe to advance by admitting the current independent discovery evidence, submission claims, and applicable conditional evidence, then return ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE. Use after an independent discovery pass published its report, or with equivalent current evidence, especially when task metadata requires immediate review or behavior crosses stateful, public, security, concurrency, recovery, or migration boundaries. Default to a concise guided decision; require full packet/report reconstruction only for explicit high-assurance work.
 ---
 
 # Task Acceptance Review
 
-Decide whether one bounded implementation is safe to advance. Corroborate the
-claims most likely to hide defects instead of recreating the implementer's
-entire process. Account for the task's explicit finite risks before spending
-the review budget on broad regression.
+Decide whether one bounded implementation is safe to advance. Admit and
+reconcile the current evidence published by the independent discovery pass
+instead of recreating its probes or the implementer's process. Decide every
+finding against current authority and reviewed bytes, and route exact evidence
+gaps to their owners. Account for the task's explicit finite risks before
+spending the decision budget on further review.
 
 Repository and user instructions outrank this skill. Preserve pre-existing user
-work. Ordinary review is read-only except for an authorized canonical report
+work. Ordinary acceptance is read-only except for an authorized canonical report
 artifact in the task package.
 
 ## Establish reviewer provenance first
@@ -20,7 +22,7 @@ Independence is a property of session authorship, not of the skill text or role
 currently loaded. Before reviewing evidence or issuing a verdict, determine
 whether this session authored any production bytes in the reviewed diff.
 
-- An independent session continues to the review profiles below.
+- An independent session continues to the decision workflow below.
 - A session that authored reviewed production bytes may perform a clearly
   labeled `SELF_CHECK_ONLY`, but it must not issue `ACCEPT`,
   `CHANGES_REQUESTED`, or `INCONCLUSIVE`. Loading this skill does not reset
@@ -35,172 +37,163 @@ whether this session authored any production bytes in the reviewed diff.
 ## Choose the profile
 
 Use `guided` by default. Use `high-assurance` when explicitly requested or when
-the review is given a package-contained preflight packet, machine worker
+the decision is given a package-contained preflight packet, machine worker
 result, run policy, and durable acceptance path from an orchestrated flow.
 
 ### Guided inputs
 
 Require enough to identify:
 
-- the user request, task brief, or acceptance criteria;
+- the authority: the user request, task brief, or acceptance criteria;
 - the current task-owned diff or changed paths;
-- implementation and verification claims, if available; and
-- repository instructions and permissions for independent checks.
+- the current submission: implementation and verification claims, the
+  implementer's scenario-to-evidence map, and any unfinished or blocked rows;
+- the current discovery evidence: the independent discovery report and its
+  continuation block, or an equivalent complete or explicitly partial evidence
+  publication;
+- applicable conditional evidence: maintainability review, registry records,
+  and any prior review continuation;
+- repository instructions and permissions for the decision.
 
 Do not return `INCONCLUSIVE` merely because no preflight packet, digest ledger,
 worker JSON, or report path exists. Reconstruct the relevant scope from current
 Git state and the task conversation/artifact when it is safely separable.
+Packaging alone does not require high-assurance digests or machine results. A
+guided evidence gap (for example, no independent discovery publication) does not
+trigger an orchestrator-packet requirement; it routes to the discovery owner
+with the exact missing evidence.
 
 ### High-assurance inputs
 
 Require the exact packaged `brief.md`, its ready `preflight.md`, worker result,
-recorded baseline, run policy, and the next unused
-`<task-package>/reviews/acceptance-NN.md` report path. A direct legacy brief or
-an external/noncanonical preflight or report path is a contract error;
-inconsistency, stale authority, or an inseparable baseline is `INCONCLUSIVE`.
-Do not downgrade silently.
+recorded baseline, run policy, the current independent discovery report, and the
+next unused `<task-package>/reviews/acceptance-NN.md` report path. A direct
+legacy brief or an external/noncanonical preflight or report path is a contract
+error; inconsistency, stale authority, or an inseparable baseline is
+`INCONCLUSIVE`. Do not downgrade silently.
 
 Treat implementer summaries and passing commands as submitted claims, not
 independent proof in either profile.
 
-## Review workflow
+## Decision workflow
 
 1. Establish provenance, then read applicable instructions, the task contract,
-   scoped diff, implementation evidence, and any prior review continuation.
-   Confirm the outcome, allowed scope, profile, and current byte identity when
-   available.
-2. Reconstruct task ownership before behavioral probes:
+   scoped diff, current submission, the independent discovery report (or its
+   absence), applicable conditional evidence, and any prior review
+   continuation. Confirm the outcome, allowed scope, profile, and current byte
+   identity when available.
+2. Reconstruct task ownership before deciding:
    - compare changed paths with stated scope and implementation claims;
    - separate pre-existing user work, task changes, and runtime artifacts;
    - treat unexplained or inseparable overlap as `INCONCLUSIVE`.
    In high-assurance mode, also compare every recorded Git, index/worktree,
    authority, policy, dependency, and environment identity.
-3. Build a concise completeness ledger before running a broad suite. Give each
-   row a stable task-derived identity and record:
-   `AC/invariant → explicit cases → submitted evidence → independent probe →
-   pass | fail | blocked | unchecked, with reason`.
-   - Start with explicit contract cases and the material dimensions of selected
-     high-risk invariants; do not turn review into open-ended repository
+3. Admit the discovery evidence. When no independent discovery publication
+   exists, acceptance does not merge the roles: request the missing evidence
+   from the discovery owner with the exact gap, keep the affected rows
+   `blocked` or `unchecked`, and decide `INCONCLUSIVE` until it arrives.
+   Acceptance neither performs the missing discovery itself nor treats an
+   implementer summary, a green suite, or a report self-claim as the missing
+   independent evidence.
+4. Reconcile the admitted ledger and findings against current authority and
+   reviewed bytes:
+   - Compare every required/material ledger row with the authority, the
+     submitted scenario-to-evidence map, and current bytes. A row marked
+     passing without decisive current evidence stays `blocked` or `unchecked`
+     with its exact missing proof and owner, despite green tests, static schema
+     checks, or producer self-validation. Summaries, old passes, report
+     self-claims, and green tests do not substitute for decisive evidence.
+   - Preserve every stable row identity and finding ID from the discovery
+     report and any prior continuation. A prior `pass` guides the decision and
+     is not current evidence for changed bytes.
+   - Check stale-sensitive claims against separate identities: matching
+     worktree bytes or short-status text do not prove a matching index blob,
+     and an old pass does not prove changed bytes. Missing indispensable
+     capability or an unexplained index state yields `INCONCLUSIVE` and routes
+     to fresh `task-preflight` or the prerequisite owner; acceptance neither
+     invents helpers nor absorbs or resets user work. Affected obsolete
+     readiness or verification-revision evidence routes to focused preflight
+     and current evidence ownership; acceptance does not revise requirements or
+     scenarios.
+   - Explicit AC violations block even when submitted tests are green or the
+     violation is absent from the submitted scenarios. They yield
+     `CHANGES_REQUESTED` with authorized bounded correction, preserving the
+     exact finding/row IDs and correction ownership.
+   - Consume the applicable conditional evidence (maintainability review,
+     registry records). A consistent record is an input to the decision; a
+     missing applicable record or a demonstrated contract mismatch receives a
+     focused request to its owning stage and remains actionable — an earlier
+     conditional pass cannot erase a demonstrated mismatch. Acceptance retains
+     authority to identify a demonstrated contract mismatch; it does not
+     become a second general maintainability reviewer and does not run broad
      archaeology.
-   - Consume a supplied prior ledger as continuation context. Preserve its row
-     identities, but corroborate current bytes: a prior `pass` guides probe
-     selection and is not current acceptance evidence.
-   - Separate required/material rows from optional risks so every required row
-     has a visible disposition when review ends.
-   - Derive and freeze the required/material rows from the contract, scoped
-     diff, and selected risk dimensions before the broad gate. The aggregate
-     suite is not a substitute for discovering missing adversarial rows.
-4. Batch narrow static traces and targeted adversarial probes across the ledger
-   before any aggregate gate. Review public entry points, state transitions,
-   side effects, error paths, cleanup, and compatibility where relevant.
-   Continue after a finding while remaining probes are independent, safe,
-   authorized, and affordable. A first defect does not imply sibling rows are
-   clean.
-5. Check the lowest-level contract and the real public/decisive boundary when
-   both matter. Passing unit tests cannot replace public wiring evidence. For
-   repeated, resumed, retried, recovered, paginated, or migrated behavior,
-   independently execute the first occurrence, observe or apply its legitimate
-   state change, then execute the next real occurrence in authorized disposable
-   state. Do not infer the second occurrence from a pure function or worker
-   claim.
-
-   When a required/material row depends on a machine-readable schema or other
-   executable validator contract, independently exercise that validator rather
-   than treating schema text, producer-side validation, deserialization, or an
-   unrelated passing suite as proof. Use at least one instance that should be
+5. Consume the discovery-owned aggregate-gate record without executing it.
+   Record the exact command or `not run`, owner/stage, reason, and current
+   evidence as consumed fields in the decision. Suppression after a decisive
+   targeted failure is retained; a copied pre-correction pass cannot replace a
+   clean corrected discovery record; a premature gate does not clear an omitted
+   row. Focused missing proof returns to discovery; after clean targeted
+   evidence, only discovery owns a still-justified rerun, and a failing omitted
+   row keeps the ordinary aggregate suppressed. Acceptance adds no gate and
+   adds no command. Missing required proof cannot support `ACCEPT`.
+6. Verify decisive boundary obligations through the admitted evidence. When a
+   required/material row depends on a machine-readable schema or other
+   executable validator contract, the admitted discovery evidence must include
+   independent validator results from at least one instance that should be
    valid and one deliberately invalid instance that targets the changed or
-   acceptance-relevant constraint, and confirm the validator accepts and rejects
-   them respectively. For JSON Schema, use a validator that implements the
-   schema's declared draft (for example Draft 2020-12 when the schema declares
-   it). If the required validator boundary cannot be executed, keep that ledger
-   row `blocked` or `unchecked` with the concrete reason; it cannot support
-   `ACCEPT`.
-6. Decide broad-gate ownership explicitly:
-   - Immediately before launching a broad gate, reconcile the frozen ledger
-     against the task contract and scoped diff. Proceed only when every safely
-     runnable required/material row has current targeted evidence, every
-     blocked/unchecked row has a concrete non-gate blocker, and no selected
-     adversarial probe remains.
-   - Discovery review runs targeted adversarial evidence first. After any
-     decisive targeted failure in the current review, skip the broad/aggregate
-     gate unless it has a distinct authorized diagnostic purpose; do not run it
-     merely for completeness.
-   - A fresh final review after correction reruns reviewer regressions,
-     corroborates every required row against the corrected bytes, completes
-     previously blocked/unchecked rows, runs justified owning checks, and owns
-     the aggregate gate once after adversarial evidence is clean.
-   - Another correction cycle is legitimate when correction introduces a new
-     defect, an earlier defect blocked downstream evidence, or authority
-     changes.
-   - If later evidence reveals an omitted material row, record the earlier
-     broad gate as premature rather than final evidence. Run the missing
-     targeted probe, then rerun the broad gate only when targeted evidence is
-     clean and the gate remains justified.
-   Record the exact command or `not run`, owner, stage, and reason.
-7. Validate each candidate finding against surrounding code and observed
-   behavior. Assign each confirmed finding a stable ID such as `F-01`. Include
-   severity, location, demonstrated trigger, consequence, evidence, affected
-   AC, broken invariant, an explicit credible contract-implied sibling surface,
-   and the smallest invariant-level corrective direction. Never leave the
-   sibling surface implicit. Do not give a patch or a demonstrated-field-only
-   special case. Keep unproved questions, residual risks, and unchecked ledger
-   rows separate from confirmed findings.
-8. Finish every ledger row. If work stops early, mark each remaining
+   acceptance-relevant constraint; schema text, producer-side validation,
+   deserialization, or an unrelated passing suite is not proof. If decisive
+   validator evidence is missing, keep that ledger row `blocked` or `unchecked`
+   with the concrete reason; it cannot support `ACCEPT`. Request the exact
+   missing valid/invalid evidence from the discovery owner. Acceptance does not
+   routinely rerun public probes, broad searches, or suites to repair the
+   report within the decision call.
+7. Finish every admitted row. If work stops early, mark each remaining
    required/material row `blocked` or `unchecked` with the concrete reason.
-   `CHANGES_REQUESTED` never means unreported areas are clean.
-9. Return one independent verdict, or `SELF_CHECK_ONLY` when provenance
-   requires it, plus the broad-gate decision and exact next route. Write a
-   durable report only when requested or required by high-assurance mode.
-10. Reconcile the final output before returning. Confirm that every finding has
-    its stable ID and required fields, the continuation names every finding ID
-    and reviewer regression separately, all ledger rows are present, and the
-    broad-gate record matches the actual command order. Do not compress away a
-    required field in guided output.
-
-## Adversarial checks for stateful work
-
-Apply the relevant checks, not a generic exhaustive matrix:
-
-- Cross product selected/current entities with non-selected entities so a
-  valid primary state cannot hide an invalid sibling state.
-- When the invariant says exactly one owner/active/current item, test zero, one,
-  and two distinct owners.
-- Verify current/active attempt ordering against the latest attempt, not merely
-  membership or existence.
-- Compare the exact ready/eligible set with dependency state; “at least one
-  ready” is insufficient when all eligible items must be represented.
-- Check terminal states against every subordinate state so stopped/complete
-  parents cannot retain running children.
-- Reject type confusions such as booleans accepted as integers and strings
-  accepted as collections when those values cross persistence or API
-  boundaries.
-- For tamper claims, modify related evidence coherently, including recomputed
-  internal digests. A digest stored with mutable evidence proves consistency,
-  not immutability; stronger claims need an independent anchor.
-
-Choose these cases because they catch interacting invariant failures that
-ordinary happy-path and one-field corruption tests routinely miss.
+   `CHANGES_REQUESTED` never means unreported areas are clean. Every stable
+   finding/row remains visible with its current result and evidence, or its
+   incomplete reason and owner, separate from questions and residual risk.
+   Full contextual and mixed-condition judgment rules arrive with a later
+   stage; this skill establishes admission, reconciliation, and ledger/finding
+   preservation.
+8. Decide one verdict under the rules below, using exactly
+   `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE` when independent, or
+   `SELF_CHECK_ONLY` when provenance requires it. State the broad-gate
+   admission record and one exact next route. Write a durable report only when
+   requested or required by high-assurance mode.
+9. Reconcile the final output before returning. Confirm that every finding has
+   its stable ID and required fields, the continuation names every finding ID
+   and reviewer regression separately, all admitted rows are present, and the
+   consumed aggregate-gate record matches the discovery report's command
+   order. Do not compress away a required field in guided output.
 
 ## Verdict and routing rules
 
 An independent reviewer uses exactly one verdict:
 
-- `ACCEPT`: all required ACs and justified gates are independently satisfied,
-  scope is clean, and no blocking finding or question remains.
+- `ACCEPT`: all required ACs and justified gates are independently satisfied by
+  admitted current evidence, scope is clean, and no blocking finding, question,
+  or unverified required boundary remains.
 - `CHANGES_REQUESTED`: a concrete in-scope production or test defect can be
   corrected without changing authority, scope, dependencies, permissions, or
   required infrastructure.
 - `INCONCLUSIVE`: ambiguous authority, inseparable scope, missing decisive
-  capability, stale high-assurance inputs, environment/permission failure, or
-  an unverified required boundary prevents a truthful decision.
+  capability, stale high-assurance inputs, missing or contradictory discovery
+  evidence, environment/permission failure, or an unverified required boundary
+  prevents a truthful decision.
 
 `SELF_CHECK_ONLY` sits outside these verdicts. Use it only when the current
 session authored reviewed production bytes; do not mislabel missing
 independence as `INCONCLUSIVE` or a clean acceptance.
 
+Missing discovery routes to the discovery owner with the exact gap; acceptance
+does not silently do both roles in one call. Missing/contradictory focused
+proof is requested from the owning stage; it is not a generic user question.
+
 Route `CHANGES_REQUESTED` to the same implementation thread when possible.
-After any correction, run a fresh acceptance review against the corrected bytes;
-never reuse or append acceptance to the prior verdict as if it still applied.
+After any correction, run fresh discovery evidence and a fresh acceptance
+decision against the corrected bytes; never reuse or append acceptance to the
+prior verdict as if it still applied.
 
 Route contract defects to the user or `task-brief-designer`; current-state or
 high-assurance freshness failures to `task-preflight`; and wider scope/shared
@@ -209,7 +202,7 @@ an orchestrated task.
 
 ## Output contract
 
-For guided review, default to a concise human-readable response:
+For guided decision, default to a concise human-readable response:
 
 ```markdown
 Verdict: ACCEPT | CHANGES_REQUESTED | INCONCLUSIVE
@@ -219,10 +212,11 @@ SELF_CHECK_ONLY — not an independent verdict
 Findings:
 - F-01 [P1] <location, trigger, consequence, evidence, affected AC, broken invariant, explicit sibling surface, direction>
 
+Admitted discovery: <report/continuation path or absence, coverage completeness>
 Coverage:
-- <stable row ID: cases, submitted evidence, independent probe, pass/fail/blocked/unchecked + reason>
+- <stable row ID: cases, submitted evidence, admitted discovery evidence, reconciled pass/fail/blocked/unchecked + reason>
 
-Broad gate: <run/not run, command/owner, reason>
+Aggregate gate (consumed): <command or not run, owner/stage, reason, current evidence>
 Questions / unchecked work: <separate summary>
 Scope / residual risk: <summary>
 Next: <one exact route>
@@ -232,26 +226,28 @@ Review continuation:
 - Coverage rows: <all row IDs and results>
 - Finding IDs: <all stable finding IDs or none>
 - Reviewer regressions: <paths and exact commands or none>
-- Broad gate: <status and reason>
+- Aggregate gate (consumed): <status and reason>
 - Next: <exact route>
 ```
 
 Say `No findings.` when evidence is clean. Do not create a report file unless
 the user requested one. A continuation block is required for
-`CHANGES_REQUESTED`, `INCONCLUSIVE`, `SELF_CHECK_ONLY`, or any review with
+`CHANGES_REQUESTED`, `INCONCLUSIVE`, `SELF_CHECK_ONLY`, or any decision with
 blocked/unchecked rows; keep it compact and copyable.
 
-For high-assurance review, read
+For high-assurance decision, read
 `references/acceptance-report-template.md`, write exactly one report, and
-include the full baseline/freshness and command records. The report is the only
-intentional write during the verdict phase; the separately authorized
-post-verdict tests-only protocol is the sole later exception.
+include the full baseline/freshness, admission, and consumed command records.
+The report is the only intentional write during the verdict phase; the
+separately authorized post-verdict tests-only protocol is the sole later
+exception.
 
 Write that report to the next unused numbered acceptance path under the task
 package's `reviews/` directory. Record the exact reviewed status before the
 write and the status afterward; only the new report entry may differ. Never
 overwrite an earlier review or redirect the durable report to an external
-runtime directory.
+runtime directory. Even `ACCEPT` records a decision/route without authorizing
+tracker mutation or performing advancement.
 
 Give a fresh reviewer the task brief, current scoped diff, preceding verdict and
 continuation block, reviewer regression paths/commands, and every
@@ -286,25 +282,30 @@ state that scope was preserved.
 
 Do not implement fixes, edit reviewed files, update task briefs/plans/trackers,
 advance orchestration, commit, launch subagents, or run unauthorized slow,
-flaky, destructive, privileged, live, or networked probes. The sole repository
-write exception is the explicit post-verdict tests-only protocol above.
+flaky, destructive, privileged, live, or networked probes. Do not routinely
+rerun discovery's public probes, broad searches, or aggregate suites. The sole
+repository write exception is the explicit post-verdict tests-only protocol
+above.
 
 ## Definition of done
 
 - Reviewer provenance is explicit; an authoring session cannot issue an
   independent verdict.
 - Scope is safely separated from user work.
+- Current discovery evidence is admitted; missing discovery routes to its
+  owner rather than merging the roles.
 - Every required/material ledger row is `pass`, `fail`, `blocked`, or
-  `unchecked` with a reason, using current evidence for the reviewed bytes.
-- Any required/material executable schema boundary has current validator
+  `unchecked` with a reason, reconciled against current authority and reviewed
+  bytes; summaries, old passes, report self-claims, and green tests do not
+  substitute for decisive evidence.
+- Any required/material executable schema boundary has admitted validator
   evidence from both a valid instance and a deliberately invalid instance that
   targets the relevant constraint; otherwise its row remains blocked/unchecked
   and cannot support `ACCEPT`.
-- Relevant lifecycle and interacting-state risks receive adversarial evidence.
-- Independent findings are batched where safe; findings name the invariant and
-  bounded sibling surface and carry stable IDs; clean work gets no invented
-  finding.
-- Broad-gate ownership and suppression after decisive failure are visible.
+- The consumed aggregate-gate record names the command or `not run`, owner,
+  stage, reason, and current evidence, without re-executing the gate.
+- Every stable finding and unfinished row survives the decision with its
+  result or incomplete reason and owner.
 - Exactly one justified verdict or `SELF_CHECK_ONLY`, residual-risk statement,
   continuation when required, and next route are present.
 

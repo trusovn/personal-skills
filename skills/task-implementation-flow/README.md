@@ -29,7 +29,7 @@ handoffs, exact freshness evidence, and machine-readable results.
 | `task-maintainability-review` | Independently assess the changed design for concrete maintainability regression after the repo's deterministic architecture gate. | The repo does not require maintainability review and the user/task does not request it. |
 | `task-contract-registry-updater` | Synchronize implemented-contract discovery after maintainability review. | The repository does not use implemented-contract discovery, or the task did not change a durable cross-task contract. |
 | `task-review-discovery` | Independently publish current evidence and confirmed findings as a complete or explicitly partial report for a separate acceptance decision call, without deciding acceptance. | The flow does not split discovery from the acceptance decision, or no independent review evidence is required. |
-| `task-acceptance-review` | Independently assess scoped functional/specification correctness and return `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`. | The task does not need independent functional review under its metadata or risk. |
+| `task-acceptance-review` | Independently decide scoped functional/specification correctness by admitting the current discovery evidence and deciding every finding; returns `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`. | The task does not need independent functional review under its metadata or risk. |
 
 `architecture-guardrails` is a foundation/setup skill, not a per-task reviewer. It
 materializes the deterministic gate and short repo-local contract that this flow
@@ -244,9 +244,9 @@ fresh task-maintainability-review
 
 Do not reverse the two semantic reviews merely to save a stage. The first
 review asks whether the change introduced or materially worsened concrete
-design/maintainability risk. The later acceptance review spends its budget on
-whether the code actually satisfies the requested behavior and preserves
-required behavior.
+design/maintainability risk. The later acceptance decision admits the
+discovery evidence and spends its budget on whether the code actually
+satisfies the requested behavior and preserves required behavior.
 
 The deterministic architecture command is evidence, not the semantic verdict:
 
@@ -270,9 +270,12 @@ causes an observed functional defect.
 
 When the flow splits evidence from the decision, launch `task-review-discovery`
 as a fresh separate call whose session did not author the reviewed production
-bytes, and hand its report to the acceptance decision call. A high reasoning
-tier is recommended for discovery; launch tooling enforces neither the
-separate-call role nor the reasoning recommendation.
+bytes, and hand its report to the acceptance decision call. The acceptance call
+then admits that evidence and decides: it does not routinely rerun discovery's
+public probes, broad searches, or aggregate suites, and it requests focused
+missing proof from the discovery owner rather than merging the roles. A high
+reasoning tier is recommended for discovery; launch tooling enforces neither
+the separate-call role nor the reasoning recommendation.
 
 When the flow already carries a byte/diff digest, attach it to both reviews. In a
 lightweight human-driven flow, at minimum confirm the production diff did not change
@@ -311,7 +314,7 @@ bounded implementation + structured worker result
         ↓
 required deterministic architecture gate + independent maintainability report
         ↓
-independent functional acceptance report
+independent discovery report + separate functional acceptance decision
         ↓
 orchestrator or human advancement
 ```
@@ -439,8 +442,8 @@ reviewer; the reproducer-writing session cannot accept them.
 - Keep the implementer session alive.
 - When maintainability review is required, run it in a separate, independent session first.
 - Feed maintainability findings back to the implementer and repeat that stage until accepted.
-- Run functional acceptance in a separate, independent reviewer session after maintainability acceptance.
-- Feed functional findings back to the implementer; production corrections then re-enter the maintainability stage before fresh functional acceptance.
+- Run functional acceptance in a separate, independent reviewer session after maintainability acceptance; when discovery published its evidence separately, hand that report to the decision call instead of re-probing.
+- Feed functional findings back to the implementer; production corrections then re-enter the maintainability stage and fresh discovery before fresh functional acceptance.
 
 If the implementer session becomes very long or confused, start a fresh
 correction session using the reviewer's concise findings and tests. Context

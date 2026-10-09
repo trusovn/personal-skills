@@ -36,6 +36,7 @@ DEVELOPMENT_SKILL_SOURCES: tuple[tuple[str, str], ...] = (
     ("task-maintainability-review", "skills/task-implementation-flow/task-maintainability-review"),
     ("task-contract-registry-updater", "skills/task-implementation-flow/task-contract-registry-updater"),
     ("task-acceptance-review", "skills/task-implementation-flow/task-acceptance-review"),
+    ("task-review-discovery", "skills/task-implementation-flow/task-review-discovery"),
     ("senior-code-review", "skills/senior-code-review"),
     ("ollama-delegate", "skills/ollama-delegate"),
     ("testing-discipline", "skills/testing-discipline"),

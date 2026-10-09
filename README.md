@@ -47,6 +47,7 @@ Current source skills:
 - `task-contract-registry-updater`
 - `task-maintainability-review`
 - `task-preflight`
+- `task-review-discovery`
 - `task-verification-designer`
 - `task-orchestrator`
 - `testing-discipline`

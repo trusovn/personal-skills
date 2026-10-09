@@ -1,6 +1,6 @@
 # Task implementation flow
 
-These seven task skills provide a reusable implementation discipline without
+These eight task skills provide a reusable implementation discipline without
 making every task carry an orchestration-grade artifact chain. The default is a
 lightweight guided flow. Repositories that enable maintainability guardrails can
 insert a focused architecture gate before functional acceptance. A
@@ -28,6 +28,7 @@ handoffs, exact freshness evidence, and machine-readable results.
 | `bounded-task-implementer` | Implement one bounded task with risk-based tests, progressive verification, and a useful handoff; on packaged entry the implementer verifies current applicable readiness and its submission maps every verification scenario ID to current evidence. | The request is planning, review-only, or too ambiguous to implement safely. |
 | `task-maintainability-review` | Independently assess the changed design for concrete maintainability regression after the repo's deterministic architecture gate. | The repo does not require maintainability review and the user/task does not request it. |
 | `task-contract-registry-updater` | Synchronize implemented-contract discovery after maintainability review. | The repository does not use implemented-contract discovery, or the task did not change a durable cross-task contract. |
+| `task-review-discovery` | Independently publish current evidence and confirmed findings as a complete or explicitly partial report for a separate acceptance decision call, without deciding acceptance. | The flow does not split discovery from the acceptance decision, or no independent review evidence is required. |
 | `task-acceptance-review` | Independently assess scoped functional/specification correctness and return `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`. | The task does not need independent functional review under its metadata or risk. |
 
 `architecture-guardrails` is a foundation/setup skill, not a per-task reviewer. It
@@ -266,6 +267,12 @@ on specification conformance, observable behavior, regressions, edge cases, and
 test adequacy. Do not redo general architecture review unless architecture directly
 causes an observed functional defect.
 ```
+
+When the flow splits evidence from the decision, launch `task-review-discovery`
+as a fresh separate call whose session did not author the reviewed production
+bytes, and hand its report to the acceptance decision call. A high reasoning
+tier is recommended for discovery; launch tooling enforces neither the
+separate-call role nor the reasoning recommendation.
 
 When the flow already carries a byte/diff digest, attach it to both reviews. In a
 lightweight human-driven flow, at minimum confirm the production diff did not change

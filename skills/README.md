@@ -29,6 +29,7 @@ task-brief-designer
   -> bounded-task-implementer
   -> task-maintainability-review        (when policy or risk requires it; fresh reviewer)
   -> task-contract-registry-updater     (when durable cross-task contracts changed)
+  -> task-review-discovery              (when evidence is published separately; fresh session)
   -> task-acceptance-review             (when policy or risk requires it; fresh reviewer)
 ```
 
@@ -54,6 +55,7 @@ Use `senior-code-review`, `ollama-delegate`, `testing-discipline`, and
 | `task-maintainability-review` | Independently reviews changed production code for concrete architecture and maintainability regressions. | The task authority, current diff, repository rules, and architecture gate; use a fresh reviewer. | `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`, with focused findings. |
 | `task-contract-registry-updater` | Synchronizes discoverable current-state contracts after implementation. | Task authority, scoped diff, task-map entry when present, and existing contract records. | Updated contract registry/discovery references and a synchronization result. |
 | `task-acceptance-review` | Independently checks a bounded implementation against its contract and material risks. | The request/brief, current diff, tests, and implementation evidence; use a fresh reviewer. | `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`, with findings and coverage status. |
+| `task-review-discovery` | Independently publishes current evidence and confirmed findings for a bounded implementation as a complete or explicitly partial report, without deciding acceptance. | The request/brief, verification/context inputs, current diff, and submission claims; use a fresh session that did not author the reviewed bytes. | An evidence report with facts, suggested severities, coverage rows, an aggregate-gate record, and a continuation block for a separate acceptance decision call; no verdict. |
 | `senior-code-review` | Performs a rigorous read-only merge-readiness review. | A PR, commit, branch range, working-tree diff, patch, or named files plus their intent. | Prioritized findings and a merge-readiness assessment. |
 | `ollama-delegate` | Delegates a bounded read-only repository task to an Ollama-backed cloud model using another installed skill. | Ollama HTTP access, a configured model alias, the target repository, and a selected installed skill. | The delegated model's final report plus bounded tool-call metadata. |
 | `testing-discipline` | Designs, adds, or reviews the smallest risk-based test evidence that proves behavior. | The behavior contract, relevant code/tests, and repository test conventions. | Tests and verification evidence, or a focused test strategy/review when requested. |

@@ -48,6 +48,10 @@ EXPECTED_DEVELOPMENT_SKILL_SOURCES = (
         "task-acceptance-review",
         "skills/task-implementation-flow/task-acceptance-review",
     ),
+    (
+        "task-review-discovery",
+        "skills/task-implementation-flow/task-review-discovery",
+    ),
     ("senior-code-review", "skills/senior-code-review"),
     ("ollama-delegate", "skills/ollama-delegate"),
     ("testing-discipline", "skills/testing-discipline"),
@@ -405,6 +409,49 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
             self.assertEqual(1, agents_after.count(installer.AGENTS_END))
             for _, relative in PREPARATION_SKILL_SOURCES:
                 self.assert_projected_from_source(repo, relative)
+
+    def test_install_projects_task_review_discovery_and_preserves_unrelated_target_bytes(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            repo = Path(tempdir)
+            init_repo(repo, agents_text="# Project instructions\n\nKeep this line.\n")
+
+            result = run_installer(repo)
+            self.assertEqual(0, result.returncode, result.stderr)
+
+            relative = "skills/task-implementation-flow/task-review-discovery"
+            installed_skill = (
+                repo
+                / ".agents"
+                / "skills"
+                / "task-implementation-flow"
+                / "task-review-discovery"
+            )
+            self.assertTrue((installed_skill / "SKILL.md").is_file())
+            self.assertTrue(
+                (installed_skill / "references" / "discovery-report-template.md").is_file()
+            )
+            self.assertTrue((installed_skill / "evals" / "evals.json").is_file())
+            self.assertTrue(
+                (installed_skill / "evals" / "files" / "setup_fixture.py").is_file()
+            )
+            self.assert_projected_from_source(repo, relative)
+
+            unrelated = repo / "notes" / "unrelated.txt"
+            unrelated.parent.mkdir(parents=True)
+            unrelated.write_text("user bytes\n", encoding="utf-8")
+            stale = installed_skill / "references" / "stale-managed.md"
+            stale.write_text("stale\n", encoding="utf-8")
+
+            rerun = run_installer(repo)
+
+            self.assertEqual(0, rerun.returncode, rerun.stderr)
+            self.assertFalse(stale.exists())
+            self.assertEqual(b"user bytes\n", unrelated.read_bytes())
+            self.assert_projected_from_source(repo, relative)
+            agents_text = (repo / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("Keep this line.", agents_text)
+            self.assertEqual(1, agents_text.count(installer.AGENTS_BEGIN))
+            self.assertEqual(1, agents_text.count(installer.AGENTS_END))
 
     def test_source_repository_is_inferred_from_installer_when_cwd_differs(self):
         with (

@@ -312,7 +312,8 @@ Implemented: READY_FOR_REVIEW
 - Owning suite: `<exact command>` — <implementation outcome>
 - Broad/aggregate gate: <exact command, run-or-skipped decision, reason, and owner>
 - Remaining reviewer coverage: <unchecked or blocked rows, or none>
-- Next: fresh `task-acceptance-review`
+- Next: fresh independent discovery evidence, then a fresh
+  `task-acceptance-review` decision
 ```
 
 Report implementation outcomes separately from reviewer row status. Do not
@@ -323,12 +324,14 @@ reviewer does so in a separate invocation.
 
 `review: immediate` means finish implementation checks, emit the handoff, and
 end the implementer invocation at `READY_FOR_REVIEW`. Here, "route" means name
-a fresh `task-acceptance-review` as the next owner; it does not mean invoke or
-manage that review. A same-session self-check is useful when labeled as
+fresh independent `task-review-discovery` evidence and the separate fresh
+`task-acceptance-review` decision as the next owners; it does not mean invoke or
+manage those calls. A same-session self-check is useful when labeled as
 implementation evidence, and its defects may be fixed, but it is not an
 independent review.
 
-Loading, quoting, or following `task-acceptance-review` in the current session
+Loading, quoting, or following `task-review-discovery` or
+`task-acceptance-review` in the current session
 does not reset provenance. If the current session authored any production bytes
 under review, it must not emit `ACCEPT` or describe those bytes as independently
 reviewed. Do not load the review skill, spawn or delegate to a reviewer, wait
@@ -368,7 +371,7 @@ Implemented: <outcome, READY_FOR_REVIEW, or non-complete status>
 - Preflight/context reference: <exact paths of the consumed readiness and context artifacts>
 - Remaining obligations: <unfinished task obligations carried forward, or none>
 - Residual risks / skipped checks: <none or specifics>
-- Next: <fresh task-acceptance-review, user decision, fresh preflight, or complete>
+- Next: <fresh task-review-discovery evidence and the separate task-acceptance-review decision, user decision, fresh preflight, or complete>
 ```
 
 Omit empty bullets when prose is clearer. Link to created artifacts rather than
@@ -377,8 +380,9 @@ scenario. Every scenario ID of the consumed verification design must be
 accounted for with current evidence or an explicit blocked/unchecked reason and
 next owner; implementer claims remain submission evidence, not independent
 acceptance. For guided `review: immediate` work, use
-`READY_FOR_REVIEW` as the submission state and exactly name a fresh
-`task-acceptance-review` as next owner, then end the response without a review
+`READY_FOR_REVIEW` as the submission state and exactly name fresh independent
+`task-review-discovery` evidence and the separate fresh `task-acceptance-review`
+decision as next owner, then end the response without a review
 verdict. Retain the existing human result semantics for milestone or no-review
 work.
 
@@ -403,8 +407,9 @@ For the existing worker-result schema:
 - `decisions`: local reversible task choices only.
 - `questions`: unresolved input/authority issues and whether they block.
 - `risks`: residual gaps or skipped stronger evidence.
-- `next_action`: one exact route. For immediate review, route to a fresh
-  `task-acceptance-review`.
+- `next_action`: one exact route. For immediate review, route to fresh
+  independent `task-review-discovery` evidence and a separate fresh
+  `task-acceptance-review` decision.
 
 ## Boundaries and routing
 
@@ -412,7 +417,8 @@ For the existing worker-result schema:
   re-check is needed.
 - Missing product/architecture authority or wider scope routes to the user or
   `task-brief-designer`.
-- Completed work routes to a fresh `task-acceptance-review` when independent
+- Completed work routes to fresh independent `task-review-discovery` evidence
+  and a separate fresh `task-acceptance-review` decision when independent
   review is requested or required; this invocation ends with the handoff and
   the next owner is started separately. Otherwise return it to the user.
 - Do not approve your own work, update an official plan/tracker, commit/push,

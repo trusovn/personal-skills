@@ -11,7 +11,7 @@ This is a narrow synchronization role. It does not design architecture, repair p
 
 ## Position in the standard flow
 
-Run after the implementation bytes have survived the repository's deterministic architecture checks and maintainability review, and before `task-acceptance-review`:
+Run after the implementation bytes have survived the repository's deterministic architecture checks and maintainability review, and before fresh independent `task-review-discovery` evidence and the separate `task-acceptance-review` decision:
 
 ```text
 task brief
@@ -19,6 +19,7 @@ task brief
   -> architecture gate
   -> task-maintainability-review
   -> task-contract-registry-updater
+  -> task-review-discovery
   -> task-acceptance-review
 ```
 

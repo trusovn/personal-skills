@@ -29,8 +29,11 @@ task-brief-designer
   -> bounded-task-implementer
   -> task-maintainability-review        (when policy or risk requires it; fresh reviewer)
   -> task-contract-registry-updater     (when durable cross-task contracts changed)
-  -> task-review-discovery              (when evidence is published separately; fresh session)
-  -> task-acceptance-review             (when policy or risk requires it; fresh reviewer)
+  -> task-review-discovery              (fresh session; publishes the evidence acceptance admits)
+  -> task-acceptance-review             (when policy or risk requires it; fresh reviewer;
+                                        consumes the discovery report and decides)
+  -> coordinator recording of approved deferrals
+                                        (human coordinator alone, before authorized advancement)
 ```
 
 Use `senior-code-review`, `ollama-delegate`, `testing-discipline`, and

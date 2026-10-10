@@ -529,5 +529,53 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
         self.assertIn("development profile", readme)
 
 
+    def test_install_projects_acceptance_review_package_and_preserves_unrelated_bytes(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            repo = Path(tempdir)
+            init_repo(repo, agents_text="# Project instructions\n\nKeep this line.\n")
+
+            result = run_installer(repo)
+            self.assertEqual(0, result.returncode, result.stderr)
+
+            relative = "skills/task-implementation-flow/task-acceptance-review"
+            installed_skill = (
+                repo
+                / ".agents"
+                / "skills"
+                / "task-implementation-flow"
+                / "task-acceptance-review"
+            )
+            for required in (
+                "SKILL.md",
+                "references/acceptance-report-template.md",
+                "references/tests-only-reproducer.md",
+                "evals/evals.json",
+                "evals/files/setup_fixture.py",
+            ):
+                self.assertTrue((installed_skill / required).is_file(), required)
+            self.assert_projected_from_source(repo, relative)
+
+            unrelated = repo / "notes" / "unrelated.txt"
+            unrelated.parent.mkdir(parents=True)
+            unrelated.write_text("user bytes\n", encoding="utf-8")
+            stale = installed_skill / "references" / "stale-managed.md"
+            stale.write_text("stale\n", encoding="utf-8")
+
+            rerun = run_installer(repo)
+
+            self.assertEqual(0, rerun.returncode, rerun.stderr)
+            self.assertFalse(stale.exists())
+            self.assertEqual(b"user bytes\n", unrelated.read_bytes())
+            self.assert_projected_from_source(repo, relative)
+            self.assertEqual(
+                (ROOT / installer.PROFILE_SKILLS_README).read_bytes(),
+                (repo / ".agents" / "skills" / "README.md").read_bytes(),
+            )
+            agents_text = (repo / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("Keep this line.", agents_text)
+            self.assertEqual(1, agents_text.count(installer.AGENTS_BEGIN))
+            self.assertEqual(1, agents_text.count(installer.AGENTS_END))
+
+
 if __name__ == "__main__":
     unittest.main()

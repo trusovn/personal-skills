@@ -305,8 +305,12 @@ clear request or task brief
   -> bounded-task-implementer  implementation and progressive verification
   -> architecture gate + task-maintainability-review
                                when repo policy requires maintainability review
-  -> task-acceptance-review    fresh independent functional decision when risk requires it
-                               (admits discovery evidence when the flow splits it)
+  -> task-review-discovery     fresh session publishing current evidence
+                               whenever independent review is required
+  -> task-acceptance-review    separate fresh decision that admits the
+                               discovery report and decides every finding
+  -> coordinator recording     approved deferrals are recorded by the human
+                               coordinator before authorized continuation
 ```
 For small, unambiguous **unpackaged conversational** work, go directly to
 `bounded-task-implementer`; it performs a compact self-preflight. A supplied
@@ -383,6 +387,7 @@ project-bootstrap
   -> deterministic architecture validation
   -> maintainability review
   -> contract-registry synchronization
+  -> independent review discovery
   -> acceptance review
 ```
 

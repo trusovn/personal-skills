@@ -1,0 +1,334 @@
+{
+  "artifact": "T-002.4 task-local composition of the settled T-002.1-.3 producer/consumer fixtures",
+  "status": "fixture data — constructed records composed from the predecessor setup fixtures, never observed role outputs",
+  "producers": [
+    "bounded-task-implementer (T-002.4) composed these records; no skill-call agent produced them"
+  ],
+  "intended_consumers": [
+    "task-review-discovery — a fresh session that did not author the reviewed bytes",
+    "task-acceptance-review — a fresh decision call admitting the discovery report",
+    "task-preflight — later readiness reassessing recorded known issues",
+    "T-002.5 — actual separate producing/consuming role calls under its own authorization"
+  ],
+  "evidence_categories": {
+    "structural_tests": "focused route/byte assertions in tests/test_review_discipline.py and tests/test_install_development_skills.py over the source guides, child handoffs, installer projection, and this artifact",
+    "actual_behavior": "real disposable probes staged by the predecessor setup_fixture.py files and the canonical installer into disposable committed Git targets; no active installation was touched",
+    "semantic_contract_inspection": "focused reading of the settled T-002.1-.3 SKILL.md and report-template bytes plus the affected guides",
+    "unrun_agent_compliance": "no actual skill-call agent has produced or consumed these records; actual separate-call compliance and installed-flow qualification are owned by T-002.5"
+  },
+  "fixture_sources": {
+    "discovery": "skills/task-implementation-flow/task-review-discovery/evals/files/setup_fixture.py",
+    "acceptance": "skills/task-implementation-flow/task-acceptance-review/evals/files/setup_fixture.py",
+    "command": ["python3", "<fixture path>", "<scenario>"],
+    "env": { "EVAL_WORK_ROOT": "<disposable work root>" },
+    "note": "reuse the predecessor fixtures; no new reusable runner was created for this composition"
+  },
+  "records": [
+    {
+      "id": "COMP-01",
+      "kind": "preflight-only material exposure traced through discovery and decision inputs",
+      "scenario": "contextual-risk-blockers-decision",
+      "fixture": "acceptance",
+      "producer_to_consumer": "INV-07 preflight decision context -> discovery input -> acceptance decision input",
+      "upstream_context": {
+        "path": "contextual-runner/docs/tasks/INV-07/preflight.md",
+        "exposure_only_in_preflight": "must not destroy yesterday's paid-invoice ledger",
+        "consumer_requirement": "requires the CSV header row `invoice_id,amount`",
+        "changed_consumer_fact": "gains a mandatory `tax` field next sprint"
+      },
+      "discovery_input": {
+        "exposure_preserved": "the preflight-only exposure 'must not destroy yesterday's paid-invoice ledger' stays connected to the decisive probe",
+        "decisive_probe": "a failed risky export truncates out/ledger.csv to empty; the supplied mitigated control keeps the prior 'inv-9001,10.00' bytes",
+        "ac_rows": "explicit ACs pass; the material exposure still obligates the decision"
+      },
+      "decision_input": {
+        "context": "the same preflight-only exposure, current passing-AC evidence, and source identities",
+        "expected_route": "CHANGES_REQUESTED",
+        "rule": "passing ACs do not erase material-risk decision obligations; the confirmed operating risk blocks despite green ACs"
+      }
+    },
+    {
+      "id": "COMP-02",
+      "kind": "confirmed blocker plus unfinished missing-proof row in one decision",
+      "scenarios": [
+        "mixed-conditions-authorized-decision",
+        "mixed-conditions-forbidden-decision"
+      ],
+      "fixture": "acceptance",
+      "producer_to_consumer": "JOB-05 preflight context plus discovery report -> discovery and decision inputs",
+      "discovery_input": {
+        "confirmed_blocker": "claim-order blocker: the first claim returns JOB-1 and the second claim returns no job while both jobs are ready",
+        "unfinished_row": {
+          "id": "JOB-PAIR",
+          "state": "blocked",
+          "reason": "tests/helpers/pair_claims.py helper is absent, so the pair-claim proof cannot run",
+          "next_owner": "capability/evidence owner supplies the helper or its missing-proof record stays blocked"
+        },
+        "stable_ids_preserved": "the same row and finding identities survive unchanged through both input sets and any continuation"
+      },
+      "decision_inputs": [
+        {
+          "scenario": "mixed-conditions-authorized-decision",
+          "expected_route": "CHANGES_REQUESTED",
+          "rule": "authorized bounded correction yields CHANGES_REQUESTED even with the JOB-PAIR row blocked; evidence recovery and any authority question route separately; no advancement from this verdict"
+        },
+        {
+          "scenario": "mixed-conditions-forbidden-decision",
+          "expected_route": "INCONCLUSIVE",
+          "rule": "the run policy denies production edits, so the correction route is prevented and the confirmed blocker is retained; unfinished rows are never clean; no advancement from this verdict"
+        }
+      ]
+    },
+    {
+      "id": "COMP-03",
+      "kind": "failure, correction, and current clean evidence with discovery-owned gates",
+      "scenarios": [
+        "discovery-correction-gate",
+        "discovery-late-omission-fail",
+        "discovery-late-omission-clean",
+        "discovery-diagnostic-aggregate"
+      ],
+      "fixture": "discovery",
+      "records": [
+        "after a decisive targeted failure the ordinary aggregate is suppressed after the decisive failure with its reason; a gate run before an omitted material row is recorded as premature, and the missing targeted probe runs first",
+        "corrected bytes: clean targeted evidence reruns reviewer regressions and resolves runnable unfinished rows without renaming IDs, then discovery owns one justified aggregate",
+        "each gate record carries the exact command or `not run`, owner, stage, reason, and current evidence; acceptance consumes that record without executing it, and a copied pre-correction pass is not current evidence",
+        "the diagnostic-aggregate case continues into discovery-02.md with finding IDs, reviewer regressions, and the consumed gate record preserved"
+      ],
+      "validator_contrast": {
+        "probes": "late-omission ledger validator: the valid instance exits 0; targeted boolean-revision, older-attempt, and second-running instances exit 2; the fail variant keeps only the boolean-revision defect (exit 0)",
+        "source": "DiscoveryLateOmissionFixtureTests in tests/test_review_discipline.py plus the composition's focused rerun"
+      }
+    },
+    {
+      "id": "COMP-04",
+      "kind": "approved deferral record composed with later preflight inputs",
+      "scenarios": [
+        "known-issue-consumption-decision",
+        "known-issue-priority-only-decision",
+        "correction-regression-decision"
+      ],
+      "fixture": "acceptance",
+      "coordinator_record": {
+        "writer": "the human coordinator alone records it before authorized advancement; discovery and acceptance never write the tracker",
+        "fields": [
+          "Stable issue ID: KI-001",
+          "Provenance: task INV-07; review acceptance-01; finding INV-M01",
+          "Trigger:",
+          "Consequence:",
+          "Evidence:",
+          "Impact:",
+          "Likelihood/exposure:",
+          "Affected boundary:",
+          "Affected consumers:",
+          "Deferral rationale:",
+          "Follow-up owner/action:",
+          "Reassessment conditions:"
+        ]
+      },
+      "later_preflight_inputs": [
+        {
+          "case": "relevant, unchanged exposure",
+          "source": "correction-runner/docs/tasks/ORD-04/preflight.md staged by correction-regression-decision",
+          "expected": "exposure is unchanged, so the accepted disposition is retained; no global correction-round limit reopens it"
+        },
+        {
+          "case": "relevant, changed exposure",
+          "source": "ledger-consumer staged discovery-01 changed-exposure record (WEB-02 consuming RPT-12A)",
+          "expected": "changed exposure or required-consumer incompatibility routes through the record's follow-up owner for reassessment"
+        },
+        {
+          "case": "unrelated task",
+          "source": "a later preflight input for a task outside the record's affected boundary",
+          "expected": "carries no defect obligation from the record and triggers no broad issue search"
+        },
+        {
+          "case": "priority-only change",
+          "source": "known-issue-priority-only-decision staging (follow-up.json prior_priority next, current_priority later)",
+          "expected": "a portfolio priority change alone does not reopen task acceptance; only changed material facts can"
+        }
+      ]
+    },
+    {
+      "id": "COMP-05",
+      "kind": "prepared and direct review routes with session-authorship provenance",
+      "scenarios": [
+        "discovery-prepared-ledger",
+        "authored-production-self-check"
+      ],
+      "fixture": "discovery",
+      "prepared_route": "a supplied executable package retains brief.md, required verification.md, and ready preflight.md inputs; discovery consumes the recorded decision context and current evidence",
+      "direct_route": "a guided direct request keeps conversational inputs without requiring a high-assurance packet",
+      "provenance": "a session that authored the reviewed production bytes stays SELF_CHECK_ONLY; loading a review skill does not reset authorship; the route is always a fresh discovery call and a separate fresh acceptance decision",
+      "coordinator_boundary": "coordinator recording precedes authorized continuation; no reviewer acquires tracker-writing or portfolio authority"
+    }
+  ],
+  "inherited_case_inventory": [
+    {
+      "id": "INV-CASE-01",
+      "kind": "lifecycle-repetition",
+      "source": { "skill": "task-review-discovery", "eval_id": 1, "scenario": "queue-defect" },
+      "signal": "`runner run-next` public entry point exercised for the first occurrence and the next real occurrence"
+    },
+    {
+      "id": "INV-CASE-02",
+      "kind": "public-entry",
+      "source": { "skill": "task-acceptance-review", "eval_id": 1, "scenario": "queue-defect-decision" },
+      "signal": "decision consumes the staged discovery report for the run-next repetition case"
+    },
+    {
+      "id": "INV-CASE-03",
+      "kind": "lifecycle-resume",
+      "source": { "skill": "task-review-discovery", "eval_id": 2, "scenario": "exporter-accept" },
+      "signal": "`exportctl resume` recovery behavior with a real first state change"
+    },
+    {
+      "id": "INV-CASE-04",
+      "kind": "lifecycle-retry",
+      "source": { "skill": "task-acceptance-review", "eval_id": 17, "scenario": "correction-regression-decision" },
+      "signal": "orders retry emits processed rows per run; the correction regression duplicated every row (ORD-RERUN)"
+    },
+    {
+      "id": "INV-CASE-05",
+      "kind": "missing-capability",
+      "source": { "skill": "task-preflight", "eval_id": 2, "scenario": "scheduler-missing" },
+      "signal": "a missing decisive capability blocks readiness with its prerequisite owner"
+    },
+    {
+      "id": "INV-CASE-06",
+      "kind": "missing-capability",
+      "source": { "skill": "task-acceptance-review", "eval_id": 13, "scenario": "mixed-conditions-authorized-decision" },
+      "signal": "JOB-PAIR row blocked because the pair_claims.py helper is absent (composed in COMP-02)"
+    },
+    {
+      "id": "INV-CASE-07",
+      "kind": "index-worktree-identity",
+      "source": { "skill": "task-review-discovery", "eval_id": 4, "scenario": "exporter-restaged-stale" },
+      "signal": "matching worktree bytes and short-status text do not prove a matching index blob"
+    },
+    {
+      "id": "INV-CASE-08",
+      "kind": "ledger-cardinality-order-type",
+      "source": { "skill": "task-review-discovery", "eval_id": 5, "scenario": "ledger-defects" },
+      "signal": "ledger cardinality, ordering, and type-confusion defects across selected and non-selected entities"
+    },
+    {
+      "id": "INV-CASE-09",
+      "kind": "ledger-cardinality-order-type",
+      "source": { "skill": "task-review-discovery", "eval_id": 14, "scenario": "discovery-late-omission-clean" },
+      "signal": "LED-05 AC-03: exactly one running selected task with its latest active attempt"
+    },
+    {
+      "id": "INV-CASE-10",
+      "kind": "workflow-tampering-replay-decision",
+      "source": { "skill": "task-review-discovery", "eval_id": 7, "scenario": "workflow-matrix-defects" },
+      "signal": "WF-TAMPER: coherent tampering including recomputed internal digests"
+    },
+    {
+      "id": "INV-CASE-11",
+      "kind": "workflow-tampering-replay-decision",
+      "source": { "skill": "task-review-discovery", "eval_id": 8, "scenario": "workflow-matrix-defects" },
+      "signal": "WF-REPLAY and WF-DECISION replay and decision-boundary cases"
+    },
+    {
+      "id": "INV-CASE-12",
+      "kind": "validator-valid-targeted-invalid",
+      "source": { "skill": "task-review-discovery", "eval_id": 14, "scenario": "discovery-late-omission-clean" },
+      "signal": "valid instance exits 0; targeted boolean-revision, older-attempt, second-running instances exit 2"
+    },
+    {
+      "id": "INV-CASE-13",
+      "kind": "validator-valid-targeted-invalid",
+      "source": { "skill": "task-review-discovery", "eval_id": 13, "scenario": "discovery-late-omission-fail" },
+      "signal": "the fail variant keeps only the boolean-revision defect (exit 0) while the other invalid instances still exit 2"
+    },
+    {
+      "id": "INV-CASE-14",
+      "kind": "process-resistant-descendant",
+      "source": { "skill": "task-review-discovery", "eval_id": 9, "scenario": "process-cleanup-defects" },
+      "signal": "PROC-RESIST: resistant descendant termination with observable synchronization"
+    },
+    {
+      "id": "INV-CASE-15",
+      "kind": "process-pipe",
+      "source": { "skill": "task-review-discovery", "eval_id": 9, "scenario": "process-cleanup-defects" },
+      "signal": "PROC-PIPE: inherited-pipe release confirmed after each probe"
+    },
+    {
+      "id": "INV-CASE-16",
+      "kind": "process-race",
+      "source": { "skill": "task-review-discovery", "eval_id": 9, "scenario": "process-cleanup-defects" },
+      "signal": "PROC-RACE: bounded waits, no arbitrary sleeps, and no fixture process survives discovery"
+    },
+    {
+      "id": "INV-CASE-17",
+      "kind": "continuation",
+      "source": { "skill": "task-review-discovery", "eval_id": 15, "scenario": "discovery-diagnostic-aggregate" },
+      "signal": "discovery-02.md continues the iteration with finding IDs, reviewer regressions, and the consumed gate record"
+    },
+    {
+      "id": "INV-CASE-18",
+      "kind": "self-check-provenance",
+      "source": { "skill": "task-review-discovery", "eval_id": 6, "scenario": "authored-production-self-check" },
+      "signal": "SELF_CHECK_ONLY: an authoring session cannot publish independently corroborated rows"
+    },
+    {
+      "id": "INV-CASE-19",
+      "kind": "preflight-readiness",
+      "source": { "skill": "task-preflight", "eval_id": 1, "scenario": "queue-ready" },
+      "signal": "material standalone value resolved from dirty ownership, dependencies, and command facts"
+    },
+    {
+      "id": "INV-CASE-20",
+      "kind": "preflight-readiness",
+      "source": { "skill": "task-preflight", "eval_id": 3, "scenario": "api-overlap" },
+      "signal": "ownership overlap is separated or blocked before implementation"
+    },
+    {
+      "id": "INV-CASE-21",
+      "kind": "preflight-readiness",
+      "source": { "skill": "task-preflight", "eval_id": 5, "scenario": "queue-guided" },
+      "signal": "guided direct request stays inline without durable paperwork"
+    },
+    {
+      "id": "INV-CASE-22",
+      "kind": "preflight-readiness",
+      "source": { "skill": "task-preflight", "eval_id": 7 },
+      "signal": "a direct legacy brief is refused and routed to task-brief-designer for package normalization (prompt-only eval)"
+    },
+    {
+      "id": "INV-CASE-23",
+      "kind": "preflight-readiness",
+      "source": { "skill": "task-preflight", "eval_id": 10, "scenario": "revision-recovery" },
+      "signal": "a reasoned verification revision reuses unchanged facts and rejects affected obsolete readiness"
+    },
+    {
+      "id": "INV-CASE-24",
+      "kind": "preflight-readiness",
+      "source": { "skill": "task-preflight", "eval_id": 11, "scenario": "freshness-change" },
+      "signal": "material authority, dependency, ownership, permission, or capability change forces reconsideration"
+    }
+  ],
+  "t005_unrun_boundaries": [
+    {
+      "boundary": "an actual task-review-discovery call in a fresh session over a staged workspace",
+      "owner": "T-002.5",
+      "unrun_reason": "requires separately authorized producing/consuming role calls; this composition only supplies the setup"
+    },
+    {
+      "boundary": "an actual task-acceptance-review decision call consuming that discovery report",
+      "owner": "T-002.5",
+      "unrun_reason": "same separate-call authorization; no local check substitutes for the decision call"
+    },
+    {
+      "boundary": "an actual later task-preflight call reassessing the KI-001 record against relevant and unrelated exposure",
+      "owner": "T-002.5",
+      "unrun_reason": "the composed later-preflight inputs are fixture data until a real preflight call consumes them"
+    },
+    {
+      "boundary": "installed-flow multi-call qualification against the active installation",
+      "owner": "T-002.5",
+      "unrun_reason": "final behavioral qualification belongs to T-002.5 under its own authorization; no local result claims it"
+    }
+  ]
+}

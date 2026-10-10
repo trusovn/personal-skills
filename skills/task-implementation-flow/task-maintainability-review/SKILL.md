@@ -305,9 +305,9 @@ For `CHANGES_REQUESTED`:
 2. fix only the blockers without changing requested behavior unnecessarily;
 3. rerun the canonical architecture gate;
 4. use a **fresh** `task-maintainability-review` session on the corrected bytes;
-5. only after `ACCEPT`, proceed to functional `task-acceptance-review` when that stage is required.
+5. only after `ACCEPT`, proceed to fresh independent `task-review-discovery` evidence and the separate functional `task-acceptance-review` decision when that stage is required.
 
-If functional acceptance later changes production bytes, repeat architecture gate + fresh maintainability review before fresh functional acceptance.
+If functional acceptance later changes production bytes, repeat architecture gate + fresh maintainability review before fresh discovery evidence and fresh functional acceptance.
 
 ## Definition of Done
 

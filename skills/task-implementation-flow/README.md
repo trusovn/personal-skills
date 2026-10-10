@@ -91,6 +91,7 @@ docs/tasks/
     preflight.md                  # required ready preflight before implementation
     reviews/
       maintainability-01.md       # only when a durable report is written
+      discovery-01.md             # only when discovery publishes durably
       acceptance-01.md
 ```
 
@@ -131,7 +132,11 @@ human-readable result
         ↓
 required architecture gate / maintainability review, if declared by repo
         ↓
-fresh-session functional acceptance review when metadata or risk calls for it
+fresh independent task-review-discovery evidence when metadata or risk calls for it
+        ↓
+separate fresh-session functional acceptance decision consuming the discovery report
+        ↓
+coordinator recording of approved deferrals, then authorized continuation
 ```
 
 Guided mode carries these defaults so the user does not need to repeat them:
@@ -230,14 +235,16 @@ fresh task-maintainability-review
         │
         └── ACCEPT
                 ↓
-        functional/spec acceptance review when required
+        fresh task-review-discovery evidence when required
+                ↓
+        separate functional/spec acceptance review when required
                 ├── CHANGES_REQUESTED
                 │       ↓
                 │   implementation correction
                 │       ↓
                 │   architecture gate + fresh maintainability review again
                 │       ↓
-                │   fresh functional acceptance review again
+                │   fresh discovery evidence + fresh functional acceptance again
                 │
                 └── ACCEPT
 ```
@@ -284,7 +291,8 @@ between maintainability `ACCEPT` and functional-review start.
 Every correction changes the bytes under review. Therefore a previous
 maintainability verdict and a previous functional verdict are both stale after
 production corrections. Rerun the deterministic architecture gate and use a
-fresh maintainability reviewer before re-entering functional acceptance.
+fresh maintainability reviewer before re-entering fresh discovery evidence and
+functional acceptance.
 
 For a trivial correction that provably cannot affect production architecture
 (for example, an authorized tests-only correction), repo policy may allow the
@@ -471,7 +479,10 @@ reviewer; the reproducer-writing session cannot accept them.
 - Keep the implementer session alive.
 - When maintainability review is required, run it in a separate, independent session first.
 - Feed maintainability findings back to the implementer and repeat that stage until accepted.
-- Run functional acceptance in a separate, independent reviewer session after maintainability acceptance; when discovery published its evidence separately, hand that report to the decision call instead of re-probing.
+- Run fresh `task-review-discovery` in a separate session that did not author
+  the bytes, then run functional acceptance in a separate, independent
+  reviewer session; hand the fresh discovery report to the decision call
+  instead of re-probing.
 - Feed functional findings back to the implementer; production corrections then re-enter the maintainability stage and fresh discovery before fresh functional acceptance.
 
 If the implementer session becomes very long or confused, start a fresh
@@ -498,6 +509,7 @@ task brief
   -> deterministic architecture gate
   -> task-maintainability-review
   -> task-contract-registry-updater
+  -> task-review-discovery
   -> task-acceptance-review
 ```
 

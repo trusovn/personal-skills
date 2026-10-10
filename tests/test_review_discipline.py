@@ -167,6 +167,38 @@ ACCEPTANCE_FIXTURE_ADAPTATIONS = (
 ACCEPTANCE_VERDICT_TOKENS = ("`ACCEPT`", "`CHANGES_REQUESTED`", "`INCONCLUSIVE`")
 SENIOR_REVIEW_SKILL = ROOT / "skills" / "senior-code-review" / "SKILL.md"
 
+ROOT_README = ROOT / "README.md"
+PROFILE_GUIDE = ROOT / "skills" / "README.md"
+FLOW_README = ROOT / "skills" / "task-implementation-flow" / "README.md"
+BOUNDED_IMPLEMENTER_SKILL = (
+    ROOT / "skills" / "task-implementation-flow" / "bounded-task-implementer" / "SKILL.md"
+)
+MAINTAINABILITY_SKILL = (
+    ROOT / "skills" / "task-implementation-flow" / "task-maintainability-review" / "SKILL.md"
+)
+REGISTRY_UPDATER_SKILL = (
+    ROOT / "skills" / "task-implementation-flow" / "task-contract-registry-updater" / "SKILL.md"
+)
+PREFLIGHT_EVALS = (
+    ROOT / "skills" / "task-implementation-flow" / "task-preflight" / "evals" / "evals.json"
+)
+COMPOSITION_PATH = ROOT / "docs" / "tasks" / "T-002.4" / "composition.json"
+
+
+def fenced_blocks(text: str) -> list:
+    blocks: list = []
+    current: list | None = None
+    for line in text.splitlines():
+        if current is None:
+            if line.lstrip().startswith("```"):
+                current = []
+        elif line.lstrip().startswith("```"):
+            blocks.append("\n".join(current))
+            current = None
+        else:
+            current.append(line)
+    return blocks
+
 
 def normalized(path: Path) -> str:
     return re.sub(r"\s+", " ", path.read_text(encoding="utf-8")).strip()
@@ -1541,6 +1573,462 @@ class ContextualDispositionEvalTests(unittest.TestCase):
         self.assertIn("new blocker", blob17)
         self.assertIn("exposure is unchanged", blob17)
         self.assertIn("No global correction-round limit", blob17)
+
+
+class ComposedReviewFlowGuideTests(unittest.TestCase):
+    """Fail-first checks for the composed functional-review route guidance.
+
+    Every affected overview must show fresh discovery before the separate
+    independent acceptance decision, coordinator recording before authorized
+    continuation, and no wording that lets one session accept itself or skip
+    discovery. Role-reasoning guidance adds no launcher adapter, fifth
+    metadata key, or observed-runtime claim.
+    """
+
+    def test_root_readme_route_shows_discovery_before_separate_acceptance(self):
+        text = ROOT_README.read_text(encoding="utf-8")
+        route = next(
+            block
+            for block in fenced_blocks(text)
+            if "bounded-task-implementer" in block and "task-acceptance-review" in block
+        )
+        self.assertIn("task-review-discovery", route)
+        self.assertLess(
+            route.index("task-review-discovery"),
+            route.index("task-acceptance-review"),
+        )
+        self.assertIn("coordinator recording", route)
+        self.assertNotIn("admits discovery evidence when the flow splits it", text)
+
+    def test_root_readme_contract_sequence_includes_independent_review_discovery(self):
+        text = ROOT_README.read_text(encoding="utf-8")
+        block = next(
+            block
+            for block in fenced_blocks(text)
+            if "contract-registry synchronization" in block
+        )
+        self.assertIn("independent review discovery", block)
+        self.assertLess(
+            block.index("independent review discovery"),
+            block.index("acceptance review"),
+        )
+
+    def test_profile_guide_task_route_requires_discovery_evidence(self):
+        text = PROFILE_GUIDE.read_text(encoding="utf-8")
+        route = next(
+            block
+            for block in fenced_blocks(text)
+            if "bounded-task-implementer" in block and "task-acceptance-review" in block
+        )
+        self.assertIn("task-review-discovery", route)
+        self.assertLess(
+            route.index("task-review-discovery"),
+            route.index("task-acceptance-review"),
+        )
+        self.assertIn("coordinator recording", route)
+        self.assertNotIn("when evidence is published separately", text)
+
+    def test_flow_readme_guided_route_and_layout_include_discovery(self):
+        text = FLOW_README.read_text(encoding="utf-8")
+        guided = next(
+            block
+            for block in fenced_blocks(text)
+            if "required task-verification-designer for an executable task package"
+            in block
+        )
+        self.assertIn("task-review-discovery", guided)
+        self.assertLess(
+            guided.index("task-review-discovery"),
+            guided.index("functional acceptance"),
+        )
+        self.assertIn("coordinator recording", guided)
+        layout = next(
+            block for block in fenced_blocks(text) if "docs/tasks/" in block
+        )
+        self.assertIn("discovery-01.md", layout)
+
+    def test_flow_readme_maintainability_gated_route_shows_discovery(self):
+        text = FLOW_README.read_text(encoding="utf-8")
+        gated = next(
+            block
+            for block in fenced_blocks(text)
+            if "canonical deterministic architecture gate" in block
+        )
+        self.assertIn("task-review-discovery", gated)
+        self.assertLess(
+            gated.index("task-review-discovery"),
+            gated.index("acceptance review"),
+        )
+        flat = normalized(FLOW_README)
+        self.assertIn(
+            "fresh maintainability reviewer before re-entering fresh discovery evidence and functional acceptance",
+            flat,
+        )
+        self.assertNotIn("when discovery published its evidence separately", flat)
+        self.assertIn("hand the fresh discovery report to the decision call", flat)
+
+    def test_contract_aware_sequences_route_discovery_before_acceptance(self):
+        for path in (FLOW_README, REGISTRY_UPDATER_SKILL):
+            text = path.read_text(encoding="utf-8")
+            with self.subTest(path=path):
+                block = next(
+                    block
+                    for block in fenced_blocks(text)
+                    if "task-contract-registry-updater" in block and "task brief" in block
+                )
+                self.assertIn("-> task-review-discovery", block)
+                self.assertLess(
+                    block.index("task-review-discovery"),
+                    block.index("task-acceptance-review"),
+                )
+
+    def test_child_handoffs_name_discovery_before_the_acceptance_decision(self):
+        implementer = normalized(BOUNDED_IMPLEMENTER_SKILL)
+        self.assertIn(
+            "Completed work routes to fresh independent `task-review-discovery` evidence and a separate fresh `task-acceptance-review` decision when independent review is requested or required",
+            implementer,
+        )
+        self.assertIn(
+            "Loading, quoting, or following `task-review-discovery` or `task-acceptance-review` in the current session",
+            implementer,
+        )
+        self.assertIn(
+            "exactly name fresh independent `task-review-discovery` evidence and the separate fresh `task-acceptance-review` decision as next owner",
+            implementer,
+        )
+        self.assertNotIn("route to a fresh `task-acceptance-review`.", implementer)
+
+        maintainability = normalized(MAINTAINABILITY_SKILL)
+        self.assertIn(
+            "proceed to fresh independent `task-review-discovery` evidence and the separate functional `task-acceptance-review` decision when that stage is required",
+            maintainability,
+        )
+        self.assertIn(
+            "repeat architecture gate + fresh maintainability review before fresh discovery evidence and fresh functional acceptance",
+            maintainability,
+        )
+
+    def test_role_reasoning_guidance_adds_no_adapter_fifth_key_or_runtime_claim(self):
+        text = FLOW_README.read_text(encoding="utf-8")
+        metadata = next(
+            block for block in fenced_blocks(text) if "agent_tier:" in block
+        )
+        keys = {
+            line.split(":")[0].strip()
+            for line in metadata.splitlines()
+            if ":" in line and "->" not in line
+        }
+        self.assertEqual({"agent_tier", "reasoning", "review", "budget"}, keys)
+        flat = normalized(FLOW_README)
+        self.assertIn(
+            "launch tooling enforces neither the separate-call role nor the reasoning recommendation",
+            flat,
+        )
+        self.assertIn(
+            "intended launch guidance, not claims about the eventual runtime configuration",
+            flat,
+        )
+
+
+class ComposedQualificationSetupTests(unittest.TestCase):
+    """T-002.4 task-local composition of the predecessor fixtures.
+
+    The composition connects authority/verification/preflight context and
+    current implementations/tests to discovery and decision inputs. These
+    assertions reject a composition that loses preflight-only context, drops
+    an unfinished row, copies prior gate labels, or relabels constructed
+    records as observed role outputs.
+    """
+
+    @property
+    def composition(self) -> dict:
+        return json.loads(COMPOSITION_PATH.read_text(encoding="utf-8"))
+
+    def record(self, record_id: str) -> dict:
+        return next(
+            item for item in self.composition["records"] if item["id"] == record_id
+        )
+
+    def stage(self, fixture: Path, scenario: str) -> Path:
+        temporary = TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        work = Path(temporary.name)
+        env = dict(os.environ, EVAL_WORK_ROOT=str(work))
+        subprocess.run(
+            [sys.executable, str(fixture), scenario],
+            check=True,
+            env=env,
+            capture_output=True,
+        )
+        return work
+
+    def test_composition_is_explicitly_labeled_fixture_data(self):
+        data = self.composition
+        self.assertIn("fixture data", data["status"])
+        self.assertIn("never observed role outputs", data["status"])
+        consumers = json.dumps(data["intended_consumers"])
+        for role in ("task-review-discovery", "task-acceptance-review", "task-preflight"):
+            self.assertIn(role, consumers)
+        self.assertIn("T-002.5", consumers)
+        categories = json.dumps(data["evidence_categories"])
+        for token in (
+            "structural_tests",
+            "actual_behavior",
+            "semantic_contract_inspection",
+            "unrun_agent_compliance",
+        ):
+            self.assertIn(token, categories)
+        self.assertIn(
+            "no actual skill-call agent", data["evidence_categories"]["unrun_agent_compliance"]
+        )
+
+    def test_preflight_only_exposure_survives_into_discovery_and_decision_inputs(self):
+        record = self.record("COMP-01")
+        self.assertEqual(
+            "contextual-risk-blockers-decision", record["scenario"]
+        )
+        work = self.stage(ACCEPTANCE_FIXTURE, "contextual-risk-blockers-decision")
+        root = work / "contextual-runner"
+        preflight = normalized(root / "docs" / "tasks" / "INV-07" / "preflight.md")
+        exposure = record["upstream_context"]["exposure_only_in_preflight"]
+        self.assertIn(exposure, preflight)
+        self.assertIn(exposure, record["discovery_input"]["exposure_preserved"])
+        discovery = normalized(work / "task-runs" / "INV-07" / "discovery-01.md")
+        self.assertNotIn(exposure, discovery)
+        self.assertEqual("CHANGES_REQUESTED", record["decision_input"]["expected_route"])
+        self.assertIn(
+            "passing ACs do not erase material-risk decision obligations",
+            json.dumps(record["decision_input"]),
+        )
+
+        out = root / "out" / "ledger.csv"
+        out.parent.mkdir(parents=True)
+        out.write_text("inv-9001,10.00\n")
+        invoices = root / "bad-invoices.json"
+        invoices.write_text(
+            json.dumps([{"id": "inv-1", "amount": "5.25"}, {"id": "inv-2", "amount": "oops"}])
+        )
+        failed = subprocess.run(
+            [sys.executable, "-m", "src.invoices.export", str(invoices), str(out)],
+            cwd=root,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertEqual("", out.read_text())
+
+        mitigated = self.stage(ACCEPTANCE_FIXTURE, "contextual-risk-mitigated-decision")
+        mitigated_root = mitigated / "contextual-runner"
+        mitigated_out = mitigated_root / "out" / "ledger.csv"
+        mitigated_out.parent.mkdir(parents=True)
+        mitigated_out.write_text("inv-9001,10.00\n")
+        mitigated_invoices = mitigated_root / "bad-invoices.json"
+        mitigated_invoices.write_text(
+            json.dumps([{"id": "inv-1", "amount": "5.25"}, {"id": "inv-2", "amount": "oops"}])
+        )
+        controlled = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "src.invoices.export",
+                str(mitigated_invoices),
+                str(mitigated_out),
+            ],
+            cwd=mitigated_root,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(controlled.returncode, 0)
+        self.assertEqual("inv-9001,10.00\n", mitigated_out.read_text())
+
+    def test_mixed_conditions_retain_ids_reasons_owners_and_both_routes(self):
+        record = self.record("COMP-02")
+        work = self.stage(ACCEPTANCE_FIXTURE, "mixed-conditions-authorized-decision")
+        authorized = (work / "task-runs" / "JOB-05" / "discovery-01.md").read_text()
+        row = record["discovery_input"]["unfinished_row"]
+        self.assertEqual("JOB-PAIR", row["id"])
+        self.assertEqual("blocked", row["state"])
+        self.assertIn("pair_claims.py", row["reason"])
+        self.assertTrue(row["next_owner"])
+        self.assertIn(row["id"] + "=blocked", authorized)
+        root = work / "mixed-runner"
+        self.assertFalse((root / "tests" / "helpers" / "pair_claims.py").exists())
+
+        routes = {entry["scenario"]: entry for entry in record["decision_inputs"]}
+        self.assertEqual(
+            "CHANGES_REQUESTED", routes["mixed-conditions-authorized-decision"]["expected_route"]
+        )
+        self.assertEqual(
+            "INCONCLUSIVE", routes["mixed-conditions-forbidden-decision"]["expected_route"]
+        )
+        for entry in record["decision_inputs"]:
+            self.assertIn("no advancement", entry["rule"])
+
+        forbidden = self.stage(ACCEPTANCE_FIXTURE, "mixed-conditions-forbidden-decision")
+        policy = json.loads(
+            (forbidden / "task-runs" / "policies" / "local-review-mixed.json").read_text()
+        )
+        self.assertIn("production edits in this review cycle", policy["deny"][0])
+
+    def test_correction_records_carry_current_evidence_and_discovery_owned_gates(self):
+        record = self.record("COMP-03")
+        blob = json.dumps(record)
+        for token in (
+            "premature",
+            "suppressed after the decisive failure",
+            "reviewer regressions",
+            "one justified aggregate",
+            "command or `not run`",
+            "without executing it",
+            "discovery-02.md",
+        ):
+            self.assertIn(token, blob)
+        self.assertIn("record the earlier aggregate gate as premature", normalized(DISCOVERY_SKILL))
+        self.assertIn(
+            "only discovery owns a still-justified rerun", normalized(ACCEPTANCE_SKILL)
+        )
+
+        for scenario, boolean_exit in (
+            ("discovery-late-omission-clean", 2),
+            ("discovery-late-omission-fail", 0),
+        ):
+            with self.subTest(scenario=scenario):
+                work = self.stage(DISCOVERY_FIXTURE, scenario)
+                workspace = work / "late-omission"
+                valid = json.loads((workspace / "cases" / "valid.json").read_text())
+                case = work / "boolean.json"
+                case.write_text(json.dumps(dict(valid, revision=True)))
+                run = subprocess.run(
+                    [sys.executable, "-m", "src.ledger.validate", str(case)],
+                    cwd=workspace,
+                    capture_output=True,
+                )
+                self.assertEqual(boolean_exit, run.returncode)
+
+    def test_deferral_records_connect_to_relevant_and_unrelated_preflight_inputs(self):
+        record = self.record("COMP-04")
+        self.assertIn(
+            "the human coordinator alone records", record["coordinator_record"]["writer"]
+        )
+        self.assertIn("never write the tracker", record["coordinator_record"]["writer"])
+        work = self.stage(ACCEPTANCE_FIXTURE, "known-issue-consumption-decision")
+        record_text = normalized(work / "ledger-consumer" / "docs" / "known-issues.md")
+        for field in record["coordinator_record"]["fields"]:
+            self.assertIn(field, record_text)
+
+        cases = {entry["case"]: entry for entry in record["later_preflight_inputs"]}
+        for required in (
+            "relevant, unchanged exposure",
+            "relevant, changed exposure",
+            "unrelated task",
+            "priority-only change",
+        ):
+            self.assertIn(required, cases)
+        self.assertIn(
+            "routes through the record's follow-up owner",
+            cases["relevant, changed exposure"]["expected"],
+        )
+        self.assertIn(
+            "no defect obligation",
+            cases["unrelated task"]["expected"],
+        )
+        self.assertIn(
+            "does not reopen task acceptance",
+            cases["priority-only change"]["expected"],
+        )
+
+        discovery = normalized(work / "task-runs" / "RPT-12B" / "discovery-01.md")
+        self.assertIn("changed exposure", discovery)
+        self.assertIn("WEB-02", discovery)
+
+        correction = self.stage(ACCEPTANCE_FIXTURE, "correction-regression-decision")
+        self.assertIn(
+            "exposure is unchanged",
+            normalized(
+                correction / "correction-runner" / "docs" / "tasks" / "ORD-04" / "preflight.md"
+            ),
+        )
+        priority = self.stage(ACCEPTANCE_FIXTURE, "known-issue-priority-only-decision")
+        plan = json.loads(
+            (priority / "ledger-consumer" / "cases" / "follow-up.json").read_text()
+        )
+        self.assertEqual("next", plan["prior_priority"])
+        self.assertEqual("later", plan["current_priority"])
+
+    def test_prepared_and_direct_routes_preserve_inputs_and_provenance(self):
+        record = self.record("COMP-05")
+        blob = json.dumps(record)
+        for token in ("brief.md", "verification.md", "preflight.md"):
+            self.assertIn(token, blob)
+        self.assertIn("guided direct request", blob)
+        self.assertIn("SELF_CHECK_ONLY", blob)
+        self.assertIn("fresh discovery call", blob)
+        self.assertIn(
+            "coordinator recording precedes authorized continuation", blob
+        )
+        discovery = normalized(DISCOVERY_SKILL)
+        self.assertIn("SELF_CHECK_ONLY", discovery)
+        self.assertIn("The route is always a fresh discovery call", discovery)
+
+    def test_inherited_case_inventory_preserves_every_predecessor_case(self):
+        inventory = self.composition["inherited_case_inventory"]
+        kinds = {entry["kind"] for entry in inventory}
+        for kind in (
+            "lifecycle-repetition",
+            "lifecycle-resume",
+            "lifecycle-retry",
+            "missing-capability",
+            "index-worktree-identity",
+            "ledger-cardinality-order-type",
+            "workflow-tampering-replay-decision",
+            "validator-valid-targeted-invalid",
+            "process-resistant-descendant",
+            "process-pipe",
+            "process-race",
+            "public-entry",
+            "continuation",
+            "self-check-provenance",
+            "preflight-readiness",
+        ):
+            self.assertIn(kind, kinds)
+
+        by_skill = {
+            "task-review-discovery": {
+                item["id"]: item
+                for item in json.loads(DISCOVERY_EVALS.read_text(encoding="utf-8"))["evals"]
+            },
+            "task-acceptance-review": {
+                item["id"]: item
+                for item in json.loads(ACCEPTANCE_EVALS.read_text(encoding="utf-8"))["evals"]
+            },
+            "task-preflight": {
+                item["id"]: item
+                for item in json.loads(PREFLIGHT_EVALS.read_text(encoding="utf-8"))["evals"]
+            },
+        }
+        for entry in inventory:
+            source = entry["source"]
+            with self.subTest(case=entry["id"]):
+                self.assertIn(source["skill"], by_skill)
+                self.assertIn(source["eval_id"], by_skill[source["skill"]])
+                item = by_skill[source["skill"]][source["eval_id"]]
+                if "scenario" in source:
+                    self.assertEqual(
+                        source["scenario"],
+                        item["execution"]["setup"]["command"][2],
+                    )
+                self.assertTrue(entry["signal"])
+
+    def test_unrun_t005_boundaries_are_explicit(self):
+        data = self.composition
+        boundaries = data["t005_unrun_boundaries"]
+        self.assertGreaterEqual(len(boundaries), 4)
+        for boundary in boundaries:
+            self.assertEqual("T-002.5", boundary["owner"])
+            self.assertTrue(boundary["unrun_reason"])
+        blob = json.dumps(data)
+        self.assertNotIn("behavioral qualification passed", blob)
+        self.assertNotIn("installed flow is qualified", blob)
 
 
 if __name__ == "__main__":

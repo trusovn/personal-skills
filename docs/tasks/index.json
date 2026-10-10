@@ -1,6 +1,30 @@
 {
   "version": 1,
   "tasks": {
+    "TEST-STAB-001": {
+      "kind": "composite",
+      "source_plan_task": null,
+      "brief": "docs/tasks/TEST-STAB-001/brief.md",
+      "parent": null,
+      "children": ["TEST-STAB-001.1", "TEST-STAB-001.2"],
+      "depends_on": ["T-002.4"]
+    },
+    "TEST-STAB-001.1": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/TEST-STAB-001.1/brief.md",
+      "parent": "TEST-STAB-001",
+      "children": [],
+      "depends_on": ["T-002.4"]
+    },
+    "TEST-STAB-001.2": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/TEST-STAB-001.2/brief.md",
+      "parent": "TEST-STAB-001",
+      "children": [],
+      "depends_on": ["TEST-STAB-001.1"]
+    },
     "BRIEF-P0": {
       "kind": "executable",
       "source_plan_task": null,

@@ -8,12 +8,10 @@ role outputs.
 """
 
 import json
-import os
 import subprocess
 import sys
 import unittest
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 from review_fixture_support import (
     ACCEPTANCE_EVALS,
@@ -26,6 +24,7 @@ from review_fixture_support import (
     ROOT,
     normalized,
 )
+from staging_fixture_support import stage_setup
 
 TASK_MAP = ROOT / "docs" / "task-map.json"
 COMPOSITION_PATH = ROOT / "docs" / "tasks" / "T-002.4" / "composition.json"
@@ -53,17 +52,7 @@ class ComposedQualificationSetupTests(unittest.TestCase):
 
 
     def stage(self, fixture: Path, scenario: str) -> Path:
-        temporary = TemporaryDirectory()
-        self.addCleanup(temporary.cleanup)
-        work = Path(temporary.name)
-        env = dict(os.environ, EVAL_WORK_ROOT=str(work))
-        subprocess.run(
-            [sys.executable, str(fixture), scenario],
-            check=True,
-            env=env,
-            capture_output=True,
-        )
-        return work
+        return stage_setup(self, fixture, scenario)
 
 
     def test_composition_is_explicitly_labeled_fixture_data(self):
@@ -106,45 +95,12 @@ class ComposedQualificationSetupTests(unittest.TestCase):
             json.dumps(record["decision_input"]),
         )
 
-        out = root / "out" / "ledger.csv"
-        out.parent.mkdir(parents=True)
-        out.write_text("inv-9001,10.00\n")
-        invoices = root / "bad-invoices.json"
-        invoices.write_text(
-            json.dumps([{"id": "inv-1", "amount": "5.25"}, {"id": "inv-2", "amount": "oops"}])
-        )
-        failed = subprocess.run(
-            [sys.executable, "-m", "src.invoices.export", str(invoices), str(out)],
-            cwd=root,
-            capture_output=True,
-            text=True,
-        )
-        self.assertNotEqual(failed.returncode, 0)
-        self.assertEqual("", out.read_text())
-
-        mitigated = self.stage(ACCEPTANCE_FIXTURE, "contextual-risk-mitigated-decision")
-        mitigated_root = mitigated / "contextual-runner"
-        mitigated_out = mitigated_root / "out" / "ledger.csv"
-        mitigated_out.parent.mkdir(parents=True)
-        mitigated_out.write_text("inv-9001,10.00\n")
-        mitigated_invoices = mitigated_root / "bad-invoices.json"
-        mitigated_invoices.write_text(
-            json.dumps([{"id": "inv-1", "amount": "5.25"}, {"id": "inv-2", "amount": "oops"}])
-        )
-        controlled = subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "src.invoices.export",
-                str(mitigated_invoices),
-                str(mitigated_out),
-            ],
-            cwd=mitigated_root,
-            capture_output=True,
-            text=True,
-        )
-        self.assertNotEqual(controlled.returncode, 0)
-        self.assertEqual("inv-9001,10.00\n", mitigated_out.read_text())
+        # Malformed-invoice export behavior is not restaged here: the same
+        # inputs, failures and persisted-state oracles belong to the canonical
+        # probes in tests/test_contextual_export_risks.py
+        # (test_failed_risky_export_destroys_the_existing_ledger,
+        # test_failed_mitigated_export_preserves_the_existing_ledger). This
+        # test keeps only the COMP-01 composition-specific assertions.
 
 
     def test_mixed_conditions_retain_ids_reasons_owners_and_both_routes(self):

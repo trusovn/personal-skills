@@ -6,31 +6,20 @@ blocker reasons.
 """
 
 import json
-import os
 import subprocess
 import sys
 import unittest
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 from review_fixture_support import ACCEPTANCE_FIXTURE, normalized
+from staging_fixture_support import stage_setup
 
 
 class ContextualKnownIssueFixtureTests(unittest.TestCase):
     """Runnable probes establish the contrasting staged facts behind the rubric."""
 
     def stage(self, scenario: str) -> Path:
-        temporary = TemporaryDirectory()
-        self.addCleanup(temporary.cleanup)
-        work = Path(temporary.name)
-        env = dict(os.environ, EVAL_WORK_ROOT=str(work))
-        subprocess.run(
-            [sys.executable, str(ACCEPTANCE_FIXTURE), scenario],
-            check=True,
-            env=env,
-            capture_output=True,
-        )
-        return work
+        return stage_setup(self, ACCEPTANCE_FIXTURE, scenario)
 
 
     def test_known_issue_record_fields_and_consumer_compatibility_probes(self):

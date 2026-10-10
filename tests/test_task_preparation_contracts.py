@@ -165,7 +165,10 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
         )["evals"]
 
         self.assertIn("A supplied executable task package always requires", designer)
-        self.assertIn("derived `verification.md`,\nthen a ready `preflight.md`", designer)
+        self.assertIn(
+            "derived `verification.md`, then a ready `preflight.md`",
+            " ".join(designer.split()),
+        )
         self.assertIn("derived `verification.md`, then ready", template)
         self.assertIn("For an executable task package, create derived", layout)
         self.assertIn("cannot use the conversational direct-edit exception", designer)

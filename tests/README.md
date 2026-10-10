@@ -8,8 +8,12 @@ unchanged installer suite, sequentially.
 
 Shared support: `tests/review_fixture_support.py` holds the repository root,
 the acceptance/discovery package paths, and the `normalized`/`fixture_functions`
-text helpers used by several owning modules. Skill eval setup programs remain
-self-contained and never import repository-test helpers.
+text helpers used by several owning modules. `tests/staging_fixture_support.py`
+encapsulates the disposable `EVAL_WORK_ROOT` lifecycle, environment and setup
+subprocess execution shared by the contextual and composition fixture owners;
+each invocation owns its temporary workspace and cleanup, and a failed setup
+raises with scenario and subprocess diagnostics. Skill eval setup programs
+remain self-contained and never import repository-test helpers.
 
 | Module | Owner (purpose) | Fixture dependency |
 |---|---|---|

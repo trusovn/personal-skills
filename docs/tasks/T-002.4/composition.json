@@ -8,13 +8,13 @@
     "task-review-discovery — a fresh session that did not author the reviewed bytes",
     "task-acceptance-review — a fresh decision call admitting the discovery report",
     "task-preflight — later readiness reassessing recorded known issues",
-    "T-002.5 — actual separate producing/consuming role calls under its own authorization"
+    "T-005 — actual separate producing/consuming role calls under its own authorization"
   ],
   "evidence_categories": {
     "structural_tests": "focused route/byte assertions in tests/test_review_discipline.py and tests/test_install_development_skills.py over the source guides, child handoffs, installer projection, and this artifact",
     "actual_behavior": "real disposable probes staged by the predecessor setup_fixture.py files and the canonical installer into disposable committed Git targets; no active installation was touched",
     "semantic_contract_inspection": "focused reading of the settled T-002.1-.3 SKILL.md and report-template bytes plus the affected guides",
-    "unrun_agent_compliance": "no actual skill-call agent has produced or consumed these records; actual separate-call compliance and installed-flow qualification are owned by T-002.5"
+    "unrun_agent_compliance": "no actual skill-call agent has produced or consumed these records; actual separate-call compliance and installed-flow qualification are owned by T-005"
   },
   "fixture_sources": {
     "discovery": "skills/task-implementation-flow/task-review-discovery/evals/files/setup_fixture.py",
@@ -89,12 +89,76 @@
         "discovery-diagnostic-aggregate"
       ],
       "fixture": "discovery",
-      "records": [
-        "after a decisive targeted failure the ordinary aggregate is suppressed after the decisive failure with its reason; a gate run before an omitted material row is recorded as premature, and the missing targeted probe runs first",
-        "corrected bytes: clean targeted evidence reruns reviewer regressions and resolves runnable unfinished rows without renaming IDs, then discovery owns one justified aggregate",
-        "each gate record carries the exact command or `not run`, owner, stage, reason, and current evidence; acceptance consumes that record without executing it, and a copied pre-correction pass is not current evidence",
-        "the diagnostic-aggregate case continues into discovery-02.md with finding IDs, reviewer regressions, and the consumed gate record preserved"
-      ],
+      "supplied_failure": {
+        "scenario": "discovery-correction-gate",
+        "report": "docs/tasks/QR-12/reviews/discovery-01.md",
+        "finding_id": "F-01",
+        "suggested_priority": "P1",
+        "finding": "second public invocation fails to claim TASK-2",
+        "coverage_rows": {
+          "QR-R1": "pass — AC-01 first invocation independently observed the TASK-1 claim and persisted state change",
+          "QR-R2": "fail — AC-01 second invocation returned None; finding F-01",
+          "QR-R3": "unchecked — AC-02 retry row unfinished; not reached before the pass stopped"
+        },
+        "unfinished_row": {
+          "id": "QR-R3",
+          "reason": "the retry row was not reached before the pass stopped"
+        },
+        "gate_record": {
+          "command": "python -m unittest discover -s tests",
+          "status": "not run",
+          "owner": "fresh correction discovery after clean targeted evidence",
+          "stage": "prior discovery",
+          "reason": "decisive targeted failure suppresses the ordinary aggregate"
+        }
+      },
+      "correction": {
+        "corrected_bytes": "src/queue/run_next.py claims the next ready task; tests/integration/test_run_next.py gains the reviewer regression test_retry_after_completion_adds_no_duplicate",
+        "reviewer_regression": "python -m unittest tests.integration.test_run_next",
+        "clean_targeted_observation": "the reviewer regression passes on the corrected bytes and resolves the previously unfinished QR-R3 retry row without renaming IDs",
+        "continuation_rows": {
+          "QR-R1": "pass",
+          "QR-R2": "fail (F-01)",
+          "QR-R3": "unchecked (retry row unfinished)"
+        },
+        "continuation_finding_ids": "F-01 (suggested P1)",
+        "expected_clean_discovery": {
+          "current_evidence": "fresh discovery observes current clean targeted evidence on the corrected bytes; a copied pre-correction pass label is not current evidence",
+          "gate_record": {
+            "command": "python -m unittest discover -s tests",
+            "status": "run once",
+            "owner": "discovery",
+            "stage": "one justified aggregate after clean targeted evidence",
+            "reason": "decisive targeted proof is clean, so discovery alone owns the single justified aggregate"
+          },
+          "decision_input": "acceptance consumes the discovery-owned gate record without executing the aggregate again"
+        }
+      },
+      "late_omission": {
+        "scenarios": ["discovery-late-omission-fail", "discovery-late-omission-clean"],
+        "prior_report_rows": {
+          "LED-R1": "pass — AC-01 valid reference instance accepted",
+          "LED-R3": "pass — AC-03 running coherence observed"
+        },
+        "omitted_row": {
+          "id": "LED-R2",
+          "case": "AC-02 boolean revision at the persistence boundary"
+        },
+        "premature_gate_record": {
+          "command": "python -m unittest discover -s tests",
+          "status": "run, passed",
+          "owner": "prior discovery",
+          "stage": "recorded before the omitted material row was found",
+          "reason": "the aggregate ran before the missing targeted probe, so it is recorded as premature and the missing targeted proof runs first"
+        },
+        "missing_targeted_probe": "python -m src.ledger.validate <boolean-revision case> — exit 2 rejects the boolean revision (clean variant); exit 0 leaves the omission unfixed (fail variant)",
+        "ordering": "the omitted row's targeted probe runs before any fresh aggregate; the clean variant resolves the row and only then justifies one aggregate"
+      },
+      "diagnostic_aggregate": {
+        "scenario": "discovery-diagnostic-aggregate",
+        "authorization": "diagnostic-authorization.md permits one diagnostic python -m unittest discover -s tests run that is not the review gate, does not replace the suppressed ordinary aggregate record, and does not erase failed or unfinished rows",
+        "continuation": "discovery-02.md continues the iteration with finding IDs, reviewer regressions, and the consumed gate record preserved"
+      },
       "validator_contrast": {
         "probes": "late-omission ledger validator: the valid instance exits 0; targeted boolean-revision, older-attempt, and second-running instances exit 2; the fail variant keeps only the boolean-revision defect (exit 0)",
         "source": "DiscoveryLateOmissionFixtureTests in tests/test_review_discipline.py plus the composition's focused rerun"
@@ -129,23 +193,43 @@
       "later_preflight_inputs": [
         {
           "case": "relevant, unchanged exposure",
-          "source": "correction-runner/docs/tasks/ORD-04/preflight.md staged by correction-regression-decision",
+          "consumer": "RPT-12A",
+          "known_issue": "KI-001 — INV-07 export footer (provenance task INV-07; review acceptance-01; finding INV-M01)",
+          "source": "ledger-consumer docs/tasks/RPT-12A/preflight.md and task-runs/RPT-12A/discovery-01.md staged by known-issue-proposed-work-decision",
+          "compatibility": "the row-count consumer treats the footer as informational; compatibility/exposure unchanged",
           "expected": "exposure is unchanged, so the accepted disposition is retained; no global correction-round limit reopens it"
         },
         {
           "case": "relevant, changed exposure",
-          "source": "ledger-consumer staged discovery-01 changed-exposure record (WEB-02 consuming RPT-12A)",
+          "consumer": "RPT-12B",
+          "known_issue": "KI-001 — INV-07 export footer (provenance task INV-07; review acceptance-01; finding INV-M01)",
+          "source": "ledger-consumer docs/tasks/RPT-12B/preflight.md and task-runs/RPT-12B/discovery-01.md staged by known-issue-consumption-decision",
+          "compatibility": "this consumer requires the reported generation instant in UTC, which triggers the record's reassessment conditions",
           "expected": "changed exposure or required-consumer incompatibility routes through the record's follow-up owner for reassessment"
         },
         {
           "case": "unrelated task",
-          "source": "a later preflight input for a task outside the record's affected boundary",
+          "consumer": "WEB-02",
+          "known_issue": "KI-001 — INV-07 export footer (provenance task INV-07; review acceptance-01; finding INV-M01)",
+          "source": "ledger-consumer docs/tasks/WEB-02/brief.md (cache-bust web assets) staged by known-issue-consumption-decision",
+          "compatibility": "outside the record's affected boundary and consumer set",
           "expected": "carries no defect obligation from the record and triggers no broad issue search"
         },
         {
           "case": "priority-only change",
+          "consumer": "RPT-12A",
+          "known_issue": "KI-001 — INV-07 export footer (provenance task INV-07; review acceptance-01; finding INV-M01)",
           "source": "known-issue-priority-only-decision staging (follow-up.json prior_priority next, current_priority later)",
+          "compatibility": "a scheduling label changed; no material fact changed",
           "expected": "a portfolio priority change alone does not reopen task acceptance; only changed material facts can"
+        },
+        {
+          "case": "separately scoped record",
+          "consumer": "ORD-04",
+          "known_issue": "KI-001 — ORD-04 retry log wording (provenance task ORD-04; review acceptance-01; finding ORD-L01)",
+          "source": "correction-runner docs/known-issues.md and docs/tasks/ORD-04/preflight.md staged by correction-regression-decision",
+          "compatibility": "an independently scoped KI-001 example whose boundary is the retry log line; it must not be conflated with the INV-07 export-footer KI-001 or its consumers",
+          "expected": "the correction did not touch the log line, so that record's exposure is unchanged and is reassessed against its own boundary, never against INV-07's consumers"
         }
       ]
     },
@@ -312,23 +396,23 @@
   "t005_unrun_boundaries": [
     {
       "boundary": "an actual task-review-discovery call in a fresh session over a staged workspace",
-      "owner": "T-002.5",
+      "owner": "T-005",
       "unrun_reason": "requires separately authorized producing/consuming role calls; this composition only supplies the setup"
     },
     {
       "boundary": "an actual task-acceptance-review decision call consuming that discovery report",
-      "owner": "T-002.5",
+      "owner": "T-005",
       "unrun_reason": "same separate-call authorization; no local check substitutes for the decision call"
     },
     {
       "boundary": "an actual later task-preflight call reassessing the KI-001 record against relevant and unrelated exposure",
-      "owner": "T-002.5",
+      "owner": "T-005",
       "unrun_reason": "the composed later-preflight inputs are fixture data until a real preflight call consumes them"
     },
     {
       "boundary": "installed-flow multi-call qualification against the active installation",
-      "owner": "T-002.5",
-      "unrun_reason": "final behavioral qualification belongs to T-002.5 under its own authorization; no local result claims it"
+      "owner": "T-005",
+      "unrun_reason": "final behavioral qualification belongs to T-005 under its own authorization; no local result claims it"
     }
   ]
 }

@@ -215,7 +215,7 @@ CMD-02 owning: python -m unittest tests.integration.test_run_next
 CMD-03 broader: python -m unittest discover -s tests
 Working directory for all commands: {root}
 Permissions: only allowed paths and runtime result; no network, install, commit, or other writes.
-Next route after complete: task-acceptance-review.
+Next route after complete: fresh task-review-discovery evidence, then a separate fresh task-acceptance-review decision.
 """
     packet_path.write_text(packet, encoding="utf-8")
     post_packet_status = git(root, "status", "--short")
@@ -413,7 +413,7 @@ def api_immediate() -> None:
         Targeted: python -m unittest tests.auth.test_session.SessionTest.test_expired_session_is_invalid
         Owning: python -m unittest tests.auth.test_session
         No network, dependency installation, commits, machine result schema, or other repository writes.
-        After implementation checks, hand the current bytes to a fresh acceptance reviewer.
+        After implementation checks, route the current bytes to fresh task-review-discovery evidence and a separate fresh acceptance decision.
         """,
     )
     write(
@@ -557,7 +557,7 @@ def record_correction() -> None:
         Covers: AC-02
         Reviewer row: ROW-REPLAY-BOUNDARY
         Setup: reviews/acceptance-01.md retains the unchecked row.
-        Oracle / boundary: handoff preserves the unchecked row and names fresh task-acceptance-review as next owner; no implementation acceptance claim.
+        Oracle / boundary: handoff preserves the unchecked row and names fresh task-review-discovery evidence and the separate fresh task-acceptance-review decision as next owner; no implementation acceptance claim.
         """)
     write(root, "docs/tasks/REC-44/preflight.md", """
         # Preflight: REC-44
@@ -651,8 +651,8 @@ def record_correction() -> None:
         - ROW-REPLAY-BOUNDARY — unchecked — fresh reviewer must evaluate; implementer must not claim a verdict.
 
         Remaining obligations:
-        - ROW-EXACT-BYTES — correct exact-byte binding and rerun the reviewer regression; next owner: bounded-task-implementer, then fresh task-acceptance-review.
-        - ROW-REPLAY-BOUNDARY — evaluate unchecked replay coverage; next owner: fresh task-acceptance-review.
+        - ROW-EXACT-BYTES — correct exact-byte binding and rerun the reviewer regression; next owner: bounded-task-implementer, then fresh task-review-discovery evidence and a separate fresh task-acceptance-review decision.
+        - ROW-REPLAY-BOUNDARY — evaluate unchecked replay coverage; next owner: fresh task-review-discovery evidence and a separate fresh task-acceptance-review decision.
         """,
     )
     git(root, "add", ".")
@@ -825,7 +825,7 @@ def entry_cases() -> None:
     write(root, "tests/test_negative.py", "import unittest\n\n\ndef is_within(value, limit):\n    return True  # faulty: accepts every boundary violation\n\n\nclass NegativeTest(unittest.TestCase):\n    def test_negative_boundary_is_rejected(self):\n        self.assertFalse(is_within(11, 10), 'boundary violation was accepted')\n")
 
     write(root, "evidence/ledger-complete.md",
-          "# Scenario evidence ledger (complete)\n\nVerification design: docs/tasks/EVIDENCE/verification.md\nVerification revision: 2\n\nV-01 — passed — command: python -m unittest tests.test_boundary; setup: entry-cases fixture root; oracle: positive boundary assert holds; result: ok\nV-02 — failed — command: python -m unittest tests.test_negative; setup: entry-cases fixture root; oracle: negative boundary assert rejects; result: AssertionError reproduced\nV-03 — blocked — reason: policy denies network access; next owner: task-preflight\nV-04 — unchecked — reason: not exercised in this pass; next owner: fresh task-acceptance-review\nContext reference: docs/tasks/EVIDENCE/preflight.md\nRemaining obligations:\n- V-02 — repair the rejected-boundary failure and rerun python -m unittest tests.test_negative; next owner: bounded-task-implementer, then fresh task-acceptance-review\n- V-03 — resolve the denied network oracle or record a justified replacement; next owner: task-preflight\n- V-04 — exercise unchecked regression coverage; next owner: fresh task-acceptance-review\n")
+          "# Scenario evidence ledger (complete)\n\nVerification design: docs/tasks/EVIDENCE/verification.md\nVerification revision: 2\n\nV-01 — passed — command: python -m unittest tests.test_boundary; setup: entry-cases fixture root; oracle: positive boundary assert holds; result: ok\nV-02 — failed — command: python -m unittest tests.test_negative; setup: entry-cases fixture root; oracle: negative boundary assert rejects; result: AssertionError reproduced\nV-03 — blocked — reason: policy denies network access; next owner: task-preflight\nV-04 — unchecked — reason: not exercised in this pass; next owner: fresh task-review-discovery evidence, then a separate fresh task-acceptance-review decision\nContext reference: docs/tasks/EVIDENCE/preflight.md\nRemaining obligations:\n- V-02 — repair the rejected-boundary failure and rerun python -m unittest tests.test_negative; next owner: bounded-task-implementer, then fresh task-review-discovery evidence, then a separate fresh task-acceptance-review decision\n- V-03 — resolve the denied network oracle or record a justified replacement; next owner: task-preflight\n- V-04 — exercise unchecked regression coverage; next owner: fresh task-review-discovery evidence, then a separate fresh task-acceptance-review decision\n")
     write(root, "evidence/ledger-green-gap.md",
           "# Scenario evidence ledger (green gap)\n\nVerification design: docs/tasks/EVIDENCE/verification.md\nAuthoritative AC mapping: AC-01 <- V-01, V-04; AC-02 <- V-02, V-03\nV-01 — passed — green\nAll tests green. Omitted negative scenario V-02: not covered here.\n")
     write(root, "evidence/ledger-obsolete.md",

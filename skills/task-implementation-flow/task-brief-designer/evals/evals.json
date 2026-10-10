@@ -76,7 +76,7 @@
     {
       "id": 4,
       "prompt": "Gap-check the existing task at `docs/tasks/API-31/brief.md` for ordinary guided implementation. It already has an outcome, scope, positive and negative ACs, targeted and broader commands, stops, and a next action. Its authority explicitly calls for an economical standard-agent, medium-reasoning launch profile and immediate fresh acceptance review. Estimate it at 6 implementation-agent calls and 20 minutes under the active sizing policy. Add the standard `agent_tier`, `reasoning`, `review`, and `budget` metadata block, the execution-sizing evidence, and the proportionate readiness route, but do not rewrite adequate prose or add high-assurance ledgers, matrices, digests, packet requirements, or prerequisite tasks.",
-      "expected_output": "A surgical update that adds truthful intended launch guidance, fitting execution-sizing evidence, and the implementer self-preflight route; preserves guided implementation as the next action; and explicitly requires fresh independent acceptance review immediately after implementation without replacing the brief with the full template.",
+      "expected_output": "A surgical update that adds truthful intended launch guidance, fitting execution-sizing evidence, and the implementer self-preflight route; preserves guided implementation as the next action; and explicitly requires fresh independent `task-review-discovery` evidence and the separate `task-acceptance-review` decision immediately after implementation or correction without replacing the brief with the full template.",
       "files": [
         "evals/files/setup_fixture.py"
       ],
@@ -100,7 +100,7 @@
         "The brief adds execution-sizing evidence for the supplied 6-call / 20-minute estimate, identifies the active policy result as fitting, and does not treat the surgical gap-check as exempt from sizing.",
         "The result keeps guided status `ready`, recommends `implementer self-preflight`, adds no route metadata key, and does not force standalone preflight.",
         "The verification-design recommendation is `inline` because the existing brief already supplies obvious positive and negative scenarios and decisive commands/oracles.",
-        "The handoff preserves guided implementation as the next action and explicitly requires fresh independent acceptance review immediately after implementation or correction; a generic implementation next action alone or same-session self-review semantics fails this expectation.",
+        "The handoff preserves guided implementation as the next action and explicitly requires fresh independent `task-review-discovery` evidence and the separate `task-acceptance-review` decision immediately after implementation or correction; a generic implementation next action alone, same-session self-review semantics, or a route that sends implementation straight to acceptance without discovery fails this expectation.",
         "No knowledge ledger, AC execution matrix, digest inventory, durable packet contract, or prerequisite task is added.",
         "Only `docs/tasks/API-31/brief.md` is modified."
       ]

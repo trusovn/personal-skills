@@ -225,9 +225,11 @@ risk.
 - Preserve pre-existing user work.
 - Next action: `<guided implementation | standalone guided preflight and reason | high-assurance preflight | decision owner>`.
 - When `review: immediate`, preserve implementation as the next action and add:
-  `Required follow-on: immediately after implementation or correction, hand
-  the completed bytes to a fresh independent acceptance reviewer.` Do not use
-  same-session self-review as that acceptance step.
+  `Required follow-on: immediately after implementation or correction and any
+  applicable conditional stages, hand the completed bytes to a fresh
+  independent `task-review-discovery` call, and hand its report to a separate
+  `task-acceptance-review` decision.` Do not use
+  same-session self-review as that discovery or acceptance step.
 
 ---
 

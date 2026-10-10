@@ -526,7 +526,7 @@ class ImplementerContractTest(unittest.TestCase):
                            "V-02 — failed", "command: python -m unittest tests.test_negative",
                            "oracle: negative boundary assert rejects", "result: AssertionError reproduced",
                            "V-03 — blocked", "next owner: task-preflight",
-                           "V-04 — unchecked", "next owner: fresh task-acceptance-review",
+                           "V-04 — unchecked", "next owner: fresh task-review-discovery evidence, then a separate fresh task-acceptance-review decision",
                            "Context reference: docs/tasks/EVIDENCE/preflight.md",
                            "Remaining obligations:", "Verification revision: 2"):
                 self.assertIn(marker, complete)

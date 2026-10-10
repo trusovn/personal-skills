@@ -30,14 +30,19 @@ this document.
 
 - Fail-first run (before guide/fixture changes), repository root:
   `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.test_review_discipline.ComposedReviewFlowGuideTests tests.test_review_discipline.ComposedQualificationSetupTests tests.test_install_development_skills.DevelopmentSkillInstallerTests.test_install_projects_acceptance_review_package_and_preserves_unrelated_bytes`
-  → `Ran 17 tests … FAILED (failures=8, errors=8)`. The 8 failures reject
-  missing discovery in the affected guides/sequences/child handoffs and the
-  missing `reviews/discovery-01.md` layout reference; the 8 errors reject the
-  absent composition artifact. The 2 passing assertions are preservation
-  checks (four-key task metadata; no launcher adapter/fifth key/runtime claim)
-  and the new committed-target acceptance-package projection, which passes
-  immediately because `.1` already extended installer selection and the
-  projection is byte-exact from source.
+  → `Ran 17 tests … FAILED (failures=8, errors=8)`. The 8 errors are the
+  eight composition tests rejecting the then-absent composition artifact; the
+  8 failure records are the seven route-guide tests rejecting missing
+  discovery in the affected guides/sequences/child handoffs and the missing
+  `reviews/discovery-01.md` layout reference (the contract-aware sequence test
+  contributes two failing subtests); the 2 passing tests are the
+  role-reasoning preservation test (four-key task metadata; no launcher
+  adapter/fifth key/runtime claim) and the new committed-target
+  acceptance-package projection, which passes immediately because `.1`
+  already extended installer selection and the projection is byte-exact from
+  source. This counting was re-verified during the .4 correction by re-running
+  the same command against the pre-.4 sources in a disposable committed
+  worktree: 17 tests, 8 failure records, 8 errors, 2 passing tests.
 - After implementation, both classes pass: `Ran 16 tests … OK`.
 
 ### 2. Actual installer/probe behavior (real boundaries)
@@ -71,10 +76,13 @@ this document.
     `python3 -m src.ledger.validate <case>` — boolean-revision exit 2 (clean)
     vs 0 (fail) while older-attempt/second-running stay 2 (COMP-03 validator
     contrast).
-  - `known-issue-consumption-decision`, `correction-regression-decision`,
-    `known-issue-priority-only-decision`: staged KI-001 record fields,
-    ORD-04 unchanged-exposure preflight, WEB-02 changed-exposure discovery,
-    and the priority-only follow-up contrast (COMP-04).
+  - `known-issue-consumption-decision`, `known-issue-proposed-work-decision`,
+    `correction-regression-decision`, `known-issue-priority-only-decision`:
+    staged KI-001 record fields; RPT-12B changed-exposure discovery at
+    `task-runs/RPT-12B/discovery-01.md`; WEB-02 explicitly unrelated
+    (brief-only, no discovery report); RPT-12A unchanged exposure;
+    ORD-04 separately scoped KI-001 record; and the priority-only
+    follow-up contrast (COMP-04).
 
 ### 3. Semantic contract inspection
 

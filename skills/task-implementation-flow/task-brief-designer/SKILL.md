@@ -214,8 +214,10 @@ an unapproved premise.
    budget as a soft checkpoint unless higher-priority instructions explicitly
    make it hard. When `review: immediate`, preserve implementation as the next
    action and add the ordered follow-on: immediately after implementation or
-   correction, hand the completed bytes to a fresh independent acceptance
-   reviewer. Apply this to surgical gap-checks as well as newly drafted briefs;
+   correction and any applicable conditional stages, hand the completed bytes
+   to a fresh independent `task-review-discovery` call, and hand its report to
+   a separate `task-acceptance-review` decision. Apply this to surgical
+   gap-checks as well as newly drafted briefs;
    a generic implementation next action or a review workflow loaded in the
    authoring or implementation session does not state independent acceptance.
 10. Give every durable brief one human-readable readiness route:
@@ -386,7 +388,9 @@ For a gap check, report only:
   `task-verification-designer` pass, with the concrete reason when separate;
   and
 - when `review: immediate`, the ordered handoff from implementation or
-  correction to fresh independent acceptance review immediately afterward.
+  correction through applicable conditional stages and fresh independent
+  `task-review-discovery` evidence to the separate `task-acceptance-review`
+  decision immediately afterward.
 
 When supplied direction does not authorize a needed product, priority,
 assurance, trust, intervention, or scope choice, return only:

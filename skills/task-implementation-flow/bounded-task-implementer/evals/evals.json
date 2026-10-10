@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "The fixture has staged the queue-runner repository at `queue-runner/`, with its package-contained packet plus external schema and run policy. Implement task `QR-12` in `queue-runner/` from `queue-runner/docs/tasks/QR-12/preflight.md`. It authorizes edits only to `src/queue/run_next.py` and `tests/integration/test_run_next.py`, references `docs/tasks/QR-12/brief.md` and its bound `verification.md`, and supplies the required schema and result path. Add the approved behavior so two consecutive public invocations claim different ready tasks through persisted state. Preserve the pre-existing `MM notes/local.md` user change by comparing its separate index/worktree fingerprints. Confirm that the packet is the sole expected baseline delta, then follow its exact fail-first, targeted, owning-suite, and broader commands from the declared working directory; network, dependency installation, commits, and other paths are forbidden.",
-      "expected_output": "A minimal implementation confined to the two allowed paths, with intended fail-first evidence for the repeated public-entry flow, targeted-to-broader verification in packet order, and a schema-valid `complete` worker result submitted for independent acceptance review.",
+      "expected_output": "A minimal implementation confined to the two allowed paths, with intended fail-first evidence for the repeated public-entry flow, targeted-to-broader verification in packet order, and a schema-valid `complete` worker result that routes the completed bytes to fresh independent `task-review-discovery` evidence and a separate `task-acceptance-review` decision.",
       "files": ["evals/files/setup_fixture.py"],
       "execution": {
         "setup": {
@@ -20,7 +20,7 @@
         "Only `src/queue/run_next.py` and `tests/integration/test_run_next.py` are changed; no plan, packet, tracker, orchestrator, dependency, or unrelated path is modified.",
         "Fail-first evidence executes the real repeated `runner run-next` behavior and is confirmed to fail for the intended missing behavior before the production change.",
         "The exact targeted check runs first, followed only after success by the packet-authorized owning suite and broader gate, with every command and outcome recorded truthfully.",
-        "The worker result validates against the supplied schema, uses status `complete` only after required behavior and checks finish, and makes independent acceptance review the exact next action."
+        "The worker result validates against the supplied schema, uses status `complete` only after required behavior and checks finish, and routes the completed bytes to fresh independent `task-review-discovery` evidence and a separate `task-acceptance-review` decision as the exact next action."
       ]
     },
     {
@@ -89,7 +89,7 @@
     {
       "id": 5,
       "prompt": "The fixture has staged the current api-immediate repository. Implement `docs/tasks/API-32/brief.md` using the guided profile. The package supplies a ready preflight and a bound verification design; validate applicable entry before editing. Complete fail-first, targeted, and owning-suite checks, then map every verification scenario ID in the submission. A labeled implementation self-check is permitted, but `review: immediate` requires a fresh-review handoff.",
-      "expected_output": "A minimal expired-session fix with behavioral evidence that ends in the guided `READY_FOR_REVIEW` submission state and routes to a fresh task-acceptance-review without loading or performing the acceptance-review role.",
+      "expected_output": "A minimal expired-session fix with behavioral evidence that ends in the guided `READY_FOR_REVIEW` submission state and routes to fresh independent `task-review-discovery` evidence and a separate fresh `task-acceptance-review` decision without loading or performing either review role.",
       "files": ["evals/files/setup_fixture.py"],
       "execution": {
         "setup": {
@@ -104,8 +104,8 @@
         "Only `src/auth/session.py` and `tests/auth/test_session.py` are changed, and the new expired-session regression fails for the missing expiration check before production is edited.",
         "The exact targeted command `python -m unittest tests.auth.test_session.SessionTest.test_expired_session_is_invalid` passes before the owning command `python -m unittest tests.auth.test_session`.",
         "The submission maps every verification scenario ID (V-01, V-02) to current commands, setup/oracle, and results, and carries the preflight/context reference before the READY_FOR_REVIEW handoff.",
-        "The final guided result uses `READY_FOR_REVIEW` and names a fresh `task-acceptance-review` as the next action.",
-        "The implementer does not emit `ACCEPT`, claim independent review, or load, quote, or execute the task-acceptance-review role in the authoring session.",
+        "The final guided result uses `READY_FOR_REVIEW` and names fresh independent `task-review-discovery` evidence and the separate fresh `task-acceptance-review` decision as the next action.",
+        "The implementer does not emit `ACCEPT`, claim independent review, or load, quote, or execute the task-review-discovery or task-acceptance-review role in the authoring session.",
         "Any self-check is explicitly labeled as implementation evidence rather than an acceptance verdict."
       ]
     },

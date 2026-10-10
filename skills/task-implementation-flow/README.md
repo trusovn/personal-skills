@@ -28,7 +28,7 @@ handoffs, exact freshness evidence, and machine-readable results.
 | `bounded-task-implementer` | Implement one bounded task with risk-based tests, progressive verification, and a useful handoff; on packaged entry the implementer verifies current applicable readiness and its submission maps every verification scenario ID to current evidence. | The request is planning, review-only, or too ambiguous to implement safely. |
 | `task-maintainability-review` | Independently assess the changed design for concrete maintainability regression after the repo's deterministic architecture gate. | The repo does not require maintainability review and the user/task does not request it. |
 | `task-contract-registry-updater` | Synchronize implemented-contract discovery after maintainability review. | The repository does not use implemented-contract discovery, or the task did not change a durable cross-task contract. |
-| `task-review-discovery` | Independently publish current evidence and confirmed findings as a complete or explicitly partial report for a separate acceptance decision call, without deciding acceptance. | The flow does not split discovery from the acceptance decision, or no independent review evidence is required. |
+| `task-review-discovery` | Independently publish current evidence and confirmed findings as a complete or explicitly partial report for a separate acceptance decision call, without deciding acceptance. | The task requires no independent functional review at all; discovery is never optional whenever the separate acceptance decision runs. |
 | `task-acceptance-review` | Independently decide scoped functional/specification correctness by admitting the current discovery evidence and deciding every finding; returns `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`. | The task does not need independent functional review under its metadata or risk. |
 
 `architecture-guardrails` is a foundation/setup skill, not a per-task reviewer. It
@@ -132,9 +132,9 @@ human-readable result
         ↓
 required architecture gate / maintainability review, if declared by repo
         ↓
-fresh independent task-review-discovery evidence when metadata or risk calls for it
+fresh independent task-review-discovery evidence whenever independent functional review is required
         ↓
-separate fresh-session functional acceptance decision consuming the discovery report
+separate fresh-session functional acceptance decision consuming that discovery report
         ↓
 coordinator recording of approved deferrals, then authorized continuation
 ```
@@ -235,9 +235,9 @@ fresh task-maintainability-review
         │
         └── ACCEPT
                 ↓
-        fresh task-review-discovery evidence when required
+        fresh task-review-discovery evidence whenever independent functional acceptance is required
                 ↓
-        separate functional/spec acceptance review when required
+        separate functional/spec acceptance review consuming that discovery report
                 ├── CHANGES_REQUESTED
                 │       ↓
                 │   implementation correction
@@ -275,14 +275,19 @@ test adequacy. Do not redo general architecture review unless architecture direc
 causes an observed functional defect.
 ```
 
-When the flow splits evidence from the decision, launch `task-review-discovery`
+Whenever independent functional review is required, launch `task-review-discovery`
 as a fresh separate call whose session did not author the reviewed production
-bytes, and hand its report to the acceptance decision call. The acceptance call
+bytes, and hand its report to the acceptance decision call; the decision call
+never runs without that discovery evidence. When functional review itself is
+not required, neither stage runs. The acceptance call
 then admits that evidence and decides: it does not routinely rerun discovery's
 public probes, broad searches, or aggregate suites, and it requests focused
 missing proof from the discovery owner rather than merging the roles. A high
-reasoning tier is recommended for discovery; launch tooling enforces neither
-the separate-call role nor the reasoning recommendation.
+reasoning tier is recommended for discovery, and an equally high tier is
+recommended for the separate acceptance decision, whose budget goes to
+contextual judgment and finding dispositions rather than re-search; launch
+tooling enforces neither the separate-call roles nor the reasoning
+recommendations.
 
 When the flow already carries a byte/diff digest, attach it to both reviews. In a
 lightweight human-driven flow, at minimum confirm the production diff did not change

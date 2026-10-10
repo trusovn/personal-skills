@@ -4,6 +4,12 @@
 
 - When creating session handoff, do not edit the previous existing file, if there's one. Delete the old one and create a new one. 
 
+## Test and eval maintenance
+
+- Before adding tests, evals, or fixtures, inspect relevant existing coverage and setup. Use `testing-discipline` as the authority for test design and maintenance.
+- Prefer updating, reusing, or consolidating existing cases and fixture helpers over appending cases or copying setup infrastructure. Add coverage for distinct behavioral evidence that is missing.
+- Before removing obsolete or redundant tests or evals, identify the remaining coverage and preserve distinct scenarios, failure modes, and boundary evidence. Keep this maintenance within the task's scope.
+
 ## Skill installation resolution
 
 - When work in the current repository uses a named skill and a matching project-local copy exists under `.agents/skills/`, resolve and read that project-local copy before considering user-global skill paths. Do not probe or switch to a user-global copy after a matching project-local skill has been selected for the invocation.

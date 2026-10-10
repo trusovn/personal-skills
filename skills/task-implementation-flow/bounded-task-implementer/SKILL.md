@@ -177,6 +177,18 @@ Missing or inconsistent high-assurance inputs return the schema-valid
 non-complete result required by the caller. Do not downgrade silently to guided
 mode.
 
+## Test and eval maintenance
+
+For either profile, use [testing-discipline](../../testing-discipline/SKILL.md)
+as the authority when adding or changing tests, evals, or fixtures. Before adding
+coverage, inspect relevant existing cases, setup helpers, and fixture generators
+for gaps and overlap. Prefer updating, reusing, or consolidating them over
+appending cases or copying setup infrastructure; add coverage for distinct
+behavioral evidence that is missing. Before removing obsolete or redundant
+tests or evals, identify the remaining coverage and preserve distinct scenarios,
+failure modes, and boundary evidence. Keep maintenance within the task's scope;
+ordinary small changes need no separate report or workflow stage.
+
 ## Guided workflow
 
 1. Read applicable instructions, the task authority, and any task-local

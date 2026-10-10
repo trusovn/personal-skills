@@ -112,6 +112,46 @@
       "parent": "T-002",
       "children": [],
       "depends_on": ["T-002.1", "T-002.2", "T-002.3"]
+    },
+    "T-003": {
+      "kind": "composite",
+      "source_plan_task": "T-003",
+      "brief": "docs/tasks/T-003/brief.md",
+      "parent": null,
+      "children": ["T-003.1", "T-003.2", "T-003.3", "T-003.4"],
+      "depends_on": ["T-001", "T-002"]
+    },
+    "T-003.1": {
+      "kind": "executable",
+      "source_plan_task": "T-003",
+      "brief": "docs/tasks/T-003.1/brief.md",
+      "parent": "T-003",
+      "children": [],
+      "depends_on": ["T-001", "T-002"]
+    },
+    "T-003.2": {
+      "kind": "executable",
+      "source_plan_task": "T-003",
+      "brief": "docs/tasks/T-003.2/brief.md",
+      "parent": "T-003",
+      "children": [],
+      "depends_on": ["T-001", "T-002"]
+    },
+    "T-003.3": {
+      "kind": "executable",
+      "source_plan_task": "T-003",
+      "brief": "docs/tasks/T-003.3/brief.md",
+      "parent": "T-003",
+      "children": [],
+      "depends_on": ["T-003.1"]
+    },
+    "T-003.4": {
+      "kind": "executable",
+      "source_plan_task": "T-003",
+      "brief": "docs/tasks/T-003.4/brief.md",
+      "parent": "T-003",
+      "children": [],
+      "depends_on": ["T-003.1", "T-003.2", "T-003.3"]
     }
   }
 }

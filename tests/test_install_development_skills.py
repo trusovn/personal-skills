@@ -577,5 +577,83 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
             self.assertEqual(1, agents_text.count(installer.AGENTS_END))
 
 
+    def test_install_projects_maintainability_and_registry_updater_families_and_guide_routes(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            repo = Path(tempdir)
+            init_repo(repo, agents_text="# Project instructions\n\nKeep this line.\n")
+
+            result = run_installer(repo)
+            self.assertEqual(0, result.returncode, result.stderr)
+
+            maintainability = "skills/task-implementation-flow/task-maintainability-review"
+            registry_updater = (
+                "skills/task-implementation-flow/task-contract-registry-updater"
+            )
+            installed_maintainability = (
+                repo
+                / ".agents"
+                / "skills"
+                / "task-implementation-flow"
+                / "task-maintainability-review"
+            )
+            for required in (
+                "SKILL.md",
+                "evals/evals.json",
+                "evals/files/setup_fixture.py",
+            ):
+                self.assertTrue(
+                    (installed_maintainability / required).is_file(), required
+                )
+            self.assertTrue(
+                (
+                    repo
+                    / ".agents"
+                    / "skills"
+                    / "task-implementation-flow"
+                    / "task-contract-registry-updater"
+                    / "SKILL.md"
+                ).is_file()
+            )
+            self.assert_projected_from_source(repo, maintainability)
+            self.assert_projected_from_source(repo, registry_updater)
+
+            installed_guide = repo / ".agents" / "skills" / "README.md"
+            self.assertEqual(
+                (ROOT / installer.PROFILE_SKILLS_README).read_bytes(),
+                installed_guide.read_bytes(),
+            )
+            guide_text = " ".join(installed_guide.read_text(encoding="utf-8").split())
+            for phrase in (
+                "first outstanding applicable stage",
+                "complete ordered remainder",
+                "fresh maintainability review when applicable",
+                "the contract-registry updater when applicable",
+                "then fresh discovery evidence and the separate fresh acceptance decision",
+                "production corrections re-enter the stages they affected",
+            ):
+                self.assertIn(phrase, guide_text)
+
+            stale = installed_maintainability / "evals" / "files" / "stale-managed.py"
+            stale.write_text("stale\n", encoding="utf-8")
+            unmanaged_agents_file = repo / ".agents" / "unmanaged-note.md"
+            unmanaged_agents_file.write_text("user bytes\n", encoding="utf-8")
+            unrelated = repo / "notes" / "unrelated.txt"
+            unrelated.parent.mkdir(parents=True)
+            unrelated.write_text("user bytes\n", encoding="utf-8")
+
+            rerun = run_installer(repo)
+
+            self.assertEqual(0, rerun.returncode, rerun.stderr)
+            self.assertFalse(stale.exists())
+            self.assertEqual(b"user bytes\n", unmanaged_agents_file.read_bytes())
+            self.assertEqual(b"user bytes\n", unrelated.read_bytes())
+            self.assert_projected_from_source(repo, maintainability)
+            self.assert_projected_from_source(repo, registry_updater)
+            agents_text = (repo / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("Keep this line.", agents_text)
+            self.assertEqual(1, agents_text.count(installer.AGENTS_BEGIN))
+            self.assertEqual(1, agents_text.count(installer.AGENTS_END))
+
+
 if __name__ == "__main__":
     unittest.main()

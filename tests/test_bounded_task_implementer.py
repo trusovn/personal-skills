@@ -19,6 +19,42 @@ from review_fixture_support import FLOW, ROOT
 
 IMPLEMENTER = FLOW / "bounded-task-implementer"
 
+ROUTE_CASE_ROUTES = {
+    "INIT-NEITHER": "discovery → acceptance",
+    "INIT-MAINT-GATE": "architecture gate → fresh maintainability review → discovery → acceptance",
+    "INIT-MAINT-NOGATE": "fresh maintainability review → discovery → acceptance",
+    "INIT-REGISTRY": "registry updater → discovery → acceptance",
+    "INIT-BOTH-GATE": "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+    "INIT-BOTH-NOGATE": "fresh maintainability review → registry updater → discovery → acceptance",
+    "STATE-MAINT-GATE-COMPLETE": "fresh maintainability review → discovery → acceptance",
+    "STATE-MAINT-COMPLETE": "discovery → acceptance",
+    "STATE-REGISTRY-COMPLETE": "discovery → acceptance",
+    "STATE-BOTH-GATE-MAINT-COMPLETE": "registry updater → discovery → acceptance",
+    "STATE-BOTH-UPDATER-COMPLETE": "architecture gate → fresh maintainability review → discovery → acceptance",
+    "STATE-BOTH-COMPLETE": "discovery → acceptance",
+    "STATE-BOTH-INAPPLICABLE": "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+    "CORR-NEITHER": "discovery → acceptance",
+    "CORR-MAINT-GATE": "architecture gate → fresh maintainability review → discovery → acceptance",
+    "CORR-REGISTRY": "registry updater → discovery → acceptance",
+    "CORR-BOTH-FULL": "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+    "CORR-BOTH-MIXED": "registry updater → discovery → acceptance",
+    "CORR-BOTH-TESTS-ONLY": "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+}
+
+ROUTE_STAGE_RULES = (
+    ("architecture gate", "architecture gate required", "architecture gate complete", "architecture gate"),
+    ("maintainability review", "maintainability review applies", "maintainability review complete", "fresh maintainability review"),
+    ("registry stage", "registry stage applies", "registry updater complete", "registry updater"),
+)
+
+ROUTE_PART_TOKENS = {
+    "architecture gate": "architecture gate",
+    "fresh maintainability review": "`task-maintainability-review`",
+    "registry updater": "`task-contract-registry-updater`",
+    "discovery": "`task-review-discovery`",
+    "acceptance": "`task-acceptance-review`",
+}
+
 
 class ImplementerContractTest(unittest.TestCase):
 
@@ -85,6 +121,8 @@ class ImplementerContractTest(unittest.TestCase):
                         self.assertIn(digest, preflight)
                     self.assertIn("Artifact status: ready", preflight)
                     self.assertIn(f"Task brief: {source}/brief.md", preflight)
+                    self.assertIn("Conditional-stage policy:", preflight)
+                    self.assertIn("Conditional-stage evidence:", preflight)
                 else:
                     self.assert_ready_preparation(brief, verification, preflight, source)
                 self.assertIn("preflight", case["prompt"])
@@ -362,6 +400,133 @@ class ImplementerContractTest(unittest.TestCase):
             self.assertIn("docs/tasks/EVIDENCE/verification.md", obsolete)
             self.assertIn("Authoritative AC mapping", obsolete)
             self.assertIn("AC-01 <- V-01", obsolete)
+
+
+    def test_route_cases_map_supplied_policy_and_stage_state_to_expected_routes(self):
+        skill = " ".join((IMPLEMENTER / "SKILL.md").read_text(encoding="utf-8").split())
+        self.assertIn("Name the complete ordered submission route", skill)
+        section = skill.split(
+            "Name the complete ordered submission route", 1
+        )[1].split("## Preserve review provenance", 1)[0]
+        with tempfile.TemporaryDirectory() as temporary:
+            tasks = self.fixture(temporary, "route-cases") / "docs/tasks"
+            self.assertEqual(set(ROUTE_CASE_ROUTES),
+                             {path.name for path in tasks.iterdir()})
+            for case_id, expected in ROUTE_CASE_ROUTES.items():
+                with self.subTest(case=case_id):
+                    package = tasks / case_id
+                    brief = (package / "brief.md").read_text(encoding="utf-8")
+                    verification = (package / "verification.md").read_text(encoding="utf-8")
+                    preflight = (package / "preflight.md").read_text(encoding="utf-8")
+                    self.assertIn("Task kind: executable", brief)
+                    self.assertIn("Status: ready", brief)
+                    self.assertIn("Status: ready", verification)
+                    self.assertIn(f"Source brief: docs/tasks/{case_id}/brief.md", verification)
+                    self.assertIn("Verification revision: 1", verification)
+                    self.assertIn("Status: ready", preflight)
+                    self.assertIn(f"Source brief: docs/tasks/{case_id}/brief.md", preflight)
+                    self.assertIn("Verification revision: 1", preflight)
+                    policy = preflight.split("Conditional-stage policy: ", 1)[1].splitlines()[0]
+                    evidence = preflight.split("Conditional-stage evidence: ", 1)[1].splitlines()[0]
+                    route = preflight.split("Expected submission route: ", 1)[1].splitlines()[0]
+                    self.assertEqual(expected, route)
+                    self.assertTrue(
+                        "current" in evidence or "stale" in evidence
+                        or "no applicable" in evidence, evidence
+                    )
+                    for label, applies_marker, complete_marker, route_part in ROUTE_STAGE_RULES:
+                        segment = next(
+                            (part.strip() for part in evidence.split(";")
+                             if complete_marker in part),
+                            "",
+                        )
+                        if not segment:
+                            state = "missing"
+                            applicable = False
+                        elif "current" in segment:
+                            state = "current"
+                            applicable = (
+                                "inapplicable" not in segment
+                                and (
+                                    "applicable to the submitted scope" in segment
+                                    or "for the corrected scope" in segment
+                                )
+                            )
+                        else:
+                            state = "stale"
+                            applicable = False
+                        applies = applies_marker in policy
+                        owes = applies and not (state == "current" and applicable)
+                        self.assertEqual(
+                            route_part in route,
+                            owes,
+                            f"{case_id}: {label} ({state}, applicable={applicable}) from policy/evidence into route",
+                        )
+                        if state == "current":
+                            self.assertTrue(
+                                applies,
+                                f"{case_id}: {label} claims current completion but does not apply",
+                            )
+                    positions = [
+                        section.index(ROUTE_PART_TOKENS[part.strip()])
+                        for part in route.split(" → ")
+                    ]
+                    self.assertEqual(positions, sorted(positions), route)
+                    review = package / "reviews/acceptance-01.md"
+                    if case_id.startswith("CORR-"):
+                        self.assertTrue(review.is_file())
+                        report = review.read_text(encoding="utf-8")
+                        self.assertIn("Preceding verdict: CHANGES_REQUESTED", report)
+                        self.assertIn("Changed scope:", report)
+                        self.assertIn("Affected prior evidence:", report)
+                        self.assertIn("first outstanding applicable conditional stage", report)
+                    else:
+                        self.assertFalse(review.exists())
+
+    def test_review_condition_cases_supply_no_review_and_required_review_contrasts(self):
+        skill = " ".join((IMPLEMENTER / "SKILL.md").read_text(encoding="utf-8").split())
+        self.assertIn(
+            "When independent functional review is not required, no route is imposed",
+            skill,
+        )
+        self.assertIn(
+            "The requirement, not the metadata label, decides the route",
+            skill,
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            tasks = self.fixture(temporary, "review-cases") / "docs/tasks"
+            noreview = tasks / "MILESTONE-NOREVIEW"
+            brief = (noreview / "brief.md").read_text(encoding="utf-8")
+            self.assertIn("review: milestone", brief)
+            self.assertIn(
+                "Review condition: no independent functional review is required",
+                brief,
+            )
+            preflight = (noreview / "preflight.md").read_text(encoding="utf-8")
+            self.assertIn(
+                "Review condition: no independent functional review is required",
+                preflight,
+            )
+            self.assertIn("no submission route is imposed", preflight)
+            self.assertIn(
+                "existing milestone result semantics are unchanged", preflight
+            )
+            self.assertNotIn("READY_FOR_REVIEW", preflight)
+            required = tasks / "MILESTONE-REQUIRED"
+            brief = (required / "brief.md").read_text(encoding="utf-8")
+            self.assertIn("review: milestone", brief)
+            self.assertIn(
+                "independent functional review is explicitly required", brief
+            )
+            preflight = (required / "preflight.md").read_text(encoding="utf-8")
+            self.assertIn(
+                "Review condition: independent functional review is explicitly required",
+                preflight,
+            )
+            self.assertIn(
+                "Expected submission route: architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+                preflight,
+            )
 
 
     def test_guides_and_evals_agree_with_packaged_entry_and_evidence_contract(self):

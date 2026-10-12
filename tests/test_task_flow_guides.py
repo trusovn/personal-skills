@@ -155,7 +155,15 @@ class ComposedReviewFlowGuideTests(unittest.TestCase):
         )
         flat = normalized(FLOW_README)
         self.assertIn(
-            "fresh maintainability reviewer before re-entering fresh discovery evidence and functional acceptance",
+            "re-enters every conditional stage whose reviewed scope the correction affected, before re-entering fresh discovery evidence and functional acceptance",
+            flat,
+        )
+        self.assertIn(
+            "when gate and maintainability evidence is current for the corrected scope, the remaining route is the registry updater, then discovery, then acceptance",
+            flat,
+        )
+        self.assertNotIn(
+            "Rerun the deterministic architecture gate and use a fresh maintainability reviewer, then rerun the contract-registry stage when it applied",
             flat,
         )
         self.assertNotIn("when discovery published its evidence separately", flat)
@@ -181,7 +189,11 @@ class ComposedReviewFlowGuideTests(unittest.TestCase):
     def test_child_handoffs_name_discovery_before_the_acceptance_decision(self):
         implementer = normalized(BOUNDED_IMPLEMENTER_SKILL)
         self.assertIn(
-            "Completed work routes to fresh independent `task-review-discovery` evidence and a separate fresh `task-acceptance-review` decision when independent review is requested or required",
+            "Completed work routes through the first outstanding applicable "
+            "conditional stage and the complete ordered remainder to fresh "
+            "independent `task-review-discovery` evidence and the separate "
+            "fresh `task-acceptance-review` decision when independent review "
+            "is requested or required",
             implementer,
         )
         self.assertIn(
@@ -189,10 +201,18 @@ class ComposedReviewFlowGuideTests(unittest.TestCase):
             implementer,
         )
         self.assertIn(
-            "exactly name fresh independent `task-review-discovery` evidence and the separate fresh `task-acceptance-review` decision as next owner",
+            "name the first outstanding applicable conditional stage — including a policy-required architecture gate — and the complete ordered remainder through fresh independent `task-review-discovery` evidence and the separate fresh `task-acceptance-review` decision as next owner",
             implementer,
         )
         self.assertNotIn("route to a fresh `task-acceptance-review`.", implementer)
+        self.assertNotIn(
+            "Completed work routes to fresh independent `task-review-discovery`",
+            implementer,
+        )
+        self.assertNotIn(
+            "exactly name fresh independent `task-review-discovery` evidence and the separate fresh `task-acceptance-review` decision as next owner",
+            implementer,
+        )
 
         maintainability = normalized(MAINTAINABILITY_SKILL)
         self.assertIn(
@@ -204,6 +224,129 @@ class ComposedReviewFlowGuideTests(unittest.TestCase):
             maintainability,
         )
 
+
+    def test_child_handoff_publishes_the_complete_ordered_submission_route(self):
+        implementer = normalized(BOUNDED_IMPLEMENTER_SKILL)
+        self.assertIn("Name the complete ordered submission route", implementer)
+        section = implementer.split(
+            "Name the complete ordered submission route", 1
+        )[1].split("## Preserve review provenance", 1)[0]
+        for obligation in (
+            "first outstanding applicable stage",
+            "complete ordered remainder",
+            "the canonical deterministic architecture gate, only when repository policy requires it for the changed bytes",
+            "fresh `task-maintainability-review`, when maintainability review applies",
+            "`task-contract-registry-updater`, when a registry stage applies",
+            "fresh independent `task-review-discovery` evidence",
+            "the separate fresh `task-acceptance-review` decision",
+            "neither conditional stage: discovery → acceptance",
+            "maintainability review only: architecture gate (when required) → fresh maintainability review → discovery → acceptance",
+            "registry stage only: registry updater → discovery → acceptance",
+            "both: architecture gate (when required) → fresh maintainability review → registry updater → discovery → acceptance",
+            "Include the architecture gate only when repository policy requires it",
+            "applicable and current for the submitted bytes",
+            "leaves that stage owed in its ordered position",
+            "prior verdict's label alone is not current evidence",
+            "discovery is the first owner only when every applicable conditional stage already has current evidence",
+            "re-enters every conditional stage whose reviewed scope the correction affected",
+            "A tests-only correction still re-enters applicable conditional stages unless repository authority explicitly authorizes skipping them",
+            "never launches, delegates to, or waits for any of those reviewers",
+            "no route is imposed and the existing milestone or no-review result semantics are unchanged",
+            "The requirement, not the metadata label, decides the route",
+            "neither imposes a route nor excuses the outstanding conditional stages and fresh discovery when independent functional review is explicitly required",
+            "the first outstanding applicable conditional stage and the complete remaining route",
+            "Next: the first outstanding applicable stage and complete ordered remainder through fresh independent `task-review-discovery` evidence to a fresh `task-acceptance-review` decision",
+            "route to the first outstanding applicable conditional stage and the complete ordered remainder through fresh independent `task-review-discovery` evidence to the separate fresh `task-acceptance-review` decision",
+        ):
+            self.assertIn(obligation, implementer)
+        order = (
+            "architecture gate",
+            "`task-maintainability-review`",
+            "`task-contract-registry-updater`",
+            "`task-review-discovery`",
+            "`task-acceptance-review`",
+        )
+        positions = [section.index(token) for token in order]
+        self.assertEqual(positions, sorted(positions))
+
+    def test_guides_route_conditional_stages_before_discovery_and_acceptance(self):
+        route = next(
+            block
+            for block in fenced_blocks(ROOT_README.read_text(encoding="utf-8"))
+            if "bounded-task-implementer" in block and "task-acceptance-review" in block
+        )
+        self.assertIn("task-contract-registry-updater", route)
+        self.assertLess(
+            route.index("task-maintainability-review"),
+            route.index("task-contract-registry-updater"),
+        )
+        self.assertLess(
+            route.index("task-contract-registry-updater"),
+            route.index("task-review-discovery"),
+        )
+        self.assertIn("first outstanding applicable stage", normalized(ROOT_README))
+        profile = next(
+            block
+            for block in fenced_blocks(PROFILE_GUIDE.read_text(encoding="utf-8"))
+            if "bounded-task-implementer" in block and "task-acceptance-review" in block
+        )
+        self.assertLess(
+            profile.index("task-maintainability-review"),
+            profile.index("task-contract-registry-updater"),
+        )
+        self.assertLess(
+            profile.index("task-contract-registry-updater"),
+            profile.index("task-review-discovery"),
+        )
+        self.assertIn("first outstanding applicable stage", normalized(PROFILE_GUIDE))
+        guided = next(
+            block
+            for block in fenced_blocks(FLOW_README.read_text(encoding="utf-8"))
+            if "required task-verification-designer for an executable task package"
+            in block
+        )
+        self.assertIn("contract-registry stage", guided)
+        self.assertLess(
+            guided.index("maintainability review"),
+            guided.index("contract-registry stage"),
+        )
+        self.assertLess(
+            guided.index("contract-registry stage"),
+            guided.index("task-review-discovery"),
+        )
+        self.assertIn(
+            "name the first outstanding applicable stage and the complete ordered remainder",
+            normalized(FLOW_README),
+        )
+        gated = next(
+            block
+            for block in fenced_blocks(FLOW_README.read_text(encoding="utf-8"))
+            if "canonical deterministic architecture gate" in block
+        )
+        self.assertIn("contract-registry stage", gated)
+        self.assertLess(
+            gated.index("contract-registry stage"),
+            gated.index("task-review-discovery"),
+        )
+        self.assertIn(
+            "contract-registry stage again, if the repository uses implemented-contract",
+            gated,
+        )
+        self.assertEqual(gated.count("contract-registry stage"), 3)
+        high_assurance = next(
+            block
+            for block in fenced_blocks(FLOW_README.read_text(encoding="utf-8"))
+            if "task brief (`ready_for_preflight`)" in block
+        )
+        self.assertIn("contract-registry stage", high_assurance)
+        self.assertLess(
+            high_assurance.index("maintainability report"),
+            high_assurance.index("contract-registry stage"),
+        )
+        self.assertLess(
+            high_assurance.index("contract-registry stage"),
+            high_assurance.index("discovery report"),
+        )
 
     def test_discovery_is_mandatory_whenever_independent_functional_review_runs(self):
         text = FLOW_README.read_text(encoding="utf-8")
@@ -265,14 +408,97 @@ class ComposedReviewFlowGuideTests(unittest.TestCase):
             "names fresh task-acceptance-review as next owner",
             "next owner: fresh task-acceptance-review",
             "then fresh task-acceptance-review.",
+            "Next route after complete: fresh task-review-discovery evidence, "
+            "then a separate fresh task-acceptance-review decision",
         ):
             self.assertNotIn(stale, fixture)
         self.assertIn(
-            "Next route after complete: fresh task-review-discovery evidence, "
-            "then a separate fresh task-acceptance-review decision",
+            "Next route after complete: required architecture gate, then fresh "
+            "task-maintainability-review, then task-contract-registry-updater, "
+            "then fresh task-review-discovery evidence, then a separate fresh "
+            "task-acceptance-review decision",
             fixture,
         )
+        self.assertIn(
+            "Conditional-stage policy: repo policy requires maintainability "
+            "review and the deterministic architecture gate",
+            fixture,
+        )
+        self.assertIn(
+            "Conditional-stage evidence: no applicable conditional stage has "
+            "current completion evidence",
+            fixture,
+        )
+        self.assertIn(
+            "first outstanding applicable conditional stages",
+            json.dumps(by_id[1]["expectations"]),
+        )
+        self.assertIn(
+            "first outstanding applicable stage and the complete ordered remainder",
+            json.dumps(by_id[5]["expectations"]),
+        )
 
+
+    def test_correction_guidance_reenters_only_affected_conditional_stages(self):
+        """V-03 consistency: production correction re-entry follows affected
+        scope and current evidence, never an unconditional gate/maintainability
+        restart; the mixed both-stage remainder is registry updater →
+        discovery → acceptance.
+        """
+        flat = normalized(FLOW_README)
+        self.assertIn(
+            "re-enters every conditional stage whose reviewed scope the correction affected",
+            flat,
+        )
+        self.assertIn(
+            "production corrections then re-enter every conditional stage whose reviewed scope the correction affected — the architecture gate and fresh maintainability review when their reviewed scope changed, and the contract-registry stage when it applied and the correction affected it",
+            flat,
+        )
+        self.assertIn(
+            "A production correction stales the prior acceptance verdict and re-enters every conditional stage whose reviewed scope the correction affected; current applicable evidence for the corrected bytes keeps an unaffected stage in force",
+            flat,
+        )
+        self.assertIn(
+            "Current evidence for the corrected scope keeps an unaffected stage out of the route",
+            flat,
+        )
+        self.assertNotIn(
+            "Rerun the deterministic architecture gate and use a fresh maintainability reviewer, then rerun the contract-registry stage when it applied",
+            flat,
+        )
+        self.assertNotIn(
+            "production corrections then re-enter the maintainability stage, rerun the contract-registry stage when it applied",
+            flat,
+        )
+        self.assertNotIn(
+            "production corrections invalidate both semantic review verdicts",
+            flat,
+        )
+        gated = next(
+            block
+            for block in fenced_blocks(FLOW_README.read_text(encoding="utf-8"))
+            if "canonical deterministic architecture gate" in block
+        )
+        gated_flat = " ".join(
+            " ".join(line.replace("│", " ").split()) for line in gated.splitlines()
+        )
+        self.assertIn(
+            "architecture gate + fresh maintainability review again when the correction affected their reviewed scope",
+            gated_flat,
+        )
+        self.assertIn(
+            "contract-registry stage again, if the repository uses implemented-contract",
+            gated_flat,
+        )
+        self.assertIn(
+            "discovery and the correction changed a durable cross-task contract",
+            gated_flat,
+        )
+        self.assertEqual(gated.count("contract-registry stage"), 3)
+        self.assertIn(
+            "fresh discovery evidence + fresh functional acceptance again",
+            gated_flat,
+        )
 
     def test_role_reasoning_guidance_adds_no_adapter_fifth_key_or_runtime_claim(self):
         text = FLOW_README.read_text(encoding="utf-8")

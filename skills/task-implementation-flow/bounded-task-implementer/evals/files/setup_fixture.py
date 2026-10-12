@@ -215,7 +215,9 @@ CMD-02 owning: python -m unittest tests.integration.test_run_next
 CMD-03 broader: python -m unittest discover -s tests
 Working directory for all commands: {root}
 Permissions: only allowed paths and runtime result; no network, install, commit, or other writes.
-Next route after complete: fresh task-review-discovery evidence, then a separate fresh task-acceptance-review decision.
+Conditional-stage policy: repo policy requires maintainability review and the deterministic architecture gate for changed source bytes; implemented-contract discovery is enabled and the task changed a durable cross-task contract, so the registry stage applies.
+Conditional-stage evidence: no applicable conditional stage has current completion evidence for the submitted bytes.
+Next route after complete: required architecture gate, then fresh task-maintainability-review, then task-contract-registry-updater, then fresh task-review-discovery evidence, then a separate fresh task-acceptance-review decision.
 """
     packet_path.write_text(packet, encoding="utf-8")
     post_packet_status = git(root, "status", "--short")
@@ -413,7 +415,8 @@ def api_immediate() -> None:
         Targeted: python -m unittest tests.auth.test_session.SessionTest.test_expired_session_is_invalid
         Owning: python -m unittest tests.auth.test_session
         No network, dependency installation, commits, machine result schema, or other repository writes.
-        After implementation checks, route the current bytes to fresh task-review-discovery evidence and a separate fresh acceptance decision.
+        Conditional-stage policy: neither maintainability review nor the contract-registry stage applies to this task; no architecture gate is required.
+        After implementation checks, route the current bytes to fresh task-review-discovery evidence, then a separate fresh acceptance decision.
         """,
     )
     write(
@@ -573,6 +576,7 @@ def record_correction() -> None:
         Permission: local writes and local tests allowed; network, installs and commits denied
         Capability: Python unittest and hashlib observe exact byte binding against authority/result.sha256
         Authority: docs/tasks/REC-44/brief.md; unchanged correction outcome and scope; CHANGES_REQUESTED in reviews/acceptance-01.md
+        Conditional-stage policy: neither maintainability review nor the contract-registry stage applies to this correction.
         Expected effects: appended reviewer regression and authorized correction edits do not change guided applicability
         Commands: reviewer reproducer first, then owning suite from brief; aggregate remains fresh-review-owned
         """)
@@ -847,6 +851,225 @@ def entry_cases() -> None:
                       "Coverage revision under unchanged authority; scenario IDs retained. V-02 now also asserts token remains abc, closing the existing AC-02 evidence gap.\n")
 
 
+ROUTE_CASE_TABLE = (
+    ("INIT-NEITHER",
+     "maintainability review does not apply and the registry stage does not apply; architecture gate not required",
+     "no applicable conditional stage has current completion evidence",
+     "discovery → acceptance", None),
+    ("INIT-MAINT-GATE",
+     "maintainability review applies and the registry stage does not apply; architecture gate required",
+     "no applicable conditional stage has current completion evidence",
+     "architecture gate → fresh maintainability review → discovery → acceptance", None),
+    ("INIT-MAINT-NOGATE",
+     "maintainability review applies and the registry stage does not apply; architecture gate not required",
+     "no applicable conditional stage has current completion evidence",
+     "fresh maintainability review → discovery → acceptance", None),
+    ("INIT-REGISTRY",
+     "maintainability review does not apply and the registry stage applies; architecture gate not required",
+     "no applicable conditional stage has current completion evidence",
+     "registry updater → discovery → acceptance", None),
+    ("INIT-BOTH-GATE",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "no applicable conditional stage has current completion evidence",
+     "architecture gate → fresh maintainability review → registry updater → discovery → acceptance", None),
+    ("INIT-BOTH-NOGATE",
+     "maintainability review applies and the registry stage applies; architecture gate not required",
+     "no applicable conditional stage has current completion evidence",
+     "fresh maintainability review → registry updater → discovery → acceptance", None),
+    ("STATE-MAINT-GATE-COMPLETE",
+     "maintainability review applies and the registry stage does not apply; architecture gate required",
+     "architecture gate complete: current and applicable to the submitted scope; maintainability review complete: stale for superseded bytes",
+     "fresh maintainability review → discovery → acceptance", None),
+    ("STATE-MAINT-COMPLETE",
+     "maintainability review applies and the registry stage does not apply; architecture gate not required",
+     "maintainability review complete: current and applicable to the submitted scope",
+     "discovery → acceptance", None),
+    ("STATE-REGISTRY-COMPLETE",
+     "maintainability review does not apply and the registry stage applies; architecture gate not required",
+     "registry updater complete: current and applicable to the submitted scope",
+     "discovery → acceptance", None),
+    ("STATE-BOTH-GATE-MAINT-COMPLETE",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "architecture gate complete: current and applicable to the submitted scope; maintainability review complete: current and applicable to the submitted scope",
+     "registry updater → discovery → acceptance", None),
+    ("STATE-BOTH-UPDATER-COMPLETE",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "registry updater complete: current and applicable to the submitted scope; architecture gate complete: stale for superseded bytes; maintainability review complete: stale for superseded bytes",
+     "architecture gate → fresh maintainability review → discovery → acceptance", None),
+    ("STATE-BOTH-COMPLETE",
+     "maintainability review applies and the registry stage applies; architecture gate not required",
+     "maintainability review complete: current and applicable to the submitted scope; registry updater complete: current and applicable to the submitted scope",
+     "discovery → acceptance", None),
+    ("STATE-BOTH-INAPPLICABLE",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "architecture gate complete: current but inapplicable to the submitted scope; maintainability review complete: current but inapplicable to the submitted scope; registry updater complete: current but inapplicable to the submitted scope",
+     "architecture gate → fresh maintainability review → registry updater → discovery → acceptance", None),
+    ("CORR-NEITHER",
+     "maintainability review does not apply and the registry stage does not apply; architecture gate not required",
+     "prior acceptance stale for the corrected bytes; no applicable conditional stage has current completion evidence",
+     "discovery → acceptance",
+     "src/feature.py — production correction"),
+    ("CORR-MAINT-GATE",
+     "maintainability review applies and the registry stage does not apply; architecture gate required",
+     "all conditional evidence stale for the corrected production bytes",
+     "architecture gate → fresh maintainability review → discovery → acceptance",
+     "src/feature.py — production correction"),
+    ("CORR-REGISTRY",
+     "maintainability review does not apply and the registry stage applies; architecture gate not required",
+     "registry updater evidence stale for the corrected bytes",
+     "registry updater → discovery → acceptance",
+     "src/contracts.py — production correction"),
+    ("CORR-BOTH-FULL",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "architecture gate complete: stale and inapplicable to the corrected production bytes; maintainability review complete: stale for the corrected bytes; registry updater complete: stale for the corrected bytes",
+     "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+     "src/feature.py — production correction"),
+    ("CORR-BOTH-MIXED",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "architecture gate complete: current for the corrected scope; maintainability review complete: current for the corrected scope; registry updater evidence stale for the corrected bytes",
+     "registry updater → discovery → acceptance",
+     "src/feature.py — production correction"),
+    ("CORR-BOTH-TESTS-ONLY",
+     "maintainability review applies and the registry stage applies; architecture gate required; no repository-authorized exception for tests-only corrections",
+     "no conditional stage has current completion evidence for the corrected bytes; tests-only correction",
+     "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+     "tests/test_feature.py — tests-only correction without an authorized skip"),
+)
+
+
+def route_cases() -> None:
+    root = WORK / "route-cases"
+    initialize(root)
+    write(root, "AGENTS.md", "# Fixture rules\n\nRoute cases supply complete preparation and stage state for submission-route guidance.\n")
+    for case_id, policy, evidence, route, correction in ROUTE_CASE_TABLE:
+        write(root, f"docs/tasks/{case_id}/brief.md", f"""
+        # {case_id} — Submission-route case
+
+        Status: ready
+        Task kind: executable
+        Outcome: name the first outstanding applicable stage and the complete ordered remainder at submission.
+        Conditional-stage policy: {policy}
+        AC-01: the submission route names the first outstanding applicable stage and the complete ordered remainder.
+        """)
+        write(root, f"docs/tasks/{case_id}/verification.md", f"""
+        # Verification Design: {case_id}
+
+        Source brief: docs/tasks/{case_id}/brief.md
+        Status: ready
+        Verification revision: 1
+
+        ### V-01 — Route matches the supplied policy and stage state
+        Covers: AC-01
+        Oracle / boundary: compare the expected submission route with the published handoff guidance.
+        """)
+        write(root, f"docs/tasks/{case_id}/preflight.md", f"""
+        # Preflight: {case_id}
+
+        Status: ready
+        Profile: guided
+        Source brief: docs/tasks/{case_id}/brief.md
+        Verification design: docs/tasks/{case_id}/verification.md
+        Verification revision: 1
+        Conditional-stage policy: {policy}
+        Conditional-stage evidence: {evidence}
+        Expected submission route: {route}
+        Dependency: local handoff guidance only
+        Ownership: no overlapping user work
+        Permission: local writes allowed
+        Capability: submission route observable from published guidance
+        Authority: docs/tasks/{case_id}/brief.md
+        """)
+        if correction:
+            write(root, f"docs/tasks/{case_id}/reviews/acceptance-01.md", f"""
+            # {case_id} acceptance review
+
+            Preceding verdict: CHANGES_REQUESTED
+            Changed scope: {correction}
+            Affected prior evidence: {evidence}
+            Coverage ledger:
+            - ROW-ROUTE — failed — corrected bytes need a fresh submission route.
+            Remaining obligations:
+            - ROW-ROUTE — rerun the owning checks; next owner: bounded-task-implementer, then the first outstanding applicable conditional stage, then fresh task-review-discovery evidence and a separate fresh task-acceptance-review decision.
+            """)
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "fixture baseline")
+
+
+REVIEW_CONDITION_TABLE = (
+    ("MILESTONE-NOREVIEW",
+     "no independent functional review is required for this submission",
+     "maintainability review does not apply and the registry stage does not apply; architecture gate not required",
+     "no applicable conditional stage has current completion evidence",
+     None),
+    ("MILESTONE-REQUIRED",
+     "independent functional review is explicitly required for this submission despite the milestone metadata",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "no applicable conditional stage has current completion evidence",
+     "architecture gate → fresh maintainability review → registry updater → discovery → acceptance"),
+)
+
+
+def review_cases() -> None:
+    root = WORK / "review-cases"
+    initialize(root)
+    write(root, "AGENTS.md", "# Fixture rules\n\nReview-condition cases supply complete preparation and an explicit review condition for submission-route guidance.\n")
+    for case_id, condition, policy, evidence, route in REVIEW_CONDITION_TABLE:
+        write(root, f"docs/tasks/{case_id}/brief.md", f"""
+        # {case_id} — Review-condition case
+
+        Status: ready
+        Task kind: executable
+
+        ```yaml
+        agent_tier: standard
+        reasoning: medium
+        review: milestone
+        budget: 20 tool calls / 45 minutes / 60k context
+        ```
+
+        Outcome: follow the prescribed submission outcome for the supplied review condition.
+        Review condition: {condition}
+        Conditional-stage policy: {policy}
+        AC-01: the submission outcome matches the review condition, not the metadata label alone.
+        """)
+        write(root, f"docs/tasks/{case_id}/verification.md", f"""
+        # Verification Design: {case_id}
+
+        Source brief: docs/tasks/{case_id}/brief.md
+        Status: ready
+        Verification revision: 1
+
+        ### V-01 — Submission outcome matches the review condition
+        Covers: AC-01
+        Oracle / boundary: compare the prescribed outcome with the published handoff guidance.
+        """)
+        outcome = (
+            f"Expected submission route: {route}"
+            if route
+            else "Expected submission route: none — no submission route is imposed; existing milestone result semantics are unchanged"
+        )
+        write(root, f"docs/tasks/{case_id}/preflight.md", f"""
+        # Preflight: {case_id}
+
+        Status: ready
+        Profile: guided
+        Source brief: docs/tasks/{case_id}/brief.md
+        Verification design: docs/tasks/{case_id}/verification.md
+        Verification revision: 1
+        Review condition: {condition}
+        Conditional-stage policy: {policy}
+        Conditional-stage evidence: {evidence}
+        {outcome}
+        Dependency: local handoff guidance only
+        Ownership: no overlapping user work
+        Permission: local writes allowed
+        Capability: submission outcome observable from published guidance
+        Authority: docs/tasks/{case_id}/brief.md
+        """)
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "fixture baseline")
+
+
 SCENARIOS = {
     "queue-task": queue_task,
     "scheduler-resume": scheduler_resume,
@@ -855,6 +1078,8 @@ SCENARIOS = {
     "api-immediate": api_immediate,
     "record-correction": record_correction,
     "entry-cases": entry_cases,
+    "route-cases": route_cases,
+    "review-cases": review_cases,
 }
 
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:

@@ -132,6 +132,9 @@ human-readable result
         ↓
 required architecture gate / maintainability review, if declared by repo
         ↓
+required contract-registry stage, if the repository uses implemented-contract
+discovery and the task changed a durable cross-task contract
+        ↓
 fresh independent task-review-discovery evidence whenever independent functional review is required
         ↓
 separate fresh-session functional acceptance decision consuming that discovery report
@@ -155,8 +158,11 @@ Guided mode carries these defaults so the user does not need to repeat them:
    maintainability handoff.
 6. Finish with a concise human summary: outcome, changed files, verification,
    residual risks, and next action. When independent maintainability or
-   functional review is required, end at `READY_FOR_REVIEW` and route the
-   completed bytes to the appropriate fresh reviewer.
+   functional review is required, end at `READY_FOR_REVIEW` and name the first
+   outstanding applicable stage and the complete ordered remainder: the
+   architecture gate only when policy requires it, fresh maintainability review
+   when applicable, the contract-registry updater when applicable, then fresh
+   discovery evidence and the separate fresh acceptance decision.
 
 The implementation agent should not be burdened with a long architecture
 rubric. When the repo has maintainability guardrails, follow the short
@@ -232,8 +238,14 @@ fresh task-maintainability-review
         │   implementation correction
         │       ↓
         │   architecture gate + fresh maintainability review again
+        │       ↓
+        │   contract-registry stage again, if the repository uses implemented-contract
+        │   discovery and the correction changed a durable cross-task contract
         │
         └── ACCEPT
+                ↓
+        contract-registry stage, if the repository uses implemented-contract
+        discovery and the task changed a durable cross-task contract
                 ↓
         fresh task-review-discovery evidence whenever independent functional acceptance is required
                 ↓
@@ -243,6 +255,10 @@ fresh task-maintainability-review
                 │   implementation correction
                 │       ↓
                 │   architecture gate + fresh maintainability review again
+                │   when the correction affected their reviewed scope
+                │       ↓
+                │   contract-registry stage again, if the repository uses implemented-contract
+                │   discovery and the correction changed a durable cross-task contract
                 │       ↓
                 │   fresh discovery evidence + fresh functional acceptance again
                 │
@@ -293,11 +309,16 @@ When the flow already carries a byte/diff digest, attach it to both reviews. In 
 lightweight human-driven flow, at minimum confirm the production diff did not change
 between maintainability `ACCEPT` and functional-review start.
 
-Every correction changes the bytes under review. Therefore a previous
-maintainability verdict and a previous functional verdict are both stale after
-production corrections. Rerun the deterministic architecture gate and use a
-fresh maintainability reviewer before re-entering fresh discovery evidence and
-functional acceptance.
+Every production correction changes the bytes under review and stales the
+prior acceptance verdict for the corrected bytes. The next submission re-enters
+every conditional stage whose reviewed scope the correction affected, before
+re-entering fresh discovery evidence and functional acceptance: the required
+deterministic architecture gate and a fresh maintainability reviewer when the
+correction affected their reviewed scope, and the contract-registry stage when
+it applied and the correction affected its scope. Current applicable evidence
+for the corrected bytes keeps an unaffected stage out of the route — when gate
+and maintainability evidence is current for the corrected scope, the remaining
+route is the registry updater, then discovery, then acceptance.
 
 For a trivial correction that provably cannot affect production architecture
 (for example, an authorized tests-only correction), repo policy may allow the
@@ -327,13 +348,18 @@ bounded implementation + structured worker result
         ↓
 required deterministic architecture gate + independent maintainability report
         ↓
+contract-registry stage, if the repository uses implemented-contract discovery
+and the task changed a durable cross-task contract
+        ↓
 independent discovery report + separate functional acceptance decision
         ↓
 orchestrator or human advancement
 ```
 
 If the repo does not require maintainability review, omit that stage rather than
-manufacturing policy for the task.
+manufacturing policy for the task. If the repository does not use
+implemented-contract discovery or the task changed no durable cross-task
+contract, omit the contract-registry stage.
 
 High-assurance mode may require exact digests, package-contained durable task
 artifacts, external runtime policy/schema/result state, and strict entry/exit
@@ -416,8 +442,10 @@ verdict. Only a fresh reviewer may return `ACCEPT`, `CHANGES_REQUESTED`, or
 `INCONCLUSIVE` for those bytes.
 
 Every `CHANGES_REQUESTED` correction requires fresh review for the affected
-stage, and production corrections invalidate both semantic review verdicts when
-both stages are required. A previous verdict never applies to corrected bytes.
+stage, and a previous verdict never applies to corrected bytes. A production
+correction stales the prior acceptance verdict and re-enters every conditional
+stage whose reviewed scope the correction affected; current applicable evidence
+for the corrected bytes keeps an unaffected stage in force.
 ### Deferrals, known issues, and the human coordinator
 
 Acceptance may approve bounded non-material deferrals, but the human
@@ -488,7 +516,7 @@ reviewer; the reproducer-writing session cannot accept them.
   the bytes, then run functional acceptance in a separate, independent
   reviewer session; hand the fresh discovery report to the decision call
   instead of re-probing.
-- Feed functional findings back to the implementer; production corrections then re-enter the maintainability stage and fresh discovery before fresh functional acceptance.
+- Feed functional findings back to the implementer; production corrections then re-enter every conditional stage whose reviewed scope the correction affected — the architecture gate and fresh maintainability review when their reviewed scope changed, and the contract-registry stage when it applied and the correction affected it — and re-enter fresh discovery before fresh functional acceptance. Current evidence for the corrected scope keeps an unaffected stage out of the route.
 
 If the implementer session becomes very long or confused, start a fresh
 correction session using the reviewer's concise findings and tests. Context

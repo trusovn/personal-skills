@@ -289,6 +289,8 @@ will not exercise.
 The correction handoff must carry:
 
 - the authoritative brief reference and preceding verdict;
+- the first outstanding applicable conditional stage and the complete remaining
+  route;
 - the complete coverage ledger and complete findings;
 - the current scoped diff and reviewer reproducer commands;
 - correction evidence attached to the failed rows, separately from reviewer
@@ -324,7 +326,8 @@ Implemented: READY_FOR_REVIEW
 - Owning suite: `<exact command>` — <implementation outcome>
 - Broad/aggregate gate: <exact command, run-or-skipped decision, reason, and owner>
 - Remaining reviewer coverage: <unchecked or blocked rows, or none>
-- Next: fresh independent discovery evidence, then a fresh
+- Next: the first outstanding applicable stage and complete ordered remainder
+  through fresh independent `task-review-discovery` evidence to a fresh
   `task-acceptance-review` decision
 ```
 
@@ -332,13 +335,60 @@ Report implementation outcomes separately from reviewer row status. Do not
 mark a row accepted, passed, or checked for the corrected bytes unless a fresh
 reviewer does so in a separate invocation.
 
+## Name the complete ordered submission route
+
+Every required-review submission names the first outstanding applicable stage
+and the complete ordered remainder, then ends the implementer invocation. When
+independent functional review is required, the applicable route is, in order:
+
+1. the canonical deterministic architecture gate, only when repository policy
+   requires it for the changed bytes;
+2. fresh `task-maintainability-review`, when maintainability review applies;
+3. `task-contract-registry-updater`, when a registry stage applies;
+4. fresh independent `task-review-discovery` evidence; then
+5. the separate fresh `task-acceptance-review` decision.
+
+The conditional policies produce these routes:
+
+- neither conditional stage: discovery → acceptance;
+- maintainability review only: architecture gate (when required) → fresh
+  maintainability review → discovery → acceptance;
+- registry stage only: registry updater → discovery → acceptance;
+- both: architecture gate (when required) → fresh maintainability review →
+  registry updater → discovery → acceptance.
+
+Include the architecture gate only when repository policy requires it, and a
+conditional stage only when it applies to the current submission; never invent
+an obligation and never drop one. A conditional stage counts as completed only
+when its evidence is applicable and current for the submitted bytes, including
+its reviewed scope: stale, missing, or superseded evidence leaves that stage
+owed in its ordered position, and a prior verdict's label alone is not current
+evidence. Name the first outstanding applicable stage and every remaining stage
+behind it; discovery is the first owner only when every applicable conditional
+stage already has current evidence.
+
+A production correction re-enters every conditional stage whose reviewed scope
+the correction affected, before fresh discovery and the separate fresh
+acceptance decision; current evidence for the corrected scope keeps an
+unaffected stage out of the route. A tests-only correction still re-enters
+applicable conditional stages unless repository authority explicitly authorizes
+skipping them. Naming the route never launches, delegates to, or waits for any
+of those reviewers in the implementer invocation. When independent functional
+review is not required, no route is imposed and the existing milestone or
+no-review result semantics are unchanged. The requirement, not the metadata
+label, decides the route: `review: milestone` or no-review metadata alone
+neither imposes a route nor excuses the outstanding conditional stages and
+fresh discovery when independent functional review is explicitly required.
+
 ## Preserve review provenance
 
 `review: immediate` means finish implementation checks, emit the handoff, and
 end the implementer invocation at `READY_FOR_REVIEW`. Here, "route" means name
+the first outstanding applicable stage and the complete ordered remainder from
+"Name the complete ordered submission route" as the next owners, ending in
 fresh independent `task-review-discovery` evidence and the separate fresh
-`task-acceptance-review` decision as the next owners; it does not mean invoke or
-manage those calls. A same-session self-check is useful when labeled as
+`task-acceptance-review` decision; it does not mean invoke or manage those
+calls. A same-session self-check is useful when labeled as
 implementation evidence, and its defects may be fixed, but it is not an
 independent review.
 
@@ -383,7 +433,7 @@ Implemented: <outcome, READY_FOR_REVIEW, or non-complete status>
 - Preflight/context reference: <exact paths of the consumed readiness and context artifacts>
 - Remaining obligations: <unfinished task obligations carried forward, or none>
 - Residual risks / skipped checks: <none or specifics>
-- Next: <fresh task-review-discovery evidence and the separate task-acceptance-review decision, user decision, fresh preflight, or complete>
+- Next: <the first outstanding applicable stage and complete ordered remainder through fresh task-review-discovery evidence to the separate task-acceptance-review decision, user decision, fresh preflight, or complete>
 ```
 
 Omit empty bullets when prose is clearer. Link to created artifacts rather than
@@ -392,7 +442,9 @@ scenario. Every scenario ID of the consumed verification design must be
 accounted for with current evidence or an explicit blocked/unchecked reason and
 next owner; implementer claims remain submission evidence, not independent
 acceptance. For guided `review: immediate` work, use
-`READY_FOR_REVIEW` as the submission state and exactly name fresh independent
+`READY_FOR_REVIEW` as the submission state and name the first outstanding
+applicable conditional stage — including a policy-required architecture gate —
+and the complete ordered remainder through fresh independent
 `task-review-discovery` evidence and the separate fresh `task-acceptance-review`
 decision as next owner, then end the response without a review
 verdict. Retain the existing human result semantics for milestone or no-review
@@ -419,9 +471,10 @@ For the existing worker-result schema:
 - `decisions`: local reversible task choices only.
 - `questions`: unresolved input/authority issues and whether they block.
 - `risks`: residual gaps or skipped stronger evidence.
-- `next_action`: one exact route. For immediate review, route to fresh
-  independent `task-review-discovery` evidence and a separate fresh
-  `task-acceptance-review` decision.
+- `next_action`: one exact route. For immediate review, route to the first
+  outstanding applicable conditional stage and the complete ordered remainder
+  through fresh independent `task-review-discovery` evidence to the separate
+  fresh `task-acceptance-review` decision.
 
 ## Boundaries and routing
 
@@ -429,10 +482,12 @@ For the existing worker-result schema:
   re-check is needed.
 - Missing product/architecture authority or wider scope routes to the user or
   `task-brief-designer`.
-- Completed work routes to fresh independent `task-review-discovery` evidence
-  and a separate fresh `task-acceptance-review` decision when independent
-  review is requested or required; this invocation ends with the handoff and
-  the next owner is started separately. Otherwise return it to the user.
+- Completed work routes through the first outstanding applicable conditional
+  stage and the complete ordered remainder to fresh independent
+  `task-review-discovery` evidence and the separate fresh
+  `task-acceptance-review` decision when independent review is requested or
+  required; this invocation ends with the handoff and the next owner is started
+  separately. Otherwise return it to the user.
 - Do not approve your own work, update an official plan/tracker, commit/push,
   install dependencies, use the network, launch subagents, or modify
   orchestration state unless explicitly authorized.

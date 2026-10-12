@@ -305,6 +305,9 @@ clear request or task brief
   -> bounded-task-implementer  implementation and progressive verification
   -> architecture gate + task-maintainability-review
                                when repo policy requires maintainability review
+  -> task-contract-registry-updater
+                               when the repository uses implemented-contract
+                               discovery and a durable cross-task contract changed
   -> task-review-discovery     fresh session publishing current evidence
                                whenever independent review is required
   -> task-acceptance-review    separate fresh decision that admits the
@@ -326,7 +329,12 @@ scenario ID to current evidence or an explicit blocked/unchecked reason and
 next owner.
 When the repo declares a required
 maintainability gate, run that gate and a fresh `task-maintainability-review`
-before functional acceptance. When acceptance approves a bounded non-material
+before the contract-registry stage, fresh discovery evidence and functional
+acceptance. Every required-review submission names the first outstanding
+applicable stage and the complete ordered remainder; a conditional stage
+counts only with evidence current for the submitted bytes, and a production
+correction re-enters the stages it affected before fresh discovery and
+acceptance. When acceptance approves a bounded non-material
 deferral, the human coordinator alone records it, before authorized
 advancement, in `docs/known-issues.md` (or the repository's declared path);
 discovery and acceptance never write the tracker. A relevant later preflight

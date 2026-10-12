@@ -39,6 +39,14 @@ task-brief-designer
 Use `senior-code-review`, `ollama-delegate`, `testing-discipline`, and
 `session-handoff` on demand rather than as mandatory stages in either flow.
 
+A required-review submission names the first outstanding applicable stage and
+the complete ordered remainder: the architecture gate only when policy requires
+it, fresh maintainability review when applicable, the contract-registry
+updater when applicable, then fresh discovery evidence and the separate fresh
+acceptance decision. A conditional stage counts only with evidence current for
+the submitted bytes; production corrections re-enter the stages they affected
+before fresh discovery and acceptance.
+
 ## Skill reference
 
 | Skill | What it does | Requires | Produces |

@@ -1,6 +1,14 @@
 {
   "version": 1,
   "tasks": {
+    "Q-01": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/Q-01/brief.md",
+      "parent": null,
+      "children": [],
+      "depends_on": []
+    },
     "TEST-STAB-001": {
       "kind": "composite",
       "source_plan_task": null,

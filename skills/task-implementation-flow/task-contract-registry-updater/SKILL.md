@@ -23,7 +23,14 @@ task brief
   -> task-acceptance-review
 ```
 
-If later review changes production, test, or executable-contract bytes, run this synchronization again before fresh acceptance.
+If later review changes production, test, or executable-contract bytes, repeat
+applicable conditional stages in the implementer's ordered route, including this
+synchronization when its scope changed, before fresh discovery and separate acceptance.
+A genuine reference-only update may route directly to fresh acceptance only
+when actual effects and current behavioral proof justify it. A filename or
+reference label cannot justify that shortcut: changed executable/behavioral
+effects or missing applicable proof require affected discovery/gates. Name the
+first outstanding owner and full remainder; do not claim those stages executed.
 
 ## Authority and inputs
 

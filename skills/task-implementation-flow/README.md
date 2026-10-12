@@ -446,6 +446,35 @@ stage, and a previous verdict never applies to corrected bytes. A production
 correction stales the prior acceptance verdict and re-enters every conditional
 stage whose reviewed scope the correction affected; current applicable evidence
 for the corrected bytes keeps an unaffected stage in force.
+
+Correction continuation retains all finding/scenario IDs, prior row statuses,
+current producer-attributed evidence, incomplete reasons and separate correction,
+evidence/capability and authority owners. Carry preflight/context and verification
+revision references, the scoped diff, invariant, attempts/discarded hypotheses,
+influenced siblings, exact probes and the gate record. A green corrected target
+does not close unfinished siblings or certify changed bytes with an old pass.
+Neither non-success verdict permits advancement.
+
+Route by actual effects and current proof: clarification returns to its artifact
+owner; evidence recovery to discovery/capability ownership, then a separate
+decision. Tests-only exceptions require explicit policy and retain the rest of
+the ordered route. Genuine reference-only updater → fresh acceptance requires
+unchanged executable/behavioral effects and current behavioral proof; otherwise
+repeat affected discovery/gates. A reasoned coverage revision under unchanged
+requirements retains IDs and supersedes affected readiness/evidence: verification
+designer → focused ready preflight → current revised-scenario proof → new decision.
+New proof cannot excuse old readiness or its substitution after recovery.
+Changed requirements return to task design; ordinary corrections/clarifications
+do not restart design, and expected task/report effects alone do not stale readiness.
+
+Correction discovery reconciles authority, diff and the complete ledger before
+aggregate selection. Safely runnable material rows and selected probes need
+current targeted evidence; unfinished rows retain concrete non-gate reasons and
+owners. Decisive failure suppresses the ordinary aggregate absent a distinct
+authorized diagnostic purpose. Clean evidence permits one justified current gate,
+with command/not-run, owner/stage, reason and evidence. A later omitted row makes
+the earlier gate premature: targeted recovery precedes any justified rerun.
+Acceptance consumes without duplication; conditional gate duties remain intact.
 ### Deferrals, known issues, and the human coordinator
 
 Acceptance may approve bounded non-material deferrals, but the human

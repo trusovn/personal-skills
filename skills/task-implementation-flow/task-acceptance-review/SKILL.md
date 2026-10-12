@@ -311,9 +311,17 @@ does not silently do both roles in one call. Missing/contradictory focused
 proof is requested from the owning stage; it is not a generic user question.
 
 Route `CHANGES_REQUESTED` to the same implementation thread when possible.
-After any correction, run fresh discovery evidence and a fresh acceptance
-decision against the corrected bytes; never reuse or append acceptance to the
-prior verdict as if it still applied.
+After correction, name the first outstanding applicable conditional stage and
+complete ordered remainder from the implementer submission protocol, then fresh
+discovery evidence and a separate fresh acceptance decision against corrected
+bytes. Never reuse or append acceptance to the prior verdict as if it still applied.
+Preserve every finding/scenario ID, prior row status, current producer-attributed
+evidence, incomplete reason and separate correction/evidence/authority owner.
+Clarification and evidence recovery return to their artifact/capability owners;
+an evidence request does not imply a production change. A coverage revision
+under unchanged requirements returns to verification design, focused ready
+preflight and current revised-scenario evidence before a new decision; old
+readiness remains invalid even when new scenario proof exists.
 
 Route contract defects to the user or `task-brief-designer`; current-state or
 high-assurance freshness failures to `task-preflight`; and wider scope/shared
@@ -483,5 +491,10 @@ Route failures narrowly:
 - planned/current semantic mismatch -> appropriate task/project planning owner;
 - missing or unclear registry foundation -> `repo-foundation`.
 
-After a reference-only correction, run fresh acceptance. Do not require a maintainability rerun when production, test, and executable-contract bytes are unchanged.
+After a genuine reference-only correction, updater → fresh acceptance is allowed
+only when actual effects and current behavioral proof justify it. Do not infer
+the shortcut from a reference filename or label. If executable/behavioral effects
+changed or applicable proof is missing, repeat affected discovery/gates before
+the separate current decision. Do not require a maintainability rerun when its
+reviewed scope is unchanged and current applicable evidence remains in force.
 <!-- contract-registry-flow:task-acceptance-review:end -->

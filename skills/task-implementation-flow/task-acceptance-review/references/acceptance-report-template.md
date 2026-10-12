@@ -192,6 +192,17 @@ as one focused question naming the consequence and the needed fact.
 - `SELF_CHECK_ONLY` is not a verdict and always routes to a fresh reviewer.
 - Only an independent `ACCEPT` may advance work.
 
+Preserve separate correction/evidence/authority owners through the coordinator
+for every finding and unfinished row. Name the first outstanding applicable
+conditional stage and complete ordered remainder before fresh discovery and
+the separate decision; tests-only exceptions require explicit policy authority.
+Clarification/evidence requests do not imply production changes. A genuine
+reference-only updater → fresh acceptance shortcut requires actual effects and current behavioral proof;
+otherwise repeat affected discovery/gates. Unchanged-authority coverage revision
+returns to verification design → focused ready preflight → revised-scenario
+proof → new decision. New proof cannot excuse old readiness, including its
+substitution after recovery. Changed requirements return to their authority owner.
+
 ## 10. Review continuation
 
 Copy this compact block intact into the next decision context:
@@ -201,6 +212,8 @@ Review continuation:
 - Iteration / current byte identity: <iteration; HEAD/scoped diff identity>
 - Coverage rows: <every stable row ID = pass/fail/blocked/unchecked + reason>
 - Finding IDs: <all IDs or none>
+- Finding/scenario continuity: <prior statuses, current producer-attributed evidence, incomplete reasons and separate correction/evidence/authority owners; influenced siblings>
+- Preparation/context: <brief, verification revision, preflight and context references>
 - Reviewer regressions: <paths and exact focused commands, or none>
 - Aggregate gate (consumed): <status, exact command/owner, reason>
 - Next: <one exact route>

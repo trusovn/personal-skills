@@ -141,6 +141,10 @@ independent proof.
      clean and the gate remains justified.
    - For every gate record: the exact command or `not run`, owner, stage,
      reason, and current evidence. Add no gate and add no command.
+   - Previously blocked/unchecked rows that remain unavailable retain concrete
+     non-gate reasons and evidence owners; a corrected first target cannot close
+     an unfinished sibling. Required conditional gate owners retain their duties;
+     this discovery aggregate record waives none of their applicable proof.
 7. Validate each candidate finding against surrounding code and observed
    behavior. Assign each confirmed finding a stable ID such as `F-01`. Include
    suggested severity, location, demonstrated trigger, consequence, evidence,

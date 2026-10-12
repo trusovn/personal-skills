@@ -539,6 +539,8 @@ def record_correction() -> None:
         Aggregate gate: python -m unittest discover -s tests
         Gate ownership: skip the aggregate during correction; the assigned fresh reviewer owns any final aggregate decision.
         Required sibling evidence: add at least one other field mutation or semantically equivalent byte rewrite using the same exact-byte oracle.
+        Required continuation: preserve ROW-ORIGINAL (prior passed), ROW-EXACT-BYTES (failed), ROW-REMOTE-ANCHOR (blocked) and ROW-REPLAY-BOUNDARY (unchecked) with separate current evidence/reasons/owners.
+        Remote anchor recovery needs tools/remote_anchor.py, unavailable under this local-only authority; route capability recovery to task-preflight, without inferring a production fix.
         No network, dependency installation, commits, or other repository writes.
         """,
     )
@@ -561,6 +563,18 @@ def record_correction() -> None:
         Reviewer row: ROW-REPLAY-BOUNDARY
         Setup: reviews/acceptance-01.md retains the unchecked row.
         Oracle / boundary: handoff preserves the unchecked row and names fresh task-review-discovery evidence and the separate fresh task-acceptance-review decision as next owner; no implementation acceptance claim.
+
+        ### V-03 — Prior positive proof is navigation only
+        Covers: AC-01
+        Reviewer row: ROW-ORIGINAL
+        Command: python -m unittest tests.test_record_integrity.RecordIntegrityTest.test_original_record_is_accepted
+        Oracle / boundary: original bytes remain accepted; prior pass cannot certify corrected bytes.
+
+        ### V-04 — Blocked capability remains owned
+        Covers: AC-02
+        Reviewer row: ROW-REMOTE-ANCHOR
+        Setup: tools/remote_anchor.py is absent; network and installing helpers are outside authority.
+        Oracle / boundary: retain blocked reason and task-preflight capability owner; local target proof cannot close this row.
         """)
     write(root, "docs/tasks/REC-44/preflight.md", """
         # Preflight: REC-44
@@ -645,17 +659,24 @@ def record_correction() -> None:
 
         Authoritative brief: docs/tasks/REC-44/brief.md
         Preceding verdict: CHANGES_REQUESTED
-        Complete finding: the validator checks only `task_id`, so coherent changes to other bytes are accepted.
+        Complete finding: F-01 — the validator checks only `task_id`, so coherent changes to other bytes are accepted.
+        Preflight/context reference: docs/tasks/REC-44/preflight.md; docs/tasks/REC-44/verification.md revision 1; authority/result.sha256.
+        Invariant: every serialized byte is bound to the independent anchor.
+        Influenced sibling surfaces: other fields, equivalent byte rewrites, remote anchor recovery and unchecked replay proof.
+        Attempts and discarded hypotheses: baseline task_id equality cannot bind the other bytes; no correction attempted yet. Separate attempts/stop.json supplies a same-target stopped continuation contrast, not current correction evidence.
         Reviewer reproducer: python -m unittest tests.test_record_integrity.RecordIntegrityTest.test_coherent_mutation_is_rejected
         Owning suite: python -m unittest tests.test_record_integrity
-        Broad-gate decision: skip aggregate during correction; the assigned fresh reviewer owns the final aggregate decision.
+        Broad-gate decision: python -m unittest discover -s tests — not run during implementation; owner and stage: fresh correction discovery; reason: reconcile all current targeted rows before any justified aggregate; no current aggregate evidence.
 
         Coverage ledger:
+        - ROW-ORIGINAL — passed — prior original-record probe; navigation only for corrected bytes; next owner: fresh discovery.
         - ROW-EXACT-BYTES — failed — coherent summary mutation was accepted.
+        - ROW-REMOTE-ANCHOR — blocked — tools/remote_anchor.py is absent and network/helpers are outside authority; next owner: task-preflight capability recovery.
         - ROW-REPLAY-BOUNDARY — unchecked — fresh reviewer must evaluate; implementer must not claim a verdict.
 
         Remaining obligations:
         - ROW-EXACT-BYTES — correct exact-byte binding and rerun the reviewer regression; next owner: bounded-task-implementer, then fresh task-review-discovery evidence and a separate fresh task-acceptance-review decision.
+        - ROW-REMOTE-ANCHOR — retain missing helper and denied network reasons; next owner: task-preflight capability recovery, then fresh discovery and separate acceptance.
         - ROW-REPLAY-BOUNDARY — evaluate unchecked replay coverage; next owner: fresh task-review-discovery evidence and a separate fresh task-acceptance-review decision.
         """,
     )
@@ -674,6 +695,36 @@ def record_correction() -> None:
         "        )\n"
     )
     test_path.write_text(current.rstrip() + reviewer_regression, encoding="utf-8")
+    attempts = []
+    for number, hypothesis, body in (
+        (1, "Recomputed internal digest proves anchoring", "result = json.loads(result_bytes); body = {k: v for k, v in result.items() if k != 'content_digest'}; return hashlib.sha256(json.dumps(body, sort_keys=True, separators=(',', ':')).encode()).hexdigest() == result.get('content_digest')"),
+        (2, "Canonicalizing JSON proves exact-byte anchoring", "return hashlib.sha256(json.dumps(json.loads(result_bytes), sort_keys=True, separators=(',', ':')).encode() + bytes([10])).hexdigest() == anchor_digest"),
+    ):
+        path = f"attempts/fix-{number}.py"
+        write(root, path, f'''
+            import hashlib
+            import json
+            from pathlib import Path
+
+            def is_anchored_result(result_bytes, anchor_digest):
+                {body}
+
+            original = Path('authority/result.json').read_bytes()
+            anchor = Path('authority/result.sha256').read_text().strip()
+            assert is_anchored_result(original, anchor), 'original anchored bytes must remain accepted'
+            rewritten = json.dumps(json.loads(original), indent=2).encode()
+            assert not is_anchored_result(rewritten, anchor), 'equivalent byte rewrite must be rejected'
+        ''')
+        attempts.append({"hypothesis": hypothesis, "target": "exact-byte binding", "probe": path})
+    write(root, "attempts/stop.json", json.dumps({
+        "attempts": attempts, "status": "non-complete", "next_owner": "result-integrity owner",
+        "reason": "two materially different failed fixes of the same target; no third ordinary fix",
+        "remaining_approach": "reconcile the exact-byte invariant and use the independent raw-byte digest",
+        "partial_diff": "attempts/fix-1.py and attempts/fix-2.py; retain current src/result_integrity.py",
+        "coverage_rows": {"ROW-ORIGINAL": "passed", "ROW-EXACT-BYTES": "failed", "ROW-REMOTE-ANCHOR": "blocked", "ROW-REPLAY-BOUNDARY": "unchecked"},
+        "finding_ids": ["F-01"],
+        "unfinished_rows": ["ROW-EXACT-BYTES", "ROW-REMOTE-ANCHOR", "ROW-REPLAY-BOUNDARY"],
+    }, indent=2))
 
 
 def entry_cases() -> None:
@@ -991,6 +1042,34 @@ def route_cases() -> None:
             Remaining obligations:
             - ROW-ROUTE — rerun the owning checks; next owner: bounded-task-implementer, then the first outstanding applicable conditional stage, then fresh task-review-discovery evidence and a separate fresh task-acceptance-review decision.
             """)
+    full = "architecture gate → fresh maintainability review → registry updater → discovery → acceptance"
+    effects = {
+        "clarification": ("context.md", "unknown input", "supplied input", "clarifying artifact owner → discovery → acceptance"),
+        "evidence": ("capability.md", "helper missing", "helper owner identified; still missing", "capability owner → discovery → acceptance"),
+        "production": ("src/contract.py", "return True", "return type(value) is int", full),
+        "tests-policy-exception": ("tests/test_contract.py", "assert accepts(1)", "assert accepts(1); assert not accepts(True)", "registry updater → discovery → acceptance"),
+        "reference": ("docs/contract.md", "Accept numbers", "Accept integers, reject booleans", "registry updater → acceptance"),
+        "reference-executable": ("docs/contract.py", "return type(value) is int", "return isinstance(value, int)", full),
+        "reference-missing-proof": ("docs/contract.md", "Accept numbers", "Accept integers, reject booleans", "registry updater → discovery → acceptance"),
+        "scenario": ("verification.md", "Revision 1: V-01 valid", "Revision 2: V-01 valid; V-02 boolean rejected; unchanged authority, coverage gap", "verification designer → focused preflight → revised-scenario evidence → acceptance"),
+        "authority": ("brief.md", "Reject booleans", "Allow booleans", "task designer/decision owner"),
+    }
+    cases = {}
+    for name, (path, before, after, route) in effects.items():
+        folder = f"change-effects/{name}"
+        for state, content in (("before", before), ("after", after)):
+            write(root, f"{folder}/{state}/docs/__init__.py", "")
+            write(root, f"{folder}/{state}/docs/contract.py", "def accepts(value):\n    return type(value) is int")
+            write(root, f"{folder}/{state}/{path}",
+                  f"def accepts(value):\n    {content}" if path.endswith("contract.py") else content)
+        cases[name] = {
+            "changed_paths": [path], "route": route,
+            "current_proof": name != "reference-missing-proof",
+            "policy": ("explicit policy exception: skip architecture and maintainability only for this tests-only correction; registry still applies"
+                       if name == "tests-policy-exception" else "no tests-only exception; applicable conditional stages retained"),
+            "evidence": "supplied current contract probe" if name != "reference-missing-proof" else "no applicable current behavioral proof supplied",
+        }
+    write(root, "change-effects/cases.json", json.dumps(cases, indent=2))
     git(root, "add", ".")
     git(root, "commit", "-qm", "fixture baseline")
 

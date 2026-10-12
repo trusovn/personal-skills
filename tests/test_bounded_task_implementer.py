@@ -58,6 +58,111 @@ ROUTE_PART_TOKENS = {
 
 class ImplementerContractTest(unittest.TestCase):
 
+    def test_correction_handoff_retains_evidence_provenance_and_separate_routes(self):
+        text = " ".join((IMPLEMENTER / "SKILL.md").read_text().split())
+        for obligation in (
+            "Preflight/context reference", "Incomplete reason", "Attempts and discarded hypotheses",
+            "Influenced sibling surfaces", "Finding/scenario IDs", "owner and stage",
+            "an evidence request is not a production-fix request",
+            "actual effects and current behavioral proof",
+            "verification designer → focused preflight",
+            "ordinary corrections and clarifications do not restart task design",
+            "Preserve accepted dispositions", "no global correction-round limit",
+            "serious consequences of delay", "materially costly later repair",
+            "stopped work is non-complete",
+        ):
+            self.assertIn(obligation, text)
+
+
+    def test_record_correction_preserves_all_row_states_after_target_passes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            self.fixture(temporary, "record-correction")
+            root = Path(temporary) / "result-record"
+            review = (root / "docs/tasks/REC-44/reviews/acceptance-01.md").read_text()
+            for row, status in (("ROW-ORIGINAL", "passed"), ("ROW-EXACT-BYTES", "failed"),
+                                ("ROW-REMOTE-ANCHOR", "blocked"), ("ROW-REPLAY-BOUNDARY", "unchecked")):
+                self.assertIn(f"{row} — {status}", review)
+                self.assertIn(row, (root / "docs/tasks/REC-44/verification.md").read_text())
+            for field in ("F-01", "Preflight/context reference:", "Influenced sibling surfaces:",
+                          "Attempts and discarded hypotheses:", "owner and stage:"):
+                self.assertIn(field, review)
+            command = [sys.executable, "-m", "unittest", "tests.test_record_integrity"]
+            failed = subprocess.run(command, cwd=root, capture_output=True, text=True)
+            self.assertNotEqual(0, failed.returncode)
+            self.assertIn("AssertionError", failed.stderr)
+            # Submitted correction evidence only: no fabricated reviewer output.
+            (root / "src/result_integrity.py").write_text(
+                "import hashlib\ndef is_anchored_result(result_bytes, anchor_digest):\n"
+                "    return hashlib.sha256(result_bytes).hexdigest() == anchor_digest\n")
+            passed = subprocess.run(command, cwd=root, capture_output=True, text=True)
+            self.assertEqual(0, passed.returncode, passed.stderr)
+            siblings = subprocess.run([sys.executable, "-c",
+                "import json; from pathlib import Path; from src.result_integrity import is_anchored_result; "
+                "raw=Path('authority/result.json').read_bytes(); anchor=Path('authority/result.sha256').read_text().strip(); "
+                "data=json.loads(raw); "
+                "assert not is_anchored_result(json.dumps(data,indent=2).encode(),anchor); "
+                "data['files_changed']=[]; assert not is_anchored_result(json.dumps(data).encode(),anchor)"],
+                cwd=root, capture_output=True, text=True)
+            self.assertEqual(0, siblings.returncode, siblings.stderr)
+            self.assertEqual(review, (root / "docs/tasks/REC-44/reviews/acceptance-01.md").read_text())
+            self.assertFalse((root / "tools/remote_anchor.py").exists())
+            self.assertIn("ROW-REPLAY-BOUNDARY", review.split("Remaining obligations:")[1])
+
+
+    def test_effect_routes_use_actual_bytes_and_current_proof(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.fixture(temporary, "route-cases")
+            cases = json.loads((root / "change-effects/cases.json").read_text())
+            expected = {
+                "clarification": "clarifying artifact owner → discovery → acceptance",
+                "evidence": "capability owner → discovery → acceptance",
+                "production": "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+                "tests-policy-exception": "registry updater → discovery → acceptance",
+                "reference": "registry updater → acceptance",
+                "reference-executable": "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+                "reference-missing-proof": "registry updater → discovery → acceptance",
+                "scenario": "verification designer → focused preflight → revised-scenario evidence → acceptance",
+                "authority": "task designer/decision owner",
+            }
+            self.assertEqual(set(expected), set(cases))
+            for name, route in expected.items():
+                with self.subTest(case=name):
+                    case = cases[name]
+                    self.assertEqual(route, case["route"])
+                    folder = root / "change-effects" / name
+                    changed = [path.relative_to(folder / "after").as_posix()
+                               for path in (folder / "after").rglob("*") if path.is_file()
+                               and path.read_bytes() != (folder / "before" / path.relative_to(folder / "after")).read_bytes()]
+                    self.assertEqual(case["changed_paths"], sorted(changed))
+                    if name.startswith("reference"):
+                        probe = subprocess.run([sys.executable, "-c",
+                            "from docs.contract import accepts; assert accepts(1); assert not accepts(True)"],
+                            cwd=folder / "after", capture_output=True, text=True)
+                        self.assertEqual(name == "reference-executable", probe.returncode != 0)
+                        if name == "reference-executable":
+                            self.assertIn("AssertionError", probe.stderr)
+                        self.assertEqual(name != "reference-missing-proof", case["current_proof"])
+            self.assertIn("explicit policy exception", cases["tests-policy-exception"]["policy"])
+
+
+    def test_two_failed_fixes_keep_the_same_target_and_owned_stop(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            self.fixture(temporary, "record-correction")
+            root = Path(temporary) / "result-record"
+            attempts = json.loads((root / "attempts/stop.json").read_text())
+            self.assertEqual(2, len(attempts["attempts"]))
+            self.assertEqual(1, len({attempt["target"] for attempt in attempts["attempts"]}))
+            for attempt in attempts["attempts"]:
+                result = subprocess.run([sys.executable, attempt["probe"]], cwd=root,
+                                        capture_output=True, text=True)
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("AssertionError", result.stderr)
+                self.assertTrue(attempt["hypothesis"])
+            self.assertEqual("non-complete", attempts["status"])
+            self.assertEqual("result-integrity owner", attempts["next_owner"])
+            self.assertEqual(["ROW-EXACT-BYTES", "ROW-REMOTE-ANCHOR", "ROW-REPLAY-BOUNDARY"], attempts["unfinished_rows"])
+            self.assertEqual({"passed", "failed", "blocked", "unchecked"}, set(attempts["coverage_rows"].values()))
+
     def fixture(self, temporary, scenario):
         setup = FLOW / "bounded-task-implementer/evals/files/setup_fixture.py"
         subprocess.run([sys.executable, str(setup), scenario], cwd=ROOT,

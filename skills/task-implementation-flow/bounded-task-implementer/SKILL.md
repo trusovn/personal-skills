@@ -289,9 +289,13 @@ will not exercise.
 The correction handoff must carry:
 
 - the authoritative brief reference and preceding verdict;
+- the applicable verification revision and preflight/context references;
 - the first outstanding applicable conditional stage and the complete remaining
   route;
 - the complete coverage ledger and complete findings;
+- stable finding/scenario IDs, incomplete reasons and separate correction,
+  evidence/capability and authority owners, including influenced sibling surfaces;
+- attempts, exact results and discarded hypotheses when correction has stopped;
 - the current scoped diff and reviewer reproducer commands;
 - correction evidence attached to the failed rows, separately from reviewer
   row status;
@@ -317,14 +321,18 @@ regression passed.”
 Implemented: READY_FOR_REVIEW
 
 - Authority: <exact authoritative brief path>
+- Preflight/context reference: <exact readiness, verification revision and context paths>
 - Preceding verdict: <verdict>
+- Finding/scenario IDs: <complete stable inventories>
 - Complete findings and invariant: <findings and broken invariant>
+- Influenced sibling surfaces: <contract-implied cases and current evidence or remaining owner>
+- Attempts and discarded hypotheses: <exact probes/results and retained partial diff, or none>
 - Current scoped diff: <changed paths and concise diff summary>
 - Coverage ledger:
-  - <row identity> — prior status: <status>; implementation evidence: <evidence or none>; next owner/status: <owner and unchanged reviewer status>
+  - <row identity> — prior status: <status>; implementation evidence: <command, setup/oracle and result, or none>; Incomplete reason: <reason or none>; next owner/status: <owner and unchanged reviewer status>
 - Reviewer reproducer: `<exact command>` — <implementation outcome>
 - Owning suite: `<exact command>` — <implementation outcome>
-- Broad/aggregate gate: <exact command, run-or-skipped decision, reason, and owner>
+- Broad/aggregate gate: <exact command, run-or-skipped decision, reason, owner and stage, current evidence>
 - Remaining reviewer coverage: <unchecked or blocked rows, or none>
 - Next: the first outstanding applicable stage and complete ordered remainder
   through fresh independent `task-review-discovery` evidence to a fresh
@@ -372,7 +380,38 @@ the correction affected, before fresh discovery and the separate fresh
 acceptance decision; current evidence for the corrected scope keeps an
 unaffected stage out of the route. A tests-only correction still re-enters
 applicable conditional stages unless repository authority explicitly authorizes
-skipping them. Naming the route never launches, delegates to, or waits for any
+skipping them. Apply an explicit exception only to its authorized scope and
+retain the remaining route. Choose correction routes by actual effects and current behavioral proof,
+not by filenames or category labels:
+
+- Clarification returns to the clarifying artifact owner; an evidence request is not a production-fix request
+  and returns to discovery/capability ownership before a separate current decision.
+- A genuine reference-only correction may use registry updater → fresh acceptance
+  only when actual unchanged executable/behavioral effects and applicable current
+  behavioral proof justify it. Otherwise repeat affected discovery/gates and
+  obtain a separate current decision.
+- A material coverage gap under unchanged requirements returns to
+  verification designer → focused preflight → current revised-scenario evidence
+  → new acceptance decision. Retain scenario IDs and the revision reason;
+  affected old readiness/evidence is superseded. New proof cannot admit revised
+  work under old readiness, even if old readiness is substituted after recovery.
+- Changed requirements return to task design/decision ownership;
+  ordinary corrections and clarifications do not restart task design, and
+  expected implementation/report effects alone do not stale readiness.
+
+For mixed conditions, preserve acceptance's precedence: an authorized bounded
+blocker correction yields `CHANGES_REQUESTED` despite other unfinished proof;
+prevented correction or missing decisive proof without an eligible blocker yields
+`INCONCLUSIVE`. Neither permits advancement. Carry every finding and unfinished
+row, reason and separate owner through the coordinator rather than collapsing routes.
+
+Preserve accepted dispositions while relevant exposure/context is unchanged.
+Optional improvements never restart correction. New blockers require current
+proof, contextual materiality and an explicit reason: regression, formerly blocked
+evidence, missed obligation, changed context/authority or newly demonstrated
+material risk. Changed authority returns to its owner; add no global correction-round limit.
+
+Naming the route never launches, delegates to, or waits for any
 of those reviewers in the implementer invocation. When independent functional
 review is not required, no route is imposed and the existing milestone or
 no-review result semantics are unchanged. The requirement, not the metadata
@@ -410,7 +449,18 @@ required check that cannot run within the authorized environment.
 
 After two materially different fixes fail the same targeted behavior, stop
 ordinary editing. Record the failure, discarded hypotheses, owning component or
-contract, and one recommended next approach.
+contract, and one recommended next approach. Retain the partial diff, every
+unfinished row/finding, exact attempt probes/results, reasons and next owners;
+stopped work is non-complete and cannot advance. This same-target stop is not a
+global correction-round counter. Task/user budgets, cancellation and genuine
+capability stops retain these continuation obligations.
+
+Continue through ordinary uncertainty under a stated reasonable assumption
+within current authority; it alone does not create a blocker, design restart or
+routine user prompt. Resolve credible serious consequences of delay or
+materially costly later repair within current authority first. An unresolved
+decision-critical exception retains one focused authority question naming the
+consequence, needed fact and decision owner. Required proof is never waived.
 
 Treat the brief's tool/time/context budget as a soft checkpoint by default. At
 the checkpoint, summarize progress and continue while the task remains bounded

@@ -5,7 +5,12 @@ decision-eval metadata probes that verify guided/mixed-context registration.
 """
 
 import json
+import os
+import subprocess
+import sys
+import tempfile
 import unittest
+from pathlib import Path
 
 from review_fixture_support import (
     ACCEPTANCE_EVALS,
@@ -21,6 +26,46 @@ from review_fixture_support import (
 
 
 class ReviewerDisciplineTests(unittest.TestCase):
+
+    def test_mixed_and_repeated_review_facts_cross_the_public_boundary(self):
+        scenarios = ["mixed-conditions-authorized-decision", "mixed-conditions-forbidden-decision",
+                     "correction-regression-decision"] + [
+            name for name in CONTEXTUAL_CONTRAST_SETUPS if name.startswith("repeated-review")]
+        for scenario in scenarios:
+            with self.subTest(scenario=scenario), tempfile.TemporaryDirectory() as temporary:
+                work = Path(temporary)
+                subprocess.run([sys.executable, str(ACCEPTANCE_FIXTURE), scenario],
+                               env=os.environ | {"EVAL_WORK_ROOT": temporary}, check=True)
+                mixed = scenario.startswith("mixed")
+                root = work / ("mixed-runner" if mixed else "correction-runner")
+                state = root / "probe.json"
+                state.write_text(json.dumps({"jobs": [{"id": f"JOB-{i}", "status": "ready"} for i in (1, 2)]}
+                                            if mixed else {"pending": [{"id": "ORD-1"}], "output": []}))
+                commands = [sys.executable, "-m", "src.jobs.claim" if mixed else "src.orders.retry", str(state)]
+                results = [subprocess.check_output(commands, cwd=root, text=True).strip() for _ in range(2)]
+                if mixed:
+                    self.assertEqual(["JOB-1", ""], results)
+                    self.assertFalse((root / "tests/helpers/pair_claims.py").exists())
+                    policy = json.loads((work / "task-runs/policies/local-review-mixed.json").read_text())
+                    self.assertEqual("authorized" in scenario,
+                                     "bounded production correction by the owning implementer thread" in policy["allow"])
+                else:
+                    self.assertEqual(["processed 1 orders"] * 2, results)
+                    self.assertEqual(["ORD-1,processed"] * 2, json.loads(state.read_text())["output"])
+                    context = (root / "docs/tasks/ORD-04/preflight.md").read_text()
+                    self.assertIn("unchanged", context)
+                    self.assertIn("KI-001", (root / "docs/known-issues.md").read_text())
+                    if scenario == "repeated-review-newly-demonstrated-material-risk-decision":
+                        self.assertEqual("20", subprocess.check_output(
+                            [sys.executable, "consumers/settle.py", str(state)], cwd=root, text=True).strip())
+
+
+    def test_reference_shortcut_and_mixed_continuation_are_effect_bound(self):
+        for path in (ACCEPTANCE_SKILL, ACCEPTANCE_PACKAGE / "references/acceptance-report-template.md"):
+            text = normalized(path)
+            for obligation in ("actual effects and current behavioral proof", "separate correction/evidence/authority",
+                               "first outstanding", "complete ordered remainder", "old readiness"):
+                self.assertIn(obligation, text)
 
     def test_acceptance_admits_discovery_evidence_and_routes_missing_discovery(self):
         text = normalized(ACCEPTANCE_SKILL)

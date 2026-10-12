@@ -335,6 +335,11 @@ class ReviewDiscoveryDisciplineTests(unittest.TestCase):
             text,
         )
         self.assertIn("Add no gate and add no command", text)
+        self.assertIn("Required conditional gate owners retain their duties", text)
+        template = normalized(DISCOVERY_REPORT_TEMPLATE)
+        self.assertIn("Current evidence", template)
+        self.assertIn("targeted recovery before any justified rerun", template)
+        self.assertIn("separate correction/evidence/authority", template)
 
 
     def test_write_rules_allow_only_the_next_unused_discovery_report(self):
@@ -531,6 +536,23 @@ class DiscoveryLateOmissionFixtureTests(unittest.TestCase):
                 )
                 exits[name] = run.returncode
             return exits
+
+    def test_correction_and_diagnostic_fixtures_supply_clean_and_failed_targeted_proof(self):
+        for scenario, folder, expected_claims in (
+            ("discovery-correction-gate", "corrected-queue", ["TASK-1", "TASK-2"]),
+            ("discovery-diagnostic-aggregate", "queue-runner", ["TASK-1", ""]),
+        ):
+            with self.subTest(scenario=scenario), TemporaryDirectory() as temporary:
+                subprocess.run([sys.executable, str(DISCOVERY_FIXTURE), scenario],
+                               env=os.environ | {"EVAL_WORK_ROOT": temporary}, check=True)
+                root = Path(temporary) / folder
+                state = root / "probe.json"
+                state.write_text(json.dumps({"tasks": [{"id": f"TASK-{i}", "status": "ready"} for i in (1, 2)]}))
+                command = [sys.executable, "-m", "src.queue.run_next", str(state)]
+                claims = [subprocess.check_output(command, cwd=root, text=True).strip() for _ in range(2)]
+                self.assertEqual(expected_claims, claims)
+                if scenario == "discovery-diagnostic-aggregate":
+                    self.assertTrue((Path(temporary) / "task-runs/QR-12/diagnostic-authorization.md").exists())
 
 
     def test_clean_recovery_fixture_satisfies_every_material_validator_row(self):

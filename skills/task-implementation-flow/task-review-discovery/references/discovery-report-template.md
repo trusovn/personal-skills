@@ -105,6 +105,7 @@ pipe survives.
 | Status | `passed \| failed \| not run \| blocked` |
 | Owner and stage | `<initial discovery \| correction discovery \| fresh discovery after late omission>` |
 | Reason | `<why justified, decisive targeted failure that suppressed it, or distinct authorized diagnostic purpose>` |
+| Current evidence | `<current targeted rows, observed aggregate result, or concrete not-run state>` |
 
 Initial discovery suppresses the aggregate gate after any decisive targeted
 failure; it does not run the gate merely for completeness. A fresh correction
@@ -112,7 +113,9 @@ discovery pass corroborates current bytes, reruns reviewer regressions,
 finishes unfinished rows, and owns one justified aggregate after clean targeted
 evidence. If a material row is later found omitted from an earlier
 reconciliation, that earlier gate is recorded as premature. Add no gate and add
-no command. The acceptance decision call consumes this record; it does not
+no command. Record targeted recovery before any justified rerun; conditional
+gate owners retain their applicable proof duties. Unavailable rows keep concrete
+non-gate reasons and owners. The acceptance decision call consumes this record; it does not
 re-own it.
 
 ## 7. Scope and baseline comparison
@@ -165,6 +168,8 @@ Discovery continuation:
 - Iteration / current byte identity: <iteration; HEAD/scoped diff identity>
 - Coverage rows: <every stable row ID = pass/fail/blocked/unchecked + reason>
 - Finding IDs: <all IDs with suggested severities, or none>
+- Finding/scenario continuity: <prior statuses, current producer-attributed evidence, incomplete reasons and separate correction/evidence/authority owners; influenced sibling surfaces>
+- Preparation/context: <brief, verification revision, preflight and context references>
 - Reviewer regressions: <paths and exact focused commands, or none>
 - Aggregate gate: <status, exact command/owner, reason>
 - Next: <one exact route>

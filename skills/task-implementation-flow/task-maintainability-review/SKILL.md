@@ -3,7 +3,8 @@ name: task-maintainability-review
 description: >
   Use after implementation or correction, before functional task-acceptance-review, when repository
   policy requires focused maintainability/architecture review or the user explicitly asks for it.
-  Independently review the current changed production bytes plus the repo's deterministic architecture
+  Independently review current changed implementation assets, including significant tests, evaluations,
+  fixtures and harness code, plus any required deterministic architecture
   gate for concrete cohesion, coupling, change-locality, dependency, testability, duplication, or
   speculative-abstraction regressions. Return ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE. Do not
   perform full specification/functional acceptance here.
@@ -18,31 +19,42 @@ The question is:
 
 ## Review contract
 
+Reviewed implementation assets include production code, tests, evaluations,
+fixture/setup code and harness code, including tests-only submissions. Significant
+test architecture is a risk reason to use this existing conditional review;
+an ordinary assertion edit alone does not require this review. Significance
+follows changed ownership, dependencies, scenario authority, isolation, oracle
+structure or harness behavior, not file size or assertion counts.
+
+For test assets, use relevant [testing-discipline](../../testing-discipline/SKILL.md)
+guidance from the same installation root. Review introduced or worsened design
+conditions; leave functional conformance and test adequacy to discovery/acceptance.
+
 Focus on six ideas:
 
-1. **Cohesion** — does each changed module still have a clear responsibility?
-2. **Coupling** — did the change create unnecessary knowledge/dependency between components?
-3. **Explicit dependencies** — are important collaborators/boundaries visible rather than hidden through unrelated infrastructure/global state?
-4. **Change locality** — would the next closely related variant be local to its owning subsystem, or did this change spread one behavior across unrelated modules?
-5. **Testability** — can important changed logic be exercised without unnecessary external I/O/infrastructure?
-6. **Proportionate abstraction** — did the change reuse existing patterns and add abstraction only where a concrete boundary, variation, or test seam justifies it?
+1. **Cohesion** — does each changed module or scenario owner still have a clear responsibility?
+2. **Coupling** — did the change create unnecessary knowledge/dependency between components, fixtures or harness internals?
+3. **Explicit dependencies** — are important collaborators/boundaries visible rather than hidden through unrelated infrastructure/global state or mutable setup?
+4. **Change locality** — would the next closely related variant be local to its owning subsystem or scenario authority, or did this change spread one behavior across unrelated modules?
+5. **Testability** — can important changed logic and test scenarios be exercised independently and repeatedly without unnecessary external I/O/infrastructure?
+6. **Proportionate abstraction** — did the change reuse existing patterns and add abstraction only where a concrete boundary, variation, or test seam justifies it, including fixture/harness helpers?
 
 Treat these as review questions, not slogans.
 
 ## Independence
 
-A verdict must come from a fresh reviewer that did **not** author the production bytes being reviewed.
+A verdict must come from a fresh reviewer that did **not** author any reviewed implementation assets, including test/eval/harness bytes.
 
 Session authorship is the boundary. Loading this skill or changing roles in the same session does not create independence.
 
-If this session authored any reviewed production bytes:
+If this session authored any reviewed implementation assets:
 
 - you may run the architecture gate and perform a labeled `SELF_CHECK_ONLY`;
 - you may report findings to the implementer role;
 - you **must not** emit `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE` as an independent verdict for those bytes.
 
-Every confirmed finding keeps a stable identity across reports. A production
-correction that changes bytes inside this review's reviewed scope invalidates
+Every confirmed finding keeps a stable identity across reports. A correction,
+including a tests-only correction, that changes bytes inside this review's reviewed scope invalidates
 this verdict for the corrected bytes. Re-entry follows actual affected
 reviewed scope and current evidence: demonstrably unaffected scope retains
 this review as current evidence while that evidence stays applicable to the
@@ -58,7 +70,7 @@ Use the smallest evidence packet that can answer the maintainability question:
 Required when available:
 
 - task/request or concise task summary
-- current git diff/status and changed production files
+- current git diff/status and changed implementation assets
 - repo-local `AGENTS.md` / `CLAUDE.md`
 - relevant project/architecture map or ADR for the changed boundary
 - canonical architecture-gate command and current policy/config/tests
@@ -76,6 +88,10 @@ Read immediate neighboring modules/interfaces only when needed to understand the
 
 Do **not** begin with a repo-wide architecture survey.
 
+Review is read-only except the permitted new durable report. Do not edit
+production, test/eval/fixture/harness assets, install tools, or execute downstream
+stages as reviewer actions.
+
 Do not require the complete product specification merely to decide maintainability. Read enough task context to distinguish intentional scope from accidental broadening; leave full AC/spec conformance to `task-acceptance-review`.
 
 ## Protocol
@@ -84,9 +100,9 @@ Do not require the complete product specification merely to decide maintainabili
 
 Before judging:
 
-- confirm this is an independent session for the production bytes;
+- confirm this is an independent session for the actual reviewed assets;
 - inspect git status/diff so the reviewed change is concrete;
-- identify changed production/source files separately from tests/docs/generated output;
+- identify changed production, test/eval/fixture/harness assets and necessary immediate neighbors; distinguish docs/generated output and record the actual reviewed scope;
 - note pre-existing dirty work and avoid attributing unrelated changes to this task.
 
 If ownership/provenance makes it impossible to identify the current task bytes responsibly, return `INCONCLUSIVE` rather than guessing.
@@ -101,6 +117,7 @@ Find the canonical architecture command from repo authority, preferably:
 4. package/build/task-runner config only if the command is not documented elsewhere.
 
 If repo policy says the gate is required, run it against the current bytes when feasible.
+Do not create a gate when policy does not require one.
 
 Interpret results as follows:
 
@@ -138,6 +155,10 @@ Look for:
 - new bidirectional/cyclic coupling where the repo expects one-way ownership;
 - one feature change requiring knowledge of several unrelated subsystem internals.
 
+For test assets, inspect fragile mutable fixtures, unclear/cross-owner coupling,
+and harness-internal dependencies. Show the introduced isolation, repeatability
+or ownership consequence rather than blocking merely because setup is shared.
+
 Do not demand an interface for every concrete class. Dependency inversion is useful when it protects an actual boundary/test seam/variation, not as ritual.
 
 ### 5. Review change locality / extension shape
@@ -152,6 +173,11 @@ Look for:
 - a growing `switch` / `if` dispatcher where the repo already has a clear extension mechanism;
 - registrations/variants that require coordinated edits in several owners without necessity;
 - duplicated business policy that must stay synchronized.
+
+For tests/evals, inspect duplicated scenario authority: one scenario fact now
+requires synchronized edits across owners. A one-owner change divergence is
+concrete evidence. Repeated construction at legitimate separate observation
+boundaries does not alone establish a blocker.
 
 Do not invent speculative plugin systems for one known case. One extra branch is not automatically an OCP violation; block only when the current change concretely worsens an already meaningful extension point or creates duplicated coordination cost.
 
@@ -170,13 +196,17 @@ and that coupling materially prevents reliable focused verification.
 
 Do not require pure unit tests for code whose behavior is inherently an integration boundary. The question is whether avoidable coupling made verification harder.
 
+Inspect incidental text/layout assertions that couple a scenario to unrelated
+formatting instead of its observation contract. Stable textual contracts remain
+legitimate; explain the concrete maintenance consequence before blocking.
+
 ### 7. Review duplication and abstraction cost
 
 Look for two opposite failure modes.
 
 #### Duplicated authority
 
-Potential blocker when the change introduces a second copy of business/domain policy that must remain synchronized with an existing source of truth.
+Potential blocker when the change introduces a second copy of business/domain policy or scenario authority that must remain synchronized with an existing source of truth.
 
 Mechanical code duplication is not automatically architectural duplication.
 
@@ -188,6 +218,8 @@ Potential blocker when the change adds layers/interfaces/factories/providers/reg
 - merely forward calls without isolating dependency or policy;
 - increase navigation/cognitive cost more than they localize change;
 - duplicate an existing repo abstraction.
+
+Apply the same speculative abstraction question to fixture and harness helpers.
 
 Do not penalize a small abstraction that clearly creates a required test seam or external boundary.
 
@@ -269,7 +301,7 @@ Use when at least one is true:
 Use when required evidence cannot be established responsibly, for example:
 
 - required architecture gate cannot run and no valid fresh result exists;
-- changed production-byte ownership cannot be determined;
+- changed implementation-asset ownership cannot be determined;
 - required architecture policy/authority is contradictory or unavailable;
 - environment/tool failure prevents distinguishing implementation failure from verifier failure.
 
@@ -300,18 +332,20 @@ WARNINGS:
 - <non-blocking evidence worth carrying forward, max 3, or NONE>
 
 REVIEWED:
-- changed production scope: <paths/summary>
+- changed implementation scope: <production/test/eval/fixture/harness paths and reviewed-byte identities>
 - architecture command: <command or NONE>
 - policy/boundary sources: <paths>
 ```
 
-If this session authored reviewed production bytes, output instead:
+If this session authored reviewed implementation assets, output instead:
 
 ```text
 SELF_CHECK_ONLY
 ARCHITECTURE_GATE: PASS | FAIL | NOT_AVAILABLE
 FINDINGS:
 - <MNT-NN finding or NONE>
+REVIEWED:
+- <actual implementation assets and reviewed-byte identities>
 ```
 
 and do not issue an independent verdict.
@@ -325,8 +359,8 @@ write and permit only the new report entry; the report does not review itself.
 For `CHANGES_REQUESTED`:
 
 1. send the complete concise blocker report to the implementation/correction agent;
-2. fix only the blockers without changing requested behavior unnecessarily;
-3. rerun the canonical architecture gate;
+2. the implementation/correction agent fixes only the blockers without changing requested behavior unnecessarily;
+3. rerun the canonical architecture gate when required and affected;
 4. use a **fresh** `task-maintainability-review` session on the corrected bytes;
 5. only after `ACCEPT`, name the first outstanding stage and the complete
    ordered remainder of the submission route: applicable
@@ -343,12 +377,17 @@ bytes: current applicable evidence for a completed stage leaves it out of
 the outstanding remainder, applicable registry work cannot be dropped, and
 an absent registry stage cannot be invented.
 
-If functional acceptance later changes production bytes, re-enter only the
+If functional acceptance later changes reviewed implementation assets, re-enter only the
 conditional stages whose reviewed scope the correction affected — the
 required architecture gate and a fresh maintainability review when their
 reviewed scope changed, and applicable registry synchronization when the
 registry stage applied and the correction affected its scope — before fresh
 discovery evidence and fresh functional acceptance.
+
+A tests-only label alone never waives an affected required review. Explicit
+policy-authorized trivial-change exceptions apply only within their authorized
+scope; carry all remaining obligations in order. Do not invent a gate or
+registry work for every test change.
 
 ## Definition of Done
 

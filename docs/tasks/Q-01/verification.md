@@ -1,8 +1,8 @@
 # Verification Design: Q-01 — Review significant changed test assets for maintainability
 
 Source brief: docs/tasks/Q-01/brief.md
-Source brief revision: Git blob `425a8d379f367ccbda2e6cc8e76778e6836fbe45`
-Verification revision: 1
+Source brief revision: Git blob `be80cdf7c8116ab74d8abdc5f3828de469d2e9c7`
+Verification revision: 2
 Authority: derived from the task brief and its cited normative sources
 Status: ready
 
@@ -12,15 +12,28 @@ The feature map, concept and archived proposal supply context only; their wider
 work is not added to Q-01. Existing ART-005, IF-003–006 and INV-004/005/006/008
 are compatibility references, with the test-asset extension defined by this brief.
 
+## Owner-approved evidence boundary — 2026-10-12
+
+Revision 2 implements the user's Q-01 scope amendment. Q-01 acceptance requires
+inspected instructions, executable fixture facts, distribution evidence and a
+complete [Q-01-QUALIFICATION handoff](qualification-handoff.md). Actual role
+outputs belong to that later follow-up and are not required for Q-01 acceptance.
+V-01–V-09 and all finite-risk cases remain stable. Where a scenario specifies
+reviewer behavior below, Q-01 checks the published rule and supplied inputs/oracle;
+the follow-up must observe the actual behavior. Do not call these checks proof
+that an agent complied. T-005's existing composition scope remains unchanged.
+Revision 1 readiness is superseded; obtain focused preflight renewal before
+fresh discovery and acceptance under the revised authority.
+
 ## Coverage summary
 
 | AC / risk row | Scenarios | Notes |
 |---|---|---|
 | AC-01 | V-01, V-02, V-03, V-04 | Explicit test-asset scope and significance; consequential defects versus lightweight controls. |
-| AC-02 | V-01, V-02, V-03, V-04, V-08 | All named defect classes have review guidance; two distinct defects need observed detection, with actionable findings and non-blocking contrasts. |
+| AC-02 | V-01, V-02, V-03, V-04, V-08 | All named defect classes have review guidance; two distinct runnable defects and non-blocking contrasts supply later detection trials. |
 | AC-03 | V-05, V-06 | Authorship follows reviewed assets; corrected bytes need fresh evidence, stable identities and preserved history. |
 | AC-04 | V-07, V-08 | Existing verdicts, gate policy, conditional routes, stops, completeness and read-only permissions survive. |
-| AC-05 | V-02, V-03, V-04, V-05, V-06 | Real tests-only diffs and probes plus fresh reviewer outputs; setup checks cannot substitute for detection. |
+| AC-05 | V-02, V-03, V-04, V-05, V-06 | Real tests-only diffs and probes plus complete follow-up inputs/oracles; actual reviewer outputs remain unrun qualification work. |
 | AC-06 | V-09 | Full package/guide projection, independent installed setup, unmanaged preservation and truthful source/run records. |
 | R-01 / proportionate detection | V-01, V-02, V-03, V-04 | Duplicated authority, coupled mutable setup/harness, clean assertion edit and valid independent fixtures. |
 | R-02 / reviewed-byte provenance | V-05, V-06 | Author versus independent reviewer; report → tests-only correction → next review; unaffected evidence and stale-report substitution. |
@@ -37,12 +50,13 @@ Packaged setup must remain independent of repository-only test helpers.
 
 V-01 uses contract inspection. Fixture execution establishes the defect/control
 facts in V-02–06; fresh reviewer output establishes the claimed reviewer
-behavior. Keep those evidence types separate. Fresh discovery owns the small
-Q-01 behavioral qualification, including both defective cases, the clean
-control, author self-check and corrected-byte contrast. Give the fresh reviewer
-the changed skill, task authority, Git diff and gate policy, but withhold expected
-findings and defect-oracle material. Compare its raw output with the held-back
-oracle afterward. Combine inputs where a coherent fixture proves several cases.
+behavior. Keep those evidence types separate. Q-01 discovery corroborates local
+contracts, fixture facts and the follow-up handoff. Q-01-QUALIFICATION owns the
+fresh role trials, including both defects, clean control, real author self-check,
+corrected-byte contrast, unavailable gate and reporting/write boundaries. Later
+reviewers receive the changed skill, task authority, Git diff and gate policy,
+with expected findings and defect-oracle material withheld. Compare raw outputs
+with the held-back oracle afterward; combine compatible cases where appropriate.
 
 ## Verification scenarios
 
@@ -96,19 +110,21 @@ Given:
 
 When:
 - Run the suite and divergence probe against baseline and changed fixtures.
-- Have a fresh independent reviewer inspect the changed test assets without
-  receiving the expected verdict or defect oracle.
+- Check that supplied reviewer inputs exclude the expected verdict and defect
+  oracle; actual blind review belongs to Q-01-QUALIFICATION.
 
 Then:
 - The baseline has no copy-induced divergence; the changed fixture produces
   observable disagreement for the same scenario after the one-owner change.
-- The reviewer identifies duplicated scenario authority as a material blocker
+- The instructions and held-back oracle require identifying duplicated scenario
+  authority as a material blocker
   despite the green ordinary suite, with location, current evidence, concrete
   maintenance consequence and smallest correction direction.
 
 Oracle / boundary:
-- Real Git baseline/diff, runnable scenario observations and fresh raw reviewer
-  output compared afterward with the held-back oracle. A missing dependency or
+- Real Git baseline/diff, runnable scenario observations and inspected inputs/oracle.
+  Later qualification compares actual raw output with the held-back oracle.
+  A missing dependency or
   broken setup is not the intended divergence and cannot satisfy this case.
 
 Variants:
@@ -130,17 +146,19 @@ Given:
 When:
 - Execute the probe against baseline and changed fixtures under the relevant
   independent or repeated occurrence that exposes the introduced coupling.
-- Obtain fresh independent reviewer output without disclosing the oracle.
+- Check the supplied blind-review inputs and held-back oracle for the later trial.
 
 Then:
 - Baseline observations satisfy the scenario contract; changed observations
   violate isolation or repeatability because of the introduced coupling.
-- The reviewer reports this distinct material defect with its location,
+- The instructions and oracle require reporting this distinct material defect
+  with its location,
   current evidence, maintenance consequence and smallest correction direction.
 
 Oracle / boundary:
 - Actual scenario results/state at the fixture's affected execution boundary,
-  baseline/change contrast and fresh output compared with the held-back oracle.
+  baseline/change contrast and inspected inputs/oracle. Actual output comparison
+  belongs to Q-01-QUALIFICATION.
   Setup failure does not count as evidence of the intended coupling defect.
 
 Variants:
@@ -162,18 +180,19 @@ Given:
 
 When:
 - Run the control observations and examine the conditional-review guidance.
-- Obtain a fresh review of the controls when review is explicitly requested.
+- Inspect the supplied requested-review control and held-back expectations;
+  actual reviewer output belongs to Q-01-QUALIFICATION.
 
 Then:
-- Control observations satisfy their contracts; the reviewer supplies no
+- Control observations satisfy their contracts; instructions/oracle require no
   material blocker merely for separate fixtures or the stable text assertion.
 - The small edit alone does not introduce mandatory review or a new gate.
-- With required proof available and no material regression, the requested
-  maintainability review accepts the controls without claiming task acceptance.
+- With required proof available and no material regression, instructions/oracle
+  require control acceptance without claiming functional task acceptance.
 
 Oracle / boundary:
-- Runnable control results, supplied policy, affected routing guidance and fresh
-  output; compare the output with held-back non-blocking control expectations.
+- Runnable control results, supplied policy, affected routing guidance and
+  held-back non-blocking expectations. Later qualification observes the output.
 
 Variants:
 - Clean assertion edit; independent fixtures; stable textual contract.
@@ -191,17 +210,21 @@ Given:
   bytes, and a contrasting fresh reviewer with no such authorship.
 
 When:
-- Request review in the authoring session, then in the fresh independent session.
+- Inspect the author/fresh-session rules and supplied review prompts. Later
+  qualification must obtain both outputs with actual authorship records.
 
 Then:
-- The author yields SELF_CHECK_ONLY and no independent ACCEPT,
+- The published rule requires the author to yield SELF_CHECK_ONLY and no
+  independent ACCEPT,
   CHANGES_REQUESTED or INCONCLUSIVE verdict for those assets.
-- The independent reviewer can emit the evidence-supported existing verdict;
+- The published rule permits an independent evidence-supported existing verdict;
   provenance and reviewed output identify the actual test assets.
 
 Oracle / boundary:
-- Session authorship records bound to reviewed bytes and actual role outputs.
-  Relabeling the author or loading the skill again does not prove independence.
+- Q-01 inspects published provenance rules and supplied contrasts. The follow-up
+  needs session authorship records bound to reviewed bytes and actual role outputs;
+  hypothetical prompt authorship cannot satisfy it. Relabeling or loading the
+  skill again does not prove independence.
 
 Variants:
 - Reviewed test, eval and harness authorship, reusing existing authoring-session
@@ -221,23 +244,26 @@ Given:
   with probes that distinguish the corrected defect from the surviving defect.
 
 When:
-- Run the corrected and surviving probes and attempt to substitute the prior
-  report as current evidence for the changed asset.
-- Obtain a fresh review of the corrected affected bytes and its next report.
+- Run corrected/surviving probes and compare the prior report's recorded
+  identities with corrected/unchanged assets; inspect freshness/history rules.
+- Supply stale-report substitution and next-report expectations for the follow-up.
 
 Then:
 - The correction probe shows resolution; the surviving defect remains observable.
-- The prior report cannot complete the affected review stage for changed bytes;
+- The published rule says the prior report cannot complete the affected review
+  stage for changed bytes;
   unaffected evidence remains usable only while current and applicable.
-- The next report retains every confirmed finding ID and its current
+- The published rule and oracle require the next report to retain every confirmed
+  finding ID and its current
   disposition, including the resolved finding. IDs are not recycled, and any
   newly confirmed finding receives an unused ID.
-- Prior report bytes remain unchanged; the next numbered report binds to the
-  current reviewed scope and evidence.
+- Prior report bytes remain unchanged; the published rule and oracle require the
+  next numbered report to bind to current scope and evidence.
 
 Oracle / boundary:
-- Before/after test-asset identities, real correction probes, report history and
-  fresh reviewer output. A stale report's verdict label cannot replace evidence.
+- Before/after test-asset identities, real correction probes, preserved supplied
+  history and inspected freshness rules/oracles. Actual stale-report refusal and
+  next-report output belong to Q-01-QUALIFICATION.
 
 Variants:
 - Affected corrected scope; demonstrably unaffected scope; stale-report
@@ -294,7 +320,8 @@ Given:
 
 When:
 - Check affected contract and fixture evidence against the existing reporting,
-  verdict, stop and permission rules; inspect fresh outputs where exercised.
+  verdict, stop and permission rules; preserve actual output/write checks in the
+  follow-up handoff rather than infer them from instruction tests.
 
 Then:
 - Existing ACCEPT, CHANGES_REQUESTED and INCONCLUSIVE semantics remain intact.
@@ -309,8 +336,9 @@ Then:
 
 Oracle / boundary:
 - Existing discriminating fixture facts and owning checks, affected contract
-  inspection, and available raw reports/Git before-and-after state. Text checks
-  show contract preservation only; mark unexercised role behavior explicitly.
+  inspection and fixture Git before-and-after state. Actual role reports and
+  write-side-effect observations belong to Q-01-QUALIFICATION. Text checks show
+  contract preservation only; record unexercised role behavior in the handoff.
 
 Variants:
 - Complete bounded review; genuine permission/capability/budget stop; canonical
@@ -366,10 +394,11 @@ Variants:
   installer checks; no whole-repository suite is required.
 - Keep actual independent reviewer detection distinct from deterministic setup
   and text checks. Ask before costly/live-networked model evals unless their exact
-  class is authorized. Unrun behavioral qualification is an explicit gap.
+  class is authorized. Unrun behavioral qualification is an explicit follow-up
+  gap, not a Q-01 acceptance blocker under revision 2.
 - If a scenario cannot be exercised at its boundary, route to design/preflight
   rather than weaken its oracle. No cross-task composition proof is added here.
-- Source identity for this design is the brief blob above. Before writing,
-  `git status --short` was `M  AGENTS.md`, `A  docs/tasks/Q-01/brief.md`, and
-  `M  docs/tasks/index.json`. This stage adds only this verification artifact;
-  those pre-existing edits remain owned by their authors.
+- Source identity for this revision is the brief blob above. The original design
+  recorded `M AGENTS.md`, `A docs/tasks/Q-01/brief.md` and `M docs/tasks/index.json`
+  before its write. That is historical context, not revision 2's status record;
+  this amendment does not edit AGENTS.md or the task index.

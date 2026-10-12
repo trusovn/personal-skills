@@ -2,7 +2,7 @@
 """Stage disposable review targets for task-maintainability-review evals.
 
 Each scenario creates a Git workspace holding a legitimate task, a committed
-baseline, and changed production bytes under review. The four-blockers
+baseline, and changed implementation assets under review. The four-blockers
 scenario introduces four distinct, independently observable maintainability
 blockers plus one non-blocking style preference. The correction-round
 scenario stages a prior durable report with those four finding IDs and a
@@ -11,6 +11,10 @@ next review must preserve finding identity. Oracle records next to the
 workspace describe the independent defect observations and the complete,
 genuine-stop, and correction-round reporting expectations; they are
 qualification inputs, not durable review reports.
+
+Test-asset variants keep production unchanged and supply duplicated scenario
+authority, mutable occurrence state, clean controls and a tests-only correction.
+Their held-back oracle stays outside the reviewer workspace.
 """
 
 from pathlib import Path
@@ -19,6 +23,7 @@ import shutil
 import subprocess
 import sys
 import textwrap
+import hashlib
 
 
 WORK = Path(os.environ.get("EVAL_WORK_ROOT", "/work"))
@@ -527,10 +532,164 @@ def correction_round() -> None:
     write(RUNS, f"{TASK}/correction-round-facts.md", CORRECTION_FACTS)
 
 
+TEST_ASSET_BRIEF = f"""
+# Task Brief: {TASK} — Receipt scenario observations
+
+Status: ready
+Task kind: executable
+Review: immediate
+
+Allowed paths: tests/scenarios.py; tests/test_receipt_contract.py;
+tests/test_transport.py. Production code is unchanged.
+
+AC-01: tests/scenarios.py owns the standard receipt scenario (subtotal 100,
+text `total 102.00`). Each occurrence receives independent mutable state.
+AC-02: observe the rendered text and JSON transport at separate boundaries.
+Stable receipt text is a public contract; independent fixture construction
+for these boundaries is legitimate. Ordinary assertions may be clarified.
+
+Maintainability review is required for changed scenario authority, isolation
+or harness dependencies. A small assertion clarification alone is exempt.
+The architecture gate applies only as declared in .quality/gates.yaml.
+No contract registry stage exists in this fixture.
+"""
+
+SCENARIO_BASELINE = '''
+"""Canonical standard receipt scenario; occurrences own their mutable state."""
+
+STANDARD = {"subtotal": 100, "expected": "total 102.00"}
+
+
+def receipt_case():
+    return dict(STANDARD)
+'''
+
+RECEIPT_TEST = '''
+import unittest
+from src.billing.service import checkout
+from tests.scenarios import receipt_case
+
+
+def observe():
+    case = receipt_case()
+    return case["subtotal"], case["expected"]
+
+
+class ReceiptContractTest(unittest.TestCase):
+    def test_receipt(self):
+        case = receipt_case()
+        actual = checkout(case["subtotal"])
+        self.assertTrue(actual == case["expected"])
+        case.clear()  # Local fixture lifecycle; must not affect another occurrence.
+'''
+
+TRANSPORT_TEST = '''
+import json
+import unittest
+from src.billing.service import checkout
+from tests.scenarios import STANDARD
+
+
+def transport_case():
+    return {"receipt": dict(STANDARD)}
+
+
+def observe():
+    case = transport_case()["receipt"]
+    return case["subtotal"], case["expected"]
+
+
+class TransportTest(unittest.TestCase):
+    def test_transport(self):
+        case = transport_case()["receipt"]
+        payload = json.loads(json.dumps({"receipt": checkout(case["subtotal"])}))
+        self.assertEqual(case["expected"], payload["receipt"])
+'''
+
+TEST_ASSET_ORACLE = """
+# Held-back test-asset oracle
+
+Keep this record outside the reviewer workspace. Reviewer inputs are the task,
+Git diff, policy and changed skill; disclose this oracle only after raw output.
+
+MNT-T1 — tests/test_transport.py: a second STANDARD table duplicates scenario
+authority. Change only tests.scenarios.STANDARD to subtotal 200 and expected
+`total 204.00`; receipt and transport observe() agree in baseline/control but
+diverge in the changed fixture. One scenario change needs coordinated owners.
+Smallest correction: import the existing canonical scenario authority.
+
+MNT-T2 — tests/scenarios.py: receipt_case returns the shared mutable STANDARD.
+Run ReceiptContractTest('test_receipt') twice in the same process. Baseline and
+control pass twice; the changed fixture passes once then raises KeyError after
+the first occurrence clears its supposedly local case. Normal discovery passes
+because transport has its own copied authority. Smallest correction: restore
+the independent copy for each occurrence.
+
+Controls: a small assertTrue→assertEqual clarification of the stable public
+receipt text and independent receipt/JSON fixtures are non-blocking. No new
+gate or mandatory maintainability stage follows merely from that assertion edit.
+
+Correction: only MNT-T2 is fixed. Preserve MNT-T1 as confirmed and MNT-T2 as
+corrected with current evidence; do not recycle IDs. The prior report's reviewed
+scenarios.py identity is stale, while test_transport.py is unchanged. Prior
+report bytes remain unchanged; next report is maintainability-02.md. Current
+applicable unaffected evidence stays usable. Fresh review of affected bytes
+precedes fresh discovery and separate acceptance; no registry stage exists.
+"""
+
+
+def test_assets(variant: str) -> None:
+    root = initialize(f"maintainability-tests-{variant}")
+    stage_baseline(root, GATES_UNAVAILABLE if variant == "stop" else GATES_RUNNABLE)
+    write(root, f"docs/tasks/{TASK}/brief.md", TEST_ASSET_BRIEF)
+    write(root, "tests/scenarios.py", SCENARIO_BASELINE)
+    write(root, "tests/test_receipt_contract.py", RECEIPT_TEST)
+    write(root, "tests/test_transport.py", TRANSPORT_TEST)
+    commit(root, "test scenario baseline")
+    write(root, "tests/test_receipt_contract.py", RECEIPT_TEST.replace(
+        'self.assertTrue(actual == case["expected"])',
+        'self.assertEqual(case["expected"], actual)',
+    ))
+    if variant != "control":
+        write(root, "tests/scenarios.py", SCENARIO_BASELINE.replace(
+            "return dict(STANDARD)", "return STANDARD",
+        ))
+        write(root, "tests/test_transport.py", TRANSPORT_TEST.replace(
+            "from tests.scenarios import STANDARD",
+            'STANDARD = {"subtotal": 100, "expected": "total 102.00"}',
+        ))
+    if variant == "correction":
+        identities = "\n".join(
+            f"- {relative}: sha256:{hashlib.sha256((root / relative).read_bytes()).hexdigest()}"
+            for relative in ("tests/scenarios.py", "tests/test_transport.py")
+        )
+        write(root, f"docs/tasks/{TASK}/reviews/maintainability-01.md", f"""
+            # Staged prior report — input history, not actual review output
+            VERDICT: CHANGES_REQUESTED
+            ARCHITECTURE_GATE: PASS
+            MNT-T1 — tests/test_transport.py: duplicated scenario authority.
+            Evidence: one-owner edit leaves transport at (100, 'total 102.00').
+            Impact: coordinated edits needed. Direction: reuse canonical owner.
+            Current disposition: confirmed
+            MNT-T2 — tests/scenarios.py: shared mutable occurrence state.
+            Evidence: second ReceiptContractTest occurrence raises KeyError.
+            Impact: order-dependent reuse. Direction: return an independent copy.
+            Current disposition: confirmed
+            REVIEWED:
+            {identities}
+        """)
+        write(root, "tests/scenarios.py", SCENARIO_BASELINE)
+    write(RUNS, f"{TASK}/test-assets-{variant}-oracle.md", TEST_ASSET_ORACLE)
+
+
 SCENARIOS = {
     "correction-round": correction_round,
     "four-blockers": four_blockers,
     "genuine-stop": genuine_stop,
+    "test-assets": lambda: test_assets("defects"),
+    "test-assets-control": lambda: test_assets("control"),
+    "test-assets-correction": lambda: test_assets("correction"),
+    "test-assets-stop": lambda: test_assets("stop"),
 }
 
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:

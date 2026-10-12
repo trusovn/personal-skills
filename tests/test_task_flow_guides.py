@@ -462,17 +462,26 @@ class ComposedReviewFlowGuideTests(unittest.TestCase):
         restart; the mixed both-stage remainder is registry updater →
         discovery → acceptance.
         """
+        for guide in (ROOT_README, PROFILE_GUIDE, FLOW_README):
+            scope = normalized(guide).lower()
+            for required in (
+                "significant changed tests", "evaluations", "harness",
+                "ownership", "dependencies", "scenario authority", "isolation",
+                "oracle structure", "harness behavior", "ordinary assertion",
+                "tests-only label",
+            ):
+                self.assertIn(required, scope, str(guide))
         flat = normalized(FLOW_README)
         self.assertIn(
             "re-enters every conditional stage whose reviewed scope the correction affected",
             flat,
         )
         self.assertIn(
-            "production corrections then re-enter every conditional stage whose reviewed scope the correction affected — the architecture gate and fresh maintainability review when their reviewed scope changed, and the contract-registry stage when it applied and the correction affected it",
+            "implementation corrections, including tests-only corrections, then re-enter every conditional stage whose reviewed scope the correction affected — the architecture gate and fresh maintainability review when their reviewed scope changed, and the contract-registry stage when it applied and the correction affected it",
             flat,
         )
         self.assertIn(
-            "A production correction stales the prior acceptance verdict and re-enters every conditional stage whose reviewed scope the correction affected; current applicable evidence for the corrected bytes keeps an unaffected stage in force",
+            "An implementation correction, including a tests-only correction, stales the prior acceptance verdict and re-enters every conditional stage whose reviewed scope the correction affected; current applicable evidence for the corrected bytes keeps an unaffected stage in force",
             flat,
         )
         self.assertIn(

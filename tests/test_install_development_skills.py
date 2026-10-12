@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -617,6 +618,48 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
             self.assert_projected_from_source(repo, maintainability)
             self.assert_projected_from_source(repo, registry_updater)
 
+            # Installed setup must run with no repository-only test helpers.
+            work = repo / "fixture-work"
+            for scenario, variant, second, repeatable in (
+                ("test-assets", "defects", "(100, 'total 102.00')", False),
+                ("test-assets-control", "control", "(200, 'total 204.00')", True),
+            ):
+                setup = subprocess.run(
+                    [sys.executable, str(installed_maintainability / "evals/files/setup_fixture.py"),
+                     scenario],
+                    cwd=repo, env=os.environ | {"EVAL_WORK_ROOT": str(work), "PYTHONPATH": ""},
+                    capture_output=True, text=True,
+                )
+                self.assertEqual(0, setup.returncode, setup.stderr)
+                target = work / f"maintainability-tests-{variant}"
+                probe = subprocess.run(
+                    [sys.executable, "-c",
+                     'from tests import scenarios, test_receipt_contract, test_transport\n'
+                     'scenarios.STANDARD.update(subtotal=200, expected="total 204.00")\n'
+                     'print(test_receipt_contract.observe())\n'
+                     'print(test_transport.observe())\n'],
+                    cwd=repo, env=os.environ | {"PYTHONPATH": str(target)},
+                    capture_output=True, text=True,
+                )
+                self.assertEqual(0, probe.returncode, probe.stderr)
+                self.assertEqual(["(200, 'total 204.00')", second], probe.stdout.splitlines())
+                repeated = subprocess.run(
+                    [sys.executable, "-c",
+                     'import unittest\n'
+                     'from tests.test_receipt_contract import ReceiptContractTest\n'
+                     'for occurrence in range(2):\n'
+                     '    result = unittest.TestResult()\n'
+                     '    ReceiptContractTest("test_receipt").run(result)\n'
+                     '    print(result.wasSuccessful())\n'
+                     '    for _, error in result.errors:\n'
+                     '        print(error)\n'],
+                    cwd=repo, env=os.environ | {"PYTHONPATH": str(target)},
+                    capture_output=True, text=True,
+                )
+                self.assertEqual(0, repeated.returncode, repeated.stderr)
+                self.assertEqual(["True", str(repeatable)], repeated.stdout.splitlines()[:2])
+                self.assertEqual(not repeatable, "KeyError" in repeated.stdout)
+
             installed_guide = repo / ".agents" / "skills" / "README.md"
             self.assertEqual(
                 (ROOT / installer.PROFILE_SKILLS_README).read_bytes(),
@@ -629,7 +672,7 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
                 "fresh maintainability review when applicable",
                 "the contract-registry updater when applicable",
                 "then fresh discovery evidence and the separate fresh acceptance decision",
-                "production corrections re-enter the stages they affected",
+                "implementation corrections, including tests-only corrections, re-enter the stages they affected",
             ):
                 self.assertIn(phrase, guide_text)
 

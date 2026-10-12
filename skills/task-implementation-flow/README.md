@@ -225,6 +225,14 @@ Use this profile whenever repo authority declares architecture/maintainability
 review required, or when the user explicitly asks for focused maintainability
 verification.
 
+Significant changed tests, evaluations, fixture/setup and harness code are
+reviewed implementation assets, including tests-only submissions. Changed
+ownership, dependencies, scenario authority, isolation, oracle structure or
+harness behavior can justify this conditional review. An ordinary assertion
+edit alone does not require it. Use canonical `testing-discipline` guidance
+from the same installation root; leave functional conformance to discovery
+and acceptance.
+
 The order is intentional:
 
 ```text
@@ -285,15 +293,15 @@ When launching `task-acceptance-review` after maintainability acceptance, carry 
 short routing note rather than asking the acceptance reviewer to infer the stage:
 
 ```text
-Maintainability review accepted the current production bytes. Focus review budget
+Maintainability review accepted the current reviewed implementation assets. Focus review budget
 on specification conformance, observable behavior, regressions, edge cases, and
 test adequacy. Do not redo general architecture review unless architecture directly
 causes an observed functional defect.
 ```
 
 Whenever independent functional review is required, launch `task-review-discovery`
-as a fresh separate call whose session did not author the reviewed production
-bytes, and hand its report to the acceptance decision call; the decision call
+as a fresh separate call whose session did not author the reviewed implementation
+assets, and hand its report to the acceptance decision call; the decision call
 never runs without that discovery evidence. When functional review itself is
 not required, neither stage runs. The acceptance call
 then admits that evidence and decides: it does not routinely rerun discovery's
@@ -306,11 +314,11 @@ tooling enforces neither the separate-call roles nor the reasoning
 recommendations.
 
 When the flow already carries a byte/diff digest, attach it to both reviews. In a
-lightweight human-driven flow, at minimum confirm the production diff did not change
+lightweight human-driven flow, at minimum confirm the reviewed implementation diff did not change
 between maintainability `ACCEPT` and functional-review start.
 
-Every production correction changes the bytes under review and stales the
-prior acceptance verdict for the corrected bytes. The next submission re-enters
+Every implementation correction, including a tests-only correction, changes the
+bytes under review and stales the prior acceptance verdict for the corrected bytes. The next submission re-enters
 every conditional stage whose reviewed scope the correction affected, before
 re-entering fresh discovery evidence and functional acceptance: the required
 deterministic architecture gate and a fresh maintainability reviewer when the
@@ -320,10 +328,11 @@ for the corrected bytes keeps an unaffected stage out of the route — when gate
 and maintainability evidence is current for the corrected scope, the remaining
 route is the registry updater, then discovery, then acceptance.
 
-For a trivial correction that provably cannot affect production architecture
-(for example, an authorized tests-only correction), repo policy may allow the
-maintainability stage to be skipped; do not infer that exception when the repo
-says the gate is required for all changed source bytes.
+For a trivial correction that provably cannot affect reviewed implementation
+architecture, repo policy may explicitly allow the maintainability stage to be
+skipped. A tests-only label alone never waives an affected required review;
+apply authorized exceptions only within their stated scope. Do not invent a
+gate or registry work for every test change.
 ## High-assurance profile
 
 Use high-assurance mode when explicitly requested, when an orchestrator or
@@ -436,14 +445,14 @@ preference contest.
 
 Independence is based on session authorship. Loading another skill, quoting its
 instructions, or changing roles in the same session does not reset provenance.
-A session that authored reviewed production bytes may perform a labeled
+A session that authored reviewed implementation assets may perform a labeled
 `SELF_CHECK_ONLY` and fix defects it finds, but it cannot issue an independent
 verdict. Only a fresh reviewer may return `ACCEPT`, `CHANGES_REQUESTED`, or
 `INCONCLUSIVE` for those bytes.
 
 Every `CHANGES_REQUESTED` correction requires fresh review for the affected
-stage, and a previous verdict never applies to corrected bytes. A production
-correction stales the prior acceptance verdict and re-enters every conditional
+stage, and a previous verdict never applies to corrected bytes. An implementation
+correction, including a tests-only correction, stales the prior acceptance verdict and re-enters every conditional
 stage whose reviewed scope the correction affected; current applicable evidence
 for the corrected bytes keeps an unaffected stage in force.
 
@@ -545,7 +554,7 @@ reviewer; the reproducer-writing session cannot accept them.
   the bytes, then run functional acceptance in a separate, independent
   reviewer session; hand the fresh discovery report to the decision call
   instead of re-probing.
-- Feed functional findings back to the implementer; production corrections then re-enter every conditional stage whose reviewed scope the correction affected — the architecture gate and fresh maintainability review when their reviewed scope changed, and the contract-registry stage when it applied and the correction affected it — and re-enter fresh discovery before fresh functional acceptance. Current evidence for the corrected scope keeps an unaffected stage out of the route.
+- Feed functional findings back to the implementer; implementation corrections, including tests-only corrections, then re-enter every conditional stage whose reviewed scope the correction affected — the architecture gate and fresh maintainability review when their reviewed scope changed, and the contract-registry stage when it applied and the correction affected it — and re-enter fresh discovery before fresh functional acceptance. Current evidence for the corrected scope keeps an unaffected stage out of the route.
 
 If the implementer session becomes very long or confused, start a fresh
 correction session using the reviewer's concise findings and tests. Context

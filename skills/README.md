@@ -44,8 +44,14 @@ the complete ordered remainder: the architecture gate only when policy requires
 it, fresh maintainability review when applicable, the contract-registry
 updater when applicable, then fresh discovery evidence and the separate fresh
 acceptance decision. A conditional stage counts only with evidence current for
-the submitted bytes; production corrections re-enter the stages they affected
-before fresh discovery and acceptance.
+the submitted bytes; implementation corrections, including tests-only corrections,
+re-enter the stages they affected before fresh discovery and acceptance.
+
+Significant changed tests, evaluations, fixtures and harness code are a risk
+reason for the existing conditional maintainability review. Significance follows
+ownership, dependencies, scenario authority, isolation, oracle structure or
+harness behavior. An ordinary assertion edit alone does not require this review;
+a tests-only label never waives an affected required review.
 
 ## Skill reference
 
@@ -63,7 +69,7 @@ before fresh discovery and acceptance.
 | `task-verification-designer` | Defines falsifiable verification scenarios before implementation. | An executable task `brief.md` with clear acceptance criteria. | Required derived `<task-package>/verification.md` before packaged implementation. |
 | `task-preflight` | Confirms complete authority-derived coverage, feasible proof and current relevant facts. | A bounded request or executable packaged brief with source-matched verification, plus relevant recorded known issues for reassessment against the task's exposure and obligations. | Compact canonical `<task-package>/preflight.md` bound to brief/scope/verification revision, with decision context; inline for unpackaged direct edits. |
 | `bounded-task-implementer` | Implements one bounded task with risk-based tests and progressive verification. | A clear bounded unpackaged request, or an executable package; the implementer verifies current applicable readiness (bound preflight and verification revision). High-assurance packets stay strict. | The scoped code/test/doc changes plus a verification and review handoff result; submission maps every verification scenario ID to current evidence or an explicit blocked/unchecked reason and next owner. |
-| `task-maintainability-review` | Independently reviews changed production code for concrete architecture and maintainability regressions. | The task authority, current diff, repository rules, and architecture gate; use a fresh reviewer. | `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`, with focused findings. |
+| `task-maintainability-review` | Independently reviews changed implementation assets, including significant tests/evals/fixtures/harness code, for concrete architecture and maintainability regressions. | The task authority, current diff, repository rules, and architecture gate; use a fresh reviewer. | `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`, with focused findings. |
 | `task-contract-registry-updater` | Synchronizes discoverable current-state contracts after implementation. | Task authority, scoped diff, task-map entry when present, and existing contract records. | Updated contract registry/discovery references and a synchronization result. |
 | `task-acceptance-review` | Decides a bounded implementation against its contract by admitting the current independent discovery evidence and deciding every finding. | The request/brief, current diff, submission claims, the independent discovery report, and applicable conditional evidence; use a fresh reviewer. | `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE`, with admitted coverage status and the consumed aggregate-gate record; accepted bounded deferrals are routed to the human coordinator, who alone records them (default `docs/known-issues.md`) before authorized advancement. |
 | `task-review-discovery` | Independently publishes current evidence and confirmed findings for a bounded implementation as a complete or explicitly partial report, without deciding acceptance. | The request/brief, verification/context inputs, current diff, and submission claims; use a fresh session that did not author the reviewed bytes. | An evidence report with facts, suggested severities, coverage rows, an aggregate-gate record, and a continuation block for a separate acceptance decision call; no verdict. |

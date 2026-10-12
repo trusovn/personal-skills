@@ -4,8 +4,8 @@ Contract checks reject the historical three-blocker cap and the
 enough-blockers stop semantically and lock the preserved scope, materiality,
 genuine-stop, gate, and eval expectations. Fixture checks stage the
 skill-local setup in a disposable Git workspace and observe four
-independently introduced blockers plus a non-blocking preference control at
-the real filesystem, Git, and production boundaries.
+independently introduced production blockers plus tests-only defect, control
+and correction contrasts at real filesystem, Git and scenario boundaries.
 """
 
 import ast
@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import hashlib
 import unittest
 from pathlib import Path
 
@@ -47,6 +48,43 @@ COUNT_AND_SUFFICIENCY_SHORTCUTS = (
 
 
 class MaintainabilityReportingContractTest(unittest.TestCase):
+
+    def test_significant_test_assets_extend_the_existing_review_questions(self):
+        text = normalized(SKILL)
+        scope = text.split("## Review contract", 1)[1].split("## Independence", 1)[0]
+        for required in (
+            "tests, evaluations, fixture/setup code and harness code",
+            "ownership", "dependencies", "scenario authority", "isolation",
+            "oracle structure", "harness behavior",
+            "ordinary assertion edit alone does not require this review",
+            "../../testing-discipline/SKILL.md",
+        ):
+            self.assertIn(required, scope)
+        for question in (
+            "**Cohesion**", "**Coupling**", "**Explicit dependencies**",
+            "**Change locality**", "**Testability**", "**Proportionate abstraction**",
+        ):
+            self.assertIn(question, scope)
+        for defect in (
+            "duplicated scenario authority", "fragile mutable fixtures",
+            "cross-owner coupling", "incidental text/layout assertions",
+            "harness-internal dependencies", "speculative abstraction",
+            "Stable textual contracts remain legitimate",
+            "legitimate separate observation boundaries",
+        ):
+            self.assertIn(defect, text)
+
+    def test_provenance_and_freshness_follow_reviewed_test_assets(self):
+        text = normalized(SKILL)
+        independence = text.split("## Independence", 1)[1].split("## Inputs", 1)[0]
+        self.assertIn("any reviewed implementation assets", independence)
+        self.assertIn("including test/eval/harness bytes", independence)
+        self.assertNotIn("author the production bytes", independence)
+        self.assertIn("A correction, including a tests-only correction", independence)
+        self.assertIn("changed implementation scope", text)
+        loop = text.split("## Correction loop", 1)[1]
+        self.assertIn("A tests-only label alone never waives an affected required review", loop)
+        self.assertIn("Do not invent a gate or registry work for every test change", loop)
 
     def test_every_confirmed_blocker_is_reported_without_a_count_cap(self):
         text = normalized(SKILL)
@@ -122,13 +160,15 @@ class MaintainabilityReportingContractTest(unittest.TestCase):
             case["id"]: case
             for case in json.loads(EVALS.read_text(encoding="utf-8"))["evals"]
         }
-        self.assertEqual([1, 2, 3, 4], sorted(cases))
+        self.assertEqual(list(range(1, 9)), sorted(cases))
         self.assertIn("wrote the current production bytes", cases[1]["prompt"])
         first = " ".join(cases[1]["expectations"])
         self.assertIn("SELF_CHECK_ONLY", first)
         self.assertIn(
             "fresh independent `task-maintainability-review` session", first
         )
+        self.assertIn("test, eval and harness bytes", cases[1]["prompt"])
+        self.assertIn("tests-only correction", cases[2]["prompt"])
         self.assertIn("`archcheck` binary is absent", cases[2]["prompt"])
         second = " ".join(cases[2]["expectations"])
         self.assertIn("VERDICT: INCONCLUSIVE", second)
@@ -148,7 +188,13 @@ class MaintainabilityReportingContractTest(unittest.TestCase):
         self.assertIn("not recycled", fourth)
         self.assertIn("reviews/maintainability-02.md", fourth)
         self.assertIn("does not rewrite the prior report", fourth)
-        for case_id in (1, 2, 3, 4):
+        for case_id, scenario in ((5, "test-assets"), (6, "test-assets-control"),
+                                  (7, "test-assets-correction"), (8, "test-assets-stop")):
+            self.assertIn(f"setup_fixture.py {scenario}", cases[case_id]["prompt"])
+            self.assertIn("before the reviewer session", cases[case_id]["prompt"])
+            self.assertIn("held back", cases[case_id]["prompt"])
+        self.assertIn("tests-only submission", cases[1]["prompt"])
+        for case_id in cases:
             self.assertEqual([], cases[case_id]["files"])
 
 
@@ -230,7 +276,7 @@ class MaintainabilityIntegrationGapContractTest(unittest.TestCase):
         )
         guide = normalized(FLOW / "README.md")
         self.assertIn(
-            "For a trivial correction that provably cannot affect production "
+            "For a trivial correction that provably cannot affect reviewed implementation "
             "architecture",
             guide,
         )
@@ -277,7 +323,10 @@ class MaintainabilityFixtureTest(unittest.TestCase):
         cls.work = Path(tempfile.mkdtemp(prefix="maintainability-fixture-"))
         cls.addClassCleanup(shutil.rmtree, cls.work, ignore_errors=True)
         environment = os.environ | {"EVAL_WORK_ROOT": str(cls.work)}
-        for scenario in ("four-blockers", "genuine-stop", "correction-round"):
+        for scenario in (
+            "four-blockers", "genuine-stop", "correction-round", "test-assets",
+            "test-assets-control", "test-assets-correction", "test-assets-stop",
+        ):
             subprocess.run(
                 [sys.executable, str(FIXTURE), scenario],
                 check=True,
@@ -288,6 +337,94 @@ class MaintainabilityFixtureTest(unittest.TestCase):
         cls.stop_repo = cls.work / "maintainability-stop"
         cls.correction_repo = cls.work / "maintainability-correction"
         cls.run_dir = cls.work / "task-runs" / "MNT-42"
+
+    def test_test_assets_supply_green_tests_only_diffs_and_policy(self):
+        for variant in ("defects", "control", "correction", "stop"):
+            with self.subTest(variant=variant):
+                repo = self.work / f"maintainability-tests-{variant}"
+                changed = self.git(repo, "diff", "--name-only").splitlines()
+                self.assertTrue(changed)
+                self.assertTrue(all(path.startswith("tests/") for path in changed))
+                brief = (repo / "docs/tasks/MNT-42/brief.md").read_text()
+                self.assertIn("tests/scenarios.py owns", brief)
+                self.assertIn("Each occurrence receives independent mutable state", brief)
+                self.assertIn("assertion clarification alone is exempt", brief)
+                self.assertIn("No contract registry stage", brief)
+                completed, _ = self.probe(repo,
+                    'import unittest\n'
+                    'suite = unittest.defaultTestLoader.discover(' + repr(str(repo / "tests")) +
+                    ', top_level_dir=' + repr(str(repo)) + ')\n'
+                    'result = unittest.TextTestRunner().run(suite)\n'
+                    'raise SystemExit(not result.wasSuccessful())\n')
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                registry = (repo / ".quality/gates.yaml").read_text()
+                command = next(line.split("command:", 1)[1].strip()
+                               for line in registry.splitlines() if "command:" in line)
+                if variant == "stop":
+                    with self.assertRaises(FileNotFoundError):
+                        subprocess.run(shlex.split(command), cwd=repo, capture_output=True)
+                else:
+                    gate = subprocess.run(shlex.split(command), cwd=repo, capture_output=True)
+                    self.assertEqual(0, gate.returncode, gate.stderr)
+
+    def test_one_owner_divergence_and_repeatability_reject_changed_fixture(self):
+        repo = self.work / "maintainability-tests-defects"
+        baseline = Path(tempfile.mkdtemp(dir=self.work))
+        for relative in self.git(repo, "ls-files").splitlines():
+            path = baseline / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(self.git(repo, "show", f"HEAD:{relative}"))
+        cases = ((baseline, False, True), (repo, True, False),
+                 (self.work / "maintainability-tests-control", False, True),
+                 (self.work / "maintainability-tests-correction", True, True))
+        for target, diverges, repeatable in cases:
+            with self.subTest(target=target):
+                divergence, _ = self.probe(target,
+                    'from tests import scenarios, test_receipt_contract, test_transport\n'
+                    'scenarios.STANDARD.update(subtotal=200, expected="total 204.00")\n'
+                    'print(test_receipt_contract.observe())\n'
+                    'print(test_transport.observe())\n')
+                self.assertEqual(0, divergence.returncode, divergence.stderr)
+                owner, second = divergence.stdout.splitlines()
+                self.assertEqual("(200, 'total 204.00')", owner)
+                self.assertEqual(diverges, owner != second)
+                repeated, _ = self.probe(target,
+                    'import unittest\n'
+                    'from tests.test_receipt_contract import ReceiptContractTest\n'
+                    'for occurrence in range(2):\n'
+                    '    result = unittest.TestResult()\n'
+                    '    ReceiptContractTest("test_receipt").run(result)\n'
+                    '    print(result.wasSuccessful())\n'
+                    '    for _, error in result.errors:\n'
+                    '        print(error)\n')
+                self.assertEqual(0, repeated.returncode, repeated.stderr)
+                self.assertEqual("True", repeated.stdout.splitlines()[0])
+                self.assertEqual(str(repeatable), repeated.stdout.splitlines()[1])
+                self.assertEqual(not repeatable, "KeyError" in repeated.stdout)
+
+    def test_test_only_correction_stales_affected_identity_and_preserves_history(self):
+        before = self.work / "maintainability-tests-defects"
+        after = self.work / "maintainability-tests-correction"
+        prior_path = after / "docs/tasks/MNT-42/reviews/maintainability-01.md"
+        prior = prior_path.read_bytes()
+        for relative, changed in (("tests/scenarios.py", True),
+                                  ("tests/test_transport.py", False)):
+            old = hashlib.sha256((before / relative).read_bytes()).hexdigest()
+            current = hashlib.sha256((after / relative).read_bytes()).hexdigest()
+            self.assertIn(f"{relative}: sha256:{old}", prior.decode())
+            self.assertEqual(changed, old != current)
+        self.assertIn("MNT-T1", prior.decode())
+        self.assertIn("MNT-T2", prior.decode())
+        probe, _ = self.probe(after,
+            'from tests.test_receipt_contract import ReceiptContractTest\n'
+            'ReceiptContractTest("test_receipt").test_receipt()\n'
+            'ReceiptContractTest("test_receipt").test_receipt()\n')
+        self.assertEqual(0, probe.returncode, probe.stderr)
+        self.assertEqual(prior, prior_path.read_bytes())
+        oracle = (self.run_dir / "test-assets-correction-oracle.md").read_text()
+        for fact in ("MNT-T1 as confirmed", "MNT-T2 as corrected", "do not recycle IDs",
+                     "maintainability-02.md", "Current applicable unaffected evidence"):
+            self.assertIn(fact, collapse(oracle))
 
     @classmethod
     def git(cls, repo, *args):

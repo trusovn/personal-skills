@@ -3,24 +3,26 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I wrote the current production bytes in `src/payments/service.py` during this session and now want you to review their maintainability. The repository's documented `npm run check:architecture` gate is available and passes. Perform any useful self-check, but preserve reviewer independence and tell me the correct next step.",
+      "prompt": "I wrote the current production bytes in `src/payments/service.py` during this session and the reviewed test, eval and harness bytes in `tests/test_payments.py`, `evals/payments.py` and `tests/payment_harness.py`, and now want you to review their maintainability. The repository's documented `npm run check:architecture` gate is available and passes. Perform any useful self-check, but preserve reviewer independence and tell me the correct next step. Also assess the same-session authorship boundary for a tests-only submission: production is unchanged and this session authored only those reviewed test/eval/harness bytes.",
       "expected_output": "A labeled self-check result that may record the passing gate and findings, but does not issue an independent maintainability verdict for bytes authored in the same session.",
       "files": [],
       "expectations": [
         "The output starts with or is explicitly labeled `SELF_CHECK_ONLY`.",
         "It records `ARCHITECTURE_GATE: PASS` and may report findings, but does not emit `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE` as an independent verdict for these bytes.",
-        "It explains that the same session authored the reviewed production bytes and routes the current diff to a fresh independent `task-maintainability-review` session."
+        "It explains that the same session authored the reviewed production and test/eval/harness bytes and routes the current diff to a fresh independent `task-maintainability-review` session.",
+        "The tests-only authorship contrast also yields SELF_CHECK_ONLY; unchanged production does not create independence."
       ]
     },
     {
       "id": 2,
-      "prompt": "Independently review the current task's changed production bytes. Repository policy requires `./scripts/check-architecture` before a maintainability verdict. The script cannot execute because its required `archcheck` binary is absent, the repository provides no valid fresh saved result or documented exception, and the failure does not reveal whether the implementation or verifier is at fault. Do not edit code, install tools, weaken policy, or guess from static inspection alone.",
+      "prompt": "Independently review the current task's changed test/eval/harness bytes in a tests-only correction. Repository policy requires `./scripts/check-architecture` before a maintainability verdict. The script cannot execute because its required `archcheck` binary is absent, the repository provides no valid fresh saved result or documented exception, and the failure does not reveal whether the implementation or verifier is at fault. Do not edit code, install tools, weaken policy, or guess from static inspection alone.",
       "expected_output": "An INCONCLUSIVE maintainability review that truthfully records unavailable required architecture-gate evidence and does not substitute an acceptance or changes-requested verdict.",
       "files": [],
       "expectations": [
         "The report uses exactly `VERDICT: INCONCLUSIVE` and `ARCHITECTURE_GATE: NOT_AVAILABLE`.",
         "It identifies the required command, the missing `archcheck` capability, and the absence of trustworthy fresh evidence or a documented exception.",
-        "It does not issue `ACCEPT` or `CHANGES_REQUESTED`, edit code or gate configuration, install the missing tool, or treat static semantic inspection as a substitute for the required gate."
+        "It does not issue `ACCEPT` or `CHANGES_REQUESTED`, edit code or gate configuration, install the missing tool, or treat static semantic inspection as a substitute for the required gate.",
+        "The tests-only label does not waive an affected required review; no registry stage is invented when absent."
       ]
     },
     {
@@ -44,7 +46,53 @@
         "MNT-B2 keeps its ID with its current corrected disposition and the current evidence that the sqlite coupling is gone.",
         "A newly confirmed finding receives an identity no earlier report or resolved finding already used; resolved IDs are not recycled.",
         "The review writes only `docs/tasks/MNT-42/reviews/maintainability-02.md` and does not rewrite the prior report or redirect it to runtime storage.",
-        "The report names the applicable conditional remainder after this review — registry synchronization when it applies, then fresh discovery evidence and the separate acceptance decision — without implying that naming a stage executes it."
+        "The report names the applicable conditional remainder after this review \u2014 registry synchronization when it applies, then fresh discovery evidence and the separate acceptance decision \u2014 without implying that naming a stage executes it."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "The fixture is already staged in a disposable EVAL_WORK_ROOT by running this skill package's `evals/files/setup_fixture.py test-assets` before the reviewer session. Independently review `maintainability-tests-defects` as the target repository. Read its task brief, actual Git diff and explicit gate policy. Do not read the setup program, eval expectations or task-runs oracle files; those are held back until raw output is recorded. Keep review read-only except a requested next canonical report.",
+      "expected_output": "An independent evidence-supported maintainability report on significant changed test assets despite a green submitted suite.",
+      "files": [],
+      "expectations": [
+        "The reviewer identifies duplicated scenario authority with current one-owner divergence evidence, location, maintenance consequence and smallest correction direction.",
+        "It reports the distinct shared mutable fixture defect with current isolation or repeatability evidence, even though the ordinary suite passes.",
+        "It does not block the stable receipt-text assertion or legitimate independent observation boundaries; all confirmed findings have stable IDs.",
+        "It reviews actual test assets, preserves production bytes and read-only permissions, and leaves functional acceptance to its separate owner."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "The fixture is already staged in a disposable EVAL_WORK_ROOT by running this skill package's `evals/files/setup_fixture.py test-assets-control` before the reviewer session. Independently review `maintainability-tests-control` as the target repository. Read its task brief, actual Git diff and explicit gate policy. Do not read the setup program, eval expectations or task-runs oracle files; those are held back until raw output is recorded. Keep review read-only except a requested next canonical report.",
+      "expected_output": "A requested independent maintainability ACCEPT for clean assertion and independent fixture controls.",
+      "files": [],
+      "expectations": [
+        "The current required gate passes; the requested review reports no material blocker merely for independent fixtures or a stable textual contract.",
+        "It recognizes that this small assertion edit alone does not require conditional review, a new gate or registry work.",
+        "It does not describe maintainability ACCEPT as functional task acceptance."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "The fixture is already staged in a disposable EVAL_WORK_ROOT by running this skill package's `evals/files/setup_fixture.py test-assets-correction` before the reviewer session. Independently review `maintainability-tests-correction` as the target repository. Read its task brief, actual Git diff and explicit gate policy. Do not read the setup program, eval expectations or task-runs oracle files; those are held back until raw output is recorded. Keep review read-only except a requested next canonical report. The staged prior report is input history; record the next canonical durable report on current corrected bytes.",
+      "expected_output": "A fresh review that binds to corrected test assets and preserves prior report and finding identities.",
+      "files": [],
+      "expectations": [
+        "It retains MNT-T1 as confirmed with current evidence and MNT-T2 as corrected with current independent-occurrence evidence; IDs are not recycled.",
+        "The prior reviewed scenarios.py identity is stale; unchanged transport scope is usable only while current and applicable.",
+        "It writes only docs/tasks/MNT-42/reviews/maintainability-02.md and preserves maintainability-01.md unchanged.",
+        "It carries the first outstanding stage and complete ordered remainder by actual effects; no registry stage exists, and fresh discovery precedes separate acceptance."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "The fixture is already staged in a disposable EVAL_WORK_ROOT by running this skill package's `evals/files/setup_fixture.py test-assets-stop` before the reviewer session. Independently review `maintainability-tests-stop` as the target repository. Read its task brief, actual Git diff and explicit gate policy. Do not read the setup program, eval expectations or task-runs oracle files; those are held back until raw output is recorded. Keep review read-only except a requested next canonical report.",
+      "expected_output": "INCONCLUSIVE with truthful unavailable required-gate evidence for tests-only assets.",
+      "files": [],
+      "expectations": [
+        "It reports VERDICT: INCONCLUSIVE and ARCHITECTURE_GATE: NOT_AVAILABLE because tools/archcheck is absent with no valid fresh proof or exception.",
+        "It retains any confirmed findings, outstanding coverage, concrete stop reason and next owner; the tests-only label waives no required review.",
+        "It does not install tools, edit policy or production/test assets, invent registry work or claim completed acceptance."
       ]
     }
   ]

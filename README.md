@@ -332,9 +332,9 @@ maintainability gate, run that gate and a fresh `task-maintainability-review`
 before the contract-registry stage, fresh discovery evidence and functional
 acceptance. Every required-review submission names the first outstanding
 applicable stage and the complete ordered remainder; a conditional stage
-counts only with evidence current for the submitted bytes, and a production
-correction re-enters the stages it affected before fresh discovery and
-acceptance. When acceptance approves a bounded non-material
+counts only with evidence current for the submitted bytes, and an implementation
+correction, including a tests-only correction, re-enters the stages it affected
+before fresh discovery and acceptance. When acceptance approves a bounded non-material
 deferral, the human coordinator alone records it, before authorized
 advancement, in `docs/known-issues.md` (or the repository's declared path);
 discovery and acceptance never write the tracker. A relevant later preflight
@@ -348,6 +348,12 @@ or review when behavioral evidence, test design, or QA risk is material. Use
 contracts are not needed. Use `ollama-delegate` when a separate Ollama-backed
 model should independently inspect the repository under one of the installed
 skill contracts; its V1 repository tools are intentionally read-only.
+
+Significant changed tests, evaluations, fixtures and harness code are a risk
+reason for the existing conditional maintainability review. Significance follows
+ownership, dependencies, scenario authority, isolation, oracle structure or
+harness behavior. An ordinary assertion edit alone does not require this review;
+a tests-only label never waives an affected required review.
 
 The detailed guided, maintainability-gated, and high-assurance variants are
 documented in

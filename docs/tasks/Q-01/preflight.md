@@ -1,6 +1,122 @@
 # Preflight: Q-01 — Review significant changed test assets for maintainability
 
-Status: `ready`
+Status: `ready` — focused renewal under the owner amendment / verification
+revision 2 (2026-10-12), on the staged submission
+
+Profile: guided (brief routes `standalone guided preflight`)
+Standalone preflight value: `material`
+
+This renewal supersedes the revision-1 preflight below. The user amended Q-01's
+completion boundary on 2026-10-12: actual reviewer trials belong to
+Q-01-QUALIFICATION. See [the amended brief](brief.md),
+[verification revision 2](verification.md),
+[qualification handoff](qualification-handoff.md),
+[implementation](implementation.md) and the review reports. The original
+preflight is retained below as history.
+
+## Resolved uncertainties (renewal against revision 2)
+
+1. **Staged identity vs recorded identities.** All 16 tracked changes are
+   staged; zero unstaged changes. All 9 SHA-256 source identities recorded in
+   `implementation.md` match the current bytes exactly; the staged submission
+   is byte-for-byte what the implementer verified. `HEAD` `40b36321` matches
+   the recorded baseline.
+2. **Verification design binding.** `verification.md` revision 2 declares
+   `Source brief: docs/tasks/Q-01/brief.md`; current brief blob
+   `be80cdf7c8116ab74d8abdc5f3828de469d2e9c7` equals its declared
+   `Source brief revision`. Read as derived guidance only; brief remains
+   authority. V-01–V-09 map every AC and R-01–R-04.
+3. **Ownership.** The staged set is entirely within Q-01 scope (primary
+   skill/test surfaces, minimal guide alignment, task-package docs).
+   `AGENTS.md` and `docs/tasks/index.json` are no longer dirty, resolving the
+   original preflight's user-work warning. Only untracked files are
+   `.DS_Store` at root, `docs/`, `skills/` — outside scope; preserve, do not
+   stage.
+4. **Handoff completeness.** `qualification-handoff.md` records all unrun role
+   cases (V-02–V-08 role) with owner Q-01-QUALIFICATION, held-back oracle
+   protocol, and states the follow-up is unrun and not executable-ready.
+   Discovery ledger retains all V-01–V-09 and R-01–R-04.
+5. **Executability of staged bytes.** The brief-frozen selectors reran on the
+   staged tree: 23 tests OK (maintainability), 14 OK (guides), 15 OK
+   (installer). Environment is not broken.
+
+## Ownership
+
+- `git status --short`: 16 staged, 0 unstaged, 3 untracked `.DS_Store`.
+- Q-01 surfaces only; no overlap with user-owned work. Preserve the untracked
+  files and keep the installer within its managed AGENTS.md boundary.
+
+## Frozen selectors (reran on staged bytes)
+
+- Targeted: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_maintainability_review.py` → 23 OK.
+- Guides: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_flow_guides.py` → 14 OK.
+- Installer: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_install_development_skills.py` → 15 OK.
+- Repository disk projection (`python3 scripts/install_development_skills.py .`):
+  deferred by recorded user override — see warnings.
+
+## Warnings
+
+- **AC-06 repository disk projection is deferred by recorded user override.**
+  `implementation.md` records `Operation not permitted` on
+  `.agents/.development-install-*` and escalation canceled by the user.
+  Disposable-install evidence exists (installer suite), but the repository
+  on-disk projection clause is unverified by instruction, not by failure.
+  Acceptance must consume this override explicitly; fresh discovery should
+  corroborate disposable evidence only and not claim disk projection.
+- **`git diff --cached --check`** flags `reviews/discovery-01.md:291: new
+  blank line at EOF` — cosmetic, in a review report; note that
+  `implementation.md`'s "`git diff --check` passed" predates staging the
+  review reports. The staged tree is not whitespace-clean.
+- **Carry-forward from `reviews/maintainability-01.md`** (ACCEPT, no
+  blockers): duplicated scenario-value knowledge across test owners and
+  stringly-coupled variant derivation in `setup_fixture.py` are recorded as
+  non-blocking with directions. Future fixture maintenance concern, not a
+  Q-01 acceptance blocker.
+
+## Stops (none triggered)
+
+Unresolved overlapping ownership, changed authority, user-work overlap,
+unsafe permissions, new infrastructure, missing decisive capability — none
+currently apply. The changed authority (amendment + install deferral) is
+recorded in the brief and implementation report.
+
+## Next action
+
+Proceed to **fresh discovery under revision 2**, then **separate acceptance**;
+acceptance decides the AC-06 disk-projection clause against the recorded user
+override. Q-01-QUALIFICATION owns the role trials and must prepare its own
+brief/verification/preflight before any model-budget runs. Existing
+discovery-01/maintainability-01 remain historical evidence.
+
+## Implementer handoff
+
+```text
+Task: docs/tasks/Q-01/brief.md (ready, executable; owner amendment 2026-10-12)
+Verification: docs/tasks/Q-01/verification.md revision 2 (derived; brief blob matches)
+Preflight renewal: ready (guided, material). 16 staged, 0 unstaged.
+  All 9 recorded source identities match; brief blob == verification declaration.
+  Frozen selectors green on staged bytes: 23 / 14 / 15 OK.
+
+Scope/ownership: only Q-01 surfaces staged. AGENTS.md + index.json clean.
+  Untracked .DS_Store x3: preserve, do not stage.
+
+Warnings: (1) AC-06 repo disk projection deferred by user override — acceptance
+  consumes it explicitly; (2) diff --cached --check: blank line at EOF in
+  reviews/discovery-01.md:291 (cosmetic); (3) maintainability-01 carry-forward
+  warnings are non-blocking fixture notes.
+
+Next: fresh discovery under revision 2 -> separate acceptance; Q-01-QUALIFICATION
+  owns unrun role trials (V-02..V-08 role) and must prepare its own package first.
+```
+
+Standalone renewal value was `material` (identity binding and
+override-resolution entry conditions); recommend the same focused renewal for
+the next materially similar amended-contract handoff.
+
+---
+
+## Original preflight (historical)
+
 Profile: guided (brief routes `standalone guided preflight`)
 Standalone preflight value: `material`
 

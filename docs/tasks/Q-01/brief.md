@@ -4,6 +4,18 @@ Status: `ready`
 
 Task kind: `executable`
 
+## Owner amendment — 2026-10-12
+
+The user selected the same completion boundary as T-001–T-003: Q-01 owns
+verified instructions, runnable qualification fixtures and an explicit handoff;
+actual reviewer trials belong to the later `Q-01-QUALIFICATION` follow-up.
+See [qualification-handoff.md](qualification-handoff.md). These unrun trials
+do not block Q-01 acceptance and do not establish qualified reviewer behavior.
+T-005's existing scope remains unchanged. Verification revision 2 supersedes
+revision 1; the original preflight needs focused renewal under this authority.
+Existing implementation and review reports remain historical evidence, not
+decisions against the amended contract.
+
 ```yaml
 agent_tier: standard
 reasoning: high
@@ -124,8 +136,10 @@ and correction process.
   one-owner change divergence, and fixture/harness coupling with an observable
   isolation or repeatability failure. The normal submitted suite can pass.
   A clean small assertion change and legitimate independent fixtures remain
-  non-blocking. A fresh reviewer using the changed skill detects the defects
-  with evidence; deterministic setup/text checks alone cannot satisfy detection.
+  non-blocking. Supply reviewer inputs and held-back oracles for later trials.
+  Q-01 requires executable defect/control facts and inspected instructions,
+  not actual reviewer outputs. Record every unrun role case and its next owner
+  in the Q-01-QUALIFICATION handoff; deterministic checks do not prove detection.
 - **AC-06 — Distribution:** The complete installed skill package and profile
   guide match changed source, including executable fixture assets. Verify a
   disposable canonical install and the repository's on-disk projection. Do not
@@ -136,9 +150,9 @@ and correction process.
 
 | Invariant | Material dimensions/cases | Decisive oracle/boundary | Implementation evidence | Independent review probe | Gate owner |
 |---|---|---|---|---|---|
-| R-01 / proportionate detection | Tests-only duplicated authority; coupled mutable setup/harness; clean assertion edit; valid independent fixtures | Real Git diff and runnable defect/control probes; fresh reviewer reports material findings and no control blocker | Extend existing setup/owning tests; show divergence/isolation failure absent in baseline, present in changed fixture | Fresh reviewer inspects fixture without being given the expected verdict or defect oracle; compare output with held-back oracle | Implementer: targeted fixture checks; fresh discovery: Q-01 behavioral evidence; acceptance: admission |
-| R-02 / reviewed-byte provenance | Test/eval/harness author versus independent reviewer; first report → tests-only correction → next review; unaffected scope | Author yields `SELF_CHECK_ONLY`; corrected affected bytes receive fresh evidence and stable finding dispositions; unchanged report preserved | Reuse self-check and correction-round cases, adding test-asset inputs without duplicating setup | Substitute a prior report after changing only its reviewed test asset; reject stale evidence and retain unaffected obligations | Implementer: focused contracts/setup; independent review owners: current provenance and route |
-| R-03 / ordered obligations | Required gate available/unavailable; maintainability affected/unaffected; registry applicable/absent | Existing truthful verdicts and first outstanding stage/full ordered remainder; no filename-only shortcut or invented stage | Reuse unavailable-gate and routing coverage; update only distinct test-scope gaps | Trace an affected tests-only correction and a policy-authorized trivial correction through existing handoffs | Existing conditional-stage owners; discovery then separate acceptance |
+| R-01 / proportionate detection | Tests-only duplicated authority; coupled mutable setup/harness; clean assertion edit; valid independent fixtures | Real Git diff and runnable defect/control probes; instructions and supplied oracles distinguish blockers from controls | Extend existing setup/owning tests; show divergence/isolation failure absent in baseline, present in changed fixture | Corroborate fixture facts and inspect instructions/oracles; later blind reviewer outputs belong to Q-01-QUALIFICATION | Implementer: targeted fixture checks; fresh discovery: local evidence; acceptance: admission; follow-up: actual detection |
+| R-02 / reviewed-byte provenance | Test/eval/harness author versus independent reviewer; first report → tests-only correction → next review; unaffected scope | Published self-check/freshness rules; executable corrected/unchanged byte identities and preserved report history | Reuse self-check and correction-round cases, adding test-asset inputs without duplicating setup | Inspect stale-report rejection instructions and supplied inputs after changing only the reviewed test asset; actual role responses belong to Q-01-QUALIFICATION | Implementer: focused contracts/setup; discovery: corroboration; follow-up: actual provenance/freshness behavior |
+| R-03 / ordered obligations | Required gate available/unavailable; maintainability affected/unaffected; registry applicable/absent | Published verdict/routing rules and runnable gate facts; no filename-only shortcut or invented stage | Reuse unavailable-gate and routing coverage; update only distinct test-scope gaps | Trace the supplied correction/trivial-exception inputs against instructions; actual emitted verdicts/routes belong to Q-01-QUALIFICATION | Discovery: local evidence; acceptance: admission; follow-up: actual role outputs |
 | R-04 / projection | Disposable install; repository disk projection; active sessions unchanged | Canonical installer preserves unmanaged bytes; full managed file inventory/bytes equal source | Existing installer projection/preservation checks and post-install comparison | Verify installed setup runs independently of repository-only test helpers; corroborate inventory equality | Implementer: install/check; fresh discovery: focused corroboration |
 
 ## Verification
@@ -159,15 +173,16 @@ and correction process.
   compare complete managed skill files and profile guide against source,
   excluding only existing installer transient patterns. Use existing installer
   tests for disposable installation and unmanaged-file preservation.
-- Fresh discovery owns the small Q-01 behavioral qualification and any justified
-  aggregate gate after clean targeted evidence. Use the existing independent
-  review process with explicit fixture setup and held-back expected findings;
-  acceptance consumes that evidence without rerunning the catalog. Require the
-  two defective cases, clean control, author self-check and corrected-byte
-  contrast; combine inputs where one coherent fixture proves multiple cases.
+- Fresh discovery corroborates Q-01 instructions, executable fixture facts,
+  distribution and the complete follow-up handoff, and owns any justified
+  aggregate gate after clean targeted evidence. Acceptance consumes that evidence
+  without rerunning the catalog. Q-01-QUALIFICATION owns actual detection,
+  clean-control, author self-check, corrected-byte, unavailable-gate and reporting
+  trials using fresh sessions and held-back oracles. Preserve all scenario IDs.
 - Ask before costly/live-networked model evals unless their exact class has been
   authorized. No new runner may be built to avoid that boundary. Unrun behavior
-  is a gap, not Q-01 completion; T-005's qualification scope remains unchanged.
+  remains an explicit follow-up gap, not a Q-01 acceptance blocker or a claim of
+  qualified behavior; T-005's qualification scope remains unchanged.
 
 ## Expected contract impact
 

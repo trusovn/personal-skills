@@ -161,6 +161,38 @@
       "children": [],
       "depends_on": ["T-003.1", "T-003.2", "T-003.3"]
     },
+    "T-004": {
+      "kind": "composite",
+      "source_plan_task": "T-004",
+      "brief": "docs/tasks/T-004/brief.md",
+      "parent": null,
+      "children": ["T-004.1", "T-004.2", "T-004.3"],
+      "depends_on": ["T-001", "T-002", "T-003"]
+    },
+    "T-004.1": {
+      "kind": "executable",
+      "source_plan_task": "T-004",
+      "brief": "docs/tasks/T-004.1/brief.md",
+      "parent": "T-004",
+      "children": [],
+      "depends_on": ["T-001", "T-002", "T-003"]
+    },
+    "T-004.2": {
+      "kind": "executable",
+      "source_plan_task": "T-004",
+      "brief": "docs/tasks/T-004.2/brief.md",
+      "parent": "T-004",
+      "children": [],
+      "depends_on": ["T-004.1"]
+    },
+    "T-004.3": {
+      "kind": "executable",
+      "source_plan_task": "T-004",
+      "brief": "docs/tasks/T-004.3/brief.md",
+      "parent": "T-004",
+      "children": [],
+      "depends_on": ["T-004.1", "T-004.2"]
+    },
     "INT-FLOW-001": {
       "kind": "executable",
       "source_plan_task": null,

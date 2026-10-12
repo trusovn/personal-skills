@@ -184,7 +184,13 @@ def git(repo: Path, *args: str) -> str:
     return result.stdout
 
 
-def init_repo(repo: Path, *, ignore_agents: bool = True, agents_text: str | None = None) -> None:
+def init_repo(
+    repo: Path,
+    *,
+    ignore_agents: bool = True,
+    agents_text: str | None = None,
+    commit: bool = True,
+) -> None:
     git(repo, "init", "-q")
     git(repo, "config", "user.email", "tests@example.com")
     git(repo, "config", "user.name", "Development Installer Tests")
@@ -193,6 +199,8 @@ def init_repo(repo: Path, *, ignore_agents: bool = True, agents_text: str | None
     (repo / "app.txt").write_text("baseline\n", encoding="utf-8")
     if agents_text is not None:
         (repo / "AGENTS.md").write_text(agents_text, encoding="utf-8")
+    if not commit:
+        return
     git(repo, "add", ".")
     git(repo, "commit", "-qm", "baseline")
 
@@ -260,6 +268,20 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
             self.assertEqual(
                 content, installed[name], f"managed bytes differ for {relative}/{name}"
             )
+
+    def installed_identity(self, repo: Path) -> dict:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(repo / ".agents" / "scripts" / "workflow_version.py"),
+                "bounded-task-implementer",
+            ],
+            cwd=repo,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return json.loads(result.stdout)
 
     def test_cross_stage_guides_require_packaged_preparation_route(self):
         for doc, path in CROSS_STAGE_GUIDE_PATHS.items():
@@ -357,6 +379,121 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
             self.assertEqual(0, availability.returncode, availability.stderr)
             self.assertTrue(json.loads(availability.stdout)["available"])
             self.assertEqual(before, after)
+
+    def test_installs_profile_into_unborn_repository_without_creating_a_commit(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            repo = Path(tempdir)
+            init_repo(
+                repo,
+                agents_text="# Project instructions\n\nKeep this line.\n",
+                commit=False,
+            )
+
+            head_ref = git(repo, "symbolic-ref", "HEAD").strip()
+            objects_before = sorted(
+                path.name for path in (repo / ".git" / "objects").iterdir()
+            )
+            show_ref = subprocess.run(
+                ["git", "-C", str(repo), "show-ref"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual("", show_ref.stdout)
+
+            result = run_installer(repo)
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            info = json.loads(result.stdout)
+            self.assertTrue(info["installed"])
+            self.assertTrue(info["availability"]["available"])
+
+            # HEAD stays genuinely unborn: same unborn branch, no commit, and
+            # no fabricated Git object.
+            self.assertEqual(head_ref, git(repo, "symbolic-ref", "HEAD").strip())
+            show_ref_after = subprocess.run(
+                ["git", "-C", str(repo), "show-ref"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual("", show_ref_after.stdout)
+            self.assertEqual(
+                objects_before,
+                sorted(path.name for path in (repo / ".git" / "objects").iterdir()),
+            )
+
+            availability = subprocess.run(
+                [
+                    sys.executable,
+                    str(repo / ".agents" / "scripts" / "run_evidence.py"),
+                    "--repo",
+                    str(repo),
+                    "availability",
+                ],
+                cwd=repo,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(0, availability.returncode, availability.stderr)
+            self.assertTrue(json.loads(availability.stdout)["available"])
+
+            unborn_identity = self.installed_identity(repo)
+            self.assertIsNone(unborn_identity["repository_commit"])
+            self.assertTrue(unborn_identity["fingerprint"].startswith("sha256:"))
+
+            # The first and a later unrelated application commit replace the
+            # unborn identity without changing the installed fingerprint.
+            git(repo, "add", ".")
+            git(repo, "commit", "-qm", "first unrelated application commit")
+            first_commit = git(repo, "rev-parse", "HEAD").strip()
+            first_identity = self.installed_identity(repo)
+            self.assertEqual(first_commit, first_identity["repository_commit"])
+
+            (repo / "app.txt").write_text("changed later\n", encoding="utf-8")
+            git(repo, "add", "app.txt")
+            git(repo, "commit", "-qm", "later unrelated application commit")
+            later_commit = git(repo, "rev-parse", "HEAD").strip()
+            later_identity = self.installed_identity(repo)
+            self.assertEqual(later_commit, later_identity["repository_commit"])
+            self.assertNotEqual(first_commit, later_commit)
+
+            self.assertEqual(
+                unborn_identity["fingerprint"], first_identity["fingerprint"]
+            )
+            self.assertEqual(
+                unborn_identity["fingerprint"], later_identity["fingerprint"]
+            )
+
+            committed_availability = subprocess.run(
+                [
+                    sys.executable,
+                    str(repo / ".agents" / "scripts" / "run_evidence.py"),
+                    "--repo",
+                    str(repo),
+                    "availability",
+                ],
+                cwd=repo,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(
+                0, committed_availability.returncode, committed_availability.stderr
+            )
+            self.assertTrue(json.loads(committed_availability.stdout)["available"])
+
+    def test_invalid_git_target_fails_without_installing(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            non_repo = Path(tempdir)
+            (non_repo / "app.txt").write_text("not a repository\n", encoding="utf-8")
+
+            result = run_installer(non_repo)
+
+            self.assertEqual(2, result.returncode)
+            self.assertIn("target repository is not usable", result.stderr)
+            self.assertFalse((non_repo / ".agents").exists())
 
     def test_rerun_removes_stale_managed_files_and_preserves_unmanaged_installations(self):
         with tempfile.TemporaryDirectory() as tempdir:

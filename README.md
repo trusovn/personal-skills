@@ -91,6 +91,9 @@ The installer:
 - validates the staged evidence/runtime installation before replacing managed
   targets and runs the installed `run_evidence.py ... availability` check again
   after replacement;
+- installs into a genuine unborn target repository (a fresh `git init` with no
+  commit yet): workflow identity and both availability gates report the unborn
+  state explicitly without creating a commit or fabricating one;
 - supports using the source repository as the target because all selected files
   are staged before managed destinations are replaced; and
 - is safe to rerun as the normal update mechanism for this profile.
@@ -170,7 +173,10 @@ bounded task into a formal/orchestrated workflow.
 
 See `scripts/runtime-context.md` for the runtime identity contract and
 `scripts/run-evidence.md` for evidence lifecycle, snapshot, recovery, and
-deterministic-check semantics.
+deterministic-check semantics. Unborn-repository support covers installation,
+workflow identity, and the availability check only; the run-evidence
+collector's `begin`/`finish`/`recover` lifecycle still requires a resolved
+HEAD.
 
 ## Workflow version fingerprints
 
@@ -183,7 +189,11 @@ python3 scripts/workflow_version.py bounded-task-implementer
 
 The tool prints JSON with the skill ID, a SHA-256 fingerprint, the current Git
 commit, current branch (or `null` for detached HEAD), repository dirty state,
-and workflow dirty state. For source-repository skills, the fingerprint is derived from the current contents
+and workflow dirty state. A repository whose HEAD still names its unborn first
+branch reports `repository_commit` as `null` with the unborn branch in
+`repository_branch`; that unborn identity is explicit, fabricates no commit,
+and is replaced by the first real commit. An actual Git failure remains a
+reported error and is never reported as a missing first commit. For source-repository skills, the fingerprint is derived from the current contents
 and relative paths of tracked plus non-ignored untracked files inside that skill
 directory. For an explicit installed skills tree beside the active shared scripts,
 the same fingerprint framing reads the installed package files directly instead
@@ -197,7 +207,9 @@ separate from repository provenance. `repository_commit` and
 `repository_dirty` and `workflow_dirty` show whether the repository or this
 workflow differs from committed state. Unrelated repository changes therefore
 do not change a skill fingerprint. There are no manually incremented per-skill
-versions.
+versions. The unborn, first-commit, and later committed states keep one
+fingerprint for equivalent package bytes; only the commit identity tracks Git
+HEAD.
 
 Fingerprint semantics are a compatibility contract. Changes to input
 selection/exclusion, path normalization, canonical ordering, hash framing, or

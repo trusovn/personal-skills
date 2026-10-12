@@ -3,7 +3,9 @@
 This guide describes the project-local development profile installed by
 `scripts/install_development_skills.py`. Invoke a skill by name when its stage
 or specialty is needed; optional stages should not be called only because they
-are available.
+are available. Installation also works in a target repository that has no
+commit yet: installed workflow identity and the availability check explicitly
+represent that unborn state without creating a commit.
 
 ## Recommended flow
 

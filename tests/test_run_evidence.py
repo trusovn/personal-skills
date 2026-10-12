@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -219,6 +220,172 @@ class RunEvidenceTests(unittest.TestCase):
         self.assertIn("solely for evidence collection", text)
         self.assertIn("Runtime identity is optional", text)
 
+
+    def test_availability_is_available_in_unborn_repository(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            target_repo = Path(tempdir)
+            git(target_repo, "init", "-q")
+            git(target_repo, "config", "user.email", "target@example.com")
+            git(target_repo, "config", "user.name", "Unborn Availability Tests")
+            # No `git add`/`git commit`: HEAD names a still-unborn branch.
+
+            target_skill = (
+                target_repo
+                / "skills"
+                / "task-implementation-flow"
+                / "bounded-task-implementer"
+            )
+            shutil.copytree(SKILL_PATH.parent, target_skill)
+            target_scripts = target_repo / "scripts"
+            target_scripts.mkdir()
+            for name in (
+                "workflow_version.py",
+                "runtime_context.py",
+                "runtime-context.schema.v1.json",
+                "run_evidence.py",
+            ):
+                shutil.copy2(SCRIPTS / name, target_scripts / name)
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(target_scripts / "run_evidence.py"),
+                    "--repo",
+                    str(target_repo),
+                    "availability",
+                ],
+                cwd=target_repo,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            info = json.loads(result.stdout)
+            self.assertTrue(info["available"])
+            self.assertTrue(info["workflow"]["fingerprint"].startswith("sha256:"))
+
+    def test_availability_reports_failure_for_invalid_git_target(self):
+        with tempfile.TemporaryDirectory() as non_repo_dir:
+            non_repo = Path(non_repo_dir)
+            target_skill = (
+                non_repo
+                / "skills"
+                / "task-implementation-flow"
+                / "bounded-task-implementer"
+            )
+            shutil.copytree(SKILL_PATH.parent, target_skill)
+            target_scripts = non_repo / "scripts"
+            target_scripts.mkdir()
+            for name in (
+                "workflow_version.py",
+                "runtime_context.py",
+                "runtime-context.schema.v1.json",
+                "run_evidence.py",
+            ):
+                shutil.copy2(SCRIPTS / name, target_scripts / name)
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(target_scripts / "run_evidence.py"),
+                    "--repo",
+                    str(non_repo),
+                    "availability",
+                ],
+                cwd=non_repo,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(2, result.returncode)
+            self.assertEqual("", result.stdout)
+            self.assertFalse(json.loads(result.stderr)["ok"])
+
+    def test_availability_reports_failure_for_fatal_ref_lookups(self):
+        # A committed repository whose ref lookups fail fatally (exit 128)
+        # must keep availability unavailable; the unborn classification
+        # requires the branch ref to be confirmed absent. The controlled
+        # faults hit only the Git subprocess boundary: every other Git
+        # command runs for real through the shim.
+        real_git = shutil.which("git")
+        self.assertIsNotNone(real_git)
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            target_repo = root / "target-repo"
+            target_repo.mkdir()
+            git(target_repo, "init", "-q")
+            git(target_repo, "config", "user.email", "target@example.com")
+            git(target_repo, "config", "user.name", "Fatal Ref Lookup Tests")
+            (target_repo / "app.txt").write_text("baseline\n", encoding="utf-8")
+            git(target_repo, "add", ".")
+            git(target_repo, "commit", "-qm", "application baseline")
+
+            target_skill = (
+                target_repo
+                / "skills"
+                / "task-implementation-flow"
+                / "bounded-task-implementer"
+            )
+            shutil.copytree(SKILL_PATH.parent, target_skill)
+            target_scripts = target_repo / "scripts"
+            target_scripts.mkdir()
+            for name in (
+                "workflow_version.py",
+                "runtime_context.py",
+                "runtime-context.schema.v1.json",
+                "run_evidence.py",
+            ):
+                shutil.copy2(SCRIPTS / name, target_scripts / name)
+
+            wrapper = root / "bin"
+            wrapper.mkdir()
+            shim = wrapper / "git"
+            shim.write_text(
+                "#!" + sys.executable + "\n"
+                "import os, sys\n"
+                "args = sys.argv[1:]\n"
+                'if args[2:] == ["rev-parse", "HEAD"] or (\n'
+                '    args[2:] and args[2] == "show-ref"\n'
+                "):\n"
+                '    print("fatal: controlled ref-database I/O failure",'
+                " file=sys.stderr)\n"
+                "    sys.exit(128)\n"
+                "os.execv("
+                + repr(real_git)
+                + ", ["
+                + repr(real_git)
+                + "] + args)\n",
+                encoding="utf-8",
+            )
+            shim.chmod(0o755)
+            env = os.environ.copy()
+            env["PATH"] = str(wrapper) + os.pathsep + env.get("PATH", "")
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(target_scripts / "run_evidence.py"),
+                    "--repo",
+                    str(target_repo),
+                    "availability",
+                ],
+                cwd=target_repo,
+                capture_output=True,
+                text=True,
+                check=False,
+                env=env,
+            )
+
+            self.assertEqual(2, result.returncode, result.stderr)
+            report = json.loads(result.stdout)
+            self.assertFalse(report["available"])
+            self.assertEqual("workflow_unavailable", report["reason"])
+            self.assertIn(
+                "controlled ref-database I/O failure",
+                report["error"],
+            )
 
     def test_ignored_agents_install_runs_copied_tooling_end_to_end(self):
         with tempfile.TemporaryDirectory() as tempdir:

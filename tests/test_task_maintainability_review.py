@@ -122,7 +122,7 @@ class MaintainabilityReportingContractTest(unittest.TestCase):
             case["id"]: case
             for case in json.loads(EVALS.read_text(encoding="utf-8"))["evals"]
         }
-        self.assertEqual([1, 2, 3], sorted(cases))
+        self.assertEqual([1, 2, 3, 4], sorted(cases))
         self.assertIn("wrote the current production bytes", cases[1]["prompt"])
         first = " ".join(cases[1]["expectations"])
         self.assertIn("SELF_CHECK_ONLY", first)
@@ -137,8 +137,137 @@ class MaintainabilityReportingContractTest(unittest.TestCase):
         third = " ".join(cases[3]["expectations"])
         self.assertIn("docs/tasks/PAY-14/reviews/maintainability-01.md", third)
         self.assertIn("does not overwrite prior reports", third)
-        for case_id in (1, 2, 3):
+        self.assertIn(
+            "docs/tasks/MNT-42/reviews/maintainability-01.md", cases[4]["prompt"]
+        )
+        fourth = " ".join(cases[4]["expectations"])
+        self.assertIn("MNT-B1, MNT-B3, and MNT-B4 keep their unchanged IDs", fourth)
+        self.assertIn(
+            "MNT-B2 keeps its ID with its current corrected disposition", fourth
+        )
+        self.assertIn("not recycled", fourth)
+        self.assertIn("reviews/maintainability-02.md", fourth)
+        self.assertIn("does not rewrite the prior report", fourth)
+        for case_id in (1, 2, 3, 4):
             self.assertEqual([], cases[case_id]["files"])
+
+
+class MaintainabilityIntegrationGapContractTest(unittest.TestCase):
+    """INT-FLOW-001 focused checks for I-01, I-02, and I-03.
+
+    These assertions reject the direct maintainability-to-discovery shortcut
+    that drops applicable registry work, blanket verdict invalidation after
+    any production correction, and display-order-only blocker identities.
+    They fail against the pre-correction skill bytes.
+    """
+
+    def test_clean_review_hands_off_the_complete_conditional_route(self):
+        text = normalized(SKILL)
+        loop = text.split("## Correction loop", 1)[1].split(
+            "## Definition of Done", 1
+        )[0]
+        self.assertIn(
+            "only after `ACCEPT`, name the first outstanding stage and the "
+            "complete ordered remainder of the submission route: applicable "
+            "`task-contract-registry-updater` synchronization when the flow "
+            "includes a registry stage and the change added, changed, or "
+            "removed a durable cross-task contract, then fresh independent "
+            "`task-review-discovery` evidence, then the separate functional "
+            "`task-acceptance-review` decision when that stage is required",
+            loop,
+        )
+        self.assertLess(
+            loop.index("`task-contract-registry-updater`"),
+            loop.index("`task-review-discovery`"),
+        )
+        self.assertIn(
+            "Naming the route hands off the next owners without executing "
+            "any named stage",
+            loop,
+        )
+        self.assertIn(
+            "current applicable evidence for a completed stage leaves it out "
+            "of the outstanding remainder",
+            loop,
+        )
+        self.assertIn("applicable registry work cannot be dropped", loop)
+        self.assertIn("an absent registry stage cannot be invented", loop)
+        self.assertNotIn(
+            "only after `ACCEPT`, proceed to fresh independent "
+            "`task-review-discovery`",
+            loop,
+        )
+        self.assertIn(
+            "re-enter only the conditional stages whose reviewed scope the "
+            "correction affected",
+            loop,
+        )
+
+    def test_correction_reentry_follows_affected_scope_and_current_evidence(self):
+        text = normalized(SKILL)
+        self.assertNotIn(
+            "Every production correction invalidates the previous "
+            "maintainability verdict",
+            text,
+        )
+        independence = text.split("## Independence", 1)[1].split("## Inputs", 1)[0]
+        self.assertIn(
+            "Re-entry follows actual affected reviewed scope and current evidence",
+            independence,
+        )
+        self.assertIn("invalidates this verdict for the corrected bytes", independence)
+        self.assertIn(
+            "demonstrably unaffected scope retains this review as current evidence",
+            independence,
+        )
+        self.assertIn(
+            "Stale, missing, or inapplicable proof never counts as a completed "
+            "stage",
+            independence,
+        )
+        self.assertIn(
+            "a prior verdict's label alone is not current evidence", independence
+        )
+        guide = normalized(FLOW / "README.md")
+        self.assertIn(
+            "For a trivial correction that provably cannot affect production "
+            "architecture",
+            guide,
+        )
+        self.assertIn("Route by actual effects and current proof", guide)
+
+    def test_findings_have_stable_ids_with_correction_continuity(self):
+        text = normalized(SKILL)
+        self.assertIn(
+            "Give every confirmed finding a **stable finding ID** such as "
+            "`MNT-01`",
+            text,
+        )
+        self.assertIn("independent of display order", text)
+        self.assertIn("Identity is a producer obligation, not a fixture convention", text)
+        self.assertIn("prior reports remain unchanged", text)
+        self.assertIn("a resolved ID is never recycled", text)
+        self.assertIn(
+            "an identity no earlier report or resolved finding already used", text
+        )
+        self.assertIn(
+            "keeps the surviving findings' IDs and the corrected finding's ID "
+            "with its current disposition and evidence",
+            text,
+        )
+        self.assertIn("1. MNT-01 — <file/location>", text)
+        self.assertIn(
+            "Current disposition: <confirmed, or resolved/corrected with "
+            "current evidence>",
+            text,
+        )
+        self.assertIn("- <MNT-NN finding or NONE>", text)
+        self.assertIn(
+            "retain every confirmed finding with its full evidence, its stable "
+            "ID, and its current disposition",
+            text,
+        )
+        self.assertIn("one numbered entry per confirmed blocker", text)
 
 
 class MaintainabilityFixtureTest(unittest.TestCase):
@@ -148,7 +277,7 @@ class MaintainabilityFixtureTest(unittest.TestCase):
         cls.work = Path(tempfile.mkdtemp(prefix="maintainability-fixture-"))
         cls.addClassCleanup(shutil.rmtree, cls.work, ignore_errors=True)
         environment = os.environ | {"EVAL_WORK_ROOT": str(cls.work)}
-        for scenario in ("four-blockers", "genuine-stop"):
+        for scenario in ("four-blockers", "genuine-stop", "correction-round"):
             subprocess.run(
                 [sys.executable, str(FIXTURE), scenario],
                 check=True,
@@ -157,6 +286,7 @@ class MaintainabilityFixtureTest(unittest.TestCase):
             )
         cls.repo = cls.work / "maintainability"
         cls.stop_repo = cls.work / "maintainability-stop"
+        cls.correction_repo = cls.work / "maintainability-correction"
         cls.run_dir = cls.work / "task-runs" / "MNT-42"
 
     @classmethod
@@ -404,6 +534,78 @@ class MaintainabilityFixtureTest(unittest.TestCase):
         self.assertIn("independent of any host `PATH` content", facts)
         self.assertIn("outstanding coverage", facts)
         self.assertIn("next owner", facts)
+
+    def test_correction_round_fixes_one_finding_and_supplies_identity_inputs(self):
+        """INT-FLOW-001 I-03 / R-03: one corrected finding, three survivors,
+        and prior-report preservation are real fixture inputs for the next
+        maintainability role call; the correction itself is observed at the
+        real import/behavior boundary, not asserted from text alone.
+        """
+        repo = self.correction_repo
+        changed_pricing = (repo / "src/billing/pricing.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("SURCHARGE_RATES", changed_pricing)
+        self.assertNotIn("SqliteStore", changed_pricing)
+        status = self.git(repo, "status", "--short")
+        for relative in ("src/billing/service.py", "src/billing/receipts.py"):
+            self.assertIn(relative, status)
+        clean_fee, clean_directory = self.probe(
+            repo,
+            'from src.billing import pricing\n'
+            'print(pricing.fee(100))\n'
+            'print(pricing.surcharge(100, 10))\n',
+        )
+        self.assertEqual(0, clean_fee.returncode, clean_fee.stderr)
+        self.assertEqual(["2.0", "1.5"], clean_fee.stdout.splitlines())
+        self.assertFalse((clean_directory / "billing.db").exists())
+        seeded, _ = self.probe(
+            repo,
+            'import sqlite3\n'
+            'from src.billing import pricing\n'
+            'connection = sqlite3.connect("billing.db")\n'
+            'connection.execute("create table rates (name text, value real)")\n'
+            "connection.execute(\"insert into rates values ('late:standard', 0.99)\")\n"
+            'connection.commit()\n'
+            'print(pricing.surcharge(100, 10))\n',
+        )
+        self.assertEqual(0, seeded.returncode, seeded.stderr)
+        self.assertEqual("1.5", seeded.stdout.strip())
+        diverged, _ = self.probe(
+            repo,
+            'from src.billing import pricing, service\n'
+            'pricing.SURCHARGE_RATES["standard"] = 0.99\n'
+            'print(pricing.surcharge(100, 10))\n'
+            'print(service.checkout(100, 10, "card"))\n',
+        )
+        self.assertEqual(0, diverged.returncode, diverged.stderr)
+        owner, copy_total = diverged.stdout.splitlines()
+        self.assertEqual("99.0", owner)
+        self.assertIn("103.50", copy_total)
+        prior = collapse(
+            (repo / "docs/tasks/MNT-42/reviews/maintainability-01.md").read_text(
+                encoding="utf-8"
+            )
+        )
+        for finding in ("MNT-B1", "MNT-B2", "MNT-B3", "MNT-B4"):
+            self.assertIn(f"{finding} — ", prior)
+        self.assertIn("Current disposition: confirmed", prior)
+        facts = collapse(
+            (self.run_dir / "correction-round-facts.md").read_text(encoding="utf-8")
+        )
+        for token in (
+            "smallest correction direction",
+            "MNT-B1, MNT-B3, and MNT-B4 keep their unchanged IDs",
+            "current disposition `corrected`",
+            "identity no earlier report or resolved finding already used",
+            "MNT-B5",
+            "not recycled",
+            "reviews/maintainability-01.md remains unchanged",
+            "reviews/maintainability-02.md",
+            "genuine stop",
+            "stable ID",
+        ):
+            self.assertIn(token, facts)
 
 
 if __name__ == "__main__":

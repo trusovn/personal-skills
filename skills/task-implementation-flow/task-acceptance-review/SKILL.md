@@ -53,6 +53,13 @@ Require enough to identify:
   publication;
 - applicable conditional evidence: maintainability review, registry records,
   and any prior review continuation;
+- the applicable packaged preparation references when the task is packaged:
+  the verification design with its revision, the readiness/preflight
+  evidence, and the recorded decision context — for complete, clean guided
+  evidence as well as partial evidence. Identify and read the references that
+  are applicable to the decision; a guided direct edit may use the supplied
+  conversational/repository context instead, and a missing decision-relevant
+  preparation reference routes to its owner with a focused request;
 - repository instructions and permissions for the decision.
 
 Do not return `INCONCLUSIVE` merely because no preflight packet, digest ledger,
@@ -78,10 +85,10 @@ independent proof in either profile.
 ## Decision workflow
 
 1. Establish provenance, then read applicable instructions, the task contract,
-   scoped diff, current submission, the independent discovery report (or its
-   absence), applicable conditional evidence, and any prior review
-   continuation. Confirm the outcome, allowed scope, profile, and current byte
-   identity when available.
+   the applicable packaged preparation references, scoped diff, current
+   submission, the independent discovery report (or its absence), applicable
+   conditional evidence, and any prior review continuation. Confirm the
+   outcome, allowed scope, profile, and current byte identity when available.
 2. Reconstruct task ownership before deciding:
    - compare changed paths with stated scope and implementation claims;
    - separate pre-existing user work, task changes, and runtime artifacts;

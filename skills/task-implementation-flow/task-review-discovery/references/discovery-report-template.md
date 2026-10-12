@@ -153,7 +153,8 @@ oracle is a blocked row with a concrete owner, not a clean row.
 | Exact next action | `<one smallest action>` |
 
 - Complete clean evidence routes to the separate acceptance decision call with
-  no invented finding.
+  the applicable packaged preparation references — verification design
+  revision, readiness, decision context — and no invented finding.
 - A blocked or unchecked required row keeps its concrete reason and next
   evidence owner; discovery records no verdict and no approved deferral.
 - A scope or capability blocker routes to its owning stage (`task-preflight`,

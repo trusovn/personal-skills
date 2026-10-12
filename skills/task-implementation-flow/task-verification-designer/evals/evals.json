@@ -173,6 +173,25 @@
         },
         "workspace": "{run_root}/work/workflow-scope"
       }
+    },
+    {
+      "id": 9,
+      "prompt": "The fixture is already staged in the current workspace. Prepare verification for the executable integration leaf `docs/tasks/INT-9/brief.md`, whose own AC-01 and AC-02 compose the supplied producer outputs at the consumer boundary. Contrast it with the composite parent `docs/tasks/INT-PARENT/brief.md`, the requested sibling requirement outside the leaf's authority, and the unavailable decisive oracle described in `requests/integration-contrasts.md`. Do not implement anything.",
+      "expectations": [
+        "The design derives task-local scenarios for INT-9's own composition ACs using the supplied producer outputs and the stated consumer boundary, without adding requirements.",
+        "The non-executable composite parent is refused in favor of its dependency-ready executable leaf.",
+        "The sibling requirement and system-wide integration strategy are not invented or owned here.",
+        "The unavailable input is reported to its owner and the unresolvable expected result routes to task design or the decision owner; no report is fabricated and no readiness is claimed.",
+        "Packaged preparation remains mandatory for that leaf: derived verification.md and a ready preflight.md still precede implementation."
+      ],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "integration-leaf"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/integration-leaf"
+      }
     }
   ]
 }

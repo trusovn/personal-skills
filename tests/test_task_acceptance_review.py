@@ -170,6 +170,44 @@ class ReviewerDisciplineTests(unittest.TestCase):
         )
 
 
+    def test_guided_inputs_identify_and_read_packaged_preparation_references(self):
+        """INT-FLOW-001 I-04: guided acceptance input includes and reads the
+        applicable verification revision, readiness, and decision-context
+        references for complete as well as partial evidence; direct edits
+        stay compact without a mandatory packet.
+        """
+        text = normalized(ACCEPTANCE_SKILL)
+        self.assertIn(
+            "the applicable packaged preparation references when the task is "
+            "packaged: the verification design with its revision, the "
+            "readiness/preflight evidence, and the recorded decision context",
+            text,
+        )
+        self.assertIn(
+            "for complete, clean guided evidence as well as partial evidence",
+            text,
+        )
+        self.assertIn(
+            "Identify and read the references that are applicable to the "
+            "decision",
+            text,
+        )
+        self.assertIn(
+            "a guided direct edit may use the supplied conversational/"
+            "repository context instead",
+            text,
+        )
+        self.assertIn(
+            "a missing decision-relevant preparation reference routes to its "
+            "owner with a focused request",
+            text,
+        )
+        workflow = text.split("## Decision workflow", 1)[1].split(
+            "2. Reconstruct", 1
+        )[0]
+        self.assertIn("the applicable packaged preparation references", workflow)
+
+
     def test_acceptance_preserves_tests_only_exception_and_numbered_reports(self):
         text = normalized(ACCEPTANCE_SKILL)
 

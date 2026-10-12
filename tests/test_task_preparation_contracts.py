@@ -147,6 +147,94 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
         self.assertTrue(verification_evals.is_file(), verification_evals)
 
 
+    def test_integration_leaf_composition_permission_keeps_refusal_boundaries(self):
+        """INT-FLOW-001 I-05: an executable integration leaf may derive
+        scenarios for its own composition ACs from supplied producer outputs;
+        composite parents, invented sibling/system scope, and unavailable
+        inputs/oracles stay refused. Rejects the old blanket composition
+        refusal.
+        """
+        verification = (
+            FLOW / "task-verification-designer" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        flat = " ".join(verification.split())
+        self.assertIn(
+            "An executable integration leaf is different: when its own "
+            "explicit ACs require composing supplied producer outputs at "
+            "stated consumer boundaries, derive task-local scenarios for "
+            "exactly those composition ACs",
+            flat,
+        )
+        self.assertIn("The leaf's brief and supplied inputs remain the authority", flat)
+        self.assertIn("does **not** own verification design across sibling", flat)
+        self.assertIn("route the request to its dependency-ready executable leaf", flat)
+        self.assertIn(
+            "do not invent or own a sibling task's requirements, system-wide "
+            "integration strategy, or parent-level closure",
+            flat,
+        )
+        self.assertIn("report the unavailable input or capability to its owner", flat)
+        self.assertIn(
+            "route an expected result the authority cannot settle to task "
+            "design or the decision owner",
+            flat,
+        )
+        self.assertIn("never fabricate a report or claim readiness to bypass the gap", flat)
+        self.assertIn("Packaged preparation remains mandatory for that leaf", flat)
+        self.assertNotIn(
+            "If the supplied brief can only be verified by composing separate "
+            "task outputs, report that limitation to the caller rather than "
+            "inventing cross-task scenarios here",
+            flat,
+        )
+
+    def test_integration_leaf_fixture_supplies_qualification_inputs(self):
+        """INT-FLOW-001 I-05 / R-05: the staged integration-leaf scenario and
+        eval case 9 give T-005 explicit briefs/inputs for the permission and
+        refusal contrasts.
+        """
+        setup = FLOW / "task-verification-designer/evals/files/setup_fixture.py"
+        with tempfile.TemporaryDirectory() as temporary:
+            environment = os.environ | {"EVAL_WORK_ROOT": temporary}
+            subprocess.run(
+                [sys.executable, str(setup), "integration-leaf"],
+                check=True,
+                cwd=ROOT,
+                env=environment,
+            )
+            root = Path(temporary) / "integration-leaf"
+            leaf = (root / "docs/tasks/INT-9/brief.md").read_text(encoding="utf-8")
+            self.assertIn("Task kind: executable", leaf)
+            self.assertIn("supplied producer outputs", leaf)
+            self.assertIn("AC-01", leaf)
+            self.assertIn("AC-02", leaf)
+            parent = (root / "docs/tasks/INT-PARENT/brief.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("Task kind: composite", parent)
+            self.assertIn("Status: decomposed", parent)
+            request = (root / "requests/integration-contrasts.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("Sibling requirement", request)
+            self.assertIn("System-wide", request)
+            self.assertIn("unavailable", request)
+        evals = json.loads(
+            (FLOW / "task-verification-designer" / "evals/evals.json").read_text(
+                encoding="utf-8"
+            )
+        )["evals"]
+        case = next(item for item in evals if item["id"] == 9)
+        self.assertEqual(
+            "integration-leaf", case["execution"]["setup"]["command"][-1]
+        )
+        expectations = " ".join(case["expectations"])
+        self.assertIn("own composition ACs", expectations)
+        self.assertIn("composite parent", expectations)
+        self.assertIn("sibling", expectations)
+        self.assertIn("fabricate", expectations)
+
+
     def test_packaged_preparation_contract(self):
         designer = (CANONICAL / "SKILL.md").read_text(encoding="utf-8")
         template = (CANONICAL / "references/task-brief-template.md").read_text(
@@ -249,6 +337,10 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
             "workflow-scope": (
                 "requests/unpackaged-direct-edit.md",
                 "Correct one heading",
+            ),
+            "integration-leaf": (
+                "docs/tasks/INT-9/brief.md",
+                "supplied producer outputs",
             ),
         }
 

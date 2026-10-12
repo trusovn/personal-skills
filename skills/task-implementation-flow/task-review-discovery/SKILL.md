@@ -233,7 +233,12 @@ overwrite an earlier report or redirect the durable report to an external
 runtime directory.
 
 Give the acceptance decision call the task brief, current scoped diff, this
-report, every blocked or unchecked row, and reviewer regression paths/commands.
+report, every blocked or unchecked row, reviewer regression paths/commands,
+and the applicable packaged preparation references — the verification design
+with its revision, the readiness/preflight reference, and the recorded
+decision context — for complete, clean guided reports as well as explicitly
+partial ones. An unpackaged direct edit hands off the supplied
+conversational context instead.
 
 ## Boundaries
 

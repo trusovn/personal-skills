@@ -355,6 +355,42 @@ class ReviewDiscoveryDisciplineTests(unittest.TestCase):
         self.assertIn("never claims its own authenticity", text)
 
 
+    def test_final_handoff_carries_packaged_preparation_references(self):
+        """INT-FLOW-001 I-04: complete clean guided reports still hand off
+        the applicable verification/readiness/context references; unpackaged
+        direct requests stay compact.
+        """
+        text = normalized(DISCOVERY_SKILL)
+        self.assertIn(
+            "Give the acceptance decision call the task brief, current "
+            "scoped diff, this report, every blocked or unchecked row, "
+            "reviewer regression paths/commands, and the applicable packaged "
+            "preparation references",
+            text,
+        )
+        self.assertIn(
+            "the verification design with its revision, the "
+            "readiness/preflight reference, and the recorded decision context",
+            text,
+        )
+        self.assertIn(
+            "for complete, clean guided reports as well as explicitly partial "
+            "ones",
+            text,
+        )
+        self.assertIn(
+            "An unpackaged direct edit hands off the supplied conversational "
+            "context instead",
+            text,
+        )
+        template = normalized(DISCOVERY_REPORT_TEMPLATE)
+        self.assertIn(
+            "Complete clean evidence routes to the separate acceptance "
+            "decision call with the applicable packaged preparation references",
+            template,
+        )
+
+
     def test_discovery_evals_preserve_inherited_setups_and_exercise_discovery_cases(self):
         discovery = json.loads(DISCOVERY_EVALS.read_text(encoding="utf-8"))
         acceptance = json.loads(ACCEPTANCE_EVALS.read_text(encoding="utf-8"))

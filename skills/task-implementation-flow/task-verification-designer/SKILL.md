@@ -181,13 +181,31 @@ task.
 
 ## Cross-task integration boundary
 
-This initial skill version does **not** own verification design across sibling
-tasks, decomposed-child composition, or parent-level integration closure.
+This skill does **not** own verification design across sibling tasks,
+decomposed-child composition, or parent-level integration closure.
 
-Task-local use of a real boundary is still allowed when needed to prove that
-single task's own ACs. If the supplied brief can only be verified by composing
-separate task outputs, report that limitation to the caller rather than
-inventing cross-task scenarios here.
+An executable integration leaf is different: when its own explicit ACs
+require composing supplied producer outputs at stated consumer boundaries,
+derive task-local scenarios for exactly those composition ACs. The leaf's
+brief and supplied inputs remain the authority; the composition stays inside
+the leaf's own acceptance scope. Task-local use of a real boundary is still
+allowed when needed to prove that single task's own ACs.
+
+Still refuse the boundary crossings this skill does not own:
+
+- a non-executable composite parent (`Task kind: composite` with
+  `Status: decomposed`): route the request to its dependency-ready
+  executable leaf instead of designing parent-level closure;
+- invented sibling requirements, system-wide integration strategy, or
+  parent-level composition closure: do not invent or own a sibling task's
+  requirements, system-wide integration strategy, or parent-level closure;
+- unavailable inputs or an unresolvable oracle: report the unavailable input
+  or capability to its owner or preflight, route an expected result the
+  authority cannot settle to task design or the decision owner, and never
+  fabricate a report or claim readiness to bypass the gap.
+
+Packaged preparation remains mandatory for that leaf: derived
+`verification.md` and a ready `preflight.md` still precede implementation.
 
 ## Output contract
 

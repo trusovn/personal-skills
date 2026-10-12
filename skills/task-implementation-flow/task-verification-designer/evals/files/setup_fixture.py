@@ -332,10 +332,79 @@ def workflow_scope() -> None:
     commit(root)
 
 
+def integration_leaf() -> None:
+    root = initialize("integration-leaf")
+    write(
+        root,
+        "docs/settlement-policy.md",
+        """
+        # Settlement policy
+
+        Settlement consumes the export handoff exactly once per item at the
+        consumer boundary. A missing or incompatible handoff is reported to
+        its owner, never invented or silently replaced.
+        """,
+    )
+    write(
+        root,
+        "docs/producer-outputs/export-handoff.json",
+        '{"items": [{"id": "EXP-1", "total": "102.00"}]}',
+    )
+    write(
+        root,
+        "docs/tasks/INT-9/brief.md",
+        """
+        # Task Brief: INT-9 — Compose export handoff into settlement
+
+        Status: ready
+        Task kind: executable
+        Authority: docs/settlement-policy.md
+
+        Producers: the completed export task's supplied producer outputs live
+        at `docs/producer-outputs/export-handoff.json`; the consumer boundary
+        is the settlement consume command.
+
+        AC-01: consuming a supplied producer output applies each settled item
+        exactly once at the consumer boundary.
+        AC-02: a missing or incompatible producer output is reported to its
+        owner and never invented or silently replaced.
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/INT-PARENT/brief.md",
+        """
+        # Task Brief: INT-PARENT
+
+        Status: decomposed
+        Task kind: composite
+        Children: INT-9
+        """,
+    )
+    write(
+        root,
+        "requests/integration-contrasts.md",
+        """
+        Contrasts for the INT-9 verification request:
+
+        - Sibling requirement: `INT-10` (export retention) is outside this
+          leaf's authority; the request must not invent or own it.
+        - System-wide: an end-to-end export-to-archive integration strategy
+          is not owned by this leaf's verification design.
+        - Unavailable: the decisive settlement oracle's expected result is
+          not stated by any supplied authority, and the unavailable input or
+          capability must be reported to its owner instead of fabricating a
+          report or claiming readiness.
+        """,
+    )
+    commit(root)
+
+
 SCENARIOS = {
     "ambiguous": ambiguous,
     "coverage-closure": coverage_closure,
     "coverage-revision": coverage_revision,
+    "integration-leaf": integration_leaf,
     "lifecycle": lifecycle,
     "preparation-routes": preparation_routes,
     "small-explicit": small_explicit,

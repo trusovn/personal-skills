@@ -216,11 +216,28 @@ class ComposedReviewFlowGuideTests(unittest.TestCase):
 
         maintainability = normalized(MAINTAINABILITY_SKILL)
         self.assertIn(
-            "proceed to fresh independent `task-review-discovery` evidence and the separate functional `task-acceptance-review` decision when that stage is required",
+            "name the first outstanding stage and the complete ordered "
+            "remainder of the submission route: applicable "
+            "`task-contract-registry-updater` synchronization when the flow "
+            "includes a registry stage and the change added, changed, or "
+            "removed a durable cross-task contract, then fresh independent "
+            "`task-review-discovery` evidence, then the separate functional "
+            "`task-acceptance-review` decision when that stage is required",
             maintainability,
         )
         self.assertIn(
-            "repeat architecture gate + fresh maintainability review before fresh discovery evidence and fresh functional acceptance",
+            "re-enter only the conditional stages whose reviewed scope the "
+            "correction affected",
+            maintainability,
+        )
+        self.assertNotIn(
+            "only after `ACCEPT`, proceed to fresh independent "
+            "`task-review-discovery`",
+            maintainability,
+        )
+        self.assertNotIn(
+            "repeat architecture gate + fresh maintainability review before "
+            "fresh discovery evidence and fresh functional acceptance",
             maintainability,
         )
 

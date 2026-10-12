@@ -4,10 +4,13 @@
 Each scenario creates a Git workspace holding a legitimate task, a committed
 baseline, and changed production bytes under review. The four-blockers
 scenario introduces four distinct, independently observable maintainability
-blockers plus one non-blocking style preference. Oracle records next to the
-workspace describe the independent defect observations and the complete and
-genuine-stop reporting expectations; they are qualification inputs, not
-durable review reports.
+blockers plus one non-blocking style preference. The correction-round
+scenario stages a prior durable report with those four finding IDs and a
+correction that applies only MNT-B2's smallest correction direction, so the
+next review must preserve finding identity. Oracle records next to the
+workspace describe the independent defect observations and the complete,
+genuine-stop, and correction-round reporting expectations; they are
+qualification inputs, not durable review reports.
 """
 
 from pathlib import Path
@@ -404,6 +407,80 @@ STOP_FACTS = f'''
 '''
 
 
+PRICING_CORRECTED = '''
+"""Fee policy. This module is the single source of truth for billing rates."""
+
+FEE_RATE = 0.02
+SURCHARGE_RATES = {"standard": 0.015, "high": 0.03}
+
+
+def fee(subtotal):
+    return round(subtotal * FEE_RATE, 2)
+
+
+def surcharge(subtotal, days_late):
+    """Approved late-payment surcharge (AC-01)."""
+    if days_late <= 0:
+        return 0.0
+    tier = "standard" if days_late <= 30 else "high"
+    return round(subtotal * SURCHARGE_RATES[tier], 2)
+'''
+
+PRIOR_REPORT = f'''
+# Maintainability review: {TASK} — report 01
+
+Fixture-supplied prior durable report for the correction-round scenario; it is
+staged input history, not an actual review output and not an oracle.
+
+VERDICT: CHANGES_REQUESTED
+ARCHITECTURE_GATE: PASS
+
+BLOCKERS:
+<one numbered entry per confirmed blocker, ordered by architectural impact>
+1. MNT-B1 — src/billing/service.py
+   - Problem: duplicated late-rate policy.
+   - Current disposition: confirmed
+2. MNT-B2 — src/billing/pricing.py
+   - Problem: domain policy coupled to concrete sqlite persistence.
+   - Current disposition: confirmed
+3. MNT-B3 — src/billing/receipts.py
+   - Problem: non-deterministic receipt rendering without a seam.
+   - Current disposition: confirmed
+4. MNT-B4 — src/billing/receipts.py and src/billing/service.py
+   - Problem: payment-kind dispatch duplicated across modules.
+   - Current disposition: confirmed
+
+WARNINGS:
+- Non-blocking preference control in src/billing/service.py (describe f-string).
+'''
+
+CORRECTION_FACTS = f"""
+# Correction-round facts: {TASK} (correction-round scenario)
+
+- Prior report: docs/tasks/{TASK}/reviews/maintainability-01.md confirmed
+  MNT-B1, MNT-B2, MNT-B3, and MNT-B4 on the reviewed bytes with full
+  evidence.
+- Applied correction: MNT-B2's smallest correction direction — `pricing.py`
+  keeps the declared rate tables as the single source of truth and no longer
+  imports `SqliteStore` or reads `store.connection`; no other reviewed byte
+  changed.
+- Real observations proving the correction: `pricing.fee(100)` returns `2.0`
+  without creating `billing.db`; seeded sqlite rates no longer change
+  `pricing.surcharge(100, 10)` (`1.5`); the MNT-B1, MNT-B3, and MNT-B4
+  defect oracles still reproduce on the current bytes.
+- Expected next-report identity obligations: MNT-B1, MNT-B3, and MNT-B4 keep
+  their unchanged IDs despite any display reorder; MNT-B2 keeps its ID with
+  its current disposition `corrected` plus that current evidence; a newly
+  confirmed finding receives an identity no earlier report or resolved
+  finding already used (next: MNT-B5) — resolved IDs are not recycled.
+- The prior durable report reviews/maintainability-01.md remains unchanged;
+  the next durable report is reviews/maintainability-02.md.
+- A genuine stop before bounded coverage completes retains every confirmed
+  finding with its full evidence, its stable ID, and its current disposition,
+  plus the outstanding coverage, the stop reason, and the next owner.
+"""
+
+
 def stage_baseline(root: Path, gates_yaml: str) -> None:
     write(root, "AGENTS.md", AGENTS_RULES)
     write(root, "docs/tasks/MNT-42/brief.md", BRIEF)
@@ -441,7 +518,17 @@ def genuine_stop() -> None:
     write(RUNS, "MNT-42/genuine-stop-facts.md", STOP_FACTS)
 
 
+def correction_round() -> None:
+    root = initialize("maintainability-correction")
+    stage_baseline(root, GATES_RUNNABLE)
+    stage_changed(root)
+    write(root, f"docs/tasks/{TASK}/reviews/maintainability-01.md", PRIOR_REPORT)
+    write(root, "src/billing/pricing.py", PRICING_CORRECTED)
+    write(RUNS, f"{TASK}/correction-round-facts.md", CORRECTION_FACTS)
+
+
 SCENARIOS = {
+    "correction-round": correction_round,
     "four-blockers": four_blockers,
     "genuine-stop": genuine_stop,
 }

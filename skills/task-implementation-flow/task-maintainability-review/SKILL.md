@@ -41,7 +41,15 @@ If this session authored any reviewed production bytes:
 - you may report findings to the implementer role;
 - you **must not** emit `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE` as an independent verdict for those bytes.
 
-Every production correction invalidates the previous maintainability verdict. Review corrected bytes in a fresh reviewer session.
+Every confirmed finding keeps a stable identity across reports. A production
+correction that changes bytes inside this review's reviewed scope invalidates
+this verdict for the corrected bytes. Re-entry follows actual affected
+reviewed scope and current evidence: demonstrably unaffected scope retains
+this review as current evidence while that evidence stays applicable to the
+submitted bytes. Stale, missing, or inapplicable proof never counts as a
+completed stage — a prior verdict's label alone is not current evidence, and
+the affected stage stays owed in its ordered position. Review affected
+corrected bytes in a fresh reviewer session.
 
 ## Inputs
 
@@ -207,10 +215,19 @@ If not, keep it in `WARNINGS` or omit it.
 
 Report **every confirmed blocker** found within the bounded review scope, ordered by architectural impact.
 
+Give every confirmed finding a **stable finding ID** such as `MNT-01`,
+independent of display order. Identity is a producer obligation, not a
+fixture convention: prior reports remain unchanged, a resolved ID is never
+recycled, and a newly confirmed finding receives an identity no earlier
+report or resolved finding already used. After a correction round, the next
+report keeps the surviving findings' IDs and the corrected finding's ID with
+its current disposition and evidence.
+
 Finding count or verdict sufficiency cannot end discovery, cap the output, or relegate a confirmed blocker to warnings to keep the list short. Completeness does not authorize a wider survey or a quota of findings; scope and materiality still decide what belongs in the blocker list.
 
 Each blocker must include:
 
+- its stable finding ID (for example `MNT-01`)
 - file/location or concrete dependency edge
 - the exact introduced/worsened problem
 - evidence
@@ -260,7 +277,7 @@ Do not use `INCONCLUSIVE` merely because you cannot prove the design is globally
 
 #### Genuine stops
 
-A specific permission, capability, or safe-budget limit — never finding count or verdict sufficiency — is the only reason to stop before the bounded review scope is complete. On a genuine stop, retain every confirmed finding with its full evidence, name the outstanding coverage, the concrete stop reason, and the next owner, and treat missing required proof as an incomplete review; it cannot become `ACCEPT` or a claim of cleanly completed review.
+A specific permission, capability, or safe-budget limit — never finding count or verdict sufficiency — is the only reason to stop before the bounded review scope is complete. On a genuine stop, retain every confirmed finding with its full evidence, its stable ID, and its current disposition, name the outstanding coverage, the concrete stop reason, and the next owner, and treat missing required proof as an incomplete review; it cannot become `ACCEPT` or a claim of cleanly completed review.
 
 ## Output
 
@@ -272,11 +289,12 @@ ARCHITECTURE_GATE: PASS | FAIL | NOT_AVAILABLE
 
 BLOCKERS:
 <one numbered entry per confirmed blocker, ordered by architectural impact, or NONE>
-1. <file/location>
+1. MNT-01 — <file/location>
    - Problem: <concrete introduced/worsened issue>
    - Evidence: <diff/dependency/gate evidence>
    - Maintainability impact: <why future change/refactor becomes riskier>
    - Smallest correction direction: <bounded direction, not redesign>
+   - Current disposition: <confirmed, or resolved/corrected with current evidence>
 
 WARNINGS:
 - <non-blocking evidence worth carrying forward, max 3, or NONE>
@@ -293,7 +311,7 @@ If this session authored reviewed production bytes, output instead:
 SELF_CHECK_ONLY
 ARCHITECTURE_GATE: PASS | FAIL | NOT_AVAILABLE
 FINDINGS:
-- <finding or NONE>
+- <MNT-NN finding or NONE>
 ```
 
 and do not issue an independent verdict.
@@ -310,9 +328,27 @@ For `CHANGES_REQUESTED`:
 2. fix only the blockers without changing requested behavior unnecessarily;
 3. rerun the canonical architecture gate;
 4. use a **fresh** `task-maintainability-review` session on the corrected bytes;
-5. only after `ACCEPT`, proceed to fresh independent `task-review-discovery` evidence and the separate functional `task-acceptance-review` decision when that stage is required.
+5. only after `ACCEPT`, name the first outstanding stage and the complete
+   ordered remainder of the submission route: applicable
+   `task-contract-registry-updater` synchronization when the flow includes a
+   registry stage and the change added, changed, or removed a durable
+   cross-task contract, then fresh independent `task-review-discovery`
+   evidence, then the separate functional `task-acceptance-review` decision
+   when that stage is required.
 
-If functional acceptance later changes production bytes, repeat architecture gate + fresh maintainability review before fresh discovery evidence and fresh functional acceptance.
+Naming the route hands off the next owners without executing any named
+stage; this review never launches, delegates to, or waits for them. Include
+a stage only when it is required and still outstanding for the submitted
+bytes: current applicable evidence for a completed stage leaves it out of
+the outstanding remainder, applicable registry work cannot be dropped, and
+an absent registry stage cannot be invented.
+
+If functional acceptance later changes production bytes, re-enter only the
+conditional stages whose reviewed scope the correction affected — the
+required architecture gate and a fresh maintainability review when their
+reviewed scope changed, and applicable registry synchronization when the
+registry stage applied and the correction affected its scope — before fresh
+discovery evidence and fresh functional acceptance.
 
 ## Definition of Done
 

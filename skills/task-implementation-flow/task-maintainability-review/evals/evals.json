@@ -33,6 +33,19 @@
         "It identifies `docs/tasks/PAY-14/reviews/maintainability-01.md` as the canonical next path.",
         "It does not overwrite prior reports, redirect the report to runtime storage, or continue as if the path mismatch were harmless."
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "The fixture is already staged in the current workspace. The prior durable report `docs/tasks/MNT-42/reviews/maintainability-01.md` confirmed MNT-B1 through MNT-B4 on the reviewed bytes; the correction then applied only MNT-B2's smallest correction direction, and the current bytes still hold the other three findings. Perform a fresh independent maintainability review of the corrected bytes and record the durable report when the report-path contract is valid.",
+      "expected_output": "A fresh review of the corrected bytes that preserves finding identity across the correction round and writes only the next numbered durable report.",
+      "files": [],
+      "expectations": [
+        "MNT-B1, MNT-B3, and MNT-B4 keep their unchanged IDs despite any display reorder, each with full evidence and no finding cap.",
+        "MNT-B2 keeps its ID with its current corrected disposition and the current evidence that the sqlite coupling is gone.",
+        "A newly confirmed finding receives an identity no earlier report or resolved finding already used; resolved IDs are not recycled.",
+        "The review writes only `docs/tasks/MNT-42/reviews/maintainability-02.md` and does not rewrite the prior report or redirect it to runtime storage.",
+        "The report names the applicable conditional remainder after this review — registry synchronization when it applies, then fresh discovery evidence and the separate acceptance decision — without implying that naming a stage executes it."
+      ]
     }
   ]
 }

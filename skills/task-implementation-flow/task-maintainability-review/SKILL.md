@@ -203,9 +203,11 @@ For each warning ask:
 
 If not, keep it in `WARNINGS` or omit it.
 
-### 9. Keep blockers finite and actionable
+### 9. Report every confirmed blocker
 
-Report at most **3 blockers**, ordered by architectural impact.
+Report **every confirmed blocker** found within the bounded review scope, ordered by architectural impact.
+
+Finding count or verdict sufficiency cannot end discovery, cap the output, or relegate a confirmed blocker to warnings to keep the list short. Completeness does not authorize a wider survey or a quota of findings; scope and materiality still decide what belongs in the blocker list.
 
 Each blocker must include:
 
@@ -245,8 +247,6 @@ Use when at least one is true:
 - current task introduces/worsens a hard architecture violation;
 - semantic review finds a concrete high-impact cohesion/coupling/locality/testability/duplication/abstraction regression with actionable evidence.
 
-Do not keep searching for minor issues after enough decisive blockers are established.
-
 #### `INCONCLUSIVE`
 
 Use when required evidence cannot be established responsibly, for example:
@@ -258,6 +258,10 @@ Use when required evidence cannot be established responsibly, for example:
 
 Do not use `INCONCLUSIVE` merely because you cannot prove the design is globally optimal.
 
+#### Genuine stops
+
+A specific permission, capability, or safe-budget limit — never finding count or verdict sufficiency — is the only reason to stop before the bounded review scope is complete. On a genuine stop, retain every confirmed finding with its full evidence, name the outstanding coverage, the concrete stop reason, and the next owner, and treat missing required proof as an incomplete review; it cannot become `ACCEPT` or a claim of cleanly completed review.
+
 ## Output
 
 Return this compact form:
@@ -267,7 +271,8 @@ VERDICT: ACCEPT | CHANGES_REQUESTED | INCONCLUSIVE
 ARCHITECTURE_GATE: PASS | FAIL | NOT_AVAILABLE
 
 BLOCKERS:
-1. <file/location or NONE>
+<one numbered entry per confirmed blocker, ordered by architectural impact, or NONE>
+1. <file/location>
    - Problem: <concrete introduced/worsened issue>
    - Evidence: <diff/dependency/gate evidence>
    - Maintainability impact: <why future change/refactor becomes riskier>
@@ -316,7 +321,7 @@ If functional acceptance later changes production bytes, repeat architecture gat
 - Existing untouched debt is not relitigated as a task blocker.
 - Hard failures are separated from advisory signals.
 - Semantic review is limited to the changed design and immediate architectural impact.
-- No more than 3 concrete blockers are reported.
+- Every confirmed concrete blocker in the reviewed scope is reported; count is neither a limit nor a quota.
 - Functional/specification acceptance was left to the functional reviewer.
 
 ## Anti-patterns
@@ -329,7 +334,7 @@ If functional acceptance later changes production bytes, repeat architecture gat
 - Redesigning product architecture during read-only review.
 - Rechecking every acceptance criterion and starving the architecture question of context.
 - Editing the architecture baseline to make the current task pass.
-- Reporting ten low-value nits instead of the few material maintainability risks.
+- Padding the blocker list with low-value nits, preferences, or speculative redesigns instead of the confirmed material maintainability risks.
 
 
 <!-- contract-registry-flow:task-maintainability-review:begin -->

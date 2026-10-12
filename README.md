@@ -104,6 +104,48 @@ To refresh the project-local installation in this source repository itself, run:
 python3 scripts/install_development_skills.py .
 ```
 
+### Checking the installed profile for drift
+
+The installer also has an explicit read-only check mode that compares an
+installed development profile with its canonical source without changing
+anything:
+
+```bash
+python3 /path/to/personal-skills/scripts/install_development_skills.py \
+  --check /path/to/target-repo
+```
+
+The check never installs, stages copies, refreshes, writes files or Git
+metadata, or starts an evidence run. It compares every file in each selected
+skill package (references, evals, and setup files included), the installed
+profile guide, every explicitly managed shared script/config/schema under
+`.agents/scripts/`, and the marked `AGENTS.md` block against the source
+projection, applying the same transient exclusions as installation
+(`__pycache__`, `*.pyc`, `.DS_Store`, `node_modules`). Source-side
+enumeration follows directory symlinks exactly as install-time copying
+does, so content linked into a selected source package is compared like any
+other file the installer copies; installed trees are never traversed
+through inner symlinks. Acyclic directory aliases — several links to one
+directory, or a link to an existing sibling directory — are copied by the
+installer and therefore compared at every linked path; only a link that
+closes a directory cycle back to one of its own ancestors fails with
+`cannot enumerate source skill directory: <path>: directory cycle` and
+exit 2. Unmanaged bytes never
+cause drift: unselected skills, non-selected scripts, other `.agents`
+content, and `AGENTS.md` text outside the marked block are not compared.
+
+Results and exit semantics are stable for human and subprocess callers: the
+check prints one JSON object with `match`, `compared_paths`, and the
+changed, missing, and unexpected managed paths in `differences`; exit 0 means
+the managed projection matches, exit 1 means managed drift (including a
+missing installation), and exit 2 means the check itself failed — unusable
+source or target, required content that cannot be read or whose directory
+cannot be enumerated, or malformed/ambiguous `AGENTS.md` markers — and a
+failure never reports a match. Source inputs are
+resolved relative to the installer's own location, not the caller's working
+directory. The check compares only current bytes and retains no versions:
+refresh deliberately by rerunning the installer between check invocations.
+
 **Maintenance contract for future skill changes:**
 `scripts/install_development_skills.py` is part of the distribution surface.
 Any change that renames, moves, adds, or removes a skill that belongs in the

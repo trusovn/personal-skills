@@ -55,6 +55,45 @@ ownership, dependencies, scenario authority, isolation, oracle structure or
 harness behavior. An ordinary assertion edit alone does not require this review;
 a tests-only label never waives an affected required review.
 
+## Checking the installed profile
+
+The installer also supports a read-only `--check` comparison of the installed
+profile with its canonical source:
+
+```bash
+python3 /path/to/personal-skills/scripts/install_development_skills.py \
+  --check /path/to/this-repository
+```
+
+The check compares every file in each selected skill package (references,
+evals, and setup files included), the installed profile guide, every
+explicitly managed shared script/config/schema, and the marked `AGENTS.md`
+block, using the same transient exclusions as installation. Source-side
+enumeration follows directory symlinks exactly as install-time copying
+does, so content linked into a selected source package is compared like any
+other file the installer copies; installed trees are never traversed
+through inner symlinks. Acyclic directory aliases — several links to one
+directory, or a link to an existing sibling directory — are copied by the
+installer and therefore compared at every linked path; only a link that
+closes a directory cycle back to one of its own ancestors fails with
+`cannot enumerate source skill directory: <path>: directory cycle` and
+exit 2. Unmanaged bytes —
+unselected skills, non-selected scripts, other `.agents` content, and
+`AGENTS.md` text outside the marked block — never cause drift. It never
+installs, stages copies, refreshes, writes files or Git metadata, or starts an
+evidence run.
+
+It prints one JSON object with `match`, `compared_paths`, and the changed,
+missing, and unexpected managed paths in `differences`: exit 0 means the
+managed projection matches, exit 1 means managed drift (including a missing
+installation), and exit 2 means the check itself failed — unusable source or
+target, required content that cannot be read or whose directory cannot be
+enumerated, or malformed/ambiguous `AGENTS.md` markers — and a failure never
+reports a match. Source is resolved relative to
+the installer's own location, not the caller's working directory. The check
+compares only current bytes and retains no versions: refresh deliberately by
+rerunning the installer between check invocations.
+
 ## Skill reference
 
 | Skill | What it does | Requires | Produces |

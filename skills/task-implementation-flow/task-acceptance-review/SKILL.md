@@ -359,6 +359,8 @@ Review continuation:
 - Iteration / current byte identity: <value when available>
 - Coverage rows: <all row IDs and results>
 - Finding IDs: <all stable finding IDs or none>
+- Finding/scenario continuity: <prior statuses, current producer-attributed evidence, incomplete reasons and separate correction/evidence/authority owners; influenced sibling surfaces>
+- Preparation/context: <brief, verification revision, preflight and context references>
 - Reviewer regressions: <paths and exact commands or none>
 - Aggregate gate (consumed): <status and reason>
 - Next: <exact route>
@@ -367,7 +369,10 @@ Review continuation:
 Say `No findings.` when evidence is clean. Do not create a report file unless
 the user requested one. A continuation block is required for
 `CHANGES_REQUESTED`, `INCONCLUSIVE`, `SELF_CHECK_ONLY`, or any decision with
-blocked/unchecked rows; keep it compact and copyable.
+blocked/unchecked rows; keep it compact and copyable. The continuation
+preserves every finding/scenario ID with its prior status, current
+producer-attributed evidence, incomplete reason and separate
+correction/evidence/authority owner; do not compress away a required field.
 
 For high-assurance decision, read
 `references/acceptance-report-template.md`, write exactly one report, and

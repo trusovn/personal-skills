@@ -187,6 +187,22 @@ class ReviewerDisciplineTests(unittest.TestCase):
         )
 
 
+    def test_guided_continuation_requires_scenario_history_and_separate_owners(self):
+        text = ACCEPTANCE_SKILL.read_text(encoding="utf-8")
+        start = text.index("Review continuation:")
+        end = text.index("```", start)
+        block = text[start:end]
+
+        self.assertIn("Finding/scenario continuity", block)
+        self.assertIn(
+            "prior statuses, current producer-attributed evidence, incomplete reasons and separate correction/evidence/authority owners",
+            block,
+        )
+        self.assertIn("influenced sibling surfaces", block)
+        self.assertIn("Preparation/context", block)
+        self.assertIn("brief, verification revision, preflight and context references", block)
+
+
 
 class ContextualDispositionContractTests(unittest.TestCase):
     """Fail-first contract checks for the contextual rubric and recording rules.

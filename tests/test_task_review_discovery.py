@@ -493,6 +493,22 @@ class ReviewDiscoveryDisciplineTests(unittest.TestCase):
         self.assertIn("SELF_CHECK_ONLY", text)
 
 
+    def test_guided_continuation_requires_scenario_history_and_separate_owners(self):
+        text = DISCOVERY_SKILL.read_text(encoding="utf-8")
+        start = text.index("Discovery continuation:")
+        end = text.index("```", start)
+        block = text[start:end]
+
+        self.assertIn("Finding/scenario continuity", block)
+        self.assertIn(
+            "prior statuses, current producer-attributed evidence, incomplete reasons and separate correction/evidence/authority owners",
+            block,
+        )
+        self.assertIn("influenced sibling surfaces", block)
+        self.assertIn("Preparation/context", block)
+        self.assertIn("brief, verification revision, preflight and context references", block)
+
+
 
 class DiscoveryLateOmissionFixtureTests(unittest.TestCase):
     """Public-entry probes for both late-omission recovery fixtures.

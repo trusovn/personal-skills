@@ -210,6 +210,8 @@ Discovery continuation:
 - Iteration / current byte identity: <value when available>
 - Coverage rows: <all row IDs and results>
 - Finding IDs: <all stable finding IDs or none>
+- Finding/scenario continuity: <prior statuses, current producer-attributed evidence, incomplete reasons and separate correction/evidence/authority owners; influenced sibling surfaces>
+- Preparation/context: <brief, verification revision, preflight and context references>
 - Reviewer regressions: <paths and exact commands or none>
 - Aggregate gate: <status, exact command/owner, reason>
 - Next: <one exact route>
@@ -217,8 +219,10 @@ Discovery continuation:
 
 Say `No findings.` when evidence is clean and do not manufacture a defect. A
 continuation block is required for partial coverage or any review with
-blocked or unchecked rows; keep it compact and copyable. Do not compress away a
-required field in guided output.
+blocked or unchecked rows; keep it compact and copyable. Preserve every
+finding/scenario ID with its prior status, current producer-attributed
+evidence, incomplete reason and separate correction/evidence/authority owner
+through the handoff. Do not compress away a required field in guided output.
 
 For durable discovery, read `references/discovery-report-template.md`, write
 exactly one report, and include the full scope and command records. Write it to

@@ -59,6 +59,368 @@ MAINTAINABILITY_FIXTURE = (
 )
 
 
+T0051_PACKAGE = ROOT / "docs" / "tasks" / "T-005.1"
+T0051_FIXTURES = T0051_PACKAGE / "fixtures.md"
+T0051_EVIDENCE = T0051_PACKAGE / "evidence"
+TASKS_INDEX = ROOT / "docs" / "tasks" / "index.json"
+INT_FLOW_RESULTS = ROOT / "docs" / "tasks" / "INT-FLOW-001" / "results.md"
+
+T0051_RECORD_CASE_SOURCE = {
+    "ROUTE-01": "CCR-01",
+    "FIND-01": "CCR-04",
+    "ROWS-01": "CCR-03",
+    "REV-01": "CCR-07",
+    "EFF-01": "CCR-02",
+    "GATE-01": "CCR-06",
+    "DISP-01": "CCR-08",
+}
+T0051_FIXTURE_SUFFIX = {
+    "acceptance": "task-acceptance-review/evals/files/setup_fixture.py",
+    "discovery": "task-review-discovery/evals/files/setup_fixture.py",
+}
+
+
+def t0051_inventory() -> dict:
+    """Load the machine-readable T-005.1 case inventory from fixtures.md."""
+    text = T0051_FIXTURES.read_text(encoding="utf-8")
+    start = text.index("```json\n") + len("```json\n")
+    end = text.index("\n```", start)
+    return json.loads(text[start:end])
+
+
+def t0051_expected_ids() -> set:
+    """Every inherited or declared identity the inventory must carry."""
+    t0024 = json.loads(COMPOSITION_PATH.read_text(encoding="utf-8"))
+    t0034 = json.loads(T0034_COMPOSITION_PATH.read_text(encoding="utf-8"))
+    ids = {entry["id"] for entry in t0024["inherited_case_inventory"]}
+    ids |= {record["id"] for record in t0024["records"]}
+    ids |= {ref["id"] for ref in t0034["child_case_references"]}
+    ids |= {record["id"] for record in t0034["records"]}
+    ids |= {"IFQ-01", "IFQ-02", "IFQ-03"}
+    return ids
+
+
+def t0051_audit_problems(inventory: dict, expected_ids: set) -> list:
+    """Audit one inventory against inherited records and current selectors.
+
+    Returns the complete problem list; an empty list means the audit passes.
+    Shared by the passing audit and the wrong control so the discrimination
+    is proven against the same oracle.
+    """
+    problems: list = []
+    entries = inventory.get("case_inventory", [])
+    seen = [entry.get("id") for entry in entries]
+    for cid in sorted(expected_ids - set(seen)):
+        problems.append(f"{cid}: missing from inventory")
+    for cid in sorted(set(seen) - expected_ids):
+        problems.append(f"{cid}: not an inherited or declared identity")
+    duplicates = sorted({cid for cid in seen if seen.count(cid) > 1})
+    for cid in duplicates:
+        problems.append(f"{cid}: duplicate inventory entry")
+
+    t0024 = json.loads(COMPOSITION_PATH.read_text(encoding="utf-8"))
+    t0034 = json.loads(T0034_COMPOSITION_PATH.read_text(encoding="utf-8"))
+    t0024_cases = {entry["id"]: entry for entry in t0024["inherited_case_inventory"]}
+    t0024_records = {record["id"]: record for record in t0024["records"]}
+    t0034_refs = {ref["id"]: ref for ref in t0034["child_case_references"]}
+    t0034_records = {record["id"]: record for record in t0034["records"]}
+    registered = set(json.loads(TASKS_INDEX.read_text(encoding="utf-8"))["tasks"])
+    intflow_text = " ".join(INT_FLOW_RESULTS.read_text(encoding="utf-8").split())
+    allowed_levels = {"structural_tests", "actual_behavior", "unrun_agent_compliance"}
+    required_fields = (
+        "kind",
+        "inherited_from",
+        "setup",
+        "workspace",
+        "authority",
+        "expected_oracle",
+        "producer_consumer",
+        "owning_leaf",
+        "evidence_level",
+        "current_evidence",
+        "role_boundary",
+    )
+    for entry in entries:
+        cid = entry.get("id", "<no-id>")
+        for field in required_fields:
+            if not entry.get(field):
+                problems.append(f"{cid}: empty {field}")
+        if entry.get("owning_leaf") not in registered:
+            problems.append(
+                f"{cid}: owning_leaf {entry.get('owning_leaf')!r} is not a registered task"
+            )
+        if entry.get("evidence_level") not in allowed_levels:
+            problems.append(
+                f"{cid}: unknown evidence_level {entry.get('evidence_level')!r}"
+            )
+        owner = entry.get("owner_test")
+        if owner and not (ROOT / owner).is_file():
+            problems.append(f"{cid}: owner test {owner} does not exist")
+        fixture = entry.get("fixture")
+        fixture_text = None
+        if fixture:
+            if not (ROOT / fixture).is_file():
+                problems.append(f"{cid}: fixture {fixture} does not exist")
+            else:
+                fixture_text = (ROOT / fixture).read_text(encoding="utf-8")
+        scenarios = list(entry.get("scenarios") or [])
+        if entry.get("scenario"):
+            scenarios.append(entry["scenario"])
+        if fixture_text is not None:
+            for scenario in scenarios:
+                if f'"{scenario}":' not in fixture_text:
+                    problems.append(
+                        f"{cid}: scenario {scenario!r} is not dispatched by {fixture}"
+                    )
+        if cid in t0024_cases:
+            source = t0024_cases[cid]["source"]
+            if entry.get("skill") != source["skill"]:
+                problems.append(f"{cid}: skill does not match T-002.4 inventory")
+            if entry.get("eval_id") != source["eval_id"]:
+                problems.append(f"{cid}: eval_id does not match T-002.4 inventory")
+            if entry.get("scenario") != source.get("scenario"):
+                problems.append(
+                    f"{cid}: scenario does not match T-002.4 inventory selector"
+                )
+        if cid in t0024_records:
+            record = t0024_records[cid]
+            expected_scenarios = (
+                [record["scenario"]] if "scenario" in record else list(record["scenarios"])
+            )
+            if entry.get("scenarios") != expected_scenarios:
+                problems.append(
+                    f"{cid}: scenarios do not match T-002.4 record"
+                )
+            if not str(entry.get("fixture", "")).endswith(
+                T0051_FIXTURE_SUFFIX[record["fixture"]]
+            ):
+                problems.append(f"{cid}: fixture does not match T-002.4 record")
+        if cid in t0034_refs:
+            ref = t0034_refs[cid]
+            if entry.get("owner_test") != ref["owner_test"]:
+                problems.append(
+                    f"{cid}: owner_test does not match T-003.4 reference"
+                )
+            if entry.get("fixture") != ref["fixture"]:
+                problems.append(f"{cid}: fixture does not match T-003.4 reference")
+            if entry.get("scenarios") != list(ref["scenarios"]):
+                problems.append(
+                    f"{cid}: scenarios do not match T-003.4 reference"
+                )
+        if cid in T0051_RECORD_CASE_SOURCE:
+            ref = t0034_refs[T0051_RECORD_CASE_SOURCE[cid]]
+            if (
+                entry.get("fixture") != ref["fixture"]
+                or entry.get("scenarios") != list(ref["scenarios"])
+            ):
+                problems.append(
+                    f"{cid}: does not match its case_source "
+                    f"{T0051_RECORD_CASE_SOURCE[cid]}"
+                )
+            if cid not in t0034_records:
+                problems.append(f"{cid}: missing from T-003.4 records")
+        if cid.startswith("IFQ-"):
+            provenance = entry.get("intflow_provenance")
+            if not provenance or " ".join(provenance.split()) not in intflow_text:
+                problems.append(
+                    f"{cid}: INT-FLOW-001 provenance is not quoted from "
+                    "docs/tasks/INT-FLOW-001/results.md"
+                )
+        for pointer in entry.get("current_evidence", "").split(";"):
+            candidate = pointer.split(" (")[0].strip()
+            if candidate.startswith(("docs/", "tests/", "skills/")) and not (
+                ROOT / candidate
+            ).exists():
+                problems.append(
+                    f"{cid}: evidence pointer {candidate!r} does not resolve"
+                )
+    return problems
+
+
+T0051_MANIFEST_HEADING = "## Consumer-visible handoff input manifests"
+T0051_HANDOFF_LEAVES = ("T-005.2", "T-005.3", "T-005.4", "T-005.5", "T-005.6")
+# Held-back records and answer keys that must never enter a consumer input
+# set: the maintainability fixture's own contract keeps its oracle and the
+# correction-round facts outside the reviewer workspace, and the route-cases
+# change-effect key holds the expected submission routes.
+T0051_REQUIRED_EVALUATOR_ONLY = {
+    "four-blockers": {
+        "task-runs/MNT-42/maintainability-oracle.md": "expected answers",
+    },
+    "correction-round": {
+        "task-runs/MNT-42/correction-round-facts.md": "expected answers",
+    },
+    "route-cases": {
+        "route-cases/change-effects/cases.json": "expected answers",
+    },
+}
+# Producer-output positions the placeholder table claims that no staging
+# supplies; only the named actual role call fills them.
+T0051_REQUIRED_NOT_STAGED = {
+    "queue-defect": {"task-runs/QR-12/discovery-01.md"},
+    "integration-leaf": {"integration-leaf/docs/tasks/INT-9/verification.md"},
+    "four-blockers": {
+        "maintainability/docs/tasks/MNT-42/reviews/maintainability-01.md"
+    },
+    "correction-round": {
+        "maintainability-correction/docs/tasks/MNT-42/reviews/maintainability-02.md"
+    },
+}
+# The staged input sets each claimed handoff must identify.
+T0051_REQUIRED_HANDOFF_STAGINGS = {
+    "T-005.2": {"queue-defect", "integration-leaf"},
+    "T-005.3": {
+        "queue-defect",
+        "mixed-conditions-authorized-decision",
+        "contextual-risk-blockers-decision",
+    },
+    "T-005.4": {"known-issue-consumption-decision"},
+    "T-005.5": {
+        "four-blockers",
+        "correction-round",
+        "route-cases",
+        "record-correction",
+        "discovery-late-omission-clean",
+    },
+    "T-005.6": {"t0051-package"},
+}
+
+
+def t0051_manifests() -> dict:
+    """Load the machine-readable handoff input manifests from fixtures.md."""
+    text = T0051_FIXTURES.read_text(encoding="utf-8")
+    start = text.index(T0051_MANIFEST_HEADING)
+    start = text.index("```json\n", start) + len("```json\n")
+    return json.loads(text[start : text.index("\n```", start)])
+
+
+def t0051_manifest_problems(manifest: dict, roots: dict) -> list:
+    """Audit the handoff input manifests against real staged input sets.
+
+    ``roots`` maps staging ids to the directory the entry's paths must
+    resolve against (a staged disposable workspace or the repository root);
+    ids absent from ``roots`` get structural checks only. Returns the
+    complete problem list; an empty list means the audit passes. Shared by
+    the passing audit and the wrong control so the discrimination is proven
+    against the same oracle.
+    """
+    problems: list = []
+    registered = set(json.loads(TASKS_INDEX.read_text(encoding="utf-8"))["tasks"])
+    inventory_ids = t0051_expected_ids()
+    sets_by_id: dict = {}
+    set_ids: list = []
+    for staged in manifest.get("staged_input_sets", []):
+        sid = staged.get("staging_id", "<no-set>")
+        set_ids.append(sid)
+        if sid in sets_by_id:
+            problems.append(f"{sid}: duplicate staged input set")
+            continue
+        sets_by_id[sid] = staged
+    handoffs = manifest.get("handoff_manifests", [])
+    claimed = {
+        ref for handoff in handoffs for ref in handoff.get("staging_refs", [])
+    }
+    leaves = [handoff.get("owning_leaf") for handoff in handoffs]
+    for leaf in T0051_HANDOFF_LEAVES:
+        if leaf not in leaves:
+            problems.append(f"{leaf}: missing handoff manifest")
+    for leaf in sorted(set(leaves) - set(T0051_HANDOFF_LEAVES)):
+        problems.append(f"{leaf}: not a claimed handoff leaf")
+    for leaf in sorted({leaf for leaf in leaves if leaves.count(leaf) > 1}):
+        problems.append(f"{leaf}: duplicate handoff manifest")
+    for handoff in handoffs:
+        leaf = handoff.get("owning_leaf", "<no-leaf>")
+        for field in (
+            "staged_placeholder",
+            "replaced_by",
+            "staging_refs",
+            "preparation_references",
+        ):
+            if not handoff.get(field):
+                problems.append(f"{leaf}: empty {field}")
+        if handoff.get("owning_leaf") not in registered:
+            problems.append(f"{leaf}: owning leaf is not a registered task")
+        for ref in handoff.get("staging_refs", []):
+            if ref not in sets_by_id:
+                problems.append(f"{leaf}: staging ref {ref!r} has no staged input set")
+        for ref in handoff.get("preparation_references", []):
+            if ref not in inventory_ids and not (ROOT / ref).exists():
+                problems.append(f"{leaf}: preparation reference {ref!r} does not resolve")
+        for ref in sorted(
+            T0051_REQUIRED_HANDOFF_STAGINGS.get(leaf, ())
+            - set(handoff.get("staging_refs", []))
+        ):
+            problems.append(
+                f"{leaf}: staged input set {ref!r} is missing from the claimed handoff"
+            )
+    for staged in manifest.get("staged_input_sets", []):
+        sid = staged.get("staging_id", "<no-set>")
+        root = roots.get(sid)
+        fixture = staged.get("fixture")
+        scenario = staged.get("scenario")
+        if sid not in claimed:
+            problems.append(f"{sid}: staged input set is not claimed by any handoff")
+        if fixture:
+            if not (ROOT / fixture).is_file():
+                problems.append(f"{sid}: fixture does not exist")
+            elif scenario and f'"{scenario}":' not in (
+                ROOT / fixture
+            ).read_text(encoding="utf-8"):
+                problems.append(
+                    f"{sid}: scenario {scenario!r} is not dispatched by its fixture"
+                )
+        for ref in staged.get("inventory_refs", []):
+            if ref not in inventory_ids:
+                problems.append(f"{sid}: inventory ref {ref!r} is not an audited identity")
+        consumer = list(staged.get("consumer_visible_inputs") or [])
+        if not consumer:
+            problems.append(f"{sid}: no consumer-visible inputs")
+        evaluator = staged.get("evaluator_only") or []
+        evaluator_paths = {entry.get("path") for entry in evaluator}
+        for path in consumer:
+            if path in evaluator_paths:
+                problems.append(
+                    f"{sid}: {path} is listed as both consumer-visible and evaluator-only"
+                )
+            if root is not None and not (root / path).exists():
+                problems.append(
+                    f"{sid}: consumer-visible input {path} does not resolve in staging"
+                )
+        for entry in evaluator:
+            if not entry.get("reason"):
+                problems.append(f"{sid}: evaluator-only {entry.get('path')!r} has no reason")
+            if root is not None and not (root / entry.get("path", "")).exists():
+                problems.append(
+                    f"{sid}: evaluator-only {entry.get('path')!r} does not resolve in staging"
+                )
+        positions = staged.get("not_staged_positions") or []
+        declared = {position.get("path") for position in positions}
+        for position in positions:
+            if not position.get("filled_by"):
+                problems.append(
+                    f"{sid}: unstaged position {position.get('path')!r} has no producing role"
+                )
+            if root is not None and (root / position.get("path", "")).exists():
+                problems.append(
+                    f"{sid}: {position.get('path')} is staged but declared unstaged"
+                )
+        for path in T0051_REQUIRED_EVALUATOR_ONLY.get(sid, {}):
+            if path not in evaluator_paths:
+                problems.append(f"{sid}: {path} must stay evaluator-only (expected answers)")
+        for entry in evaluator:
+            token = T0051_REQUIRED_EVALUATOR_ONLY.get(sid, {}).get(entry.get("path"))
+            if token and token not in entry.get("reason", ""):
+                problems.append(
+                    f"{sid}: evaluator-only reason for {entry.get('path')} must name {token!r}"
+                )
+        for path in T0051_REQUIRED_NOT_STAGED.get(sid, ()):
+            if path not in declared:
+                problems.append(
+                    f"{sid}: unstaged position {path} must be declared with its producing role"
+                )
+    return problems
+
+
 class ComposedQualificationSetupTests(unittest.TestCase):
     """T-002.4 task-local composition of the predecessor fixtures.
 
@@ -622,7 +984,7 @@ class T0034ComposedHandoffTests(unittest.TestCase):
                 (
                     "names the first outstanding applicable stage and the complete ordered remainder",
                     "a conditional stage counts only with evidence current for the submitted bytes",
-                    "a production correction re-enters the stages it affected before fresh discovery and acceptance",
+                    "an implementation correction, including a tests-only correction, re-enters the stages it affected before fresh discovery and acceptance",
                 ),
             ),
             (
@@ -630,7 +992,7 @@ class T0034ComposedHandoffTests(unittest.TestCase):
                 (
                     "names the first outstanding applicable stage and the complete ordered remainder",
                     "A conditional stage counts only with evidence current for the submitted bytes",
-                    "production corrections re-enter the stages they affected before fresh discovery and acceptance",
+                    "implementation corrections, including tests-only corrections, re-enter the stages they affected before fresh discovery and acceptance",
                 ),
             ),
             (
@@ -843,6 +1205,230 @@ class T0034ComposedHandoffTests(unittest.TestCase):
             "T-005",
         ):
             self.assertIn(token, results, token)
+
+
+class T0051QualificationInputTests(unittest.TestCase):
+    """T-005.1 supplied qualification inputs: inventory/link and handoff audits.
+
+    The audit reconciles docs/tasks/T-005.1/fixtures.md against the inherited
+    T-002.4/T-003.4 composition records, the INT-FLOW-001 qualification
+    inputs and current owner/fixture declarations. It rejects an inventory
+    that omits an inherited case, invents an identity, keeps a stale owner
+    test or fixture scenario, or points at evidence that does not resolve.
+    The handoff input manifests (V-06 preparation) are staged and audited at
+    the real fixture boundary: every claimed consumer-visible input, held-back
+    evaluator record and unstaged producer-output position must resolve (or
+    provably not exist) in a fresh disposable workspace. The wrong controls
+    prove the audits identify deliberately degraded copies rather than
+    accepting the remaining green rows.
+    """
+
+    def test_inventory_covers_every_inherited_identity(self):
+        problems = t0051_audit_problems(
+            t0051_inventory(), t0051_expected_ids()
+        )
+        self.assertEqual([], problems)
+
+    def test_audit_rejects_an_omitted_mapping_and_stale_selectors(self):
+        real = t0051_inventory()
+        expected = t0051_expected_ids()
+        degraded = json.loads(json.dumps(real))
+        entries = degraded["case_inventory"]
+        entries[:] = [entry for entry in entries if entry["id"] != "CCR-04"]
+        for entry in entries:
+            if entry["id"] == "INV-CASE-09":
+                entry["scenario"] = "discovery-late-omission-superseded"
+            if entry["id"] == "INV-CASE-01":
+                entry["current_evidence"] = (
+                    "docs/tasks/T-005.1/evidence/nonexistent-receipt.md"
+                )
+        problems = t0051_audit_problems(degraded, expected)
+        self.assertTrue(
+            any("CCR-04: missing from inventory" in problem for problem in problems),
+            problems,
+        )
+        self.assertTrue(
+            any(
+                "INV-CASE-09" in problem and "scenario" in problem
+                for problem in problems
+            ),
+            problems,
+        )
+        self.assertTrue(
+            any("INV-CASE-01" in problem and "nonexistent-receipt" in problem
+                for problem in problems),
+            problems,
+        )
+        # the real inventory stays clean while the degraded copy fails: the
+        # audit discriminates instead of accepting green-looking rows
+        self.assertEqual([], t0051_audit_problems(real, expected))
+
+    def test_unrun_role_boundaries_and_receipt_references_stay_visible(self):
+        text = T0051_FIXTURES.read_text(encoding="utf-8")
+        self.assertIn("never an observed role output", text)
+        self.assertIn("staged records are supplied history", text.lower())
+        for entry in t0051_inventory()["case_inventory"]:
+            with self.subTest(case=entry["id"]):
+                self.assertIn("unrun", entry["role_boundary"])
+                self.assertIn(entry["owning_leaf"], entry["role_boundary"])
+        for receipt in (
+            "V-02-setup-reconstruction.md",
+            "V-03-install-projection.md",
+            "V-04-drift-contrast.md",
+        ):
+            self.assertTrue((T0051_EVIDENCE / receipt).is_file(), receipt)
+            self.assertIn(receipt, text)
+
+    def test_handoff_manifests_resolve_exact_consumer_visible_inputs(self):
+        manifests = t0051_manifests()
+        roots = {}
+        for staged in manifests["staged_input_sets"]:
+            if staged.get("fixture"):
+                roots[staged["staging_id"]] = stage_setup(
+                    self, ROOT / staged["fixture"], staged["scenario"]
+                )
+            else:
+                roots[staged["staging_id"]] = ROOT
+        self.assertEqual([], t0051_manifest_problems(manifests, roots))
+
+        # Directory inputs expose Git objects as well as worktree paths.
+        # Inspect every object, including index-only and unreachable blobs.
+        for staged in manifests["staged_input_sets"]:
+            root = roots[staged["staging_id"]]
+            for held_back in staged["evaluator_only"]:
+                answer = (root / held_back["path"]).read_bytes()
+                for visible in staged["consumer_visible_inputs"]:
+                    consumer = root / visible
+                    if not consumer.is_dir():
+                        self.assertNotEqual(answer, consumer.read_bytes())
+                        continue
+                    for path in consumer.rglob("*"):
+                        if path.is_file() and ".git" not in path.relative_to(consumer).parts:
+                            self.assertNotEqual(answer, path.read_bytes(), str(path))
+                    if not (consumer / ".git").exists():
+                        continue
+                    objects = subprocess.run(
+                        ["git", "cat-file", "--batch-all-objects",
+                         "--batch-check=%(objectname) %(objecttype)"],
+                        cwd=consumer, check=True, capture_output=True, text=True,
+                        timeout=10,
+                    ).stdout.splitlines()
+                    for obj in objects:
+                        oid, kind = obj.split()
+                        if kind == "blob":
+                            blob = subprocess.run(
+                                ["git", "cat-file", "blob", oid], cwd=consumer,
+                                check=True, capture_output=True, timeout=10,
+                            ).stdout
+                            self.assertNotEqual(answer, blob, (staged["staging_id"], oid))
+
+    def test_route_consumer_excludes_answers_and_preserves_review_context(self):
+        staged = next(s for s in t0051_manifests()["staged_input_sets"]
+                      if s["staging_id"] == "route-cases")
+        work = stage_setup(self, ROOT / staged["fixture"], staged["scenario"])
+        original = work / "route-cases"
+        consumer = work / staged["consumer_visible_inputs"][0]
+        key = "change-effects/cases.json"
+        answer = (original / key).read_bytes()
+        # Reviewer reproducer remains a wrong control against raw staging.
+        (original / key).unlink()
+        for ref in ("HEAD:" + key, ":" + key):
+            raw = subprocess.run(["git", "show", ref], cwd=original,
+                                 capture_output=True, timeout=10)
+            self.assertEqual(0, raw.returncode)
+            self.assertEqual(answer, raw.stdout)
+            safe = subprocess.run(["git", "show", ref], cwd=consumer,
+                                  capture_output=True, timeout=10)
+            self.assertNotEqual(0, safe.returncode)
+        self.assertFalse((consumer / key).exists())
+        for tree in (original, consumer):
+            files = {p.relative_to(tree): p.read_bytes() for p in tree.rglob("*")
+                     if p.is_file() and ".git" not in p.relative_to(tree).parts}
+            if tree == original:
+                expected = files
+            else:
+                self.assertEqual(expected, files)
+        status = subprocess.run(["git", "status", "--porcelain"], cwd=consumer,
+                                check=True, capture_output=True, timeout=10)
+        self.assertEqual(b"", status.stdout)
+
+    def test_manifest_audit_rejects_degraded_handoff_manifests(self):
+        real = t0051_manifests()
+        degraded = json.loads(json.dumps(real))
+        handoffs = degraded["handoff_manifests"]
+        handoffs[:] = [item for item in handoffs if item["owning_leaf"] != "T-005.4"]
+        for handoff in handoffs:
+            if handoff["owning_leaf"] == "T-005.3":
+                handoff["staging_refs"].append("undeclared-staging")
+            if handoff["owning_leaf"] == "T-005.5":
+                handoff["preparation_references"].append("FIND-99")
+        for staged in degraded["staged_input_sets"]:
+            if staged["staging_id"] == "queue-defect":
+                staged["consumer_visible_inputs"].append(
+                    "queue-runner/docs/tasks/QR-12/nonexistent-input.md"
+                )
+            if staged["staging_id"] == "correction-round":
+                staged["evaluator_only"] = []
+            if staged["staging_id"] == "integration-leaf":
+                staged["scenario"] = "integration-leaf-superseded"
+        roots = {
+            "queue-defect": stage_setup(
+                self,
+                ROOT
+                / "skills"
+                / "task-implementation-flow"
+                / "task-review-discovery"
+                / "evals"
+                / "files"
+                / "setup_fixture.py",
+                "queue-defect",
+            )
+        }
+        problems = t0051_manifest_problems(degraded, roots)
+        self.assertTrue(
+            any("T-005.4: missing handoff manifest" in problem for problem in problems),
+            problems,
+        )
+        self.assertTrue(
+            any("undeclared-staging" in problem for problem in problems), problems
+        )
+        self.assertTrue(
+            any("FIND-99" in problem for problem in problems), problems
+        )
+        self.assertTrue(
+            any(
+                "queue-defect" in problem and "nonexistent-input" in problem
+                for problem in problems
+            ),
+            problems,
+        )
+        self.assertTrue(
+            any(
+                "correction-round" in problem and "must stay evaluator-only" in problem
+                for problem in problems
+            ),
+            problems,
+        )
+        self.assertTrue(
+            any(
+                "integration-leaf" in problem and "superseded" in problem
+                for problem in problems
+            ),
+            problems,
+        )
+        self.assertTrue(
+            any(
+                "known-issue-consumption-decision" in problem
+                and "not claimed by any handoff" in problem
+                for problem in problems
+            ),
+            problems,
+        )
+        # the real manifests stay clean under the same oracle and the same
+        # staged queue-defect root: the audit discriminates instead of
+        # accepting green-looking manifests. Full-resolution proof for every
+        # staged set is owned by the resolving test above.
+        self.assertEqual([], t0051_manifest_problems(real, roots))
 
 
 if __name__ == "__main__":

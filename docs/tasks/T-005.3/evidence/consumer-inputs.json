@@ -1,0 +1,535 @@
+[
+  {
+    "scenario": "queue-defect",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/queue-defect.tar.gz",
+      "sha256": "ecf3c54f9a9e61a56a74ec1052573f322a0c572a558757f24f6907fd2a2c3286",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "queue-runner",
+      "task-runs/QR-12/worker-result.json",
+      "task-runs/policies/local-review-v1.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "discovery-correction-gate",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/discovery-correction-gate.tar.gz",
+      "sha256": "94bbbc8295eab1479e2d79c04910a9978b541d801b3b8ba1be89389e86118b7a",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "corrected-queue",
+      "task-runs/QR-12/discovery-continuation.md",
+      "task-runs/QR-12/worker-result.json",
+      "task-runs/policies/local-review-v1.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "exporter-accept",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/exporter-accept.tar.gz",
+      "sha256": "69137b51e53d45c9ced417377bdb26e7fccb46a69c47743cd920d9c069f913d5",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "exporter",
+      "task-runs/EXP-08/worker-result.json",
+      "task-runs/policies/local-review-v1.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "exporter-restaged-stale",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/exporter-restaged-stale.tar.gz",
+      "sha256": "79bf4f2c21054b314e709a7133ef64604f5f21835c6d10e0d9a00f0db91792c9",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "exporter",
+      "task-runs/EXP-08/worker-result.json",
+      "task-runs/policies/local-review-v1.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "discovery-late-omission-clean",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/discovery-late-omission-clean.tar.gz",
+      "sha256": "f7c9608fc9521f95dbea38e01723f8bb8ea46c9a94477d57f5a45c4ed3bd7a9a",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "late-omission",
+      "task-runs/LED-05/worker-result.json",
+      "task-runs/policies/local-review-v1.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "discovery-late-omission-fail",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/discovery-late-omission-fail.tar.gz",
+      "sha256": "1faf3b2f98e2ea984cd30137d60b355c6bc337336e0e5b06836a06918d71c78a",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "late-omission",
+      "task-runs/LED-05/worker-result.json",
+      "task-runs/policies/local-review-v1.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "authored-production-self-check",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/authored-production-self-check.tar.gz",
+      "sha256": "4cc52c53380a2c4edd3fa091568405ef81c998da10e10423abcec1c9bae0618b",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "authored-production"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "discovery-prepared-ledger",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/discovery-prepared-ledger.tar.gz",
+      "sha256": "ebe9186ddcf359e3b21b30476b20068d55b339da82bfbd0327d61b58f21813bf",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "prepared-ledger",
+      "task-runs/MIX-03/discovery-continuation.md",
+      "task-runs/MIX-03/worker-result.json",
+      "task-runs/policies/local-review-v1.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "contextual-risk-blockers-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/contextual-risk-blockers-decision.tar.gz",
+      "sha256": "6e703f89399b751146193f9ba52285151763b3827b8062178cd9fd88e6491bf8",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "contextual-runner",
+      "task-runs/INV-07/discovery-01.md",
+      "task-runs/INV-07/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "contextual-risk-mitigated-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/contextual-risk-mitigated-decision.tar.gz",
+      "sha256": "d67dea9f09b0338282e04feb522801e8391f602de37575fdb5de45c63535e906",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "contextual-runner",
+      "task-runs/INV-07/discovery-01.md",
+      "task-runs/INV-07/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "mixed-conditions-authorized-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/mixed-conditions-authorized-decision.tar.gz",
+      "sha256": "915fce357e59451ae967607bd33cf6a8a6d17b1e2284d84dd2aded4d8f31f3cb",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "mixed-runner",
+      "task-runs/JOB-05/discovery-01.md",
+      "task-runs/JOB-05/worker-result.json",
+      "task-runs/policies/local-review-mixed.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "mixed-conditions-forbidden-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/mixed-conditions-forbidden-decision.tar.gz",
+      "sha256": "68c7df5c5d8f350304e629a9127686ede76fbf59539618a0d3b9d3a5e25f549f",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "mixed-runner",
+      "task-runs/JOB-05/discovery-01.md",
+      "task-runs/JOB-05/worker-result.json",
+      "task-runs/policies/local-review-mixed.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "consequential-uncertainty-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/consequential-uncertainty-decision.tar.gz",
+      "sha256": "69fa8222441477c1c00f0f778f3a93b0a19c171187d8816ea67b630d2d8b1ab4",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "retention-runner",
+      "task-runs/RET-03/discovery-01.md",
+      "task-runs/RET-03/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "consequential-uncertainty-resolved-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/consequential-uncertainty-resolved-decision.tar.gz",
+      "sha256": "f80000c869300a2bc1d90e5b0a998806c657f32be011c74422af2e22bd4465a3",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "retention-runner",
+      "task-runs/RET-03/discovery-01.md",
+      "task-runs/RET-03/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "serious-delay-uncertainty-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/serious-delay-uncertainty-decision.tar.gz",
+      "sha256": "c99fbd294f80f1eb170d1b0c08998f1ed42910a46dfafe1971322c7b8faddd24",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "retention-runner",
+      "task-runs/RET-03/discovery-01.md",
+      "task-runs/RET-03/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "serious-delay-uncertainty-resolved-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/serious-delay-uncertainty-resolved-decision.tar.gz",
+      "sha256": "03eb741690cae128dba2a5dc1e2844514f740436fe3e9509e349134ef9ea12e5",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "retention-runner",
+      "task-runs/RET-03/discovery-01.md",
+      "task-runs/RET-03/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "known-issue-proposed-work-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/known-issue-proposed-work-decision.tar.gz",
+      "sha256": "48173584743f5c7581d2f09b30b63eac12a1248f08bc7ff6b2229a189488c1e3",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "ledger-consumer",
+      "task-runs/RPT-12A/discovery-01.md",
+      "task-runs/RPT-12A/worker-result.json",
+      "task-runs/RPT-12B/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "known-issue-committed-work-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/known-issue-committed-work-decision.tar.gz",
+      "sha256": "652be8ab158032cbd29e5bc7a2fd37c916c4421ac396e5405e05976b1256c8a7",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "ledger-consumer",
+      "task-runs/RPT-12A/discovery-01.md",
+      "task-runs/RPT-12A/worker-result.json",
+      "task-runs/RPT-12B/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "known-issue-no-links-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/known-issue-no-links-decision.tar.gz",
+      "sha256": "d4f3a4cfd1ad2e5fc8055657cbd616e00f8fc422dc33bf921d0a1f666c321cf8",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "ledger-consumer",
+      "task-runs/RPT-12A/discovery-01.md",
+      "task-runs/RPT-12A/worker-result.json",
+      "task-runs/RPT-12B/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "correction-regression-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/correction-regression-decision.tar.gz",
+      "sha256": "7fede51bec25aa84f2b90bd9616f00ead5092040a63e902b53549716236de6e3",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "correction-runner",
+      "task-runs/ORD-04/discovery-01.md",
+      "task-runs/ORD-04/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "repeated-review-formerly-blocked-evidence-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/repeated-review-formerly-blocked-evidence-decision.tar.gz",
+      "sha256": "58dedce6758e7ef93d24de53e97ea8e03c49acca49b727cffa784cb74193d16f",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "correction-runner",
+      "task-runs/ORD-04/discovery-01.md",
+      "task-runs/ORD-04/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "repeated-review-missed-existing-obligation-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/repeated-review-missed-existing-obligation-decision.tar.gz",
+      "sha256": "e8be71cad7c182e4d0a0101145819373a47cbb2ec369e44b239a1ca082627c62",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "correction-runner",
+      "task-runs/ORD-04/discovery-01.md",
+      "task-runs/ORD-04/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "repeated-review-changed-context-authority-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/repeated-review-changed-context-authority-decision.tar.gz",
+      "sha256": "9aba4c55612e88bc3d00cb03c4e3ffa27d47ad452c664f35ff47c7c2abd8d236",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "correction-runner",
+      "task-runs/ORD-04/discovery-01.md",
+      "task-runs/ORD-04/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  },
+  {
+    "scenario": "repeated-review-newly-demonstrated-material-risk-decision",
+    "snapshot": {
+      "path": "docs/tasks/T-005.3/evidence/repeated-review-newly-demonstrated-material-risk-decision.tar.gz",
+      "sha256": "3131de762e72722488c336da55a8d4fcaa489a9132c73d4fb36dc406f2c2a075",
+      "timing": "after setup, before implementation probes; includes Git history/index"
+    },
+    "fixture_reviewer_inputs": [
+      "correction-runner",
+      "task-runs/ORD-04/discovery-01.md",
+      "task-runs/ORD-04/worker-result.json"
+    ],
+    "staged_report_policy": "supplied history only; replace discovery placeholder with actual fresh producer output before acceptance",
+    "not_reviewer_inputs": [
+      "source setup/eval code",
+      "T-005.3 results/evidence expected oracles and probe-command.md",
+      "capture-command.md",
+      "staging.json except selected identity receipt"
+    ],
+    "current_role_producer": null,
+    "current_acceptance_consumer": null
+  }
+]

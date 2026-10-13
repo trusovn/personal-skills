@@ -1,0 +1,438 @@
+[
+  {
+    "scenario": "queue-defect",
+    "boundary": "two actual public invocations with persisted state",
+    "initial": {
+      "tasks": [
+        {
+          "id": "TASK-1",
+          "status": "ready"
+        },
+        {
+          "id": "TASK-2",
+          "status": "ready"
+        }
+      ]
+    },
+    "expected_claims": [
+      "TASK-1",
+      ""
+    ],
+    "calls": [
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "src.queue.run_next",
+          "/tmp/opencode/t0053/cases/queue-defect/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/queue-defect/queue-runner",
+        "exit": 0,
+        "stdout": "TASK-1\n",
+        "stderr": "",
+        "state_after": {
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running"
+            },
+            {
+              "id": "TASK-2",
+              "status": "ready"
+            }
+          ]
+        }
+      },
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "src.queue.run_next",
+          "/tmp/opencode/t0053/cases/queue-defect/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/queue-defect/queue-runner",
+        "exit": 0,
+        "stdout": "",
+        "stderr": "",
+        "state_after": {
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running"
+            },
+            {
+              "id": "TASK-2",
+              "status": "ready"
+            }
+          ]
+        }
+      }
+    ],
+    "qualification_probe_pass": true,
+    "fixture_defect": true
+  },
+  {
+    "scenario": "discovery-correction-gate",
+    "boundary": "two actual public invocations with persisted state",
+    "initial": {
+      "tasks": [
+        {
+          "id": "TASK-1",
+          "status": "ready"
+        },
+        {
+          "id": "TASK-2",
+          "status": "ready"
+        }
+      ]
+    },
+    "expected_claims": [
+      "TASK-1",
+      "TASK-2"
+    ],
+    "calls": [
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "src.queue.run_next",
+          "/tmp/opencode/t0053/cases/discovery-correction-gate/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/discovery-correction-gate/corrected-queue",
+        "exit": 0,
+        "stdout": "TASK-1\n",
+        "stderr": "",
+        "state_after": {
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running"
+            },
+            {
+              "id": "TASK-2",
+              "status": "ready"
+            }
+          ]
+        }
+      },
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "src.queue.run_next",
+          "/tmp/opencode/t0053/cases/discovery-correction-gate/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/discovery-correction-gate/corrected-queue",
+        "exit": 0,
+        "stdout": "TASK-2\n",
+        "stderr": "",
+        "state_after": {
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running"
+            },
+            {
+              "id": "TASK-2",
+              "status": "running"
+            }
+          ]
+        }
+      }
+    ],
+    "qualification_probe_pass": true,
+    "fixture_defect": false
+  },
+  {
+    "scenario": "discovery-late-omission-clean",
+    "boundary": "public validator exits for valid and targeted invalid instances",
+    "expected_exits": {
+      "valid": 0,
+      "boolean": 2,
+      "older-attempt": 2,
+      "second-running": 2
+    },
+    "calls": {
+      "valid": {
+        "input": {
+          "revision": 2,
+          "status": "running",
+          "selected_task_id": "TASK-1",
+          "active_attempt_id": "A-2",
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running",
+              "attempt_ids": [
+                "A-1",
+                "A-2"
+              ]
+            },
+            {
+              "id": "TASK-2",
+              "status": "initialized",
+              "attempt_ids": []
+            }
+          ]
+        },
+        "argv": [
+          "python3",
+          "-m",
+          "src.ledger.validate",
+          "/tmp/opencode/t0053/cases/discovery-late-omission-clean/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/discovery-late-omission-clean/late-omission",
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "boolean": {
+        "input": {
+          "revision": true,
+          "status": "running",
+          "selected_task_id": "TASK-1",
+          "active_attempt_id": "A-2",
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running",
+              "attempt_ids": [
+                "A-1",
+                "A-2"
+              ]
+            },
+            {
+              "id": "TASK-2",
+              "status": "initialized",
+              "attempt_ids": []
+            }
+          ]
+        },
+        "argv": [
+          "python3",
+          "-m",
+          "src.ledger.validate",
+          "/tmp/opencode/t0053/cases/discovery-late-omission-clean/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/discovery-late-omission-clean/late-omission",
+        "exit": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      "older-attempt": {
+        "input": {
+          "revision": 2,
+          "status": "running",
+          "selected_task_id": "TASK-1",
+          "active_attempt_id": "A-1",
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running",
+              "attempt_ids": [
+                "A-1",
+                "A-2"
+              ]
+            },
+            {
+              "id": "TASK-2",
+              "status": "initialized",
+              "attempt_ids": []
+            }
+          ]
+        },
+        "argv": [
+          "python3",
+          "-m",
+          "src.ledger.validate",
+          "/tmp/opencode/t0053/cases/discovery-late-omission-clean/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/discovery-late-omission-clean/late-omission",
+        "exit": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      "second-running": {
+        "input": {
+          "revision": 2,
+          "status": "running",
+          "selected_task_id": "TASK-1",
+          "active_attempt_id": "A-2",
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running",
+              "attempt_ids": [
+                "A-1",
+                "A-2"
+              ]
+            },
+            {
+              "id": "TASK-2",
+              "status": "running",
+              "attempt_ids": []
+            }
+          ]
+        },
+        "argv": [
+          "python3",
+          "-m",
+          "src.ledger.validate",
+          "/tmp/opencode/t0053/cases/discovery-late-omission-clean/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/discovery-late-omission-clean/late-omission",
+        "exit": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    "qualification_probe_pass": true,
+    "fixture_defect": false
+  },
+  {
+    "scenario": "discovery-late-omission-fail",
+    "boundary": "public validator exits for valid and targeted invalid instances",
+    "expected_exits": {
+      "valid": 0,
+      "boolean": 0,
+      "older-attempt": 2,
+      "second-running": 2
+    },
+    "calls": {
+      "valid": {
+        "input": {
+          "revision": 2,
+          "status": "running",
+          "selected_task_id": "TASK-1",
+          "active_attempt_id": "A-2",
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running",
+              "attempt_ids": [
+                "A-1",
+                "A-2"
+              ]
+            },
+            {
+              "id": "TASK-2",
+              "status": "initialized",
+              "attempt_ids": []
+            }
+          ]
+        },
+        "argv": [
+          "python3",
+          "-m",
+          "src.ledger.validate",
+          "/tmp/opencode/t0053/cases/discovery-late-omission-fail/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/discovery-late-omission-fail/late-omission",
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "boolean": {
+        "input": {
+          "revision": true,
+          "status": "running",
+          "selected_task_id": "TASK-1",
+          "active_attempt_id": "A-2",
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running",
+              "attempt_ids": [
+                "A-1",
+                "A-2"
+              ]
+            },
+            {
+              "id": "TASK-2",
+              "status": "initialized",
+              "attempt_ids": []
+            }
+          ]
+        },
+        "argv": [
+          "python3",
+          "-m",
+          "src.ledger.validate",
+          "/tmp/opencode/t0053/cases/discovery-late-omission-fail/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/discovery-late-omission-fail/late-omission",
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "older-attempt": {
+        "input": {
+          "revision": 2,
+          "status": "running",
+          "selected_task_id": "TASK-1",
+          "active_attempt_id": "A-1",
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running",
+              "attempt_ids": [
+                "A-1",
+                "A-2"
+              ]
+            },
+            {
+              "id": "TASK-2",
+              "status": "initialized",
+              "attempt_ids": []
+            }
+          ]
+        },
+        "argv": [
+          "python3",
+          "-m",
+          "src.ledger.validate",
+          "/tmp/opencode/t0053/cases/discovery-late-omission-fail/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/discovery-late-omission-fail/late-omission",
+        "exit": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      "second-running": {
+        "input": {
+          "revision": 2,
+          "status": "running",
+          "selected_task_id": "TASK-1",
+          "active_attempt_id": "A-2",
+          "tasks": [
+            {
+              "id": "TASK-1",
+              "status": "running",
+              "attempt_ids": [
+                "A-1",
+                "A-2"
+              ]
+            },
+            {
+              "id": "TASK-2",
+              "status": "running",
+              "attempt_ids": []
+            }
+          ]
+        },
+        "argv": [
+          "python3",
+          "-m",
+          "src.ledger.validate",
+          "/tmp/opencode/t0053/cases/discovery-late-omission-fail/implementation-probe.json"
+        ],
+        "cwd": "/tmp/opencode/t0053/cases/discovery-late-omission-fail/late-omission",
+        "exit": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    "qualification_probe_pass": true,
+    "fixture_defect": true
+  }
+]

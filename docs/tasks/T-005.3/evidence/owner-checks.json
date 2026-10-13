@@ -1,0 +1,30 @@
+[
+  {
+    "command": "PYTHONDONTWRITEBYTECODE=1 TMPDIR=/tmp/opencode/t0053 python3 -m unittest discover -s tests -p test_task_review_discovery.py",
+    "cwd": "/Users/mtrusov/work/skill-sources/personal-skills",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ".................\n----------------------------------------------------------------------\nRan 17 tests in 0.823s\n\nOK\n"
+  },
+  {
+    "command": "PYTHONDONTWRITEBYTECODE=1 TMPDIR=/tmp/opencode/t0053 python3 -m unittest discover -s tests -p test_task_acceptance_review.py",
+    "cwd": "/Users/mtrusov/work/skill-sources/personal-skills",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ".........................\n----------------------------------------------------------------------\nRan 25 tests in 1.437s\n\nOK\n"
+  },
+  {
+    "command": "PYTHONDONTWRITEBYTECODE=1 TMPDIR=/tmp/opencode/t0053 python3 -m unittest discover -s tests -p test_contextual_export_risks.py",
+    "cwd": "/Users/mtrusov/work/skill-sources/personal-skills",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "......\n----------------------------------------------------------------------\nRan 6 tests in 0.914s\n\nOK\n"
+  },
+  {
+    "command": "PYTHONDONTWRITEBYTECODE=1 TMPDIR=/tmp/opencode/t0053 python3 -m unittest discover -s tests -p test_contextual_uncertainty_inputs.py",
+    "cwd": "/Users/mtrusov/work/skill-sources/personal-skills",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ".....\n----------------------------------------------------------------------\nRan 5 tests in 0.858s\n\nOK\n"
+  }
+]

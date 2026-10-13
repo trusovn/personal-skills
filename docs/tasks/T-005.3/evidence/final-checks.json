@@ -1,0 +1,39 @@
+{
+  "protected_file_count": 554,
+  "protected_changed": [],
+  "added_active_installation_files": [],
+  "staged_snapshots_restored": 24,
+  "new_markdown_trailing_whitespace": [],
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "exit": 0,
+      "stdout": "?? docs/tasks/T-005.3/evidence/\n?? docs/tasks/T-005.3/results.md\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--stat"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

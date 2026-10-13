@@ -1,0 +1,82 @@
+[
+  {
+    "scenario": "queue-defect",
+    "cwd": "/tmp/opencode/t0053/cases/queue-defect/queue-runner",
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/integration",
+      "-p",
+      "test_run_next.py"
+    ],
+    "environment": {
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "TMPDIR": "/tmp/opencode/t0053"
+    },
+    "exit": 0,
+    "stdout": "",
+    "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nOK\n",
+    "scope": "targeted submitted fixture tests only; not an aggregate"
+  },
+  {
+    "scenario": "discovery-correction-gate",
+    "cwd": "/tmp/opencode/t0053/cases/discovery-correction-gate/corrected-queue",
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/integration",
+      "-p",
+      "test_run_next.py"
+    ],
+    "environment": {
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "TMPDIR": "/tmp/opencode/t0053"
+    },
+    "exit": 0,
+    "stdout": "",
+    "stderr": "...\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nOK\n",
+    "scope": "targeted submitted fixture tests only; not an aggregate"
+  },
+  {
+    "scenario": "contextual-risk-blockers-decision",
+    "cwd": "/tmp/opencode/t0053/cases/contextual-risk-blockers-decision/contextual-runner",
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "tests.test_export"
+    ],
+    "environment": {
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "TMPDIR": "/tmp/opencode/t0053"
+    },
+    "exit": 0,
+    "stdout": "",
+    "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nOK\n",
+    "scope": "targeted submitted fixture tests only; not an aggregate"
+  },
+  {
+    "scenario": "contextual-risk-mitigated-decision",
+    "cwd": "/tmp/opencode/t0053/cases/contextual-risk-mitigated-decision/contextual-runner",
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "tests.test_export"
+    ],
+    "environment": {
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "TMPDIR": "/tmp/opencode/t0053"
+    },
+    "exit": 0,
+    "stdout": "",
+    "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nOK\n",
+    "scope": "targeted submitted fixture tests only; not an aggregate"
+  }
+]

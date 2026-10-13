@@ -962,6 +962,332 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
                         len(expected_managed_paths()), info["compared_paths"]
                     )
 
+    def test_install_and_refresh_preserve_unmanaged_agents_line_ending_bytes(self):
+        line_endings = {
+            "LF": b"\n",
+            "CRLF": b"\r\n",
+            "mixed": b"\n\r\n\r",
+            "CR": b"\r",
+        }
+        for commit in (False, True):
+            for label, ending in line_endings.items():
+                with self.subTest(commit=commit, line_endings=label):
+                    with tempfile.TemporaryDirectory() as tempdir:
+                        repo = Path(tempdir)
+                        init_repo(repo, commit=commit)
+                        agents = repo / "AGENTS.md"
+                        original = b"# Instructions" + ending + b"Keep spaces.  " + ending * 2
+                        agents.write_bytes(original)
+                        first = run_installer(repo)
+                        self.assertEqual(0, first.returncode, first.stderr)
+                        self.assertTrue(agents.read_bytes().startswith(original))
+
+                        prefix = b"# Instructions" + ending + b"\t " + ending * 2
+                        suffix = ending + b"\tSuffix.  " + ending * 2
+                        begin = installer.AGENTS_BEGIN.encode()
+                        end = installer.AGENTS_END.encode()
+                        agents.write_bytes(
+                            prefix + installer.AGENTS_BLOCK.rstrip().encode() + suffix
+                        )
+                        before = snapshot_tree(repo)
+                        checked = run_check(repo)
+                        self.assertEqual(0, checked.returncode, checked.stderr)
+                        self.assertEqual(before, snapshot_tree(repo))
+                        refresh = run_installer(repo)
+                        self.assertEqual(0, refresh.returncode, refresh.stderr)
+                        actual = agents.read_bytes()
+                        self.assertEqual(1, actual.count(begin))
+                        self.assertEqual(1, actual.count(end))
+                        self.assertEqual(prefix, actual[:actual.index(begin)])
+                        self.assertEqual(suffix, actual[actual.index(end) + len(end):])
+                        self.assertEqual(
+                            installer.AGENTS_BLOCK.rstrip().encode(),
+                            actual[actual.index(begin):actual.index(end) + len(end)],
+                        )
+                        checked = run_check(repo)
+                        self.assertEqual(0, checked.returncode, checked.stderr)
+
+    def test_journey_detects_drift_read_only_then_explicit_refresh_restores_every_family(
+        self,
+    ):
+        for commit in (True, False):
+            with self.subTest(commit=commit):
+                with tempfile.TemporaryDirectory() as tempdir:
+                    repo = Path(tempdir)
+                    original_agents = (
+                        "# Project instructions\n"
+                        "\n"
+                        "Keep this line.   \n"
+                        "\n"
+                        "Prefix note:\n"
+                        "    keep this aligned detail.  \n"
+                        "\n"
+                        "\n"
+                    )
+                    init_repo(repo, agents_text=original_agents, commit=commit)
+                    head_ref = git(repo, "symbolic-ref", "HEAD").strip()
+                    committed_head = (
+                        git(repo, "rev-parse", "HEAD").strip() if commit else None
+                    )
+
+                    def assert_repository_identity_stable() -> None:
+                        show_ref = subprocess.run(
+                            ["git", "-C", str(repo), "show-ref"],
+                            capture_output=True,
+                            text=True,
+                            check=False,
+                        )
+                        if commit:
+                            self.assertEqual(0, show_ref.returncode)
+                            self.assertEqual(
+                                committed_head,
+                                git(repo, "rev-parse", "HEAD").strip(),
+                            )
+                        else:
+                            # The unborn target keeps its unborn branch state:
+                            # no commit identity is fabricated anywhere in the
+                            # journey.
+                            self.assertEqual("", show_ref.stdout)
+                            self.assertEqual(
+                                head_ref, git(repo, "symbolic-ref", "HEAD").strip()
+                            )
+
+                    assert_repository_identity_stable()
+
+                    # First install, then a matching fresh check.
+                    first = run_installer(repo)
+                    self.assertEqual(0, first.returncode, first.stderr)
+                    fresh = run_check(repo)
+                    self.assertEqual(0, fresh.returncode, fresh.stderr)
+                    fresh_info = json.loads(fresh.stdout)
+                    self.assertTrue(fresh_info["match"])
+                    self.assertEqual([], fresh_info["differences"])
+                    self.assertEqual(
+                        len(expected_managed_paths()), fresh_info["compared_paths"]
+                    )
+
+                    # Unmanaged state that must survive the whole journey.
+                    unmanaged_skill = (
+                        repo / ".agents" / "skills" / "custom-local-skill"
+                    )
+                    unmanaged_skill.mkdir(parents=True)
+                    (unmanaged_skill / "SKILL.md").write_text(
+                        "---\nname: custom-local-skill\ndescription: local\n---\nbody\n",
+                        encoding="utf-8",
+                    )
+                    (unmanaged_skill / "references").mkdir()
+                    (unmanaged_skill / "references" / "note.md").write_text(
+                        "note\n", encoding="utf-8"
+                    )
+                    unmanaged_files = collect_package_files(unmanaged_skill)
+                    unmanaged_script = repo / ".agents" / "scripts" / "custom_helper.py"
+                    unmanaged_script.write_text("VALUE = 1\n", encoding="utf-8")
+                    unrelated = repo / "notes" / "unrelated.txt"
+                    unrelated.parent.mkdir(parents=True)
+                    unrelated.write_text("user bytes\n", encoding="utf-8")
+
+                    # Record outside-block bytes around the first insertion.
+                    # First insertion must retain the original instruction
+                    # bytes, including terminal trailing whitespace. The
+                    # unrelated project edit below additionally places
+                    # whitespace immediately at both marker boundaries: a
+                    # tab-space line directly before the begin marker and an
+                    # indented first suffix line ending in trailing spaces
+                    # and blank lines.
+                    agents_path = repo / "AGENTS.md"
+                    rendered = agents_path.read_bytes().decode("utf-8")
+                    self.assertEqual(1, rendered.count(installer.AGENTS_BEGIN))
+                    self.assertEqual(1, rendered.count(installer.AGENTS_END))
+                    self.assertTrue(rendered.startswith(original_agents))
+                    agents_path.write_text(
+                        rendered.replace(
+                            installer.AGENTS_BEGIN, "\t \n" + installer.AGENTS_BEGIN
+                        )
+                        + "\n\tAfter-block project note:\n"
+                        "    indented suffix survives.  \n"
+                        "\n\n",
+                        encoding="utf-8",
+                    )
+                    with_block = agents_path.read_bytes().decode("utf-8")
+                    begin_at = with_block.index(installer.AGENTS_BEGIN)
+                    end_at = with_block.index(installer.AGENTS_END) + len(
+                        installer.AGENTS_END
+                    )
+                    outside_prefix = with_block[:begin_at]
+                    outside_suffix = with_block[end_at:]
+                    self.assertIn("Keep this line.   ", outside_prefix)
+                    self.assertIn("\n    keep this aligned detail.", outside_prefix)
+                    self.assertTrue(outside_prefix.endswith("\t \n"))
+                    self.assertIn("\n\tAfter-block project note:", outside_suffix)
+                    self.assertIn("\n    indented suffix survives.", outside_suffix)
+                    self.assertTrue(outside_suffix.endswith("  \n\n\n"))
+
+                    # Deliberate managed drift across representative families:
+                    # changed, missing, an owned extra, and a changed but still
+                    # valid marked block.
+                    for relative in (
+                        ".agents/skills/project-direction/SKILL.md",
+                        ".agents/skills/README.md",
+                        ".agents/scripts/run_evidence.py",
+                        ".agents/scripts/ollama-models.json",
+                        ".agents/scripts/runtime-context.schema.v1.json",
+                    ):
+                        (repo / relative).write_bytes(b"deliberately drifted bytes\n")
+                    for relative in (
+                        ".agents/skills/task-implementation-flow/"
+                        "task-review-discovery/references/discovery-report-template.md",
+                        ".agents/skills/task-implementation-flow/"
+                        "bounded-task-implementer/evals/evals.json",
+                    ):
+                        (repo / relative).unlink()
+                    extra = (
+                        repo
+                        / ".agents"
+                        / "skills"
+                        / "project-direction"
+                        / "unexpected-local.md"
+                    )
+                    extra.write_text("extra owned file\n", encoding="utf-8")
+                    agents_path.write_text(
+                        with_block.replace(
+                            "Rerun the installer to update it",
+                            "Drifted managed block bytes",
+                        ),
+                        encoding="utf-8",
+                    )
+
+                    # The drift check reports every mutated family and
+                    # repairs nothing; refresh needs a separate explicit call.
+                    tree_before = snapshot_tree(repo / ".agents")
+                    agents_before = agents_path.read_bytes()
+                    status_before = git(repo, "status", "--porcelain=v1")
+                    drift = run_check(repo)
+                    self.assertEqual(1, drift.returncode)
+                    drift_info = json.loads(drift.stdout)
+                    self.assertFalse(drift_info["match"])
+                    self.assertEqual(
+                        [
+                            {
+                                "category": "changed",
+                                "path": ".agents/scripts/ollama-models.json",
+                            },
+                            {
+                                "category": "changed",
+                                "path": ".agents/scripts/run_evidence.py",
+                            },
+                            {
+                                "category": "changed",
+                                "path": (
+                                    ".agents/scripts/"
+                                    "runtime-context.schema.v1.json"
+                                ),
+                            },
+                            {
+                                "category": "changed",
+                                "path": ".agents/skills/README.md",
+                            },
+                            {
+                                "category": "changed",
+                                "path": ".agents/skills/project-direction/SKILL.md",
+                            },
+                            {
+                                "category": "unexpected",
+                                "path": (
+                                    ".agents/skills/project-direction/"
+                                    "unexpected-local.md"
+                                ),
+                            },
+                            {
+                                "category": "missing",
+                                "path": (
+                                    ".agents/skills/task-implementation-flow/"
+                                    "bounded-task-implementer/evals/evals.json"
+                                ),
+                            },
+                            {
+                                "category": "missing",
+                                "path": (
+                                    ".agents/skills/task-implementation-flow/"
+                                    "task-review-discovery/references/"
+                                    "discovery-report-template.md"
+                                ),
+                            },
+                            {"category": "changed", "path": "AGENTS.md"},
+                        ],
+                        drift_info["differences"],
+                    )
+                    self.assertEqual(tree_before, snapshot_tree(repo / ".agents"))
+                    self.assertEqual(agents_before, agents_path.read_bytes())
+                    self.assertEqual(
+                        status_before, git(repo, "status", "--porcelain=v1")
+                    )
+                    self.assertEqual(
+                        b"deliberately drifted bytes\n",
+                        (repo / ".agents/skills/project-direction/SKILL.md").read_bytes(),
+                    )
+                    assert_repository_identity_stable()
+
+                    # Explicit refresh: one separate installer rerun.
+                    refresh = run_installer(repo)
+                    self.assertEqual(0, refresh.returncode, refresh.stderr)
+
+                    # Independent projection inspection before trusting the
+                    # matching recheck: every managed path holds current
+                    # source bytes, and the owned extra is gone.
+                    projection = source_projection_snapshot()
+                    for managed in sorted(expected_managed_paths()):
+                        if managed == "AGENTS.md":
+                            continue
+                        source_key = managed[len(".agents/") :]
+                        self.assertIn(source_key, projection, managed)
+                        installed = repo / managed
+                        self.assertTrue(installed.is_file(), managed)
+                        self.assertEqual(
+                            projection[source_key],
+                            installed.read_bytes(),
+                            managed,
+                        )
+                    self.assertFalse(extra.exists())
+                    refreshed_agents = agents_path.read_bytes().decode("utf-8")
+                    begin_at = refreshed_agents.index(installer.AGENTS_BEGIN)
+                    end_at = refreshed_agents.index(installer.AGENTS_END) + len(
+                        installer.AGENTS_END
+                    )
+                    self.assertEqual(
+                        installer.AGENTS_BLOCK.rstrip(),
+                        refreshed_agents[begin_at:end_at],
+                    )
+                    self.assertEqual(outside_prefix, refreshed_agents[:begin_at])
+                    self.assertEqual(outside_suffix, refreshed_agents[end_at:])
+                    self.assertEqual(
+                        1, refreshed_agents.count(installer.AGENTS_BEGIN)
+                    )
+                    self.assertEqual(1, refreshed_agents.count(installer.AGENTS_END))
+                    self.assertEqual(
+                        unmanaged_files, collect_package_files(unmanaged_skill)
+                    )
+                    self.assertEqual(
+                        "VALUE = 1\n", unmanaged_script.read_text(encoding="utf-8")
+                    )
+                    self.assertEqual(b"user bytes\n", unrelated.read_bytes())
+                    assert_repository_identity_stable()
+
+                    # Matching recheck, then a second matching check that
+                    # agrees with it, close the journey.
+                    restored = run_check(repo)
+                    self.assertEqual(0, restored.returncode, restored.stderr)
+                    restored_again = run_check(repo)
+                    self.assertEqual(0, restored_again.returncode, restored_again.stderr)
+                    self.assertEqual(
+                        json.loads(restored.stdout), json.loads(restored_again.stdout)
+                    )
+                    restored_info = json.loads(restored.stdout)
+                    self.assertTrue(restored_info["match"])
+                    self.assertEqual([], restored_info["differences"])
+                    self.assertEqual(
+                        len(expected_managed_paths()), restored_info["compared_paths"]
+                    )
+
     def test_check_reports_changed_bytes_for_every_managed_family(self):
         with tempfile.TemporaryDirectory() as tempdir:
             repo = Path(tempdir)

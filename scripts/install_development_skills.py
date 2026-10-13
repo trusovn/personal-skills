@@ -161,6 +161,15 @@ def _validate_target(target_repo: Path) -> None:
 
 
 def _render_agents(existing: str) -> str:
+    """Return the AGENTS.md content with exactly one canonical managed block.
+
+    Bytes outside the markers — including whitespace at the marker
+    boundaries — are the target's own project instructions. A refresh
+    replaces only the managed block, splicing the canonical block between
+    the unmanaged prefix and suffix without any normalization, and a first
+    insertion retains the original bytes, adding only the newlines needed
+    to place the block on its own line after a blank separator line.
+    """
     begin_count = existing.count(AGENTS_BEGIN)
     end_count = existing.count(AGENTS_END)
 
@@ -173,15 +182,16 @@ def _render_agents(existing: str) -> str:
         if end_marker < begin:
             raise InstallError("AGENTS.md contains reversed development-install markers")
         end = end_marker + len(AGENTS_END)
-        prefix = existing[:begin].rstrip()
-        suffix = existing[end:].strip()
-        parts = [part for part in (prefix, AGENTS_BLOCK.rstrip(), suffix) if part]
-        return "\n\n".join(parts) + "\n"
+        return existing[:begin] + AGENTS_BLOCK.rstrip() + existing[end:]
 
-    prefix = existing.rstrip()
-    if not prefix:
+    if not existing:
         return AGENTS_BLOCK.rstrip() + "\n"
-    return prefix + "\n\n" + AGENTS_BLOCK.rstrip() + "\n"
+    prefix = existing
+    if not prefix.endswith("\n"):
+        prefix += "\n"
+    if not prefix.endswith("\n\n"):
+        prefix += "\n"
+    return prefix + AGENTS_BLOCK.rstrip() + "\n"
 
 
 def _copy_profile_to_stage(source_repo: Path, stage_root: Path) -> None:
@@ -259,6 +269,7 @@ def _write_agents(target_repo: Path, content: str) -> None:
     with tempfile.NamedTemporaryFile(
         "w",
         encoding="utf-8",
+        newline="",
         dir=target_repo,
         prefix=".AGENTS.md.personal-skills.",
         delete=False,
@@ -286,7 +297,7 @@ def install(target_repo: Path) -> dict[str, object]:
     _validate_target(target_repo)
 
     agents_path = target_repo / "AGENTS.md"
-    existing_agents = agents_path.read_text(encoding="utf-8") if agents_path.exists() else ""
+    existing_agents = agents_path.read_bytes().decode("utf-8") if agents_path.exists() else ""
     rendered_agents = _render_agents(existing_agents)
 
     agents_root = target_repo / ".agents"

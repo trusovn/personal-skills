@@ -16,6 +16,16 @@ No consequential finding is silently lost between review/correction sessions; re
 
 **I-04 — Add selective broader-context reasoning only if it changes decisions.** A triage skill/agent may explore new relationships, cumulative maintenance burden, cross-team effects and serious trade-offs. Historical replay should show meaningful decisions beyond deterministic rules and bounded local review before adding a persistent portfolio agent or graph engine. Count recurrence and engineering effort, not only total open issues.
 
+### I-04 pilot — advisory semantic finding triage
+
+**Question:** Can a low-cost typed decision model (Jev is one candidate, not a dependency) classify *already confirmed* review findings more safely or cheaply than deterministic rules and a small structured-output LLM? This is a future experiment, not another discovery, review or acceptance stage.
+
+- **Candidate placement:** after `task-review-discovery` publishes evidence and before `task-acceptance-review` consumes it. Given bounded, provenance-linked context, return advisory impact, risk category, relevance or suggested extra checks, with explicit uncertainty. Do not let classifier outputs replace corroboration or a finding's original evidence.
+- **Benchmark:** after the current review flow stabilizes and useful historical findings exist, build a labeled replay set (initial target roughly 50–100 diverse examples, if available); separate tuning from held-out evaluation. Compare Jev, a low-cost LLM with structured output and a rules-only baseline on identical inputs. Review reference labels independently; prior dispositions are not automatically ground truth.
+- **Decisive measures:** unsafe under-triage / missed critical findings first; class confusion, abstentions and calibration on these data; latency, per-case cost and total workflow/correction cost. Agree acceptance thresholds *before* comparing candidates.
+- **Safety and ownership:** confirmed acceptance-criterion failures and mandatory checks remain binding regardless of model score. The model cannot approve deferrals, waive checks, accept work, change policy or advance a task. Independent acceptance retains semantic decisions; coordinator/controller retain authorization and deterministic transitions. Uncertain cases go to existing owners, not automatic safe classification.
+- **Adoption boundary:** shadow/replay mode first; only if demonstrably useful, consider a provider-neutral `decision-model` adapter at the future orchestration runtime boundary, not a Jev-specific skill. Keep current skills untouched. Redact sensitive repository data; do not upload code, secrets or transcripts by default.
+
 Conceptual deferral example:
 
 ```yaml

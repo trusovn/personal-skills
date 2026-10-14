@@ -84,7 +84,9 @@ def queue_task() -> None:
         """
         # QR-12 — Repeated queue selection
 
-        Artifact status: ready_for_preflight
+        Status: ready
+        Task kind: executable
+        Outcome: claim consecutive ready tasks through persisted public invocations.
         Allowed paths: src/queue/run_next.py; tests/integration/test_run_next.py
         AC-01: two consecutive public invocations persist state and claim TASK-1 then TASK-2.
         AC-02: an empty queue returns no claim and does not rewrite state.
@@ -99,6 +101,7 @@ def queue_task() -> None:
 
         Source brief: docs/tasks/QR-12/brief.md
         Status: ready
+        Verification revision: 1
 
         ### V-01 — Consecutive public invocations claim different tasks
         Covers: AC-01
@@ -182,6 +185,7 @@ Task brief: docs/tasks/QR-12/brief.md
 Task brief SHA-256: {file_sha(root / 'docs/tasks/QR-12/brief.md')}
 Verification design: docs/tasks/QR-12/verification.md
 Verification design SHA-256: {file_sha(root / 'docs/tasks/QR-12/verification.md')}
+Verification revision: 1
 HEAD: {git(root, 'rev-parse', 'HEAD')}
 Pre-write git status --short:
 ```
@@ -211,7 +215,9 @@ CMD-02 owning: python -m unittest tests.integration.test_run_next
 CMD-03 broader: python -m unittest discover -s tests
 Working directory for all commands: {root}
 Permissions: only allowed paths and runtime result; no network, install, commit, or other writes.
-Next route after complete: task-acceptance-review.
+Conditional-stage policy: repo policy requires maintainability review and the deterministic architecture gate for changed source bytes; implemented-contract discovery is enabled and the task changed a durable cross-task contract, so the registry stage applies.
+Conditional-stage evidence: no applicable conditional stage has current completion evidence for the submitted bytes.
+Next route after complete: required architecture gate, then fresh task-maintainability-review, then task-contract-registry-updater, then fresh task-review-discovery evidence, then a separate fresh task-acceptance-review decision.
 """
     packet_path.write_text(packet, encoding="utf-8")
     post_packet_status = git(root, "status", "--short")
@@ -290,6 +296,7 @@ def api_guided() -> None:
         # API-31 — Reject expired sessions
 
         Status: ready
+        Task kind: executable
 
         ```yaml
         agent_tier: standard
@@ -305,6 +312,45 @@ def api_guided() -> None:
         Targeted: python -m unittest tests.auth.test_session
         Broader: python -m unittest discover -s tests
         No network, dependency installation, commits, or other repository writes.
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/API-31/verification.md",
+        """
+        # Verification Design: API-31 — Reject expired sessions
+
+        Source brief: docs/tasks/API-31/brief.md
+        Status: ready
+
+        Verification revision: 1
+
+        ### V-01 — Unexpired session remains valid
+        Covers: AC-01
+        Oracle / boundary: assert is_valid for an unexpired session.
+
+        ### V-02 — Expired session rejected and token unchanged
+        Covers: AC-02
+        Oracle / boundary: assert not is_valid and token bytes unchanged.
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/API-31/preflight.md",
+        """
+        # Preflight: API-31
+
+        Status: ready
+        Profile: guided
+        Source brief: docs/tasks/API-31/brief.md
+        Verification design: docs/tasks/API-31/verification.md
+        Verification revision: 1
+        Allowed changes: src/auth/session.py; tests/auth/test_session.py
+        Dependency: Python standard library only
+        Ownership: clean committed baseline; no overlapping user work
+        Permission: local writes and local tests allowed; network, installs and commits denied
+        Capability: Python unittest observes session validity and unchanged token locally
+        Authority: docs/tasks/API-31/brief.md; outcome and scope unchanged
         """,
     )
     write(root, "src/__init__.py", "")
@@ -353,6 +399,7 @@ def api_immediate() -> None:
         # API-32 — Reject expired sessions
 
         Status: ready
+        Task kind: executable
 
         ```yaml
         agent_tier: standard
@@ -368,7 +415,47 @@ def api_immediate() -> None:
         Targeted: python -m unittest tests.auth.test_session.SessionTest.test_expired_session_is_invalid
         Owning: python -m unittest tests.auth.test_session
         No network, dependency installation, commits, machine result schema, or other repository writes.
-        After implementation checks, hand the current bytes to a fresh acceptance reviewer.
+        Conditional-stage policy: neither maintainability review nor the contract-registry stage applies to this task; no architecture gate is required.
+        After implementation checks, route the current bytes to fresh task-review-discovery evidence, then a separate fresh acceptance decision.
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/API-32/verification.md",
+        """
+        # Verification Design: API-32 — Reject expired sessions
+
+        Source brief: docs/tasks/API-32/brief.md
+        Status: ready
+
+        Verification revision: 1
+
+        ### V-01 — Unexpired session remains valid
+        Covers: AC-01
+        Oracle / boundary: assert is_valid for an unexpired session.
+
+        ### V-02 — Expired session rejected and token unchanged
+        Covers: AC-02
+        Oracle / boundary: assert not is_valid and token bytes unchanged.
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/API-32/preflight.md",
+        """
+        # Preflight: API-32
+
+        Status: ready
+        Profile: guided
+        Source brief: docs/tasks/API-32/brief.md
+        Verification design: docs/tasks/API-32/verification.md
+        Verification revision: 1
+        Allowed changes: src/auth/session.py; tests/auth/test_session.py
+        Dependency: Python standard library only
+        Ownership: clean committed baseline; no overlapping user work
+        Permission: local writes and local tests allowed; network, installs and commits denied
+        Capability: Python unittest observes session validity and unchanged token locally
+        Authority: docs/tasks/API-32/brief.md; outcome and scope unchanged
         """,
     )
     write(root, "src/__init__.py", "")
@@ -432,6 +519,7 @@ def record_correction() -> None:
         # REC-44 — Bind the complete result record
 
         Status: ready
+        Task kind: executable
 
         ```yaml
         agent_tier: strong
@@ -443,15 +531,69 @@ def record_correction() -> None:
         This is a correction after `CHANGES_REQUESTED`.
         Outcome: accept a result only when all exact serialized bytes match the independently anchored digest in `authority/result.sha256`.
         Invariant: every result byte is bound; equality of one demonstrated field or internal consistency is insufficient.
+        AC-01: original anchored bytes are accepted and any changed serialized bytes are rejected, including coherent field mutations and equivalent byte rewrites.
+        AC-02: replay-boundary review remains with the assigned fresh reviewer; implementation must carry its unchecked status without claiming acceptance.
         Allowed changes: src/result_integrity.py; tests/test_record_integrity.py.
         Reviewer regression: python -m unittest tests.test_record_integrity.RecordIntegrityTest.test_coherent_mutation_is_rejected
         Owning suite: python -m unittest tests.test_record_integrity
         Aggregate gate: python -m unittest discover -s tests
         Gate ownership: skip the aggregate during correction; the assigned fresh reviewer owns any final aggregate decision.
         Required sibling evidence: add at least one other field mutation or semantically equivalent byte rewrite using the same exact-byte oracle.
+        Required continuation: preserve ROW-ORIGINAL (prior passed), ROW-EXACT-BYTES (failed), ROW-REMOTE-ANCHOR (blocked) and ROW-REPLAY-BOUNDARY (unchecked) with separate current evidence/reasons/owners.
+        Remote anchor recovery needs tools/remote_anchor.py, unavailable under this local-only authority; route capability recovery to task-preflight, without inferring a production fix.
         No network, dependency installation, commits, or other repository writes.
         """,
     )
+    write(root, "docs/tasks/REC-44/verification.md", """
+        # Verification Design: REC-44
+
+        Source brief: docs/tasks/REC-44/brief.md
+        Status: ready
+        Verification revision: 1
+
+        ### V-01 — Exact bytes bind the complete record
+        Covers: AC-01
+        Reviewer row: ROW-EXACT-BYTES
+        Setup: authority/result.json and its independently anchored authority/result.sha256.
+        Command: python -m unittest tests.test_record_integrity
+        Oracle / boundary: original bytes are accepted; coherent summary mutation and task-owned sibling mutations or equivalent rewrites are rejected.
+
+        ### V-02 — Replay-boundary coverage remains explicit
+        Covers: AC-02
+        Reviewer row: ROW-REPLAY-BOUNDARY
+        Setup: reviews/acceptance-01.md retains the unchecked row.
+        Oracle / boundary: handoff preserves the unchecked row and names fresh task-review-discovery evidence and the separate fresh task-acceptance-review decision as next owner; no implementation acceptance claim.
+
+        ### V-03 — Prior positive proof is navigation only
+        Covers: AC-01
+        Reviewer row: ROW-ORIGINAL
+        Command: python -m unittest tests.test_record_integrity.RecordIntegrityTest.test_original_record_is_accepted
+        Oracle / boundary: original bytes remain accepted; prior pass cannot certify corrected bytes.
+
+        ### V-04 — Blocked capability remains owned
+        Covers: AC-02
+        Reviewer row: ROW-REMOTE-ANCHOR
+        Setup: tools/remote_anchor.py is absent; network and installing helpers are outside authority.
+        Oracle / boundary: retain blocked reason and task-preflight capability owner; local target proof cannot close this row.
+        """)
+    write(root, "docs/tasks/REC-44/preflight.md", """
+        # Preflight: REC-44
+
+        Status: ready
+        Profile: guided
+        Source brief: docs/tasks/REC-44/brief.md
+        Verification design: docs/tasks/REC-44/verification.md
+        Verification revision: 1
+        Allowed changes: src/result_integrity.py; tests/test_record_integrity.py
+        Dependency: Python standard library only
+        Ownership: reviewer-owned regression appended to tests/test_record_integrity.py is authorized correction input; preserve it; no other overlap
+        Permission: local writes and local tests allowed; network, installs and commits denied
+        Capability: Python unittest and hashlib observe exact byte binding against authority/result.sha256
+        Authority: docs/tasks/REC-44/brief.md; unchanged correction outcome and scope; CHANGES_REQUESTED in reviews/acceptance-01.md
+        Conditional-stage policy: neither maintainability review nor the contract-registry stage applies to this correction.
+        Expected effects: appended reviewer regression and authorized correction edits do not change guided applicability
+        Commands: reviewer reproducer first, then owning suite from brief; aggregate remains fresh-review-owned
+        """)
     write(root, "authority/result.json", exact_bytes.decode())
     write(root, "authority/result.sha256", sha(exact_bytes))
     write(root, "src/__init__.py", "")
@@ -517,14 +659,25 @@ def record_correction() -> None:
 
         Authoritative brief: docs/tasks/REC-44/brief.md
         Preceding verdict: CHANGES_REQUESTED
-        Complete finding: the validator checks only `task_id`, so coherent changes to other bytes are accepted.
+        Complete finding: F-01 — the validator checks only `task_id`, so coherent changes to other bytes are accepted.
+        Preflight/context reference: docs/tasks/REC-44/preflight.md; docs/tasks/REC-44/verification.md revision 1; authority/result.sha256.
+        Invariant: every serialized byte is bound to the independent anchor.
+        Influenced sibling surfaces: other fields, equivalent byte rewrites, remote anchor recovery and unchecked replay proof.
+        Attempts and discarded hypotheses: baseline task_id equality cannot bind the other bytes; no correction attempted yet. Separate attempts/stop.json supplies a same-target stopped continuation contrast, not current correction evidence.
         Reviewer reproducer: python -m unittest tests.test_record_integrity.RecordIntegrityTest.test_coherent_mutation_is_rejected
         Owning suite: python -m unittest tests.test_record_integrity
-        Broad-gate decision: skip aggregate during correction; the assigned fresh reviewer owns the final aggregate decision.
+        Broad-gate decision: python -m unittest discover -s tests — not run during implementation; owner and stage: fresh correction discovery; reason: reconcile all current targeted rows before any justified aggregate; no current aggregate evidence.
 
         Coverage ledger:
+        - ROW-ORIGINAL — passed — prior original-record probe; navigation only for corrected bytes; next owner: fresh discovery.
         - ROW-EXACT-BYTES — failed — coherent summary mutation was accepted.
+        - ROW-REMOTE-ANCHOR — blocked — tools/remote_anchor.py is absent and network/helpers are outside authority; next owner: task-preflight capability recovery.
         - ROW-REPLAY-BOUNDARY — unchecked — fresh reviewer must evaluate; implementer must not claim a verdict.
+
+        Remaining obligations:
+        - ROW-EXACT-BYTES — correct exact-byte binding and rerun the reviewer regression; next owner: bounded-task-implementer, then fresh task-review-discovery evidence and a separate fresh task-acceptance-review decision.
+        - ROW-REMOTE-ANCHOR — retain missing helper and denied network reasons; next owner: task-preflight capability recovery, then fresh discovery and separate acceptance.
+        - ROW-REPLAY-BOUNDARY — evaluate unchecked replay coverage; next owner: fresh task-review-discovery evidence and a separate fresh task-acceptance-review decision.
         """,
     )
     git(root, "add", ".")
@@ -542,6 +695,458 @@ def record_correction() -> None:
         "        )\n"
     )
     test_path.write_text(current.rstrip() + reviewer_regression, encoding="utf-8")
+    attempts = []
+    for number, hypothesis, body in (
+        (1, "Recomputed internal digest proves anchoring", "result = json.loads(result_bytes); body = {k: v for k, v in result.items() if k != 'content_digest'}; return hashlib.sha256(json.dumps(body, sort_keys=True, separators=(',', ':')).encode()).hexdigest() == result.get('content_digest')"),
+        (2, "Canonicalizing JSON proves exact-byte anchoring", "return hashlib.sha256(json.dumps(json.loads(result_bytes), sort_keys=True, separators=(',', ':')).encode() + bytes([10])).hexdigest() == anchor_digest"),
+    ):
+        path = f"attempts/fix-{number}.py"
+        write(root, path, f'''
+            import hashlib
+            import json
+            from pathlib import Path
+
+            def is_anchored_result(result_bytes, anchor_digest):
+                {body}
+
+            original = Path('authority/result.json').read_bytes()
+            anchor = Path('authority/result.sha256').read_text().strip()
+            assert is_anchored_result(original, anchor), 'original anchored bytes must remain accepted'
+            rewritten = json.dumps(json.loads(original), indent=2).encode()
+            assert not is_anchored_result(rewritten, anchor), 'equivalent byte rewrite must be rejected'
+        ''')
+        attempts.append({"hypothesis": hypothesis, "target": "exact-byte binding", "probe": path})
+    write(root, "attempts/stop.json", json.dumps({
+        "attempts": attempts, "status": "non-complete", "next_owner": "result-integrity owner",
+        "reason": "two materially different failed fixes of the same target; no third ordinary fix",
+        "remaining_approach": "reconcile the exact-byte invariant and use the independent raw-byte digest",
+        "partial_diff": "attempts/fix-1.py and attempts/fix-2.py; retain current src/result_integrity.py",
+        "coverage_rows": {"ROW-ORIGINAL": "passed", "ROW-EXACT-BYTES": "failed", "ROW-REMOTE-ANCHOR": "blocked", "ROW-REPLAY-BOUNDARY": "unchecked"},
+        "finding_ids": ["F-01"],
+        "unfinished_rows": ["ROW-EXACT-BYTES", "ROW-REMOTE-ANCHOR", "ROW-REPLAY-BOUNDARY"],
+    }, indent=2))
+
+
+def entry_cases() -> None:
+    root = WORK / "entry-cases"
+    initialize(root)
+    write(root, "AGENTS.md", "# Fixture rules\n\nPackaged tasks require applicable ready preparation. Conversational relabeling does not bypass package prerequisites.\n")
+
+    def task(folder, brief, verification=None, preflight=None):
+        write(root, f"docs/tasks/{folder}/brief.md", brief)
+        if verification is not None:
+            write(root, f"docs/tasks/{folder}/verification.md", verification)
+        if preflight is not None:
+            write(root, f"docs/tasks/{folder}/preflight.md", preflight)
+
+    task("VALID",
+        "# VALID — Valid ready package entry\n\nStatus: ready\n\nTask kind: executable\n\nOutcome: keep the session boundary correct.\nAC-01: unexpired boundary behaves.\nAC-02: failure case is rejected.\nAllowed changes: src/session.py; tests/test_future.py\n",
+        "# Verification Design: VALID\n\nSource brief: docs/tasks/VALID/brief.md\nStatus: ready\n\nVerification revision: 1\n\n### V-01 — Boundary behaves\nCovers: AC-01\n\n### V-02 — Failure case rejected\nCovers: AC-02\n\nThe task-owned future test tests/test_future.py is feasible within allowed scope; its absence is not a missing decisive capability.\n",
+        "# Preflight: VALID\n\nStatus: ready\nProfile: guided\nSource brief: docs/tasks/VALID/brief.md\nVerification design: docs/tasks/VALID/verification.md\nVerification revision: 1\nAllowed changes: src/session.py; tests/test_future.py\nDependency: standard library only\nOwnership: no overlapping user work\nPermission: local writes allowed\nCapability: boundary observable locally\n")
+    write(root, "src/session.py", "def is_valid(session, now):\n    return True\n")
+
+    task("NOVERIF",
+        "# NOVERIF — Missing verification\n\nStatus: ready\n\nTask kind: executable\n",
+        None,
+        "# Preflight: NOVERIF\n\nStatus: ready\nProfile: guided\nVerification revision: 1\n")
+    task("NOPREP",
+        "# NOPREP — Missing readiness\n\nStatus: ready\n\nTask kind: executable\n",
+        "# Verification Design: NOPREP\n\nSource brief: docs/tasks/NOPREP/brief.md\nStatus: ready\n\nVerification revision: 1\n",
+        None)
+    task("BLOCKED",
+        "# BLOCKED — Blocked readiness\n\nStatus: ready\n\nTask kind: executable\n",
+        "# Verification Design: BLOCKED\n\nSource brief: docs/tasks/BLOCKED/brief.md\nStatus: ready\n\nVerification revision: 1\n",
+        "# Preflight: BLOCKED\n\nStatus: blocked\nProfile: guided\nVerification revision: 1\n")
+    task("STALE",
+        "# STALE — Stale readiness\n\nStatus: ready\n\nTask kind: executable\n\nBrief revision: 2\n",
+        "# Verification Design: STALE\n\nSource brief: docs/tasks/STALE/brief.md\nStatus: ready\n\nVerification revision: 1\n",
+        "# Preflight: STALE\n\nStatus: ready\nProfile: guided\nSource brief: docs/tasks/STALE/brief.md\nSource brief revision: 1\nVerification revision: 1\n")
+    task("FOREIGN",
+        "# FOREIGN — Foreign verification\n\nStatus: ready\n\nTask kind: executable\n",
+        "# Verification Design: FOREIGN\n\nSource brief: docs/tasks/OTHER/brief.md\nStatus: ready\n\nVerification revision: 1\n",
+        "# Preflight: FOREIGN\n\nStatus: ready\nProfile: guided\nSource brief: docs/tasks/FOREIGN/brief.md\nVerification design: docs/tasks/FOREIGN/verification.md\nVerification revision: 1\n")
+    task("REVMISMATCH",
+        "# REVMISMATCH — Revision mismatch\n\nStatus: ready\n\nTask kind: executable\n",
+        "# Verification Design: REVMISMATCH\n\nSource brief: docs/tasks/REVMISMATCH/brief.md\nStatus: ready\n\nVerification revision: 2\n\n### V-01 — Covers AC-01\n\n### V-02 — Covers AC-01\n",
+        "# Preflight: REVMISMATCH\n\nStatus: ready\nProfile: guided\nSource brief: docs/tasks/REVMISMATCH/brief.md\nVerification revision: 1\n")
+    task("WRONGSCOPE",
+        "# W-31 — Ready brief in package WRONGSCOPE\n\nStatus: ready\n\nTask kind: executable\n",
+        "# Verification Design: WRONGSCOPE\n\nSource brief: docs/tasks/WRONGSCOPE/brief.md\nStatus: ready\n\nVerification revision: 1\n",
+        "# Preflight: WRONGSCOPE\n\nStatus: ready\nProfile: guided\nTask brief: docs/tasks/W-32/brief.md\nVerification revision: 1\n")
+    task("COMPOSITE",
+        "# COMPOSITE — Decomposed parent\n\nStatus: decomposed\n\nTask kind: composite\n\nChildren: T-C1; T-C2\n",
+        None, None)
+    write(root, "docs/tasks/index.json",
+          '{\n  "version": 1,\n  "tasks": {\n    "COMPOSITE": {"kind": "composite", "brief": "docs/tasks/COMPOSITE/brief.md", "parent": null, "children": ["T-C1", "T-C2"], "depends_on": []},\n    "T-C1": {"kind": "executable", "brief": "docs/tasks/T-C1/brief.md", "parent": "COMPOSITE", "children": [], "depends_on": []},\n    "T-C2": {"kind": "executable", "brief": "docs/tasks/T-C2/brief.md", "parent": "COMPOSITE", "children": [], "depends_on": ["T-C1"]}\n  }\n}\n')
+    task("T-C1",
+        "# T-C1 — Dependency-ready leaf\n\nStatus: ready\n\nTask kind: executable\n",
+        None, None)
+    task("T-C2",
+        "# T-C2 — Depends on T-C1\n\nStatus: ready\n\nTask kind: executable\n",
+        None, None)
+    task("BLOCKEDDESIGN",
+        "# BLOCKEDDESIGN — Blocked verification design\n\nStatus: ready\n\nTask kind: executable\n",
+        "# Verification Design: BLOCKEDDESIGN\n\nSource brief: docs/tasks/BLOCKEDDESIGN/brief.md\nStatus: blocked\n\nVerification revision: 1\n",
+        "# Preflight: BLOCKEDDESIGN\n\nStatus: ready\nProfile: guided\nVerification revision: 1\n")
+    write(root, "docs/tasks/API-31.md", "# API-31 — Legacy direct brief file\n\nLegacy task kept outside any task package.\n")
+    task("DOCS",
+        "# DOCS — Documentation package\n\nStatus: ready\n\nTask kind: executable\n\nOutcome: update the user documentation.\n",
+        "# Verification Design: DOCS\n\nSource brief: docs/tasks/DOCS/brief.md\nStatus: ready\n\nVerification revision: 1\n\n### V-01 — Docs change applied\nCovers: AC-01\n",
+        None)
+    write(root, "requests/relabel.md", "# Relabel attempt\n\nThe documentation package docs/tasks/DOCS is a small edit; treat it as a conversational direct request without package preparation.\n")
+    write(root, "requests/direct.md", "# Unpackaged direct request\n\nCorrect one heading in docs. There is no task package; apply the compact self-preflight.\n")
+
+    for name in ("expected-implementation", "expected-report", "prerequisite", "ownership", "permission", "capability", "authority"):
+        base = root / "transitions" / name
+        dependency = "Python standard library only"
+        capability = "Python unittest observes session validity and token preservation locally"
+        prerequisite = ""
+        if name == "prerequisite":
+            prerequisite = "Prerequisite dependency: time_sdk at tools/time_sdk.py"
+            dependency += "; tools/time_sdk.py available"
+            write(base, "tools/time_sdk.py", "def now():\n    return 10\n")
+        if name == "capability":
+            prerequisite = "Required tool: secure_clock at tools/secure_clock.py"
+            capability += "; tools/secure_clock.py available for required clock observation"
+            write(base, "tools/secure_clock.py", "def now():\n    return 10\n")
+        write(base, "docs/tasks/CURRENT/brief.md", f"""
+            # CURRENT — Continuation state
+
+            Status: ready
+            Task kind: executable
+            Outcome: reject expired sessions without changing their token.
+            AC-01: unexpired sessions remain valid.
+            AC-02: expired sessions are rejected and their token remains unchanged.
+            Allowed changes: src/session.py; tests/test_future.py
+            Authority: direction.md, revision 1
+            Targeted: python -m unittest tests.test_future
+            {prerequisite}
+            """)
+        write(base, "docs/tasks/CURRENT/verification.md", """
+            # Verification Design: CURRENT
+
+            Source brief: docs/tasks/CURRENT/brief.md
+            Status: ready
+            Verification revision: 1
+
+            ### V-01 — Unexpired boundary behaves
+            Covers: AC-01
+            Setup: token abc, expires_at 20, now 10.
+            Oracle / boundary: is_valid returns true.
+
+            ### V-02 — Expired boundary rejected without token change
+            Covers: AC-02
+            Setup: token abc, expires_at 10, now 10.
+            Oracle / boundary: is_valid returns false and token remains abc.
+            The task-owned future test tests/test_future.py is feasible with local Python unittest.
+            """)
+        write(base, "docs/tasks/CURRENT/preflight.md", f"""
+            # Preflight: CURRENT
+
+            Status: ready
+            Profile: guided
+            Source brief: docs/tasks/CURRENT/brief.md
+            Verification design: docs/tasks/CURRENT/verification.md
+            Verification revision: 1
+            Allowed changes: src/session.py; tests/test_future.py
+            Dependency: {dependency}
+            Ownership: committed baseline; no overlapping user work
+            Permission: policy.md allows local writes and tests; network, installs and commits denied
+            Capability: {capability}
+            Authority: direction.md, revision 1; docs/tasks/CURRENT/brief.md
+            Authority revision: 1
+            Expected effects: in-scope implementation and docs/tasks/CURRENT/result.md report preserve readiness
+            """)
+        write(base, "policy.md", "# Policy\n\nLocal writes allowed. Local tests allowed. Network, installs and commits denied.\n")
+        write(base, "direction.md", "# Direction\n\nDirection revision 1. Reject expired sessions without changing tokens.\n")
+        write(base, "src/session.py", "def is_valid(session, now):\n    return bool(session.get('token'))\n")
+        write(base, "tests/__init__.py", "")
+
+    def revised_state(folder, verification_revision, preflight_revision, note):
+        write(root, f"docs/tasks/REVISED/{folder}/brief.md", "# REVISED — Scenario revision\n\nStatus: ready\nTask kind: executable\nOutcome: reject expired sessions without changing their token.\nAC-01: unexpired sessions remain valid.\nAC-02: expired sessions are rejected and their token remains unchanged.\nAllowed changes: src/session.py; tests/test_future.py\nTargeted: python -m unittest tests.test_future\n")
+        write(root, f"docs/tasks/REVISED/{folder}/verification.md", f"# Verification Design: REVISED\n\nSource brief: docs/tasks/REVISED/{folder}/brief.md\nStatus: ready\n\nVerification revision: {verification_revision}\n\n### V-01 — Unexpired session remains valid\nCovers: AC-01\nSetup: token abc, expires_at 20, now 10.\nOracle / boundary: is_valid returns true.\n\n### V-02 — Expired session rejected\nCovers: AC-02\nSetup: token abc, expires_at 10, now 10.\nOracle / boundary: is_valid returns false.\nThe task-owned future test tests/test_future.py is feasible with local Python unittest.\n{note}")
+        write(root, f"docs/tasks/REVISED/{folder}/preflight.md", f"# Preflight: REVISED\n\nStatus: ready\nProfile: guided\nSource brief: docs/tasks/REVISED/{folder}/brief.md\nVerification design: docs/tasks/REVISED/{folder}/verification.md\nVerification revision: {preflight_revision}\nAllowed changes: src/session.py; tests/test_future.py\nDependency: Python standard library only\nOwnership: committed baseline; no overlapping user work\nPermission: local writes and tests allowed; network, installs and commits denied\nCapability: Python unittest observes src/session.py; task-owned future test is feasible\nAuthority: docs/tasks/REVISED/{folder}/brief.md; outcome and scope unchanged\n")
+
+    for folder in ("old", "refreshed", "old-again"):
+        revised_state(folder, 1, 1, "")
+
+    task("EVIDENCE",
+        "# EVIDENCE — Scenario evidence submission\n\nStatus: ready\n\nTask kind: executable\n\nAC-01: positive boundary behaves.\nAC-02: failure case is rejected.\n",
+        "# Verification Design: EVIDENCE\n\nSource brief: docs/tasks/EVIDENCE/brief.md\nStatus: ready\n\nVerification revision: 2\n\n### V-01 — Positive boundary holds\nCovers: AC-01\n\n### V-02 — Negative boundary is rejected\nCovers: AC-02\n\n### V-03 — Network oracle\nCovers: AC-02\n\n### V-04 — Regression oracle\nCovers: AC-01\nCoverage revision under unchanged authority; scenario IDs retained.\n",
+        "# Preflight: EVIDENCE\n\nStatus: ready\nProfile: guided\nSource brief: docs/tasks/EVIDENCE/brief.md\nVerification design: docs/tasks/EVIDENCE/verification.md\nVerification revision: 2\n")
+    write(root, "docs/tasks/EVIDENCE/verification-v1.md", "# Verification Design: EVIDENCE\n\nSource brief: docs/tasks/EVIDENCE/brief.md\nStatus: ready\n\nVerification revision: 1\n\n### V-01 — Positive boundary holds\nCovers: AC-01\n\n### V-02 — Negative boundary is rejected\nCovers: AC-02\n")
+    write(root, "tests/__init__.py", "")
+    write(root, "tests/test_boundary.py", "import unittest\n\n\ndef is_within(value, limit):\n    return value <= limit\n\n\nclass BoundaryTest(unittest.TestCase):\n    def test_positive_boundary_holds(self):\n        self.assertTrue(is_within(5, 10))\n")
+    write(root, "tests/test_negative.py", "import unittest\n\n\ndef is_within(value, limit):\n    return True  # faulty: accepts every boundary violation\n\n\nclass NegativeTest(unittest.TestCase):\n    def test_negative_boundary_is_rejected(self):\n        self.assertFalse(is_within(11, 10), 'boundary violation was accepted')\n")
+
+    write(root, "evidence/ledger-complete.md",
+          "# Scenario evidence ledger (complete)\n\nVerification design: docs/tasks/EVIDENCE/verification.md\nVerification revision: 2\n\nV-01 — passed — command: python -m unittest tests.test_boundary; setup: entry-cases fixture root; oracle: positive boundary assert holds; result: ok\nV-02 — failed — command: python -m unittest tests.test_negative; setup: entry-cases fixture root; oracle: negative boundary assert rejects; result: AssertionError reproduced\nV-03 — blocked — reason: policy denies network access; next owner: task-preflight\nV-04 — unchecked — reason: not exercised in this pass; next owner: fresh task-review-discovery evidence, then a separate fresh task-acceptance-review decision\nContext reference: docs/tasks/EVIDENCE/preflight.md\nRemaining obligations:\n- V-02 — repair the rejected-boundary failure and rerun python -m unittest tests.test_negative; next owner: bounded-task-implementer, then fresh task-review-discovery evidence, then a separate fresh task-acceptance-review decision\n- V-03 — resolve the denied network oracle or record a justified replacement; next owner: task-preflight\n- V-04 — exercise unchecked regression coverage; next owner: fresh task-review-discovery evidence, then a separate fresh task-acceptance-review decision\n")
+    write(root, "evidence/ledger-green-gap.md",
+          "# Scenario evidence ledger (green gap)\n\nVerification design: docs/tasks/EVIDENCE/verification.md\nAuthoritative AC mapping: AC-01 <- V-01, V-04; AC-02 <- V-02, V-03\nV-01 — passed — green\nAll tests green. Omitted negative scenario V-02: not covered here.\n")
+    write(root, "evidence/ledger-obsolete.md",
+          "# Scenario evidence ledger (obsolete)\n\nVerification design: docs/tasks/EVIDENCE/verification.md\nAuthoritative AC mapping: AC-01 <- V-01, V-04; AC-02 <- V-02, V-03\nEvidence verification revision: 1\nV-01 — passed — evidence collected before implementation bytes changed.\nCurrent authoritative revision: 2 (docs/tasks/EVIDENCE/verification.md)\n")
+
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "fixture baseline")
+    write(root, "transitions/expected-implementation/src/session.py", "def is_valid(session, now):\n    return bool(session.get('token')) and session['expires_at'] > now\n")
+    write(root, "transitions/expected-report/docs/tasks/CURRENT/result.md", "# Implementation result\n\nReport artifact produced by expected work.\n")
+    write(root, "transitions/ownership/src/session.py", "def is_valid(session, now):\n    return True  # user staged change\n")
+    git(root, "add", "transitions/ownership/src/session.py")
+    write(root, "transitions/ownership/src/session.py", "def is_valid(session, now):\n    return True  # unstaged continuation after staging\n")
+    write(root, "transitions/permission/policy.md", "# Policy\n\nLocal writes revoked. Local tests allowed. Network, installs and commits denied.\n")
+    write(root, "transitions/authority/direction.md", "# Direction\n\nDirection revision 2. Expired sessions may be accepted.\n")
+    (root / "transitions/prerequisite/tools/time_sdk.py").unlink()
+    (root / "transitions/capability/tools/secure_clock.py").unlink()
+    for folder, preflight_revision in (("old", 1), ("refreshed", 2), ("old-again", 1)):
+        revised_state(folder, 2, preflight_revision,
+                      "Coverage revision under unchanged authority; scenario IDs retained. V-02 now also asserts token remains abc, closing the existing AC-02 evidence gap.\n")
+
+
+ROUTE_CASE_TABLE = (
+    ("INIT-NEITHER",
+     "maintainability review does not apply and the registry stage does not apply; architecture gate not required",
+     "no applicable conditional stage has current completion evidence",
+     "discovery → acceptance", None),
+    ("INIT-MAINT-GATE",
+     "maintainability review applies and the registry stage does not apply; architecture gate required",
+     "no applicable conditional stage has current completion evidence",
+     "architecture gate → fresh maintainability review → discovery → acceptance", None),
+    ("INIT-MAINT-NOGATE",
+     "maintainability review applies and the registry stage does not apply; architecture gate not required",
+     "no applicable conditional stage has current completion evidence",
+     "fresh maintainability review → discovery → acceptance", None),
+    ("INIT-REGISTRY",
+     "maintainability review does not apply and the registry stage applies; architecture gate not required",
+     "no applicable conditional stage has current completion evidence",
+     "registry updater → discovery → acceptance", None),
+    ("INIT-BOTH-GATE",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "no applicable conditional stage has current completion evidence",
+     "architecture gate → fresh maintainability review → registry updater → discovery → acceptance", None),
+    ("INIT-BOTH-NOGATE",
+     "maintainability review applies and the registry stage applies; architecture gate not required",
+     "no applicable conditional stage has current completion evidence",
+     "fresh maintainability review → registry updater → discovery → acceptance", None),
+    ("STATE-MAINT-GATE-COMPLETE",
+     "maintainability review applies and the registry stage does not apply; architecture gate required",
+     "architecture gate complete: current and applicable to the submitted scope; maintainability review complete: stale for superseded bytes",
+     "fresh maintainability review → discovery → acceptance", None),
+    ("STATE-MAINT-COMPLETE",
+     "maintainability review applies and the registry stage does not apply; architecture gate not required",
+     "maintainability review complete: current and applicable to the submitted scope",
+     "discovery → acceptance", None),
+    ("STATE-REGISTRY-COMPLETE",
+     "maintainability review does not apply and the registry stage applies; architecture gate not required",
+     "registry updater complete: current and applicable to the submitted scope",
+     "discovery → acceptance", None),
+    ("STATE-BOTH-GATE-MAINT-COMPLETE",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "architecture gate complete: current and applicable to the submitted scope; maintainability review complete: current and applicable to the submitted scope",
+     "registry updater → discovery → acceptance", None),
+    ("STATE-BOTH-UPDATER-COMPLETE",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "registry updater complete: current and applicable to the submitted scope; architecture gate complete: stale for superseded bytes; maintainability review complete: stale for superseded bytes",
+     "architecture gate → fresh maintainability review → discovery → acceptance", None),
+    ("STATE-BOTH-COMPLETE",
+     "maintainability review applies and the registry stage applies; architecture gate not required",
+     "maintainability review complete: current and applicable to the submitted scope; registry updater complete: current and applicable to the submitted scope",
+     "discovery → acceptance", None),
+    ("STATE-BOTH-INAPPLICABLE",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "architecture gate complete: current but inapplicable to the submitted scope; maintainability review complete: current but inapplicable to the submitted scope; registry updater complete: current but inapplicable to the submitted scope",
+     "architecture gate → fresh maintainability review → registry updater → discovery → acceptance", None),
+    ("CORR-NEITHER",
+     "maintainability review does not apply and the registry stage does not apply; architecture gate not required",
+     "prior acceptance stale for the corrected bytes; no applicable conditional stage has current completion evidence",
+     "discovery → acceptance",
+     "src/feature.py — production correction"),
+    ("CORR-MAINT-GATE",
+     "maintainability review applies and the registry stage does not apply; architecture gate required",
+     "all conditional evidence stale for the corrected production bytes",
+     "architecture gate → fresh maintainability review → discovery → acceptance",
+     "src/feature.py — production correction"),
+    ("CORR-REGISTRY",
+     "maintainability review does not apply and the registry stage applies; architecture gate not required",
+     "registry updater evidence stale for the corrected bytes",
+     "registry updater → discovery → acceptance",
+     "src/contracts.py — production correction"),
+    ("CORR-BOTH-FULL",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "architecture gate complete: stale and inapplicable to the corrected production bytes; maintainability review complete: stale for the corrected bytes; registry updater complete: stale for the corrected bytes",
+     "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+     "src/feature.py — production correction"),
+    ("CORR-BOTH-MIXED",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "architecture gate complete: current for the corrected scope; maintainability review complete: current for the corrected scope; registry updater evidence stale for the corrected bytes",
+     "registry updater → discovery → acceptance",
+     "src/feature.py — production correction"),
+    ("CORR-BOTH-TESTS-ONLY",
+     "maintainability review applies and the registry stage applies; architecture gate required; no repository-authorized exception for tests-only corrections",
+     "no conditional stage has current completion evidence for the corrected bytes; tests-only correction",
+     "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+     "tests/test_feature.py — tests-only correction without an authorized skip"),
+)
+
+
+def route_cases() -> None:
+    root = WORK / "route-cases"
+    initialize(root)
+    write(root, "AGENTS.md", "# Fixture rules\n\nRoute cases supply complete preparation and stage state for submission-route guidance.\n")
+    for case_id, policy, evidence, route, correction in ROUTE_CASE_TABLE:
+        write(root, f"docs/tasks/{case_id}/brief.md", f"""
+        # {case_id} — Submission-route case
+
+        Status: ready
+        Task kind: executable
+        Outcome: name the first outstanding applicable stage and the complete ordered remainder at submission.
+        Conditional-stage policy: {policy}
+        AC-01: the submission route names the first outstanding applicable stage and the complete ordered remainder.
+        """)
+        write(root, f"docs/tasks/{case_id}/verification.md", f"""
+        # Verification Design: {case_id}
+
+        Source brief: docs/tasks/{case_id}/brief.md
+        Status: ready
+        Verification revision: 1
+
+        ### V-01 — Route matches the supplied policy and stage state
+        Covers: AC-01
+        Oracle / boundary: compare the expected submission route with the published handoff guidance.
+        """)
+        write(root, f"docs/tasks/{case_id}/preflight.md", f"""
+        # Preflight: {case_id}
+
+        Status: ready
+        Profile: guided
+        Source brief: docs/tasks/{case_id}/brief.md
+        Verification design: docs/tasks/{case_id}/verification.md
+        Verification revision: 1
+        Conditional-stage policy: {policy}
+        Conditional-stage evidence: {evidence}
+        Expected submission route: {route}
+        Dependency: local handoff guidance only
+        Ownership: no overlapping user work
+        Permission: local writes allowed
+        Capability: submission route observable from published guidance
+        Authority: docs/tasks/{case_id}/brief.md
+        """)
+        if correction:
+            write(root, f"docs/tasks/{case_id}/reviews/acceptance-01.md", f"""
+            # {case_id} acceptance review
+
+            Preceding verdict: CHANGES_REQUESTED
+            Changed scope: {correction}
+            Affected prior evidence: {evidence}
+            Coverage ledger:
+            - ROW-ROUTE — failed — corrected bytes need a fresh submission route.
+            Remaining obligations:
+            - ROW-ROUTE — rerun the owning checks; next owner: bounded-task-implementer, then the first outstanding applicable conditional stage, then fresh task-review-discovery evidence and a separate fresh task-acceptance-review decision.
+            """)
+    full = "architecture gate → fresh maintainability review → registry updater → discovery → acceptance"
+    effects = {
+        "clarification": ("context.md", "unknown input", "supplied input", "clarifying artifact owner → discovery → acceptance"),
+        "evidence": ("capability.md", "helper missing", "helper owner identified; still missing", "capability owner → discovery → acceptance"),
+        "production": ("src/contract.py", "return True", "return type(value) is int", full),
+        "tests-policy-exception": ("tests/test_contract.py", "assert accepts(1)", "assert accepts(1); assert not accepts(True)", "registry updater → discovery → acceptance"),
+        "reference": ("docs/contract.md", "Accept numbers", "Accept integers, reject booleans", "registry updater → acceptance"),
+        "reference-executable": ("docs/contract.py", "return type(value) is int", "return isinstance(value, int)", full),
+        "reference-missing-proof": ("docs/contract.md", "Accept numbers", "Accept integers, reject booleans", "registry updater → discovery → acceptance"),
+        "scenario": ("verification.md", "Revision 1: V-01 valid", "Revision 2: V-01 valid; V-02 boolean rejected; unchanged authority, coverage gap", "verification designer → focused preflight → revised-scenario evidence → acceptance"),
+        "authority": ("brief.md", "Reject booleans", "Allow booleans", "task designer/decision owner"),
+    }
+    cases = {}
+    for name, (path, before, after, route) in effects.items():
+        folder = f"change-effects/{name}"
+        for state, content in (("before", before), ("after", after)):
+            write(root, f"{folder}/{state}/docs/__init__.py", "")
+            write(root, f"{folder}/{state}/docs/contract.py", "def accepts(value):\n    return type(value) is int")
+            write(root, f"{folder}/{state}/{path}",
+                  f"def accepts(value):\n    {content}" if path.endswith("contract.py") else content)
+        cases[name] = {
+            "changed_paths": [path], "route": route,
+            "current_proof": name != "reference-missing-proof",
+            "policy": ("explicit policy exception: skip architecture and maintainability only for this tests-only correction; registry still applies"
+                       if name == "tests-policy-exception" else "no tests-only exception; applicable conditional stages retained"),
+            "evidence": "supplied current contract probe" if name != "reference-missing-proof" else "no applicable current behavioral proof supplied",
+        }
+    write(root, "change-effects/cases.json", json.dumps(cases, indent=2))
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "fixture baseline")
+
+
+REVIEW_CONDITION_TABLE = (
+    ("MILESTONE-NOREVIEW",
+     "no independent functional review is required for this submission",
+     "maintainability review does not apply and the registry stage does not apply; architecture gate not required",
+     "no applicable conditional stage has current completion evidence",
+     None),
+    ("MILESTONE-REQUIRED",
+     "independent functional review is explicitly required for this submission despite the milestone metadata",
+     "maintainability review applies and the registry stage applies; architecture gate required",
+     "no applicable conditional stage has current completion evidence",
+     "architecture gate → fresh maintainability review → registry updater → discovery → acceptance"),
+)
+
+
+def review_cases() -> None:
+    root = WORK / "review-cases"
+    initialize(root)
+    write(root, "AGENTS.md", "# Fixture rules\n\nReview-condition cases supply complete preparation and an explicit review condition for submission-route guidance.\n")
+    for case_id, condition, policy, evidence, route in REVIEW_CONDITION_TABLE:
+        write(root, f"docs/tasks/{case_id}/brief.md", f"""
+        # {case_id} — Review-condition case
+
+        Status: ready
+        Task kind: executable
+
+        ```yaml
+        agent_tier: standard
+        reasoning: medium
+        review: milestone
+        budget: 20 tool calls / 45 minutes / 60k context
+        ```
+
+        Outcome: follow the prescribed submission outcome for the supplied review condition.
+        Review condition: {condition}
+        Conditional-stage policy: {policy}
+        AC-01: the submission outcome matches the review condition, not the metadata label alone.
+        """)
+        write(root, f"docs/tasks/{case_id}/verification.md", f"""
+        # Verification Design: {case_id}
+
+        Source brief: docs/tasks/{case_id}/brief.md
+        Status: ready
+        Verification revision: 1
+
+        ### V-01 — Submission outcome matches the review condition
+        Covers: AC-01
+        Oracle / boundary: compare the prescribed outcome with the published handoff guidance.
+        """)
+        outcome = (
+            f"Expected submission route: {route}"
+            if route
+            else "Expected submission route: none — no submission route is imposed; existing milestone result semantics are unchanged"
+        )
+        write(root, f"docs/tasks/{case_id}/preflight.md", f"""
+        # Preflight: {case_id}
+
+        Status: ready
+        Profile: guided
+        Source brief: docs/tasks/{case_id}/brief.md
+        Verification design: docs/tasks/{case_id}/verification.md
+        Verification revision: 1
+        Review condition: {condition}
+        Conditional-stage policy: {policy}
+        Conditional-stage evidence: {evidence}
+        {outcome}
+        Dependency: local handoff guidance only
+        Ownership: no overlapping user work
+        Permission: local writes allowed
+        Capability: submission outcome observable from published guidance
+        Authority: docs/tasks/{case_id}/brief.md
+        """)
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "fixture baseline")
 
 
 SCENARIOS = {
@@ -551,6 +1156,9 @@ SCENARIOS = {
     "api-guided": api_guided,
     "api-immediate": api_immediate,
     "record-correction": record_correction,
+    "entry-cases": entry_cases,
+    "route-cases": route_cases,
+    "review-cases": review_cases,
 }
 
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:

@@ -76,7 +76,7 @@
     {
       "id": 4,
       "prompt": "Gap-check the existing task at `docs/tasks/API-31/brief.md` for ordinary guided implementation. It already has an outcome, scope, positive and negative ACs, targeted and broader commands, stops, and a next action. Its authority explicitly calls for an economical standard-agent, medium-reasoning launch profile and immediate fresh acceptance review. Estimate it at 6 implementation-agent calls and 20 minutes under the active sizing policy. Add the standard `agent_tier`, `reasoning`, `review`, and `budget` metadata block, the execution-sizing evidence, and the proportionate readiness route, but do not rewrite adequate prose or add high-assurance ledgers, matrices, digests, packet requirements, or prerequisite tasks.",
-      "expected_output": "A surgical update that adds truthful intended launch guidance, fitting execution-sizing evidence, and the implementer self-preflight route; preserves guided implementation as the next action; and explicitly requires fresh independent acceptance review immediately after implementation without replacing the brief with the full template.",
+      "expected_output": "A surgical update that adds truthful intended launch guidance, fitting execution-sizing evidence, and the implementer self-preflight route; preserves guided implementation as the next action; and explicitly requires fresh independent `task-review-discovery` evidence and the separate `task-acceptance-review` decision immediately after implementation or correction without replacing the brief with the full template.",
       "files": [
         "evals/files/setup_fixture.py"
       ],
@@ -100,7 +100,7 @@
         "The brief adds execution-sizing evidence for the supplied 6-call / 20-minute estimate, identifies the active policy result as fitting, and does not treat the surgical gap-check as exempt from sizing.",
         "The result keeps guided status `ready`, recommends `implementer self-preflight`, adds no route metadata key, and does not force standalone preflight.",
         "The verification-design recommendation is `inline` because the existing brief already supplies obvious positive and negative scenarios and decisive commands/oracles.",
-        "The handoff preserves guided implementation as the next action and explicitly requires fresh independent acceptance review immediately after implementation or correction; a generic implementation next action alone or same-session self-review semantics fails this expectation.",
+        "The handoff preserves guided implementation as the next action and explicitly requires fresh independent `task-review-discovery` evidence and the separate `task-acceptance-review` decision immediately after implementation or correction; a generic implementation next action alone, same-session self-review semantics, or a route that sends implementation straight to acceptance without discovery fails this expectation.",
         "No knowledge ledger, AC execution matrix, digest inventory, durable packet contract, or prerequisite task is added.",
         "Only `docs/tasks/API-31/brief.md` is modified."
       ]
@@ -232,7 +232,7 @@
     {
       "id": 9,
       "prompt": "Design TASK-40 from `docs/project-plan.md` and `docs/task-map.json` using the task-implementation-flow defaults. Use the approved sizing input in the plan. Create durable task-design artifacts, but do not implement anything or edit the project plan/task map.",
-      "expected_output": "A canonical decomposition package: TASK-40 becomes a non-executable composite parent, coherent executable child briefs are created and independently re-estimated until each leaf fits the active sizing policy (or carries the explicit permitted unsplittable override), and `docs/tasks/index.json` records the structural parent/child graph without becoming an execution ledger.",
+      "expected_output": "A canonical decomposition package: TASK-40 becomes a non-executable composite parent, coherent executable child briefs are created and independently re-estimated until each leaf fits the active sizing policy (or carries the explicit permitted reasoned no-split override), and `docs/tasks/index.json` records the structural parent/child graph without becoming an execution ledger.",
       "files": [
         "evals/files/setup_fixture.py"
       ],
@@ -251,10 +251,10 @@
         "workspace": "{run_root}/work/decomposition"
       },
       "expectations": [
-        "The output reads the active task-sizing policy rather than hard-coding a different threshold and recognizes the approved 24-call / 65-minute unsplit estimate as requiring decomposition.",
+        "The output reads the active task-sizing policy rather than hard-coding a different threshold and treats the approved 24-call / 65-minute unsplit estimate as triggering the boundary decision; the split is justified by the plan's three settled coherent boundaries with independently verifiable outcomes, not by the trigger alone.",
         "The parent brief is written at the canonical task package location with `Status: decomposed` and `Task kind: composite`, and it has no executable launch metadata or readiness route.",
         "At least two child briefs use stable numeric suffix IDs, are full executable task briefs rather than checklist bullets, preserve relevant FLOW-40 / ART-40 / IF-40 / INV-40 context, and state explicit dependencies/owned outputs.",
-        "Every executable leaf is independently re-estimated and either fits the active sizing envelope or records the allowed `cannot_split_safely` override with a concrete reason; merely renaming the original work into children is insufficient.",
+        "Every executable leaf is independently re-estimated and either fits the active sizing envelope or records the allowed `cannot_split_safely` override with the candidate boundary considered, a concrete reason, and residual execution risk; merely renaming the original work into children is insufficient.",
         "Parent outcome/AC coverage is mapped to children, and any end-to-end proof that requires sibling composition is owned by an executable integration child rather than a special composite-parent review stage.",
         "`docs/tasks/index.json` is created as a structural discovery/decomposition index and does not contain runtime attempt/controller/review status.",
         "`docs/project-plan.md`, `docs/task-map.json`, implementation, tests, and orchestration state are unchanged."
@@ -292,7 +292,7 @@
     {
       "id": 11,
       "prompt": "Design TASK-51 from `docs/project-plan.md` using the default task artifact layout and current sizing policy. Use the approved sizing input in the plan and preserve the two stated ownership boundaries. Do task design only.",
-      "expected_output": "TASK-51 is decomposed even though its call/time estimates are below the numeric maxima, because the combined launch profile is strong+high; the child briefs follow the two coherent ownership boundaries and are independently re-estimated rather than carrying the parent's profile mechanically.",
+      "expected_output": "TASK-51's strong+high launch profile triggers the boundary decision even though its call/time estimates are below the numeric maxima; the boundary evaluation confirms that the plan's two independently verifiable ownership boundaries offer a settled immutable-artifact handoff and cheaper coordination than keeping the work whole, so TASK-51 is decomposed. The child briefs follow the two coherent ownership boundaries and are independently re-estimated rather than carrying the parent's profile mechanically.",
       "files": [
         "evals/files/setup_fixture.py"
       ],
@@ -311,7 +311,7 @@
         "workspace": "{run_root}/work/sizing-strong-high"
       },
       "expectations": [
-        "The skill recognizes strong/high as an active decomposition trigger even though 12 calls and 35 minutes are below the numeric maxima.",
+        "The skill recognizes strong/high as an active decomposition trigger even though 12 calls and 35 minutes are below the numeric maxima, and the split decision cites boundary quality rather than the trigger or high reasoning alone.",
         "TASK-51 becomes a `decomposed` composite parent and the two independently verifiable ownership boundaries become dependent executable child briefs.",
         "The second child explicitly consumes the immutable normalized artifact produced by the first and both preserve INV-51.",
         "Each child receives its own implementation estimate and launch metadata; the parent strong/high profile is not copied blindly to every child.",

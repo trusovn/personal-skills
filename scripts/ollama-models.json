@@ -3,6 +3,24 @@
   "endpoint": "http://127.0.0.1:11434",
   "default_model": "glm-flash",
   "models": {
+    "glm-max": {
+      "model": "glm-5.3:cloud",
+      "think": "max",
+      "context_length": 65536,
+      "temperature": 0,
+      "top_p": 1,
+      "max_tokens": 16384,
+      "timeout_seconds": 900
+    },
+    "glm-high": {
+      "model": "glm-5.3:cloud",
+      "think": "high",
+      "context_length": 65536,
+      "temperature": 0,
+      "top_p": 1,
+      "max_tokens": 16384,
+      "timeout_seconds": 900
+    },
     "glm-flash": {
       "model": "glm-5.3-flash:cloud",
       "think": "low",
@@ -21,6 +39,15 @@
       "max_tokens": 8192,
       "timeout_seconds": 900
     },
+    "deepseek-pro": {
+      "model": "deepseek-v4-pro:cloud",
+      "think": "max",
+      "context_length": 65536,
+      "temperature": 0,
+      "top_p": 1,
+      "max_tokens": 16384,
+      "timeout_seconds": 900
+    },
     "kimi-code": {
       "model": "kimi-k2.7-code:cloud",
       "think": true,
@@ -28,6 +55,15 @@
       "temperature": 0,
       "top_p": 1,
       "max_tokens": 8192,
+      "timeout_seconds": 900
+    },
+    "kimi-k3": {
+      "model": "kimi-k3:cloud",
+      "think": true,
+      "context_length": 65536,
+      "temperature": 0,
+      "top_p": 1,
+      "max_tokens": 16384,
       "timeout_seconds": 900
     }
   }

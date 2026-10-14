@@ -1,0 +1,18 @@
+{
+  "archive_commit": "0ad1706cecc6f7d115e510762bf74c58d732cb6a",
+  "inputs": {
+    "docs/task-map.json": "tests/fixtures/review-composition/task-map.json",
+    "docs/tasks/INT-FLOW-001/results.md": "tests/fixtures/review-composition/tasks/INT-FLOW-001/results.md",
+    "docs/tasks/T-002.4/composition.json": "tests/fixtures/review-composition/tasks/T-002.4/composition.json",
+    "docs/tasks/T-003.4/composition.json": "tests/fixtures/review-composition/tasks/T-003.4/composition.json",
+    "docs/tasks/T-003.4/results.md": "tests/fixtures/review-composition/tasks/T-003.4/results.md",
+    "docs/tasks/T-005.1/evidence/V-02-setup-reconstruction.md": "tests/fixtures/review-composition/tasks/T-005.1/evidence/V-02-setup-reconstruction.md",
+    "docs/tasks/T-005.1/evidence/V-03-install-projection.md": "tests/fixtures/review-composition/tasks/T-005.1/evidence/V-03-install-projection.md",
+    "docs/tasks/T-005.1/evidence/V-04-drift-contrast.md": "tests/fixtures/review-composition/tasks/T-005.1/evidence/V-04-drift-contrast.md",
+    "docs/tasks/T-005.1/fixtures.md": "tests/fixtures/review-composition/tasks/T-005.1/fixtures.md",
+    "docs/tasks/T-005.1/results.md": "tests/fixtures/review-composition/tasks/T-005.1/results.md",
+    "docs/tasks/T-005.1/setup_consumer.py": "tests/fixtures/review-composition/tasks/T-005.1/setup_consumer.py",
+    "docs/tasks/T-005.6/brief.md": "tests/fixtures/review-composition/tasks/T-005.6/brief.md",
+    "docs/tasks/index.json": "tests/fixtures/review-composition/tasks/index.json"
+  }
+}

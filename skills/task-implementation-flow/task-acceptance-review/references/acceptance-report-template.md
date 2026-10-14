@@ -12,6 +12,7 @@
 | Task brief | `<exact path and preflight-recorded SHA-256>` |
 | Preflight packet | `<exact path>` |
 | Implementer result | `<exact corrected/current path and status>` |
+| Discovery report | `<exact path and coverage completeness; or absence and routed gap>` |
 | Run policy | `<identifier and path>` |
 
 This report applies only to the reviewed bytes and artifacts identified below.
@@ -32,7 +33,8 @@ reviewer. Do not use `INCONCLUSIVE` to describe missing independence.
 
 ## 2. Findings, ordered P0 through P3
 
-Use `No findings.` when no concrete defect exists.
+Use `No findings.` when no concrete defect exists. Preserve the discovery
+report's stable finding IDs; do not rename, merge, or drop them.
 
 ### F-01 [P1] `<consequence-focused title>`
 
@@ -42,34 +44,70 @@ Use `No findings.` when no concrete defect exists.
 | Current location | `<repository-relative path:line>` |
 | Triggering state/input | `<specific reproducible precondition and action>` |
 | Consequence | `<user, data, system, contract, or operational impact>` |
-| Evidence | `<trace, independent probe, command result, or code fact>` |
+| Affected boundary | `<interface, consumer, state, or subsystem boundary>` |
+| Evidence | `<admitted discovery trace, probe result, or code fact>` |
+| Impact (assessed separately from likelihood) | `<materiality under supplied decision context, not severity label or reviewer taste>` |
+| Likelihood / exposure | `<credible exposure or next-change horizon; low likelihood cannot erase catastrophic data/security/irreversible-state consequences>` |
+| Existing mitigation | `<existing safeguard actually in effect; planned work is not mitigation>` |
 | Affected AC | `<AC-ID>` |
 | Broken invariant | `<task-authorized property that does not hold>` |
 | Credible sibling surface | `<contract-implied cases sharing that invariant>` |
 | Smallest corrective direction | `<invariant-level bounded direction; no patch or field-local special case>` |
+| Fix-now / deferral rationale | `<contextual reason tied to supplied operating/business/consumer/maintenance context; passing ACs do not excuse demonstrated material risk>` |
+| Disposition | `<block-fix-now | accepted-deferral candidate | observation | retained as unresolved with reason and owner>` |
 
 Keep confirmed findings separate from unproved questions and from unchecked
-coverage rows. Continue through independent safe rows after the first finding.
+coverage rows. Every confirmed finding and unfinished row from the admitted
+discovery report survives the decision with its current result and evidence,
+or its incomplete reason and owner.
 
-## 3. Completeness ledger
+### Accepted deferrals and coordinator recording
 
-Use stable task-derived row IDs. Consume a supplied prior ledger without
-renaming rows, but rerun enough evidence for the current bytes; prior `pass`
-guides the review and is not current proof.
+A bounded non-material confirmed finding may be accepted with a proposed
+known issue only when all required evidence passes, the effect is bounded,
+consumers are compatible, and the deferral waives no required AC, proof, or
+demonstrated material risk and imposes no hidden consumer workaround. This
+report proposes the deferral; the human coordinator alone records it, before
+authorized advancement, in `docs/known-issues.md` or the repository's
+declared path. The acceptance review never creates or edits that file, and no
+known-issues file is required before a deferral exists.
 
-| Row ID | AC / invariant | Explicit material cases | Submitted evidence | Independent probe / current evidence | Result / reason |
-|---|---|---|---|---|---|---|
-| `<stable ID>` | `<observable contract>` | `<finite values/state transitions>` | `<worker claim or N/A>` | `<entry point, boundary, observed result or exact gap>` | `pass | fail | blocked | unchecked — <reason>` |
+The proposed record carries: a stable project issue ID; task/review/finding
+provenance; trigger, consequence, and evidence; impact and likelihood;
+affected boundary and consumers; deferral rationale; follow-up owner and
+action; and reassessment conditions. Optional proportional context links may
+add subsystem/area, existing invariant/contract/flow/plan IDs, related issue
+IDs distinguishing confirmed relationships from suspected similarity,
+safeguards or explicit assumptions with reassessment triggers, and relevant
+migration/refactor/replacement work distinguishing proposed from committed
+work. Missing links mean unknown relationships, not their absence; planned
+work alone is not existing mitigation. Preferences, polish, and unproved
+minor concerns are recorded as observations, never as known issues. A later
+priority change alone does not reopen an accepted deferral; changed material
+facts that invalidate an actual acceptance assumption can require focused
+review under existing authority.
 
-Passing worker tests are submitted claims until independently corroborated.
-Every required/material row must have one of the four results before the review
+## 3. Admitted evidence ledger and reconciliation
+
+Use the discovery report's stable task-derived row IDs. Consume a supplied
+prior ledger without renaming rows, but reconcile every row against current
+authority and reviewed bytes; a prior `pass` guides the decision and is not
+current proof.
+
+| Row ID | AC / invariant | Explicit material cases | Submitted evidence | Admitted discovery evidence | Reconciled result / reason |
+|---|---|---|---|---|---|
+| `<stable ID>` | `<observable contract>` | `<finite values/state transitions>` | `<worker claim or N/A>` | `<reported probe, boundary, observed result or exact gap>` | `pass | fail | blocked | unchecked — <reason>` |
+
+Implementer summaries, report self-claims, and green tests are submitted claims
+until admitted evidence reconciles them against current bytes. Every
+required/material row must have one of the four results before the decision
 ends. `CHANGES_REQUESTED` does not imply that unlisted areas passed.
 
-## 4. Adversarial state and evidence checks
+## 4. Admitted adversarial evidence
 
-Include only rows relevant to this task.
+Consumed from the discovery report; include only rows relevant to this task.
 
-| Ledger row / invariant | Cases exercised | Result and evidence |
+| Ledger row / invariant | Cases exercised | Admitted result and evidence |
 |---|---|---|
 | Selected versus non-selected state coherence | `<cross-product cases>` | `<result>` |
 | Exact cardinality | `<zero, one, and two owners/items>` | `<result>` |
@@ -79,27 +117,32 @@ Include only rows relevant to this task.
 | Persisted type strictness | `<boolean/int, string/collection, other relevant confusions>` | `<result>` |
 | Coherent tampering | `<related bytes and internal digests rewritten together>` | `<consistency-only, independently anchored, or defect>` |
 
-## 5. Independent probes and command results
+## 5. Admitted discovery probes and command records
 
-| ID | Exact command / probe | Working directory / environment | Purpose / ACs | Result and observed signal | Side effects / disposition | Independence / gap |
-|---|---|---|---|---|---|---|
-| `REV-01` | `<exact command or reproducible probe>` | `<cwd and disposable state>` | `<claim>` | `<exit and observation>` | `<none or paths/cleanup>` | `<independent evidence or limitation>` |
+| ID | Exact command / probe (from discovery) | Working directory / environment | Purpose / ACs | Admitted result and observed signal | Admission status |
+|---|---|---|---|---|---|
+| `DISC-01` | `<exact command or reproducible probe>` | `<cwd and disposable state>` | `<claim>` | `<exit and observation>` | `current | stale | copied pre-correction | not run — <reason>` |
 
-Record required-but-unrun checks with the exact capability, permission, or
-environment blocker. Never copy a worker's `passed` label as reviewer evidence.
+Record required-but-unrun checks with the exact missing evidence and its next
+owner. Acceptance consumes these records; it does not routinely re-execute
+public probes, broad searches, or suites. Never copy a worker's `passed` label
+as decision evidence.
 
-## 6. Broad-gate decision
+## 6. Admitted aggregate-gate record
 
 | Field | Value |
 |---|---|
 | Gate / exact command | `<command or N/A>` |
 | Status | `passed | failed | not run | blocked` |
-| Owner and stage | `<discovery reviewer | correction implementer | fresh final reviewer>` |
-| Reason | `<why justified, or decisive targeted failure that suppressed it>` |
+| Owner and stage | `<initial discovery | correction discovery | fresh discovery after late omission>` |
+| Reason | `<why justified, decisive targeted failure that suppressed it, or distinct authorized diagnostic purpose>` |
+| Current evidence | `<what the gate observed at run time>` |
+| Consumed by acceptance | `admitted without re-execution | re-execution refused — discovery owns it` |
 
-A discovery review does not run the broad/aggregate gate merely for
-completeness after a decisive targeted failure. A fresh final reviewer owns it
-once, after reviewer regressions and all required targeted rows are clean.
+Acceptance admits this record without executing the command again. Suppression
+after a decisive targeted failure is retained; a copied pre-correction pass
+cannot replace a clean corrected discovery record; a premature gate does not
+clear an omitted row. Acceptance adds no gate and adds no command.
 
 ## 7. Scope and baseline comparison
 
@@ -122,44 +165,64 @@ State the exact diff/range/files reviewed. Do not absorb pre-existing user work.
 
 | Type / row ID | Evidence or reason unverified | Blocking? | Owner / follow-up |
 |---|---|---|---|
-| `question | blocked | unchecked | residual risk` | `<observed limit>` | `yes | no` | `<owner/action>` |
+| `question | blocked | unchecked | residual risk | observation / assumption` | `<observed limit or stated reasonable assumption>` | `yes | no` | `<owner/action>` |
 
 A failed required behavior is a finding, not residual risk. A missing required
-oracle is blocking and normally yields `INCONCLUSIVE`.
+oracle is blocking and normally yields `INCONCLUSIVE`. Missing discovery or
+missing decisive validator evidence routes to the discovery owner with the
+exact gap. Ordinary uncertainty continues under a stated reasonable assumption
+recorded here as an observation; unresolved decision-critical uncertainty with
+credible serious-delay or materially-costlier-later consequences is escalated
+as one focused question naming the consequence and the needed fact.
 
 ## 9. Verdict and next route
 
 | Field | Value |
 |---|---|
 | Verdict | `ACCEPT | CHANGES_REQUESTED | INCONCLUSIVE | none — SELF_CHECK_ONLY` |
-| Basis | `<findings, evidence, scope, commands, questions>` |
-| Next owner | `<orchestrator, same implementer thread, preflight, brief designer, or user>` |
+| Basis | `<findings, admitted evidence, scope, consumed commands, questions>` |
+| Next owner | `<orchestrator, same implementer thread, preflight, brief designer, discovery, or user>` |
 | Exact next action | `<one smallest action>` |
 
 - `ACCEPT` may route to authorized advancement.
-- `CHANGES_REQUESTED` routes to correction followed by a fresh review.
+- `CHANGES_REQUESTED` routes to correction followed by fresh discovery and a
+  fresh decision.
 - `INCONCLUSIVE` routes to the owner of the authority, freshness, capability,
-  environment, permission, or scope blocker.
+  environment, permission, scope, or evidence blocker.
 - `SELF_CHECK_ONLY` is not a verdict and always routes to a fresh reviewer.
 - Only an independent `ACCEPT` may advance work.
 
+Preserve separate correction/evidence/authority owners through the coordinator
+for every finding and unfinished row. Name the first outstanding applicable
+conditional stage and complete ordered remainder before fresh discovery and
+the separate decision; tests-only exceptions require explicit policy authority.
+Clarification/evidence requests do not imply production changes. A genuine
+reference-only updater → fresh acceptance shortcut requires actual effects and current behavioral proof;
+otherwise repeat affected discovery/gates. Unchanged-authority coverage revision
+returns to verification design → focused ready preflight → revised-scenario
+proof → new decision. New proof cannot excuse old readiness, including its
+substitution after recovery. Changed requirements return to their authority owner.
+
 ## 10. Review continuation
 
-Copy this compact block intact into the next review context:
+Copy this compact block intact into the next decision context:
 
 ```markdown
 Review continuation:
 - Iteration / current byte identity: <iteration; HEAD/scoped diff identity>
 - Coverage rows: <every stable row ID = pass/fail/blocked/unchecked + reason>
 - Finding IDs: <all IDs or none>
+- Finding/scenario continuity: <prior statuses, current producer-attributed evidence, incomplete reasons and separate correction/evidence/authority owners; influenced siblings>
+- Preparation/context: <brief, verification revision, preflight and context references>
 - Reviewer regressions: <paths and exact focused commands, or none>
-- Broad gate: <status, exact command/owner, reason>
+- Aggregate gate (consumed): <status, exact command/owner, reason>
 - Next: <one exact route>
 ```
 
 A fresh reviewer must also receive the task brief, current scoped diff,
-preceding verdict/report, reviewer regressions, and all blocked/unchecked rows.
-Prior row results are navigation context, not proof for corrected bytes.
+preceding verdict/report, discovery report, reviewer regressions, and all
+blocked/unchecked rows. Prior row results are navigation context, not proof for
+corrected bytes.
 
 ## 11. Post-verdict reproducer (optional)
 

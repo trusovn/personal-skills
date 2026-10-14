@@ -85,6 +85,113 @@
         "It stays compact and does not add performance, concurrency, security, migration, recovery, or cross-task scenarios absent from the brief.",
         "It leaves concrete test structure and implementation choices to `bounded-task-implementer`."
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Prepare the supplied inputs for implementation. Treat `PKG-1` as a compact executable documentation package, `PARENT` as decomposed, `BLOCKED` as blocked design, and `docs/tasks/LEGACY.md` as a direct legacy brief. Do not implement anything.",
+      "expectations": [
+        "PKG-1 requires derived verification.md followed by ready preflight.md despite its compact documentation scope.",
+        "An unpackaged small conversational edit may use inline checks, but none of the supplied task-package or legacy inputs use that exception.",
+        "PARENT routes to executable child PKG-1, BLOCKED routes to its decision owner, and LEGACY routes to task-brief-designer for package normalization.",
+        "The response does not claim any supplied package is ready for implementation before the required preparation artifacts exist."
+      ],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "preparation-routes"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/preparation-routes"
+      }
+    },
+    {
+      "id": 5,
+      "prompt": "Inspect the supplied REV-1 package. AC-02 is omitted from revision 1 although the brief is unchanged. Explain the authorized revision and readiness route, then contrast it with the supplied changed-requirement input. Do not edit files.",
+      "expectations": [
+        "The unchanged-authority coverage gap gets a reasoned verification revision that retains V-01, adds coverage for AC-02, and supersedes affected revision-1 readiness and evidence.",
+        "The next owner for the coverage repair is focused preflight; revision-1 readiness cannot qualify the new scenario.",
+        "The changed required result routes to task design or its decision owner rather than scenario editing.",
+        "The response does not treat green evidence for AC-01 as a waiver of the omitted AC-02."
+      ],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "coverage-revision"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/coverage-revision"
+      }
+    },
+    {
+      "id": 6,
+      "prompt": "Inspect the supplied coverage-closure packages without editing files. Contrast the valid artifact with the omitted-AC, unsupported-scenario, and weak-oracle artifacts. Explain which artifacts are not valid derived verification designs and why.",
+      "expectations": [
+        "The valid artifact maps every material AC and finite-risk row to stable scenarios with setup, action, and decisive oracles.",
+        "The omitted-AC artifact remains incomplete even if another scenario has green evidence.",
+        "The unsupported scenario cannot create a new requirement, and the weak oracle cannot prove the required source-timestamp result.",
+        "The response treats the task brief and cited authority as normative rather than promoting an artifact or a green result into authority."
+      ],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "coverage-closure"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/coverage-closure"
+      }
+    },
+    {
+      "id": 7,
+      "prompt": "Inspect the supplied verification-conflicts packages before preparing anything. For missing, malformed, duplicate, and foreign Source brief declarations, explain the permitted action and preservation requirement; contrast the valid same-package control. Do not edit files.",
+      "expectations": [
+        "Each missing, malformed, duplicate, or foreign Source brief declaration is reported as an artifact conflict and its recognizable existing verification.md content remains unchanged.",
+        "The valid same-package declaration passes the ownership check only; it does not waive coverage, revision, or readiness requirements.",
+        "The response does not overwrite an existing verification.md merely because its package has a matching filename."
+      ],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "verification-conflicts"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/verification-conflicts"
+      }
+    },
+    {
+      "id": 8,
+      "prompt": "Prepare the supplied GUIDE-1 compact documentation package and contrast it with the supplied unpackaged conversational direct-edit request. Do not implement anything or add high-assurance artifacts.",
+      "expectations": [
+        "GUIDE-1 still requires derived verification.md followed by ready preflight.md before implementation despite its compact documentation scope.",
+        "Only the unpackaged conversational request may use compact inline checks and implementer self-preflight.",
+        "The response keeps the packaged route compact and does not require high-assurance digests, machine sidecars, controller contracts, installer changes, or a shared helper."
+      ],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "workflow-scope"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/workflow-scope"
+      }
+    },
+    {
+      "id": 9,
+      "prompt": "The fixture is already staged in the current workspace. Prepare verification for the executable integration leaf `docs/tasks/INT-9/brief.md`, whose own AC-01 and AC-02 compose the supplied producer outputs at the consumer boundary. Contrast it with the composite parent `docs/tasks/INT-PARENT/brief.md`, the requested sibling requirement outside the leaf's authority, and the unavailable decisive oracle described in `requests/integration-contrasts.md`. Do not implement anything.",
+      "expectations": [
+        "The design derives task-local scenarios for INT-9's own composition ACs using the supplied producer outputs and the stated consumer boundary, without adding requirements.",
+        "The non-executable composite parent is refused in favor of its dependency-ready executable leaf.",
+        "The sibling requirement and system-wide integration strategy are not invented or owned here.",
+        "The unavailable input is reported to its owner and the unresolvable expected result routes to task design or the decision owner; no report is fabricated and no readiness is claimed.",
+        "Packaged preparation remains mandatory for that leaf: derived verification.md and a ready preflight.md still precede implementation."
+      ],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "integration-leaf"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/integration-leaf"
+      }
     }
   ]
 }

@@ -1,0 +1,1782 @@
+{
+  "archive_commit": "0ad1706cecc6f7d115e510762bf74c58d732cb6a",
+  "identity_sha256": "09fab5b51aa6e0883e19213582503e00690d55ad6b136bde575227c80c3bebbf",
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "014d380a17e3e2445a29ee759e046bfad6452a29384e53b0438dd4cc46fccde0",
+      "bytes": 41
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "a1f46dd609e6a45de0c4c7887da7be3175f0b5a1dcc1f2455d3baa098dd2d5f0",
+      "bytes": 4735
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "836a15b13285864fe1abc799a367cc78f2cf6eda828fd591411b3ba9cc1b4bb9",
+      "bytes": 1070
+    },
+    {
+      "path": "README.md",
+      "sha256": "47f3e9f5121adfe961a254af7726f492f0597000915fe3ce0a4f3263eebab8dd",
+      "bytes": 25487
+    },
+    {
+      "path": "docs/future-work/FEATURE-MAP.md",
+      "sha256": "d445e81910b4b15280b965a32dba4c71339217390d2449c02b4a9751d08544f9",
+      "bytes": 12915
+    },
+    {
+      "path": "docs/future-work/concepts/01-delivery-principles.md",
+      "sha256": "2e0176142a42cd4b93143bdc3ade5a428d2f8d0ce428d83382fc3ae08e27ceed",
+      "bytes": 5162
+    },
+    {
+      "path": "docs/future-work/concepts/02-system-verification-and-test-quality.md",
+      "sha256": "ae1810a8afbd2cb49a1455480e10cfe3e97e930f0053b3be6500bb5b0ce2950a",
+      "bytes": 5515
+    },
+    {
+      "path": "docs/future-work/concepts/03-documentation-and-task-planning.md",
+      "sha256": "e8877d0afef364ea6106daba99075eb88f2428fe202b5e853765261fde9d1269",
+      "bytes": 5847
+    },
+    {
+      "path": "docs/future-work/concepts/04-issue-knowledge-and-evidence.md",
+      "sha256": "8cea1caccbfdd1ca32780198e3eaa6bfb20d13269bea005b37ecfa64aaf50bb0",
+      "bytes": 7785
+    },
+    {
+      "path": "docs/future-work/concepts/05-orchestration-and-sandboxing.md",
+      "sha256": "9aa77422449935ec01fb446af668248f6b05fa07374760c990583f64b3d2426d",
+      "bytes": 5472
+    },
+    {
+      "path": "docs/future-work/stale/deferred-work-after-t-o-new-flow.md",
+      "sha256": "8e295a5ad8873656567bb54d25ca657bf252b78e2e3cb5f190f22c7414b40182",
+      "bytes": 15849
+    },
+    {
+      "path": "docs/future-work/stale/issue_triage_portfolio_invariants_discussion_summary.md",
+      "sha256": "d4833f9af0b7bcf58447fb63193a2d60a76eddee04aa3be87c4496b20274899d",
+      "bytes": 17922
+    },
+    {
+      "path": "docs/future-work/stale/personal-skills-reconciled-roadmap-v2-2026-10-10.md",
+      "sha256": "3b06f276c033175033eff61b416a75754fe19daaa4964fe67fa57cea3301606d",
+      "bytes": 54239
+    },
+    {
+      "path": "docs/future-work/stale/personal-skills-system-verification-roadmap-2026-10-10.md",
+      "sha256": "10a6b6f0d675c9f67696b22ca216c82e2dd60d69e1ff41332817f38baa0b819e",
+      "bytes": 42685
+    },
+    {
+      "path": "docs/future-work/stale/system-verification-workflow-implementation-plan.md",
+      "sha256": "4c8606e260a531258745e5c859a5919399fcac4bd571c847e465db731ad9462c",
+      "bytes": 29479
+    },
+    {
+      "path": "docs/future-work/stale/t-o-new-flow-plan-amendment-handoff.md",
+      "sha256": "dc56367db50d962951fa74089d97b29077e827f9cc3957f9b7efabdfdca3b8d2",
+      "bytes": 14653
+    },
+    {
+      "path": "docs/future-work/stale/task-planning-coordination-guidance.md",
+      "sha256": "7a46013d4921ada4593ba3f787975978865966b621ba238c9674579a6c6b8fb9",
+      "bytes": 4650
+    },
+    {
+      "path": "docs/future-work/stale/test-suite-maintainability-integration-proposal.md",
+      "sha256": "7ff0af79a7496ced2ab2b0d74d2f17356780b5fc24d8cee988a3ced45d078f01",
+      "bytes": 24878
+    },
+    {
+      "path": "docs/future-work/stale/urgent-test-suite-guardrail-after-T-002.4.md",
+      "sha256": "3fdd16e13ede1a6c86d258202ebe383159d2d9a905a6d97f8d0b2a090d832e5c",
+      "bytes": 17398
+    },
+    {
+      "path": "docs/project-plan-review.md",
+      "sha256": "e658717ab03fb799d65c396df285e20a1b948ef792f141f8d7e9a1eaf1fe8637",
+      "bytes": 15446
+    },
+    {
+      "path": "ideas/documentation-consolidation.brief.md",
+      "sha256": "3f40854566a9fa9fdf9399870beb5e48167d7c97f5385906cd0efa709c8b3a08",
+      "bytes": 12163
+    },
+    {
+      "path": "ideas/documentation-consolidation/project-plan-review.md",
+      "sha256": "31ffdb66574278512f8ff6292a0c425a429ff40eb9cb156f74e3eec51fde046c",
+      "bytes": 17391
+    },
+    {
+      "path": "ideas/documentation-consolidation/project-plan.md",
+      "sha256": "f1ddf8fd3c9c3865dfa5c5eac1b58b46ef309be74e9088037bae97b8df1ca22c",
+      "bytes": 29254
+    },
+    {
+      "path": "ideas/documentation-consolidation/task-map.json",
+      "sha256": "6f5b838776eb4e0ddc7badecceb911562e5e3262af93a882ca2eca2fc69d9201",
+      "bytes": 26011
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/brief.md",
+      "sha256": "94cc2e185f1aef939a17d23db629cfef90bd33d6aca7727ad3de1ddaf65a2ebf",
+      "bytes": 16836
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/preflight.md",
+      "sha256": "f60a74cd02f97ec032fc97a2fede49695729f1d383345ea94dd9ba20dab7ef5e",
+      "bytes": 18224
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/results.md",
+      "sha256": "30046268c14ad93d836b318e4b9cd5e1cecc7e440985689dfc46a8efb32009bb",
+      "bytes": 162077
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/acceptance-01.md",
+      "sha256": "02cd412507e2bf265900bbeca2a9464e97cc5f9a263a0692470da16eb3e1092f",
+      "bytes": 5366
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/discovery-01.md",
+      "sha256": "3d2ca9c430bf71c0dd521d42117a4ebdf54ece6d57c0b28983b5aa45e70d71c8",
+      "bytes": 24402
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/discovery-02.md",
+      "sha256": "44375e4e35c126547d37b6050720f8af4574a0d9e30c27983b7eb8a1ba0f7337",
+      "bytes": 17475
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/discovery-03.md",
+      "sha256": "6485ca875fdf74ed8448cedc51e705b2df22985f10857aad50520a3fbc950aa7",
+      "bytes": 15668
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/discovery-04.md",
+      "sha256": "3b06c915f18c45fff8972ab4df74024cafca64bd1fba0972271269f5f6917362",
+      "bytes": 30074
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/discovery-05.md",
+      "sha256": "25d0092d539bbb7f253c5fe661cac2bb0a1334a1129b2bf49d839c8df9593636",
+      "bytes": 25940
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/verification.md",
+      "sha256": "962a9b138d3491eff9ee4d6a372226af8cdbc9f7062d389308c1d8f699d616b1",
+      "bytes": 16095
+    },
+    {
+      "path": "scripts/install_development_skills.py",
+      "sha256": "7423852ffc55738e28ff9562007fa4b511b537a20b2dd24275886fb237370d78",
+      "bytes": 23910
+    },
+    {
+      "path": "scripts/ollama-models.json",
+      "sha256": "fea9ac0f77cb02aa286e1dfbcc7794b42d76e07bd73f9aba3badc7129e7422cf",
+      "bytes": 1609
+    },
+    {
+      "path": "scripts/ollama_delegate.py",
+      "sha256": "449f1b2b27ac008b12d595c70b2efecc8620cd4012c59d44a6c4eef3820ffeb9",
+      "bytes": 19796
+    },
+    {
+      "path": "scripts/run-evidence.md",
+      "sha256": "6d22776ccfdc600a8edf4dff0d2aa3059ab1ec04201cafcc809ba45a639e6987",
+      "bytes": 5564
+    },
+    {
+      "path": "scripts/run_evidence.py",
+      "sha256": "ca3aa13c4a4c443924938598935205099f639bd39da848f175149e5d5074209a",
+      "bytes": 20534
+    },
+    {
+      "path": "scripts/runtime-context.md",
+      "sha256": "7c8f3340a5f4c94dbc44947af07dc18fb729ff9373ddbb272048bd7a580222e0",
+      "bytes": 2361
+    },
+    {
+      "path": "scripts/runtime-context.schema.v1.json",
+      "sha256": "5ef06905b0112acd252f20e1e636444ba1c25d19805474bc6efcc67756176566",
+      "bytes": 1876
+    },
+    {
+      "path": "scripts/runtime_context.py",
+      "sha256": "49392889c17a7f9f83a62695867a3bd31c4c1767997b5cad2e1dd0085d85ac42",
+      "bytes": 7188
+    },
+    {
+      "path": "scripts/workflow_version.py",
+      "sha256": "2dd89ff03a709d046992e9de6ecf9b04e8103edc0dbc4b2dc80e773010125e43",
+      "bytes": 10155
+    },
+    {
+      "path": "skills/README.md",
+      "sha256": "8e8e5b0db9169071e28f78a0af4d1de8661102ae83f48012014e127edf946503",
+      "bytes": 11491
+    },
+    {
+      "path": "skills/ai-flow-foundation/SKILL.md",
+      "sha256": "fc26141c335975d262c3e1978129e06abbb35f3027a2dff89a00d4c725d291d6",
+      "bytes": 8634
+    },
+    {
+      "path": "skills/ai-flow-foundation/templates/ai-foundation.md",
+      "sha256": "ab8d1fc246a68ac081ed8a6a3704198732451ac5241acd61f9603cb60c2c15db",
+      "bytes": 2065
+    },
+    {
+      "path": "skills/architecture-guardrails/SKILL.md",
+      "sha256": "fde86e50f9f6037f7be61a067cfcb3cc55197e65565e1c07a5f06f83c5fcf016",
+      "bytes": 15861
+    },
+    {
+      "path": "skills/architecture-guardrails/evals/evals.json",
+      "sha256": "7b50c746b46cf55a4e9da361314bca9a7ff7854793294531d8d9930eec5e4777",
+      "bytes": 2895
+    },
+    {
+      "path": "skills/architecture-guardrails/references/dotnet.md",
+      "sha256": "12609dc1e6c46a6372a7d37d0d48149b0eede0418944a4b2a37d5dddcb91bb48",
+      "bytes": 2684
+    },
+    {
+      "path": "skills/architecture-guardrails/references/enforcement-model.md",
+      "sha256": "9fe3bf7d04e61b7859ba67d34c4825623c440c7ec948f2c4f6303cecc4e34885",
+      "bytes": 6419
+    },
+    {
+      "path": "skills/architecture-guardrails/references/java.md",
+      "sha256": "d7647076d4d646857a69d9d7d6b015b8f5183c905e95ac2c18e4175267f229ab",
+      "bytes": 2808
+    },
+    {
+      "path": "skills/architecture-guardrails/references/javascript-typescript.md",
+      "sha256": "dc4b59bff201c184798a27d33de1cea01fc656418cde9534aa9756235ca9db76",
+      "bytes": 5520
+    },
+    {
+      "path": "skills/architecture-guardrails/references/python.md",
+      "sha256": "173a0dc18e2254082d980a1e518423b9ffeb01fde1864933cf17941657d5be20",
+      "bytes": 3580
+    },
+    {
+      "path": "skills/architecture-guardrails/templates/gates.yaml",
+      "sha256": "9726dc7bea108e6068bec9cb6df8ffbb51d3a48b797726dfb706b660176bba36",
+      "bytes": 668
+    },
+    {
+      "path": "skills/ask-user-questions/SKILL.md",
+      "sha256": "34a5d62b9c5cd9d6b16db91dfb96f989a35688e690d1324a45db4b6d70ccc5a2",
+      "bytes": 5345
+    },
+    {
+      "path": "skills/ask-user-questions/evals/evals.json",
+      "sha256": "8aefe4692b6cf6fadfb7476b2756daa1f68b264fdf9407d8737f983c6bf30229",
+      "bytes": 947
+    },
+    {
+      "path": "skills/foundation-readiness-review/SKILL.md",
+      "sha256": "583235afffc4cc1685fd4b9b0b1e2fc7f0ac5a124dfafe013a3c473455fba844",
+      "bytes": 9196
+    },
+    {
+      "path": "skills/foundation-readiness-review/references/delivery-routing.md",
+      "sha256": "3dd01ca2b63c33c3c591362430a61367332c178d056cb0a5bc28b1b47c9d53c7",
+      "bytes": 4977
+    },
+    {
+      "path": "skills/foundation-readiness-review/templates/foundation-review.md",
+      "sha256": "cdc1fd4dec2325469d9e70ac79532b520ee94360b05d731eef1f2695f02775c2",
+      "bytes": 1816
+    },
+    {
+      "path": "skills/idea-brief/SKILL.md",
+      "sha256": "b3d9b5762814c427effcaac93ea428b9a163b022d425df34af68eee6321adc6f",
+      "bytes": 7535
+    },
+    {
+      "path": "skills/idea-brief/evals/evals.json",
+      "sha256": "2178078cf5e99dc6ec99d23b4fbcae9da1333cc26c0e72d39746d9b52adfd53a",
+      "bytes": 1732
+    },
+    {
+      "path": "skills/idea-brief/references/vision-template.md",
+      "sha256": "02c9338131dab83910192ef52e2d9238248422b6541956bc1325d17174d3d5aa",
+      "bytes": 2914
+    },
+    {
+      "path": "skills/idea-challenger/SKILL.md",
+      "sha256": "ef6d1ca29716e4310ce6a58ccc3311285ad44d9e445ea3b7cd71e98150481822",
+      "bytes": 6735
+    },
+    {
+      "path": "skills/idea-challenger/evals/evals.json",
+      "sha256": "31d4da1a8edd8f7d68003aae64e55939dc9f6cf0d399a4589f8e91e01b03b7e9",
+      "bytes": 1413
+    },
+    {
+      "path": "skills/idea-investigator/SKILL.md",
+      "sha256": "7bed4519379691eb019a7eeadcd5c77ed5d8aa05cd493bee2858298d1991fa42",
+      "bytes": 10937
+    },
+    {
+      "path": "skills/idea-investigator/evals/evals.json",
+      "sha256": "6edf10d2e21aa1306cda466e25dd3a75ea7c556cfe1daf8150aa121fdafe470e",
+      "bytes": 1407
+    },
+    {
+      "path": "skills/ollama-delegate/README.md",
+      "sha256": "bedf867803a49e7483076d2f12e06f5f848d2363586d12ae03e00e63dedaf743",
+      "bytes": 2751
+    },
+    {
+      "path": "skills/ollama-delegate/SKILL.md",
+      "sha256": "bb775840081d3efe5ea4c50f4936f8539601c359b5555d396d8e8950d0ad75c9",
+      "bytes": 6124
+    },
+    {
+      "path": "skills/project-bootstrap/SKILL.md",
+      "sha256": "f4a10ad767a37f383c6be87e5828c1cc65aac9b336f51abd78129b39b56c4ce3",
+      "bytes": 11663
+    },
+    {
+      "path": "skills/project-bootstrap/templates/foundation-plan.md",
+      "sha256": "cb69fef2d25d3ba024fd44263fe84d5909eb8471267e224b1b884b4ae455110d",
+      "bytes": 1337
+    },
+    {
+      "path": "skills/project-bootstrap/templates/project-charter.md",
+      "sha256": "a964172375619bee52898e719e4076957008fe93c495be3a0d46f6bb16c03630",
+      "bytes": 778
+    },
+    {
+      "path": "skills/project-delivery-plan/SKILL.md",
+      "sha256": "4a06045e3f595ebccb2dfa311d890be00bdf6da84aea3b141f8e7c3cd27fa037",
+      "bytes": 15829
+    },
+    {
+      "path": "skills/project-delivery-plan/evals/evals.json",
+      "sha256": "a87fd7309847d598a56a253254aed5c5867ee20a2f1c42ac3e028f1f288ab007",
+      "bytes": 1507
+    },
+    {
+      "path": "skills/project-delivery-plan/references/project-plan-template.md",
+      "sha256": "7b766a9173cfd69c6fe619441c8b0710c36f18a0b2fe00e3fae13e6aaf8c097e",
+      "bytes": 3768
+    },
+    {
+      "path": "skills/project-delivery-plan/references/task-map-contract.md",
+      "sha256": "390c85a439d334783e05685584937d64b4098e6d8258f0f967d4f4a80b29effc",
+      "bytes": 3820
+    },
+    {
+      "path": "skills/project-delivery-plan/scripts/validate_task_map.py",
+      "sha256": "9197993b30294d9b319270ea72918ed7de3ff52242f542ec2a021adcb1c8d50e",
+      "bytes": 10668
+    },
+    {
+      "path": "skills/project-direction/SKILL.md",
+      "sha256": "37d3dcbbdd554fa892486663d0a5b7dbc0ca438faeddfc6ed7f15bc8dd108d55",
+      "bytes": 7936
+    },
+    {
+      "path": "skills/project-direction/evals/evals.json",
+      "sha256": "3eb304b4dfaf38753622403ccbdb5c3e1606c6edceb4845507c6428717da0a10",
+      "bytes": 4043
+    },
+    {
+      "path": "skills/project-direction/evals/files/setup_fixture.py",
+      "sha256": "ca9a9ccf557d2b294ec22df1d3a681c97199d25b1592c4beb158ab06dee9590b",
+      "bytes": 5940
+    },
+    {
+      "path": "skills/project-direction/references/direction-template.md",
+      "sha256": "c24e84d2f3663bae45bf0b9dcccd53f1fb1465f9ea137755c77ac495212cad5d",
+      "bytes": 3765
+    },
+    {
+      "path": "skills/project-plan-verification/SKILL.md",
+      "sha256": "8f7100d365ff4ae61a4936917e1c9279ea515d0844cadde8d0232fa63b05c4f4",
+      "bytes": 14058
+    },
+    {
+      "path": "skills/project-plan-verification/evals/evals.json",
+      "sha256": "96e612fd7597dda0ea64a624b2c4166b67227118b85c9c8f03654b51527ca0f9",
+      "bytes": 1577
+    },
+    {
+      "path": "skills/project-plan-verification/references/plan-verification-report-template.md",
+      "sha256": "a99edffaaaa97e670c77f17fc9b9ce8b331dc4d63b74d5fc977662a3f9da0a8b",
+      "bytes": 2349
+    },
+    {
+      "path": "skills/project-plan-verification/references/review-checklist.md",
+      "sha256": "001171e14aebc28f3948ac2f77154f2032787df7fa6018c4039bc1152fb7e92f",
+      "bytes": 2270
+    },
+    {
+      "path": "skills/project-plan-verification/scripts/verify_plan_artifacts.py",
+      "sha256": "9623b17eafadb68b41dc1647d0aca09b6327b049e2c5d3a9a1250dd883bb13a8",
+      "bytes": 7538
+    },
+    {
+      "path": "skills/repo-foundation/SKILL.md",
+      "sha256": "f9f215c02b85ca0898c7f501ce705092b58f45c64b738b08f6318f147c85736c",
+      "bytes": 20419
+    },
+    {
+      "path": "skills/repo-foundation/references/contract-index.schema.json",
+      "sha256": "20909763d0dd62ca41a5c501cf08c1b1f2858427beeb47a829c91daaf94df846",
+      "bytes": 1144
+    },
+    {
+      "path": "skills/repo-foundation/references/contract-registry.md",
+      "sha256": "e3de6c72ae09b3344a486bcea27b0a41542e5034c5d6bac69c21b66ec8939c31",
+      "bytes": 4071
+    },
+    {
+      "path": "skills/repo-foundation/references/subsystem-contract.schema.json",
+      "sha256": "c7b243da6f3772f9fe1b3e5e03180c3ff271beee0a2990f634c66b5ad207ac6d",
+      "bytes": 2451
+    },
+    {
+      "path": "skills/repo-foundation/scripts/check_contracts.py",
+      "sha256": "00f38e439f5347804a1c78646ecf9bf8b9fba805cfbb88075226b447d987b928",
+      "bytes": 11039
+    },
+    {
+      "path": "skills/senior-code-review/SKILL.md",
+      "sha256": "9974ca642d3c562eef36ce085f5d07127b7fa902acf2f1d27764988293ced85d",
+      "bytes": 9387
+    },
+    {
+      "path": "skills/senior-code-review/evals/evals.json",
+      "sha256": "75bda6a247ef9d5dc26089e9ad185156cb836a215abbeec38e827133c749e459",
+      "bytes": 3470
+    },
+    {
+      "path": "skills/senior-code-review/evals/files/go-inventory-reservation.diff",
+      "sha256": "ee4a0d78aae32dd21fc35f718156fc8d9c7d91220f08938f169818fbafb7eae1",
+      "bytes": 1288
+    },
+    {
+      "path": "skills/senior-code-review/evals/files/python-payment-status.diff",
+      "sha256": "f24bce7d25a429194057fce0c393ed986f81f4b07eae4fbf3e75899f857206b5",
+      "bytes": 1661
+    },
+    {
+      "path": "skills/senior-code-review/evals/files/typescript-account-email.diff",
+      "sha256": "43702ff285594a3698c0d44f0d253ec63e4bd408fd1a2221f53d4db0619e6923",
+      "bytes": 1294
+    },
+    {
+      "path": "skills/senior-code-review/references/review-dimensions.md",
+      "sha256": "b79f2118e427c42129c6830f0bf4dc8bdf389b52b2aed9a3cc685527fb91e442",
+      "bytes": 6399
+    },
+    {
+      "path": "skills/session-handoff/SKILL.md",
+      "sha256": "eea77fa4f445c545cef8847452fc583aeb5221ea24ae991c2e69d52406057516",
+      "bytes": 8307
+    },
+    {
+      "path": "skills/session-handoff/evals/evals.json",
+      "sha256": "cf5a61610ce35cb0e2f3e6ccf9945633f264d1900a711802b35a8f0cb9d624aa",
+      "bytes": 3629
+    },
+    {
+      "path": "skills/skill-creator/LICENSE.txt",
+      "sha256": "bc6b3af2f331cbc7fb0da1344efb2cbe5877a31498b4d70dbc7000f3405a1362",
+      "bytes": 11345
+    },
+    {
+      "path": "skills/skill-creator/SKILL.md",
+      "sha256": "949b7cc1a614a44bdcd0d143314e3923c630c5cd51378d4a1bbce91684318ac6",
+      "bytes": 34440
+    },
+    {
+      "path": "skills/skill-creator/agents/analyzer.md",
+      "sha256": "bf68f4cac5a56c673a928c2e6d619586c5b93ea364026ab37547772cb45a663a",
+      "bytes": 10376
+    },
+    {
+      "path": "skills/skill-creator/agents/comparator.md",
+      "sha256": "fe1fc9787c495d864c5d6eada47396478572325fde1b33a96d78bf4b849b7a3e",
+      "bytes": 7287
+    },
+    {
+      "path": "skills/skill-creator/agents/grader.md",
+      "sha256": "57134da0c1a4eea33fbd74a1c9c44aa814f07d6bc64de303edb586f941e5d21a",
+      "bytes": 9049
+    },
+    {
+      "path": "skills/skill-creator/assets/eval_review.html",
+      "sha256": "ce477dcc74dc1c0d1d3352646a79167b5a63634e936b1019160025065974e452",
+      "bytes": 7058
+    },
+    {
+      "path": "skills/skill-creator/docs/codex-behavioral-eval-runner-future-work.md",
+      "sha256": "719241edcb63e253936956c84b91f0a6ef65e256f7f7c03126c82bf518611923",
+      "bytes": 7834
+    },
+    {
+      "path": "skills/skill-creator/docs/history/IMPLEMENTATION-BRIEF-codex-behavioral-eval-runner-mvp.md",
+      "sha256": "b980eb7d87bf36b7136598e4bb1929df4501158997811ae27687125f942dbee1",
+      "bytes": 12081
+    },
+    {
+      "path": "skills/skill-creator/eval-viewer/generate_review.py",
+      "sha256": "fc9d1b9243fe5ab6012ebd579bd76d0035de1b79fd3b969de114defab26478fb",
+      "bytes": 16365
+    },
+    {
+      "path": "skills/skill-creator/eval-viewer/viewer.html",
+      "sha256": "a53213426ee1100441d701a3a0d49cda7a842f992d2c36463f4d3cc0258575fa",
+      "bytes": 44998
+    },
+    {
+      "path": "skills/skill-creator/references/schemas.md",
+      "sha256": "b868d48f33dba6049870d1e2206d6dace266affb1e1a686c72d56613fd835aa8",
+      "bytes": 12996
+    },
+    {
+      "path": "skills/skill-creator/scripts/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/skill-creator/scripts/aggregate_benchmark.py",
+      "sha256": "123ef128ea5ccc01a4b1ac212ef5567f21e9c13d3d240609780beeb3200c49aa",
+      "bytes": 14386
+    },
+    {
+      "path": "skills/skill-creator/scripts/generate_report.py",
+      "sha256": "13df7118a3c50c83c4c3250a606d5f2b20b25a3d44cbc392b3d669ec75281453",
+      "bytes": 12847
+    },
+    {
+      "path": "skills/skill-creator/scripts/improve_description.py",
+      "sha256": "87d864570220b699fac52da309d2d6efdb060647bfebc74f768128e646accf80",
+      "bytes": 11116
+    },
+    {
+      "path": "skills/skill-creator/scripts/package_skill.py",
+      "sha256": "1a33059b0db1ef73375d46d513e5ea81369d2e8838c970597b0d52ddef8d1c0f",
+      "bytes": 4234
+    },
+    {
+      "path": "skills/skill-creator/scripts/quick_validate.py",
+      "sha256": "67cf5703402013936c8fb75ad6a1afecd8841d45cc5e606b634eb05825fde365",
+      "bytes": 3972
+    },
+    {
+      "path": "skills/skill-creator/scripts/run_behavior_evals.py",
+      "sha256": "b8e478500c89fe531d51ed76606dabcb5fbe4c409013c257d9e7124b8a25bc18",
+      "bytes": 12668
+    },
+    {
+      "path": "skills/skill-creator/scripts/run_eval.py",
+      "sha256": "43e3b8f80dbf69c343967ba77e268fae991d9fa3ed68b32a0ff02532cd48657f",
+      "bytes": 11464
+    },
+    {
+      "path": "skills/skill-creator/scripts/run_loop.py",
+      "sha256": "7bd6f674203168520517eec94c55f493c0d154339b061b4d7c0f0dad187d0f21",
+      "bytes": 13605
+    },
+    {
+      "path": "skills/skill-creator/scripts/utils.py",
+      "sha256": "3af8ae62c40c73ab712207436a0d9a981e845f25c5a7040229eb189cc8e45bb1",
+      "bytes": 1661
+    },
+    {
+      "path": "skills/skill-creator/tests/test_run_behavior_evals.py",
+      "sha256": "f3a3f0ba665d855434101cdee0860f949778f26c6e98b3057f0aefb76a8332fe",
+      "bytes": 14959
+    },
+    {
+      "path": "skills/task-implementation-flow/README.md",
+      "sha256": "fa77bb70e2329ccb65f96b319b0f079862fed3975237271984f42740ba84aeec",
+      "bytes": 34146
+    },
+    {
+      "path": "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+      "sha256": "b7d54caf420cd17a99f9f872a531d43c9458fff6d1df0fa8d5225382416bbd8a",
+      "bytes": 32967
+    },
+    {
+      "path": "skills/task-implementation-flow/bounded-task-implementer/evals/evals.json",
+      "sha256": "c39b31b8c4a492dcaf6bb3d5efb78593b74987ffa8512ac1e0ac0d51a911cc21",
+      "bytes": 18415
+    },
+    {
+      "path": "skills/task-implementation-flow/bounded-task-implementer/evals/files/setup_fixture.py",
+      "sha256": "eb1a52a7f9256fd84f7a1b1034c5cd450416a3712f9dc366380d8eb6c54753f4",
+      "bytes": 65968
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/EVALUATION-2026-07-21.md",
+      "sha256": "c7fe5855c46d7b50f5a91a680da289681305cfbe04c6621d87d79a9aa7e64ee6",
+      "bytes": 39237
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/GLOBAL-DECISIONS-task-implementation-flow.md",
+      "sha256": "2bc7da7ef476328925bf4ba87bb212af065e094fa1edc6c8b463b4c4ad8d6b7d",
+      "bytes": 18654
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/IMPLEMENTATION-BRIEF-bounded-task-implementer.md",
+      "sha256": "46709dd13a3828bd5ae752289c2014d79f606dc11222e614ede8bd4ac6762ee8",
+      "bytes": 15419
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/IMPLEMENTATION-BRIEF-task-acceptance-review.md",
+      "sha256": "761aeafa1c110f97c024e5a0c0ce8c8b2ccd5b7937f11b8b015bd6ffbb736ca1",
+      "bytes": 20109
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/IMPLEMENTATION-BRIEF-task-brief-designer.md",
+      "sha256": "0575e6fbbcc11641d341aa2f3d714c8a6621053d02ae77d93a6f1def759d9988",
+      "bytes": 15531
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/IMPLEMENTATION-BRIEF-task-preflight.md",
+      "sha256": "8c1ba82d856e01b44c7dde9938a6070f96d28e6a7150dfd83be5646881ade00a",
+      "bytes": 13391
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/standalone-policy-qualification-results-T-005.md",
+      "sha256": "c98bd8a5cb541efd25acfc430c4cd19cc35d4156ada4b58d9ec88047d8d16cbd",
+      "bytes": 12781
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/task-decomposition-follow-up-2026-10-09.md",
+      "sha256": "07a4ae5a7db55199535937505faac86aba519908180d64c6089363470604c178",
+      "bytes": 13047
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/verification-and-review-policy-plan-2026-10-08.md",
+      "sha256": "5c2802017978f8509e78277c82be48c275c5b6663fbbef8079c9374b74c8e233",
+      "bytes": 19289
+    },
+    {
+      "path": "skills/task-implementation-flow/task-acceptance-review/SKILL.md",
+      "sha256": "2c12b30de78b3617759e5bdad55b089d3044ac8ebd1945ff32d150a7714fd04b",
+      "bytes": 30281
+    },
+    {
+      "path": "skills/task-implementation-flow/task-acceptance-review/evals/evals.json",
+      "sha256": "d563afe9cd7db881a8caae86d8473c859c7c93ca8c484c223669427f2707651c",
+      "bytes": 56732
+    },
+    {
+      "path": "skills/task-implementation-flow/task-acceptance-review/evals/files/setup_fixture.py",
+      "sha256": "7299b8df33bac41317a7b7204c40e8b074ace1a7d09464b2ce4005d9726e4ef0",
+      "bytes": 126294
+    },
+    {
+      "path": "skills/task-implementation-flow/task-acceptance-review/references/acceptance-report-template.md",
+      "sha256": "82d22bc6607b2730f5b171403e17dfeb247d27fb0fde6986fdf4b0868b6dd580",
+      "bytes": 14135
+    },
+    {
+      "path": "skills/task-implementation-flow/task-acceptance-review/references/tests-only-reproducer.md",
+      "sha256": "e74b95d43c8d6123c7d95e64556db88ac21df5e21f5dac0b3949c8589b0d6276",
+      "bytes": 2932
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+      "sha256": "40c3cd2c28a9499931a018fbb94a3ead1df503268f3660bf7e61fd097129ceba",
+      "bytes": 28731
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/evals/evals.json",
+      "sha256": "ea3e6657def9279a6083d1740f0da610be814da5d9ba9a71e21b7d01c2a41310",
+      "bytes": 24913
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/evals/files/setup_fixture.py",
+      "sha256": "09391b99e5320b8f45d4ffebdc3aedf38b42f54a4069a7fa327a9168ecf55b32",
+      "bytes": 17364
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md",
+      "sha256": "6cc29bbfbecdebf835bce4605a8a4d66fd4f4ea675bdfde30ab30e02534a87a2",
+      "bytes": 5388
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/references/task-brief-template.md",
+      "sha256": "92d0c95f53fcf50b389f5171c6b30649f94a2b97a87750f94593dfa61af237a7",
+      "bytes": 13362
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/references/task-sizing.yaml",
+      "sha256": "832e48267d8579a5183f4c7543dae2eea06bc44b65cce7b3bce15c917b917b7c",
+      "bytes": 703
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/tests/test_package_resources.py",
+      "sha256": "0b4fd5fe47ae9a36df43d4c027d02cc5106e24087c92e01688fccc64c7e0987c",
+      "bytes": 2469
+    },
+    {
+      "path": "skills/task-implementation-flow/task-contract-registry-updater/SKILL.md",
+      "sha256": "2cf8535599465000056d7ce8145febd81d52a1a3d0b300b4651a9ff4460f2cf9",
+      "bytes": 6998
+    },
+    {
+      "path": "skills/task-implementation-flow/task-maintainability-review/SKILL.md",
+      "sha256": "94021a76438f20800ce49db9c54c08cfb6c734daffc981844a57157dbc3b40d0",
+      "bytes": 21199
+    },
+    {
+      "path": "skills/task-implementation-flow/task-maintainability-review/evals/evals.json",
+      "sha256": "947b0bd8c111c82c107db7cc1d7314e0d914f04c54b0295a5b187240cf184604",
+      "bytes": 10623
+    },
+    {
+      "path": "skills/task-implementation-flow/task-maintainability-review/evals/files/setup_fixture.py",
+      "sha256": "ab6e30ce9c4ea2f4651025e1fe8ca3b09520165b6abe28ea66443306096567bd",
+      "bytes": 25313
+    },
+    {
+      "path": "skills/task-implementation-flow/task-preflight/SKILL.md",
+      "sha256": "505a75b34979ca8e4cceaa774bdf6ce455ad424a371483f36beacfba604cc6e3",
+      "bytes": 17097
+    },
+    {
+      "path": "skills/task-implementation-flow/task-preflight/evals/evals.json",
+      "sha256": "eb577c81e2bd5ac252c56deedfd147684bb6308b73c3b8a87869a35d6ea93097",
+      "bytes": 20167
+    },
+    {
+      "path": "skills/task-implementation-flow/task-preflight/evals/files/setup_fixture.py",
+      "sha256": "5f75155ed1e03fc88620fe7fdde35689fcd14aef726c96c9ced0a431c9343756",
+      "bytes": 25227
+    },
+    {
+      "path": "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md",
+      "sha256": "3a00012e9e1678203953f496beb209b8b7adc98eea78564d5833a1fc3f63f21b",
+      "bytes": 6449
+    },
+    {
+      "path": "skills/task-implementation-flow/task-review-discovery/SKILL.md",
+      "sha256": "200e789cffdf1f72fe5b3ecf2aab6688e587674f137542fe3f80805cd09ba910",
+      "bytes": 16195
+    },
+    {
+      "path": "skills/task-implementation-flow/task-review-discovery/evals/evals.json",
+      "sha256": "27b05cab827331e3613a956878d4b9004f5eb8424eeb80bfb19c5679ea662a1a",
+      "bytes": 33855
+    },
+    {
+      "path": "skills/task-implementation-flow/task-review-discovery/evals/files/setup_fixture.py",
+      "sha256": "e80a210ac9602cf8f3c03960873aa23a00cc2289c36efd660c2616ab37f44c37",
+      "bytes": 55525
+    },
+    {
+      "path": "skills/task-implementation-flow/task-review-discovery/references/discovery-report-template.md",
+      "sha256": "bcd0db3b8e8d59cf145ae2e430b70cf67c218e3a2d44bca368d50864b6015605",
+      "bytes": 10007
+    },
+    {
+      "path": "skills/task-implementation-flow/task-verification-designer/SKILL.md",
+      "sha256": "b3d911b75c8b5c9481c7d77922ae2b3a88e31f2228f31c488f76bce24aebde0c",
+      "bytes": 12949
+    },
+    {
+      "path": "skills/task-implementation-flow/task-verification-designer/evals/evals.json",
+      "sha256": "2ac399c2e83892d83b004673a4fb6681c0f075cee62d79da4ef8deda8cd3eca1",
+      "bytes": 11784
+    },
+    {
+      "path": "skills/task-implementation-flow/task-verification-designer/evals/files/setup_fixture.py",
+      "sha256": "3383feb64e32b934271b6099d6c0d7321384d49f8284c6957a17a7d7b64da3e3",
+      "bytes": 12406
+    },
+    {
+      "path": "skills/task-orchestrator/SKILL.md",
+      "sha256": "411565f1d5560aa11654a90ad2f2b9ff33f8d5b9165ab8d0406a3414d4cdc55b",
+      "bytes": 7160
+    },
+    {
+      "path": "skills/task-orchestrator/assets/examples/fast-local-flow.json",
+      "sha256": "4c0f7e1caf612419b817521c3811b924280245528f4c2b2a6e118bab365a8984",
+      "bytes": 850
+    },
+    {
+      "path": "skills/task-orchestrator/assets/examples/minimal-run-policy.json",
+      "sha256": "039bd87fbe6df6ac07390a42c63142b6be64d0db50c8b4bb12712321a95a9447",
+      "bytes": 2038
+    },
+    {
+      "path": "skills/task-orchestrator/assets/examples/minimal-task-manifest.json",
+      "sha256": "e91bd5f8d80a8b7cf48cdd5954b42e46c43014063671dfcd2e286119c06e1c3e",
+      "bytes": 414
+    },
+    {
+      "path": "skills/task-orchestrator/assets/examples/reviewed-flow.json",
+      "sha256": "f3d6b74ccedeeb62cdaf8aca3e8cb55cdb3dcd9075eba7c8b238ea416bb116b0",
+      "bytes": 1018
+    },
+    {
+      "path": "skills/task-orchestrator/assets/examples/strong-local-flow.json",
+      "sha256": "0418c45e7a6f8d14cf89cf18db30f268aa601cab4310f4430eeabaab0ba2606c",
+      "bytes": 1064
+    },
+    {
+      "path": "skills/task-orchestrator/assets/flow-profile.schema.json",
+      "sha256": "6c3c0f3e1c3ab05203a02b4c57adcaa81a6cf83ce0a73e3725b76ebc28f621d5",
+      "bytes": 3288
+    },
+    {
+      "path": "skills/task-orchestrator/assets/handoff.schema.json",
+      "sha256": "9e2bf070bd480b1ba75a18ccaceb2c851b23b3a04f6b4441e9004ed31d022829",
+      "bytes": 1865
+    },
+    {
+      "path": "skills/task-orchestrator/assets/run-policy.schema.json",
+      "sha256": "be68d79efc8147549dbebb19ec762069312e302113c61f1347b6e0204b4b6837",
+      "bytes": 3334
+    },
+    {
+      "path": "skills/task-orchestrator/assets/step-outcome.schema.json",
+      "sha256": "698e4ff1a7067ae757f12fed19d78591b1205f9df30f63fdcdc26a4f36b9f17d",
+      "bytes": 1323
+    },
+    {
+      "path": "skills/task-orchestrator/assets/task-manifest.schema.json",
+      "sha256": "72fe5dd9612aec182f376da4f4f1807c123436780202efc2394ef488f00fd78b",
+      "bytes": 1525
+    },
+    {
+      "path": "skills/task-orchestrator/assets/worker-result.schema.json",
+      "sha256": "32effc1988202bb7b16280169c4914b7300d6632d22ac805827b517675fec9ac",
+      "bytes": 1956
+    },
+    {
+      "path": "skills/task-orchestrator/docs/code-guided-orchestration.brief.md",
+      "sha256": "3079de7c8e572f6db317d4e03bae36e0fe59299132baec93ad2605772f82c116",
+      "bytes": 26877
+    },
+    {
+      "path": "skills/task-orchestrator/docs/controller-contract.md",
+      "sha256": "ec62a8356d02d61e20d9b9a4c63f12ad441706e127cc48a68b02abbbff175214",
+      "bytes": 5749
+    },
+    {
+      "path": "skills/task-orchestrator/docs/direction-revised.md",
+      "sha256": "33952de9ee979886ac55694adc7db722944a31eaf8aa0a1e8994d22dea33fdb0",
+      "bytes": 11769
+    },
+    {
+      "path": "skills/task-orchestrator/docs/direction.md",
+      "sha256": "d361fb51bc41813b2893965172cc97892de3221b58b81cb05ac360eeab3be332",
+      "bytes": 15463
+    },
+    {
+      "path": "skills/task-orchestrator/docs/execution-brief-pilot-measurement.md",
+      "sha256": "fbe9c4cf9f03ee6a4c9fcc498c171a4c237a32451f9f58ee632a6c9dfaa8bb12",
+      "bytes": 2520
+    },
+    {
+      "path": "skills/task-orchestrator/docs/execution-brief-template.md",
+      "sha256": "9931aed81796dbbc409d8786815748e2a26c22598c47c8d1cccc0a0cdb1275e5",
+      "bytes": 2178
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-1-handoff.md",
+      "sha256": "7a4b5ebc45701db94a19ad68d7e52bbcb089491bae4424d368c0da4986e06d63",
+      "bytes": 4327
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-1-plan.md",
+      "sha256": "3c9eb38fe8858d2e09b4d3b5eec68facf70bb8a08def4e3b51c4f5b90e22a34c",
+      "bytes": 11641
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-2-handoff.md",
+      "sha256": "b7bbfc2616ece62c2ab5303c23f9b9154ac2381c09689f153bf2a873da686ca8",
+      "bytes": 6666
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-2-plan.md",
+      "sha256": "69e889c7e562298e4eb4a1815e7fb66593ddb094d30399262d42b82523deadaa",
+      "bytes": 24341
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-2-unusual-path-correction-result.md",
+      "sha256": "c0254d9b9d3340c8f5049dab13604426d46937e8d70dfa9e038a1481741a9af9",
+      "bytes": 2156
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-mid-review.md",
+      "sha256": "e6d2fcaaaa5a5f0bdbacd5e33412ce20ea07d03dee8b2ff67fbe57531f4e8f7b",
+      "bytes": 8596
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-plan.md",
+      "sha256": "8f30291bda35be1568dcc4f38efbfed70e3190b1bae1ddb7b5a3067166fd1d14",
+      "bytes": 19450
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-01-result.md",
+      "sha256": "e91a984ac591e38e649e246d4ed40552f61499186f3a9b71680712fc26578354",
+      "bytes": 2125
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-01-verification-sandbox-proof.md",
+      "sha256": "1f70f479bfc41d6582b62418306b1e838510cfde31a0d313101ce00813500d0a",
+      "bytes": 5146
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-02-extract-controller-state.md",
+      "sha256": "0533562add297670bb84df7004bcf0974f0bafbfc6b3d39a9ade3164bb21d438",
+      "bytes": 4785
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-02-result.md",
+      "sha256": "6c075f1726ff200a6587f4e43ac6e618053dbad77b07bdf874bb194dc8a19cff",
+      "bytes": 2845
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03-extract-controller-git.md",
+      "sha256": "3d4fef02cda3ec1bb9ec205a32e7d00e2ee56ca6f3b8f7daf75c96594d63c5e9",
+      "bytes": 4745
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03-result.md",
+      "sha256": "6229c8f6868c2227c91e11d1e1bdaf372b64534771e4e6deae30d6a662e7e85c",
+      "bytes": 4100
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03A-correct-git-baseline-contract-handoff.md",
+      "sha256": "399097fe38b58c4566b4268c295c0170da11de41d98091a8109d2dfa0b7527d5",
+      "bytes": 9815
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03A-result.md",
+      "sha256": "213091a62662d75e4144c32c54c3f457c702b8ea5d7ff3626600ec4102e484b1",
+      "bytes": 5736
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03B-repair-controller-git-boundary-handoff.md",
+      "sha256": "a1af0fb53bd0030eec626d7483467aa38934bae2d560f63366d6698244c5ec77",
+      "bytes": 10020
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03B-result.md",
+      "sha256": "6a43b13a430ca52fec110994279de8763784ce61870369e947214e82640466ba",
+      "bytes": 6566
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04-acceptance-report.md",
+      "sha256": "bd2300f35878f103570bf1cbec34e1a358e10acb4c87f20189ff49dbf1f3c955",
+      "bytes": 19065
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04-result.md",
+      "sha256": "a6a99c4ee93aace57ff18768060fa88affa9130cc62fb1111f14e9b38c47cd0d",
+      "bytes": 10374
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04-stage-3-state-model.md",
+      "sha256": "c3be72f8e5198c7618b5665cf451f7e8f839a63fc24379eff3f42c857d52f7d1",
+      "bytes": 33767
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04A-post-acceptance-git-identity.md",
+      "sha256": "016e417945a3a191d69cda038cb39028b0bce52072ead7c6e51e92a61087cb1a",
+      "bytes": 21481
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04A-repair-state-coherence-handoff.md",
+      "sha256": "6d1671dad694de63b5c980e0eed19c0f81827cc0f29a7dc88f3d73292052d4d7",
+      "bytes": 17838
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04A-result.md",
+      "sha256": "7ca66f84e0467b803682ebc0ef3b8128d36c02d81c935fa154a3cfc957403386",
+      "bytes": 5143
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-05-record-and-identity-contracts.md",
+      "sha256": "16a9428b45af132119bec3de0b5e4ad47e638820d8021217da2434c837cfa69f",
+      "bytes": 6755
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-05-result.md",
+      "sha256": "85aabfdc366616ad79128279d798ba9f22bad8b4742bc97dab5f9f00537c7877",
+      "bytes": 4231
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-06-result.md",
+      "sha256": "1f3d94c6983f89b6c25e6d5e450d3840ef41b01355b471e01148eee2e0f5c637",
+      "bytes": 5220
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-06-verification-command-plan.md",
+      "sha256": "0e343b31e9e66d60aa9b3ac275fd58c7f8d93f248a8d32d60d80a33fa58f680a",
+      "bytes": 6784
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-07-result.md",
+      "sha256": "5bb97ebc51b0a479ba53ec1d1022127f8d048cab58c41f684d987736e6116874",
+      "bytes": 7153
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-07-verification-executor.md",
+      "sha256": "5df9a5ed6f9c35175979a83794396810a86a8951f60619e7dfc33559d7b0b353",
+      "bytes": 6970
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-08-inspect-and-decide.md",
+      "sha256": "efa85666fd2bd54b0ff3ace7abaf242e84dbf6635f9f5ecae6363656f0c49074",
+      "bytes": 9689
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-08-result.md",
+      "sha256": "08ab2bdd31483e5a1c59793edc16b06b8e1f1c2bc250881d295e911dbdb22f41",
+      "bytes": 10000
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-09-recover-running-and-stop.md",
+      "sha256": "989c37fa7f295f1e9f4cd2121eb066c5b22634ccd964ae6d269702afbf29a880",
+      "bytes": 3117
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-10-same-thread-resume.md",
+      "sha256": "f4bb5516e8271b8f8575cd6954472ed113a0e49ffc22afa20d3eaff857f3ed8f",
+      "bytes": 2980
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-11-acceptance-operation.md",
+      "sha256": "b694e3e4a3556b9b5549f3365ae8dcc5503a8c3a12ef28a949637d972bbfe84d",
+      "bytes": 3160
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-12-release-dependencies.md",
+      "sha256": "0378b536897d0eb0920b26f0636644e46c891a5d5a7dd4d72e2867ca3e12ffd2",
+      "bytes": 3150
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-13-exact-path-commit.md",
+      "sha256": "9ce399fb0261d37319775b2f75417f5de2f5359dd4b695bef1cfe65fff63a109",
+      "bytes": 3184
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-13B-exact-commit-publication.md",
+      "sha256": "9401d8958f10e8bf0bfd29aa91f7554c1842affab957f1bda06ba776b00e432a",
+      "bytes": 2629
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-14-commit-finalization.md",
+      "sha256": "8fb3c288eb374c6602f3f2cd70f39aa5cd375f945d13ad4f0e90a11ef2b804dd",
+      "bytes": 2903
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-15-finalization-recovery.md",
+      "sha256": "45c1db3806b6581c7ef8981a9e9ed68f868afb59ede58a2e2fcb1100f471bd42",
+      "bytes": 2944
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-16-stage-3-closure.md",
+      "sha256": "58daf1d697c7664f9906887a2a3d647ef2539d91a7c4e1c2c4d195dd946bfd1e",
+      "bytes": 2700
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-T1-human-tracker-contract.md",
+      "sha256": "1133857661ce03d622720863ee004cb4f5d261cff8ab08d4b93dc62e3dfc9ab4",
+      "bytes": 2695
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-T2-human-tracker-adapter.md",
+      "sha256": "9b5cc962e1f682851a710e049c04b4edabb4b805d7c22cf1b0cb2774ae33bf94",
+      "bytes": 2401
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-T3-human-tracker-finalization.md",
+      "sha256": "cb029ab21cff30504b676cf04b56da07f6e4de70af713a2c015409b2faa19a17",
+      "bytes": 2628
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/stage-3-first-three-task-review.md",
+      "sha256": "7e553f5d815817de26e694251726fab11b2b3d508830873e333c1fb0fe4fb668",
+      "bytes": 5590
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/stage-3-tasks-04-08-review.md",
+      "sha256": "bc8616742ae033b58fbe5cc8dbec22c8273a165fa7db611a10584f5a7e0e60cf",
+      "bytes": 8539
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/v1-agent-output.analysis.md",
+      "sha256": "359f89db1eee8193f66ff12d01c65cb3d94947747717fe2c895ba758552b00bb",
+      "bytes": 16275
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/README.md",
+      "sha256": "7452f3d98528e1ec17f089a6655fe6f65ea53c5c4a194af4479cb0319ee8a80b",
+      "bytes": 8228
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/audit_spike.py",
+      "sha256": "9dd9244ab084d6c197a50f966c7a0bcd8ac098773f07e947c28037ba4da312ec",
+      "bytes": 5061
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/acceptance.events.jsonl",
+      "sha256": "f34c4c404eea22e3f6142af6ed08e98aedb8783eb613c92c59d70ad4814d0d4e",
+      "bytes": 93010
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/acceptance.last.txt",
+      "sha256": "2b60adb9b4f66dec100dacd64601de2c364afa0c4480f175ad91d9d3f4b2aa4a",
+      "bytes": 270
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/acceptance.prompt.txt",
+      "sha256": "245f3d04eb5644f486a490edbd6293af87234e3785fb5ea2397e545600b5a0b1",
+      "bytes": 1010
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/acceptance.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/audit.json",
+      "sha256": "cae9386ab9b9894d6175ba1a71c77b1ec180eb9cf619fa2dd077a1f440aed3c7",
+      "bytes": 19859
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/brief.events.jsonl",
+      "sha256": "c9b116fddf5ad6ded9ed28966f439e824b27580c8f970b562f28fefb87d5bd11",
+      "bytes": 70811
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/brief.last.txt",
+      "sha256": "d517fcda001a3d057883889f05310e2d3e80f4d1fee93686757057c824d6e744",
+      "bytes": 335
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/brief.prompt.txt",
+      "sha256": "aec096f02aac1f0631efcb8d92d49c10c1e343c4bba0d7fe982a09f48da6cecc",
+      "bytes": 737
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/brief.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/controller-architecture.txt",
+      "sha256": "f3041ab31340bb721b117d18070acc616ad307e62e833fcd1c84c398d69e9648",
+      "bytes": 25
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/controller-behavior.txt",
+      "sha256": "c5d399a97b5a6c22c28c31ba03c030974da56bd3dbf6e1fd6691af7c446e5a59",
+      "bytes": 431
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/final-integrity.txt",
+      "sha256": "995c9b85470cf2320ea0fda7da325b8a3aa606c8f0d33b632c7e6103c8658d4e",
+      "bytes": 152
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture-baseline.patch",
+      "sha256": "07c11f28efb3377f4f367020724f231a966b33fa0399cab1dca77c804252f74a",
+      "bytes": 2348
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/.gitignore",
+      "sha256": "2bd5696b90495524e4c39e2179e5752973ad72d00117817a0bd09184202c1eab",
+      "bytes": 34
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/AGENTS.md",
+      "sha256": "57fd2c7dd428e2ba3672d1dee9a9726f933cd51b1a5f66da290f6eb90ff654b9",
+      "bytes": 2038
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/README.md",
+      "sha256": "2f6dd9fcc6b1e1e6f92aa6f1e0bc3ecc14c70c8d3d308980f6afa5a03a51ba5f",
+      "bytes": 292
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/authority.md",
+      "sha256": "4fc7349de4fdcd14ca1b2795307f0bbea1e7620884e5ef988e331417a62c5df3",
+      "bytes": 1260
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/catalog.py",
+      "sha256": "5198cf2f936aa18774bfa800f2700d35e2ed35fcebe951b4802efb3a4244ba18",
+      "bytes": 185
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/dependencies.json",
+      "sha256": "e51cca7a311dfb4b19dfbb483d04f09e19529d180ee7aec53427185e1c4818d8",
+      "bytes": 15
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/contracts/catalog.json",
+      "sha256": "2e1c297f6d7a351bc53a4fcb8cbafdd1da023b3c88343cb48fd2a5168f6a97f2",
+      "bytes": 511
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/contracts/index.json",
+      "sha256": "8ec4f6f31a3dfbef65e09fa1b44df1cdd7be883a14db82a0c1017445df8f106c",
+      "bytes": 210
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/brief.md",
+      "sha256": "83cd92efeb30639a5475430aba4477150a84b133b98525752b6df488a3ffeee9",
+      "bytes": 11558
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/preflight.md",
+      "sha256": "a5d4a284458da72f751e033b4590d96ecbe834aac85ff13f2b428f9567c1fd8e",
+      "bytes": 10581
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/reviews/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/reviews/acceptance-01.md",
+      "sha256": "b016e1f6aa90d0853b52935ffa33347071ef9a2cf0fc673657cd57d1bcbc58fa",
+      "bytes": 10448
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/reviews/maintainability-01.md",
+      "sha256": "c05000a090a4828ee788ba1fb57d1955858665505110e0438e41cf42b3ab60d4",
+      "bytes": 840
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/verification.md",
+      "sha256": "e8f4727604fded0551956f4cae661cd9d1d36ae3b9ff595aadbda2672d0caa1a",
+      "bytes": 3460
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/run-policy.json",
+      "sha256": "82ad4578dce7ca9468a90276a1e29100417fb559c5d6eb38333c937d049baa20",
+      "bytes": 1259
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/tests/test_catalog.py",
+      "sha256": "d1a39536a3741982377a7f3a374c9fa9c11baebfed868b920e0efc1f1f6bb0d1",
+      "bytes": 720
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/tools/check_architecture.py",
+      "sha256": "cd468098acf799dbca5be2724a3924e25725ec77f5d2441ba1f05ff5a198250d",
+      "bytes": 244
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/tools/check_contracts.py",
+      "sha256": "00f38e439f5347804a1c78646ecf9bf8b9fba805cfbb88075226b447d987b928",
+      "bytes": 11039
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/worker-result.schema.json",
+      "sha256": "32effc1988202bb7b16280169c4914b7300d6632d22ac805827b517675fec9ac",
+      "bytes": 1956
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.events.jsonl",
+      "sha256": "c90d2db2cc32f28e2c05fffa30b2a7c70295a732c9ede03d45f5d07b8fea5508",
+      "bytes": 90264
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.last.txt",
+      "sha256": "700d63c66ba0dfa8a0903af4e69df5e77b167337d427c31577c3a8ff583831e4",
+      "bytes": 1891
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.prompt.txt",
+      "sha256": "3f559514022c86029009c68bb57663bd1cd1d2336df4ae569b298a9d172246de",
+      "bytes": 845
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/installed-bundle.tar.gz",
+      "sha256": "1533645b594a2f169494bb5d4a2d7befa94c8b49a72a5ebf17c2abbd0251b628",
+      "bytes": 208250
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/installed-manifest.json",
+      "sha256": "12204d81b787d8ffd123775fedf0617e8b18036b1a7403825da2bfefff00f5d3",
+      "bytes": 11045
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/ledger.json",
+      "sha256": "cb8efac36a85dce00f2cb865c1da247a41f57762c71e3cafe51d18a373bf54a2",
+      "bytes": 192890
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/maintainability.events.jsonl",
+      "sha256": "c294cf5a69fe26fcb5e2bb6d919551ae671bbf59d09785130eb1bccfadeaa985",
+      "bytes": 48065
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/maintainability.last.txt",
+      "sha256": "ab53c84ad2429d2142c5534ac33c07a45fa14d4917f980cdcb13a9c3583e54bd",
+      "bytes": 263
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/maintainability.prompt.txt",
+      "sha256": "04263872b295fc5c694202669f86f23587f2e5792e0924b418474e7d6c8355ff",
+      "bytes": 871
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/maintainability.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/preflight.events.jsonl",
+      "sha256": "0f348e7dfadfe959da4f3d6559fea0e57534208c4c139f3ed75bad78dcf9ada6",
+      "bytes": 68949
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/preflight.last.txt",
+      "sha256": "c28e17fa687776c2c96857bcd4a2d48deaf360a6ec080d3d9518de8c8152ef16",
+      "bytes": 374
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/preflight.prompt.txt",
+      "sha256": "af17380efae30e5d6dd378faa80f85d59b775511beac01049c89e4b8d4b6f05e",
+      "bytes": 741
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/preflight.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/registry.events.jsonl",
+      "sha256": "dfcf7e51c015c654c789bdfaeda84f951524b9f9ec321dcec7dec74e3a10a0fe",
+      "bytes": 77399
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/registry.last.txt",
+      "sha256": "c7eb7c4c7da1918503f7eb5ff9b369ff75484973a4238fd055ba7abc94119b6e",
+      "bytes": 589
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/registry.prompt.txt",
+      "sha256": "cf48bdf4c9f84fe03386ddf85a0f3cbbc7e60694dbe5c177f76795416b571b1f",
+      "bytes": 905
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/registry.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/setup-observations.txt",
+      "sha256": "ad1af32ccf5de83d4d5fb11f77773cc0e16b28147b26a3640843e69ec8ec0db6",
+      "bytes": 654
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/telemetry-audit.json",
+      "sha256": "110dd3fbe6681d8c9c0defb46ce61ee88255c4c1ea004ff3b50d350c6fe4358b",
+      "bytes": 3666
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/telemetry-verification.txt",
+      "sha256": "e42271d23e4e008b17ef03873c4bd74713464b50fd18f549fbf8dbf286c4ab34",
+      "bytes": 148
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-1/brief.events.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-1/brief.prompt.txt",
+      "sha256": "be80edba6c2b1455bd3ef09fc5999e82fc850a69b93cab4e91ffa584f2400115",
+      "bytes": 729
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-1/brief.stderr.txt",
+      "sha256": "2d8b902fb51c4fb0108c58a40b037f3ed52641f00cdae67901d7cbda9b4b8473",
+      "bytes": 199
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-1/ledger.json",
+      "sha256": "616823c0516103c8bcea0effd6cd6ddf622f45020fffd9659dfee511592f234d",
+      "bytes": 26688
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-2/brief.events.jsonl",
+      "sha256": "28cf80f7e91b5c21a026c82ac61b44095fff3b4cde790d6aa03f541b8473bb00",
+      "bytes": 719
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-2/brief.prompt.txt",
+      "sha256": "be80edba6c2b1455bd3ef09fc5999e82fc850a69b93cab4e91ffa584f2400115",
+      "bytes": 729
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-2/brief.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-2/ledger.json",
+      "sha256": "616823c0516103c8bcea0effd6cd6ddf622f45020fffd9659dfee511592f234d",
+      "bytes": 26688
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/verification.events.jsonl",
+      "sha256": "8677ad2fbe8ddfc37da7b3189e19ece06e5945c0aa2108c3edb165505d16bc5d",
+      "bytes": 42011
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/verification.last.txt",
+      "sha256": "9226081b3beceb43b97a482b86165335c6e85c449b532394301409d4d046982e",
+      "bytes": 352
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/verification.prompt.txt",
+      "sha256": "4a0c75a17a3598a2a08da1e0dc8ba7e52200b84209044e076d62e95d6e7d61c9",
+      "bytes": 577
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/verification.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/integration-guidance.md",
+      "sha256": "b7fa157646db52d242078ed31a813698f69c53e17fce956bf71479c2d1d5cfbf",
+      "bytes": 9594
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/issues.md",
+      "sha256": "c42b5dc8841b79f6a753b73a0dcb3df6c9c31c96bcd44a03baea5b8981985f20",
+      "bytes": 12975
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/run_spike.py",
+      "sha256": "6b4387d122a4469d979ca12a3fcb79800fa9afff8d62d4fe4e917ab628a3b701",
+      "bytes": 15762
+    },
+    {
+      "path": "skills/task-orchestrator/docs/stage-3-mvp-rebaseline.md",
+      "sha256": "f8ff9753e62f3da6fbfe41444b317bb8304d89f406e5116b62953104765d715e",
+      "bytes": 26595
+    },
+    {
+      "path": "skills/task-orchestrator/docs/stage-3-mvp-task-actualization-map.md",
+      "sha256": "763db20de3952771e917f73e4fc7842db3b6fe5573031f8e539c4da874c2a87e",
+      "bytes": 10023
+    },
+    {
+      "path": "skills/task-orchestrator/docs/stage-3-mvp-tasks/MVP-2-flow-contract.md",
+      "sha256": "1e7778efbf319c68cb8a1120e682d49865ce67ada8088263d79d94842d11337b",
+      "bytes": 20746
+    },
+    {
+      "path": "skills/task-orchestrator/docs/stage-3-mvp-tasks/MVP-2-result.md",
+      "sha256": "6c170ababae4cb1db1e4906cca5ef1e95854e0c7fa145a47cc1c530bf3d1ac41",
+      "bytes": 12922
+    },
+    {
+      "path": "skills/task-orchestrator/docs/stage-3-retrieval-surface-follow-up.md",
+      "sha256": "d59f78cb02b8aca7fba272bd16d6d825e4cb498e5c0b49ed26ad134c9230cede",
+      "bytes": 2882
+    },
+    {
+      "path": "skills/task-orchestrator/docs/transport-decision.md",
+      "sha256": "d68f081d91c7b29f59d6c28d94e87135de8b0ff87a3daed3ee41655f69eb964e",
+      "bytes": 2543
+    },
+    {
+      "path": "skills/task-orchestrator/docs/verification-sandbox-decision.md",
+      "sha256": "a2e8b556ad9313979e302a94e12772f74c4768ffb01ed79f074c4866ebbc8e86",
+      "bytes": 8004
+    },
+    {
+      "path": "skills/task-orchestrator/evals/evals.json",
+      "sha256": "d0f4a2ae20e795e6a23995966b5b5fdb5bee2bd6b4b3684d5bf0449856f11def",
+      "bytes": 6164
+    },
+    {
+      "path": "skills/task-orchestrator/references/architecture-map.md",
+      "sha256": "d40cae50571a8da9a9bc47e9ecc84b42e7b9de514accdd8d2bc783f269016dd3",
+      "bytes": 2496
+    },
+    {
+      "path": "skills/task-orchestrator/references/index.md",
+      "sha256": "c8b6a16e85af0382bf53d9265d1fb5ed9958336ed92206c4348350f5cbfbeff1",
+      "bytes": 1467
+    },
+    {
+      "path": "skills/task-orchestrator/references/operator-guide.md",
+      "sha256": "0cbb91b2fb80850a99b6ebe316678f6c11c6cc179acffbda15c57cd53aa361ef",
+      "bytes": 3408
+    },
+    {
+      "path": "skills/task-orchestrator/scripts/codex_worker.py",
+      "sha256": "001a2f5fbf78a0532d342f71e9f8467f1d35073f0133868503d6bb15e70f3ba2",
+      "bytes": 18265
+    },
+    {
+      "path": "skills/task-orchestrator/scripts/controller.py",
+      "sha256": "ccce1556fde615a2490ea1234fcab68dfeabb5c57f9c8c28a1ad00bdfec60b50",
+      "bytes": 80429
+    },
+    {
+      "path": "skills/task-orchestrator/scripts/controller_git.py",
+      "sha256": "49f8685c5a33850250f70587f111d84fba40c33412e9ad11c1590ab13a42c905",
+      "bytes": 19596
+    },
+    {
+      "path": "skills/task-orchestrator/scripts/controller_state.py",
+      "sha256": "b3ebc6c5244982b33cacf563b70d46c01336c4a476e46940d75ee595dca2bb02",
+      "bytes": 67056
+    },
+    {
+      "path": "skills/task-orchestrator/scripts/verification_runner.py",
+      "sha256": "7cb7bfd633dbb346f2b96bc3cb191818ed160035cfc6d665037b9797c1baf66a",
+      "bytes": 33595
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_codex_worker.py",
+      "sha256": "30dabec6e379918c4f20bd00778997628c7363a16aecccbcc725606a50b7fdcd",
+      "bytes": 19172
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_controller.py",
+      "sha256": "62440a5d6ea1e7b451c7afa6944f8cc279eae3124a89f8212e02cec6105ef833",
+      "bytes": 132081
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_controller_git.py",
+      "sha256": "d2618265009e03b7f2deb14522b02cc04f9458ccb3014675b699feb0dc67cc3d",
+      "bytes": 30973
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_controller_state.py",
+      "sha256": "70466c992ee63602a9968bc72530a1f2b03b9479e4e38d7fe623d92b7fc1c1c2",
+      "bytes": 73977
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_retrieval_surface.py",
+      "sha256": "8fc05fafe77505b3c54f58a24bb0a3ffe0ea0141f42164a7bc2d2b1303a5d1d8",
+      "bytes": 4961
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_verification_runner.py",
+      "sha256": "eef2132f63adce69d2b2d721b409b986f3ae3b1331e775120ee021f26277bc2c",
+      "bytes": 37619
+    },
+    {
+      "path": "skills/testing-discipline/SKILL.md",
+      "sha256": "67a3cb0fd90496d3ab12623ecae1298566ff1933cf21e8f8d47d24680dd26e38",
+      "bytes": 16646
+    },
+    {
+      "path": "skills/testing-discipline/agents/openai.yaml",
+      "sha256": "f728e83185815d87e3854a31eb2b25c51548b6abbd96831ada1ac0e56cc34348",
+      "bytes": 237
+    },
+    {
+      "path": "skills/testing-discipline/references/test-catalog.md",
+      "sha256": "05b9b5369d90d45aee1f15bdb96ac2e5f1be24c4b796e2c2ef219ab851e49b9d",
+      "bytes": 13210
+    },
+    {
+      "path": "tests/README.md",
+      "sha256": "3e1b2d2188395841f681a99c2e969c64a332d15e06952e70c2189ece37ec243b",
+      "bytes": 6423
+    },
+    {
+      "path": "tests/fixtures/review-composition/task-map.json",
+      "sha256": "2453a8470d0229bbac4b739cceb59e6480b7001c12116130b9141c2c39268e7a",
+      "bytes": 64169
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/INT-FLOW-001/results.md",
+      "sha256": "3c991a46bc812a86330d88453c8b3507112978af3c37a10b2a49418ad536684c",
+      "bytes": 9515
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/T-002.4/composition.json",
+      "sha256": "91605a0a0531f5ee9d6fbbbd9b9e5313719e2a411e447406c272aefadfc1e0b4",
+      "bytes": 23059
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/T-003.4/composition.json",
+      "sha256": "22be5d002effc2c1dc6823e0452411a5505deee63fab8222f1428bdfc1cb0fa4",
+      "bytes": 23830
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/T-003.4/results.md",
+      "sha256": "c3150589fb03ec1580471ed632d4e1d67999f37fb75054b6868a87e12aa75272",
+      "bytes": 7232
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/T-005.1/evidence/V-02-setup-reconstruction.md",
+      "sha256": "e07b655511b64b50fb0a528b9e61914c9186dfd110683bb98e9e528d7df0ed4a",
+      "bytes": 4414
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/T-005.1/evidence/V-03-install-projection.md",
+      "sha256": "f72bdf6682aada19a07df97530ff586105d3f583b92f7c9282b159237c7fedb8",
+      "bytes": 13838
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/T-005.1/evidence/V-04-drift-contrast.md",
+      "sha256": "6c967a07eb0f13119f7374dbe5b3e5771573c331e0c5fd66aaf95044818ef239",
+      "bytes": 3163
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/T-005.1/fixtures.md",
+      "sha256": "a3904f7ce1c0a973e55601e62c4b043b0f39de399ef56f313ea8da86a6c906f5",
+      "bytes": 95562
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/T-005.1/results.md",
+      "sha256": "887121ff31923a6510fb7004615cbf1e061a7a3e90759d9308ce9bc1971caf12",
+      "bytes": 32256
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/T-005.1/setup_consumer.py",
+      "sha256": "ad3da1e57c62f8cd0104e470ae937de21f1a7b93912b61061aca6066878f48a6",
+      "bytes": 1186
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/T-005.6/brief.md",
+      "sha256": "4dfa7666fccf47ac47d99ce81ccea97c4f3345329ec2c37666351084c4be3174",
+      "bytes": 7591
+    },
+    {
+      "path": "tests/fixtures/review-composition/tasks/index.json",
+      "sha256": "e4b3cf6a51d62a2c07de303286a0ea66fe477a3b745b6f758105d1e330806e20",
+      "bytes": 7363
+    },
+    {
+      "path": "tests/review_fixture_support.py",
+      "sha256": "9a79bd1fd7b5a8a245220d4a0b028fedb4b7b5c601eb2c651632ed89daa15dfe",
+      "bytes": 2450
+    },
+    {
+      "path": "tests/staging_fixture_support.py",
+      "sha256": "a068cfb000446d4766f897f8ebc799988021590d92c545b64441cbb771c1e418",
+      "bytes": 1776
+    },
+    {
+      "path": "tests/test_bounded_task_implementer.py",
+      "sha256": "94fadfa2b3087ffec5d0b7ac5d15c0f34a2b72744ef4aec9de3ec98c2bf986c4",
+      "bytes": 40654
+    },
+    {
+      "path": "tests/test_contextual_export_risks.py",
+      "sha256": "c459ccbd2b5b0215fb046159bf2a29053457dd86e9de6d9c29417a7b9a18cf55",
+      "bytes": 6825
+    },
+    {
+      "path": "tests/test_contextual_known_issues.py",
+      "sha256": "2058a99ad6766a35453664cb91338e81576d23c4a014bcb8cbed892ffbb52cdb",
+      "bytes": 12774
+    },
+    {
+      "path": "tests/test_contextual_uncertainty_inputs.py",
+      "sha256": "d1c0c5b6699bd91d1d23e64fd441b051659223e6b29b0077f035b6f610b10528",
+      "bytes": 8571
+    },
+    {
+      "path": "tests/test_install_development_skills.py",
+      "sha256": "5eead744e1a7315082fb73f91a19b81488d7371bc867c792fc34e0144e7d082d",
+      "bytes": 90643
+    },
+    {
+      "path": "tests/test_ollama_delegate.py",
+      "sha256": "0b6c97a96d122bde90a984d2b26aed47a8f112e21282bc2db9f2ded59347f41b",
+      "bytes": 12155
+    },
+    {
+      "path": "tests/test_review_composition.py",
+      "sha256": "0f934c9c072f6b42cbc79381222903c5b089787a6e93d1d4126c6d2af974ee30",
+      "bytes": 63137
+    },
+    {
+      "path": "tests/test_run_evidence.py",
+      "sha256": "a969a2e4ead9f502dbefa00b1a2db5cc1e48d0b396164b7ea2b0268970e5a9ad",
+      "bytes": 21441
+    },
+    {
+      "path": "tests/test_run_evidence_availability.py",
+      "sha256": "9570e4e84bb049ee01ef572a94c842cd7d0a9682ecb4f4ba5bd2227a6baae9fc",
+      "bytes": 7811
+    },
+    {
+      "path": "tests/test_runtime_context.py",
+      "sha256": "93bfbeb69b3502b9787c2165a1ba91a6f6d37856d70ed5f68b2cf559e7fd34f1",
+      "bytes": 7685
+    },
+    {
+      "path": "tests/test_senior_review_discipline.py",
+      "sha256": "f15a2984f1ed248f6b46aa84f539d907fdfc94fe6d525c5d8c5eada952a556f8",
+      "bytes": 1305
+    },
+    {
+      "path": "tests/test_task_acceptance_review.py",
+      "sha256": "2d1d08a9d2b6e8a09129950c3ff8a11bcbc155a2df4cd4950bdd63ab573d32a6",
+      "bytes": 26901
+    },
+    {
+      "path": "tests/test_task_flow_guides.py",
+      "sha256": "86e7132472b2a2da79e6b66974cbf24089b4c29f15a89e79a5f9757ea15a2ead",
+      "bytes": 25009
+    },
+    {
+      "path": "tests/test_task_maintainability_review.py",
+      "sha256": "3a25b02f74b28c7a7ecce6b6b3c5d07012bff68e3ec5b3f96c9a919570a9e5eb",
+      "bytes": 34387
+    },
+    {
+      "path": "tests/test_task_preflight.py",
+      "sha256": "1b539cdd78ad803c0a2244212dca59db7b60ee0c9556c651089cbacd54a50696",
+      "bytes": 14667
+    },
+    {
+      "path": "tests/test_task_preparation_contracts.py",
+      "sha256": "51e7bb7afd57d4acca11a70d6670d89222cc712ab67874a4ebb1c16ab8fd1f00",
+      "bytes": 18261
+    },
+    {
+      "path": "tests/test_task_review_discovery.py",
+      "sha256": "75f0ec7b5f2dba7ef2ca82fee61ae3ff78c52f49ccdf06fa0df56622f6b5aff8",
+      "bytes": 24510
+    },
+    {
+      "path": "tests/test_workflow_version.py",
+      "sha256": "12aa118eff331c003505a97a5e0af9a7b8fcba1d54d099e837b54d8e8c5330a2",
+      "bytes": 17683
+    }
+  ],
+  "excludes": "Post-archive cleanup reports; includes all surviving original files and 13 new runtime inputs."
+}

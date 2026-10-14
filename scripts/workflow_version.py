@@ -35,6 +35,16 @@ def _git(repo_root: Path, *args: str) -> str:
     return result.stdout
 
 
+def _git_check(repo_root: Path, *args: str) -> subprocess.CompletedProcess:
+    """Run one Git check without raising and return its raw result."""
+    return subprocess.run(
+        ["git", "-C", str(repo_root), *args],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
 def repository_root_from_script() -> Path:
     script_dir = Path(__file__).resolve().parent
     root = _git(script_dir, "rev-parse", "--show-toplevel").strip()
@@ -205,6 +215,46 @@ def workflow_dirty(repo_root: Path, skill_dir: Path) -> bool:
     return False
 
 
+def _head_commit(repo_root: Path) -> str | None:
+    """Return the commit HEAD resolves to, or None when HEAD is unborn.
+
+    A repository before its first commit has a symbolic HEAD naming a branch
+    that does not exist yet, so Git cannot resolve HEAD to a commit. That
+    unborn state is distinct from an actual Git failure, and both stay
+    distinct here: the unborn classification requires `symbolic-ref HEAD`
+    to resolve to a branch ref that `show-ref --verify` confirms to be
+    absent through its dedicated not-found status. A ref that verifies as
+    existing means HEAD resolution genuinely failed, and any other lookup
+    status means the ref database could not be read; both re-raise the
+    original Git error and never report an unborn repository.
+    """
+    try:
+        return _git(repo_root, "rev-parse", "HEAD").strip()
+    except WorkflowVersionError as original:
+        try:
+            head_ref = _git(repo_root, "symbolic-ref", "HEAD").strip()
+        except WorkflowVersionError:
+            raise original from None
+        if not head_ref:
+            raise original
+        check = _git_check(repo_root, "show-ref", "--verify", "--quiet", head_ref)
+        if check.returncode == 0:
+            # The branch ref exists, so resolving HEAD genuinely failed.
+            raise original
+        if check.returncode != 1:
+            # The lookup itself failed; the branch ref's absence is not
+            # established, so this stays a Git failure, never unborn success.
+            diagnostic = (
+                check.stderr.strip()
+                or check.stdout.strip()
+                or f"git show-ref exited {check.returncode}"
+            )
+            raise WorkflowVersionError(
+                f"git show-ref --verify {head_ref} failed: {diagnostic}"
+            ) from original
+        return None
+
+
 def repository_branch(repo_root: Path) -> str | None:
     branch = _git(repo_root, "branch", "--show-current").strip()
     return branch or None
@@ -225,7 +275,7 @@ def get_workflow_version(repo_root: Path, workflow_id: str) -> dict[str, object]
     return {
         "workflow": workflow_id,
         "fingerprint": fingerprint_workflow(repo_root, skill_dir),
-        "repository_commit": _git(repo_root, "rev-parse", "HEAD").strip(),
+        "repository_commit": _head_commit(repo_root),
         "repository_branch": repository_branch(repo_root),
         "repository_dirty": bool(
             _git(repo_root, "status", "--porcelain=v1", "--untracked-files=all").strip()

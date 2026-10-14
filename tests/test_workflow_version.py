@@ -23,6 +23,19 @@ def git(repo: Path, *args: str) -> str:
     return result.stdout
 
 
+def write_skill_fixture(repo: Path) -> Path:
+    """Write the bounded-task-implementer fixture into a repository's skills tree."""
+    skill = repo / "skills" / "bounded-task-implementer"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(
+        "---\nname: bounded-task-implementer\ndescription: test skill\n---\nbody\n",
+        encoding="utf-8",
+    )
+    (skill / "references").mkdir()
+    (skill / "references" / "rules.md").write_text("rule one\n", encoding="utf-8")
+    return skill
+
+
 class WorkflowVersionTests(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
@@ -32,14 +45,7 @@ class WorkflowVersionTests(unittest.TestCase):
         git(self.repo, "config", "user.name", "Workflow Version Tests")
         git(self.repo, "config", "core.quotePath", "true")
 
-        self.skill = self.repo / "skills" / "bounded-task-implementer"
-        self.skill.mkdir(parents=True)
-        (self.skill / "SKILL.md").write_text(
-            "---\nname: bounded-task-implementer\ndescription: test skill\n---\nbody\n",
-            encoding="utf-8",
-        )
-        (self.skill / "references").mkdir()
-        (self.skill / "references" / "rules.md").write_text("rule one\n", encoding="utf-8")
+        self.skill = write_skill_fixture(self.repo)
 
         other = self.repo / "skills" / "other-skill"
         other.mkdir(parents=True)
@@ -306,6 +312,123 @@ class WorkflowVersionTests(unittest.TestCase):
             self.assertFalse(info["workflow_dirty"])
             self.assertFalse(info["repository_dirty"])
             self.assertEqual("", git(target_repo, "status", "--porcelain=v1"))
+
+
+class UnbornWorkflowVersionTests(unittest.TestCase):
+    def setUp(self):
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tempdir.name).resolve()
+        git(self.repo, "init")
+        git(self.repo, "config", "user.email", "tests@example.com")
+        git(self.repo, "config", "user.name", "Workflow Version Tests")
+        git(self.repo, "config", "core.quotePath", "true")
+        self.skill = write_skill_fixture(self.repo)
+        # Deliberately no `git add`/`git commit`: HEAD names a still-unborn branch.
+
+    def tearDown(self):
+        self.tempdir.cleanup()
+
+    def version(self):
+        return workflow_version.get_workflow_version(
+            self.repo, "bounded-task-implementer"
+        )
+
+    def test_unborn_head_reports_explicit_unborn_identity(self):
+        branch = git(self.repo, "branch", "--show-current").strip()
+
+        info = self.version()
+
+        self.assertIsNone(info["repository_commit"])
+        self.assertEqual(branch, info["repository_branch"])
+        self.assertTrue(info["fingerprint"].startswith("sha256:"))
+
+    def test_unborn_identity_transitions_to_real_commits_without_fingerprint_change(self):
+        unborn = self.version()
+
+        git(self.repo, "add", ".")
+        git(self.repo, "commit", "-m", "first commit")
+        first = self.version()
+        first_commit = git(self.repo, "rev-parse", "HEAD").strip()
+
+        unrelated = self.repo / "README.md"
+        unrelated.write_text("unrelated\n", encoding="utf-8")
+        git(self.repo, "add", "README.md")
+        git(self.repo, "commit", "-m", "later unrelated commit")
+        later = self.version()
+        later_commit = git(self.repo, "rev-parse", "HEAD").strip()
+
+        self.assertIsNone(unborn["repository_commit"])
+        self.assertEqual(first_commit, first["repository_commit"])
+        self.assertEqual(later_commit, later["repository_commit"])
+        self.assertNotEqual(first_commit, later_commit)
+        self.assertEqual(unborn["fingerprint"], first["fingerprint"])
+        self.assertEqual(first["fingerprint"], later["fingerprint"])
+        self.assertFalse(first["workflow_dirty"])
+        self.assertFalse(later["workflow_dirty"])
+
+    def _version_with_ref_lookup(self, ref_lookup):
+        """Read identity with one controlled `show-ref` lookup result.
+
+        The unborn fallback path stays real: HEAD resolution fails on the
+        still-unborn branch and `symbolic-ref` still resolves. Only the
+        ref lookup is controlled, mirroring a ref-database I/O failure.
+        """
+        head_ref = git(self.repo, "symbolic-ref", "HEAD").strip()
+        real_git_check = workflow_version._git_check
+
+        def git_check(repo_root, *args):
+            self.assertEqual(("show-ref", "--verify", "--quiet", head_ref), args)
+            return ref_lookup
+
+        try:
+            workflow_version._git_check = git_check
+            return self.version()
+        finally:
+            workflow_version._git_check = real_git_check
+
+    def test_failed_branch_ref_lookup_is_not_reported_as_unborn(self):
+        # A ref lookup that fails outright (a ref-database I/O error exits
+        # 128) supplies no evidence that the branch ref is absent, so
+        # identity must stay a Git failure, never unborn success.
+        fatal_lookup = subprocess.CompletedProcess(
+            args=[],
+            returncode=128,
+            stdout="",
+            stderr="fatal: controlled ref-database I/O failure\n",
+        )
+
+        with self.assertRaises(workflow_version.WorkflowVersionError):
+            self._version_with_ref_lookup(fatal_lookup)
+
+    def test_existing_branch_ref_keeps_head_resolution_failure(self):
+        # The single-failure control: when the branch ref verifies as
+        # existing, the failed HEAD resolution stays the reported error.
+        existing_ref = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="", stderr=""
+        )
+
+        with self.assertRaises(workflow_version.WorkflowVersionError):
+            self._version_with_ref_lookup(existing_ref)
+
+    def test_git_failure_is_not_represented_as_unborn(self):
+        with tempfile.TemporaryDirectory() as non_repo_dir:
+            non_repo = Path(non_repo_dir).resolve()
+            write_skill_fixture(non_repo)
+
+            with self.assertRaises(workflow_version.WorkflowVersionError):
+                workflow_version.get_workflow_version(
+                    non_repo, "bounded-task-implementer"
+                )
+
+    def test_unresolvable_head_in_committed_repository_is_not_reported_as_unborn(self):
+        git(self.repo, "add", ".")
+        git(self.repo, "commit", "-m", "initial")
+        (self.repo / ".git" / "HEAD").write_text(
+            "not a symbolic ref or object\n", encoding="utf-8"
+        )
+
+        with self.assertRaises(workflow_version.WorkflowVersionError):
+            self.version()
 
 
 if __name__ == "__main__":

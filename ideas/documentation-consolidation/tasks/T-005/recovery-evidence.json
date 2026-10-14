@@ -1,0 +1,12 @@
+{
+  "archive_commit": "0ad1706cecc6f7d115e510762bf74c58d732cb6a",
+  "tag": "archive/documentation-pre-cleanup-2026-10-14",
+  "recovery_root": "/tmp/documentation-cleanup-final-recovery-a63imhko",
+  "verified_files": 524,
+  "verified_retired_paths": 182,
+  "archive_link_targets_verified": 106,
+  "existing_link_fragments_verified": 2,
+  "representative_fragment": "docs/project-plan.md#6-cross-task-invariants",
+  "wrong_ref_rejected": true,
+  "no_original_clone_alternates": true
+}

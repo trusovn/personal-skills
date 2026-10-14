@@ -102,31 +102,34 @@ it hard.
 - Estimate confidence: `<low | medium | high>`
 - Policy result: `fits | override_cannot_split_safely`
 - Triggered limits: `none | <configured rule names>`
-- Decomposition override: `none | cannot_split_safely — <concrete reason and residual risk>`
+- Decomposition override: `none | cannot_split_safely — <candidate boundary considered, concrete coupling or coordination/rework reason, and residual execution risk>`
 
-These estimates cover implementation-agent work only. If the active policy
-requires decomposition and no permitted override applies, stop using this
-executable template: emit a `decomposed` composite parent plus independently
-estimated child briefs instead.
+These estimates cover implementation-agent work only. When a trigger fires,
+apply the boundary decision: emit a `decomposed` composite parent plus
+independently estimated child briefs when the boundary quality favors a
+split, and keep this executable template with the recorded override only when
+the active policy permits the reasoned no-split decision. Do not present a
+trigger as automatically requiring decomposition.
 
 ## Readiness route
 
 `<implementer self-preflight | standalone guided preflight — concrete material uncertainty | high-assurance preflight>`
 
-Use implementer self-preflight for routine guided work. Recommend standalone
-guided preflight only with the concrete material readiness uncertainty that it
-should resolve. Use high-assurance preflight when that profile is required.
-This is human-readable guidance, not a fifth metadata key; current execution
-facts may still require escalation.
+An executable task package requires ready standalone preflight after derived
+verification. An unpackaged direct edit may use implementer self-preflight.
+Use high-assurance preflight when that profile is required. This is
+human-readable guidance, not a fifth metadata key; current execution facts may
+still require escalation.
 
 ## Verification-design recommendation
 
 `<inline | separate — concrete reason>`
 
-Use `inline` when the brief already makes the decisive task-local scenarios
-and oracles obvious. Recommend `separate` only when a dedicated
-`task-verification-designer` pass is likely to reduce implementation risk or
-cognitive load. This is advisory, not a required stage.
+For an executable task package, derived `verification.md`, then ready
+`preflight.md`, are required before implementation. State why the verification
+design needs its scenarios; it must not add requirements or waive omitted ACs.
+A small conversational direct edit may use inline checks only when no package
+has been supplied.
 
 ## Outcome
 
@@ -222,9 +225,11 @@ risk.
 - Preserve pre-existing user work.
 - Next action: `<guided implementation | standalone guided preflight and reason | high-assurance preflight | decision owner>`.
 - When `review: immediate`, preserve implementation as the next action and add:
-  `Required follow-on: immediately after implementation or correction, hand
-  the completed bytes to a fresh independent acceptance reviewer.` Do not use
-  same-session self-review as that acceptance step.
+  `Required follow-on: immediately after implementation or correction and any
+  applicable conditional stages, hand the completed bytes to a fresh
+  independent `task-review-discovery` call, and hand its report to a separate
+  `task-acceptance-review` decision.` Do not use
+  same-session self-review as that discovery or acceptance step.
 
 ---
 

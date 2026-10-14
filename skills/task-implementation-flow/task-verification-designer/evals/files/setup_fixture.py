@@ -135,10 +135,281 @@ def small_explicit() -> None:
     commit(root)
 
 
+def preparation_routes() -> None:
+    root = initialize("preparation-routes")
+    write(
+        root,
+        "docs/tasks/PKG-1/brief.md",
+        """
+        # Task Brief: PKG-1
+
+        Status: ready
+        Task kind: executable
+        AC-01: update the compact documentation package.
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/PARENT/brief.md",
+        """
+        # Task Brief: PARENT
+
+        Status: decomposed
+        Task kind: composite
+        Children: PKG-1
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/BLOCKED/brief.md",
+        """
+        # Design block: BLOCKED
+
+        Status: blocked_design
+        Missing decision: retention owner
+        """,
+    )
+    write(root, "docs/tasks/LEGACY.md", "# Legacy task\n\nAC-01: normalize me.")
+    commit(root)
+
+
+def coverage_revision() -> None:
+    root = initialize("coverage-revision")
+    write(
+        root,
+        "docs/tasks/REV-1/brief.md",
+        """
+        # Task Brief: REV-1
+
+        Status: ready
+        Task kind: executable
+        AC-01: export a report.
+        AC-02: preserve the source timestamp.
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/REV-1/verification.md",
+        """
+        Source brief: docs/tasks/REV-1/brief.md
+        Source brief revision: 1
+        Verification revision: 1
+        V-01 covers AC-01.
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/REV-1/preflight.md",
+        """
+        Status: ready
+        Verification revision: 1
+        Evidence: V-01 passed.
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/REV-1/changed-requirement.md",
+        "AC-02 now requires an approved retention decision.",
+    )
+    commit(root)
+
+
+def coverage_closure() -> None:
+    root = initialize("coverage-closure")
+    write(
+        root,
+        "docs/report-policy.md",
+        """
+        # Report policy
+
+        Every export includes the approved report title and the exact source
+        timestamp. No other report field is required by this policy.
+        """,
+    )
+    verification_by_package = {
+        "COV-VALID": """
+            Source brief: docs/tasks/COV-VALID/brief.md
+            Source brief revision: 1
+            Verification revision: 1
+            V-01 covers AC-01 with title setup, export action, and title oracle.
+            V-02 covers AC-02 and ROW-TIMESTAMP with source timestamp setup,
+            export action, and exact timestamp oracle.
+        """,
+        "COV-OMITTED": """
+            Source brief: docs/tasks/COV-OMITTED/brief.md
+            Source brief revision: 1
+            Verification revision: 1
+            V-01 covers AC-01; its title evidence is green.
+        """,
+        "COV-UNSUPPORTED": """
+            Source brief: docs/tasks/COV-UNSUPPORTED/brief.md
+            Source brief revision: 1
+            Verification revision: 1
+            V-01 covers AC-01.
+            V-99 requires encrypting every export before delivery.
+        """,
+        "COV-WEAK": """
+            Source brief: docs/tasks/COV-WEAK/brief.md
+            Source brief revision: 1
+            Verification revision: 1
+            V-01 covers AC-01 with a title oracle.
+            V-02 covers AC-02 by checking only that an export file exists.
+        """,
+    }
+    for package, verification in verification_by_package.items():
+        write(
+            root,
+            f"docs/tasks/{package}/brief.md",
+            f"""
+            # Task Brief: {package}
+
+            Status: ready
+            Task kind: executable
+            Authority: docs/report-policy.md
+            AC-01: export the approved report title.
+            AC-02: preserve the exact source timestamp in the export.
+            Finite-risk rows:
+            - ROW-TIMESTAMP — source and export timestamps must match exactly.
+            """,
+        )
+        write(root, f"docs/tasks/{package}/verification.md", verification)
+    commit(root)
+
+
+def verification_conflicts() -> None:
+    root = initialize("verification-conflicts")
+    declarations = {
+        "CONFLICT-MISSING": "Preserve missing declaration bytes.",
+        "CONFLICT-MALFORMED": "Source brief docs/tasks/CONFLICT-MALFORMED/brief.md\nPreserve malformed declaration bytes.",
+        "CONFLICT-DUPLICATE": """
+            Source brief: docs/tasks/CONFLICT-DUPLICATE/brief.md
+            Source brief: docs/tasks/CONFLICT-DUPLICATE/brief.md
+            Preserve duplicate declaration bytes.
+        """,
+        "CONFLICT-FOREIGN": """
+            Source brief: docs/tasks/OTHER/brief.md
+            Preserve foreign declaration bytes.
+        """,
+        "CONFLICT-VALID": """
+            Source brief: docs/tasks/CONFLICT-VALID/brief.md
+            Preserve valid control bytes.
+        """,
+    }
+    for package, verification in declarations.items():
+        write(
+            root,
+            f"docs/tasks/{package}/brief.md",
+            f"""
+            # Task Brief: {package}
+
+            Status: ready
+            Task kind: executable
+            AC-01: preserve the supplied artifact.
+            """,
+        )
+        write(root, f"docs/tasks/{package}/verification.md", verification)
+    commit(root)
+
+
+def workflow_scope() -> None:
+    root = initialize("workflow-scope")
+    write(
+        root,
+        "docs/tasks/GUIDE-1/brief.md",
+        """
+        # Task Brief: GUIDE-1
+
+        Status: ready
+        Task kind: executable
+        AC-01: update one compact documentation page.
+        """,
+    )
+    write(
+        root,
+        "requests/unpackaged-direct-edit.md",
+        "Correct one heading and verify the rendered Markdown.",
+    )
+    commit(root)
+
+
+def integration_leaf() -> None:
+    root = initialize("integration-leaf")
+    write(
+        root,
+        "docs/settlement-policy.md",
+        """
+        # Settlement policy
+
+        Settlement consumes the export handoff exactly once per item at the
+        consumer boundary. A missing or incompatible handoff is reported to
+        its owner, never invented or silently replaced.
+        """,
+    )
+    write(
+        root,
+        "docs/producer-outputs/export-handoff.json",
+        '{"items": [{"id": "EXP-1", "total": "102.00"}]}',
+    )
+    write(
+        root,
+        "docs/tasks/INT-9/brief.md",
+        """
+        # Task Brief: INT-9 — Compose export handoff into settlement
+
+        Status: ready
+        Task kind: executable
+        Authority: docs/settlement-policy.md
+
+        Producers: the completed export task's supplied producer outputs live
+        at `docs/producer-outputs/export-handoff.json`; the consumer boundary
+        is the settlement consume command.
+
+        AC-01: consuming a supplied producer output applies each settled item
+        exactly once at the consumer boundary.
+        AC-02: a missing or incompatible producer output is reported to its
+        owner and never invented or silently replaced.
+        """,
+    )
+    write(
+        root,
+        "docs/tasks/INT-PARENT/brief.md",
+        """
+        # Task Brief: INT-PARENT
+
+        Status: decomposed
+        Task kind: composite
+        Children: INT-9
+        """,
+    )
+    write(
+        root,
+        "requests/integration-contrasts.md",
+        """
+        Contrasts for the INT-9 verification request:
+
+        - Sibling requirement: `INT-10` (export retention) is outside this
+          leaf's authority; the request must not invent or own it.
+        - System-wide: an end-to-end export-to-archive integration strategy
+          is not owned by this leaf's verification design.
+        - Unavailable: the decisive settlement oracle's expected result is
+          not stated by any supplied authority, and the unavailable input or
+          capability must be reported to its owner instead of fabricating a
+          report or claiming readiness.
+        """,
+    )
+    commit(root)
+
+
 SCENARIOS = {
     "ambiguous": ambiguous,
+    "coverage-closure": coverage_closure,
+    "coverage-revision": coverage_revision,
+    "integration-leaf": integration_leaf,
     "lifecycle": lifecycle,
+    "preparation-routes": preparation_routes,
     "small-explicit": small_explicit,
+    "verification-conflicts": verification_conflicts,
+    "workflow-scope": workflow_scope,
 }
 
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:

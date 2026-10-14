@@ -1,0 +1,304 @@
+{
+  "skill_name": "task-review-discovery",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The fixture is already staged in the current workspace. Independently discover and publish current evidence for task `QR-12` using `docs/tasks/QR-12/brief.md`, `docs/tasks/QR-12/preflight.md`, and `../task-runs/QR-12/worker-result.json`. Treat the worker's passing unit/state claim as submitted evidence. Independently execute the required two consecutive public invocations against persisted state in an authorized disposable directory. Write only `docs/tasks/QR-12/reviews/discovery-01.md`; do not rerun fixture setup, fix implementation, update tracker state, or decide acceptance.",
+      "expected_output": "A read-only discovery report with a located confirmed finding tied to the repeated-flow AC and a suggested severity, independently observed first-state-change-plus-second-invocation evidence, complete row coverage with setup/oracle, and an explicit handoff to the separate acceptance decision call without any acceptance verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "queue-defect"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/queue-runner"
+      },
+      "expectations": [
+        "The report treats the passing worker tests and result as claims and independently exercises the real `runner run-next` public entry point twice through persisted state.",
+        "It records the first legitimate claim/state change and the second invocation's failure to claim `TASK-2`, with the row's setup/oracle and exact probe, rather than inferring repeated behavior from unit or state tests.",
+        "A confirmed finding includes a stable ID, suggested severity, current implementation location, triggering state, consequence, evidence, affected AC, credible sibling surface, and smallest corrective direction without a patch.",
+        "The report states complete coverage, publishes no acceptance verdict, approved deferral, or advancement, and routes to a separate acceptance decision call.",
+        "Only `docs/tasks/QR-12/reviews/discovery-01.md` is added; source, tests, existing task artifacts, tracker state, and task-orchestrator are not modified."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "The fixture is already staged in the current workspace with package-contained durable artifacts, an external worker result, and real pre-existing `MM notes/local.md` user state. Run task review discovery for `EXP-08` using `docs/tasks/EXP-08/preflight.md` and `../task-runs/EXP-08/worker-result.json`. Confirm the separate index/worktree fingerprints for the user path, reconstruct only the two allowed task changes, and independently exercise public resume plus retry in disposable state. Write only `docs/tasks/EXP-08/reviews/discovery-01.md`, do not rerun fixture setup, and do not decide or advance the task.",
+      "expected_output": "A concise clean discovery report that corroborates every AC at module and real-entry levels, records deterministic retry/resume evidence and clean scope, states `No findings.`, marks coverage complete, and hands the evidence record to the separate acceptance decision call without any verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "exporter-accept"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/exporter"
+      },
+      "expectations": [
+        "The report reconstructs a clean scoped diff from the recorded baseline, separately confirms the unchanged index/worktree fingerprints of pre-existing `MM` user work, and confirms that only allowed task-owned paths changed.",
+        "Every AC row has corroborated module/state evidence plus real public `exportctl resume` evidence, including preservation of legitimate repeated positional rows and negative retry-created duplicate behavior, with each row's setup/oracle recorded.",
+        "The lifecycle row and independent probe record the first export, legitimate checkpoint state, resumed or retried occurrence, and externally observed result.",
+        "The findings section says `No findings.` and does not manufacture a defect when the evidence is clean.",
+        "The report states complete coverage, publishes no acceptance verdict, approved deferral, or advancement, and routes to a separate acceptance decision call without updating tracker or orchestration state."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The fixture is already staged in the current workspace. Discover and publish current evidence for task `SCH-09` from `docs/tasks/SCH-09/brief.md`, `docs/tasks/SCH-09/preflight.md`, and `../task-runs/SCH-09/worker-result.json`. The AC requires deterministic proof that two workers cannot claim the same job, but the preflight-recorded helper has been removed after preflight. The ordinary unit suite passes, while the supplied run policy forbids inventing a replacement or using a live scheduler. Write only `docs/tasks/SCH-09/reviews/discovery-01.md` without rerunning fixture setup, repairing anything, or deciding acceptance.",
+      "expected_output": "An explicitly partial discovery report that identifies the stale/removed helper evidence and missing decisive concurrency capability, keeps the concurrency row blocked or unchecked with a concrete reason and next evidence owner, refuses to substitute unit tests or create a helper, and routes the capability gap to task-preflight without any acceptance verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "scheduler-inconclusive"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/scheduler"
+      },
+      "expectations": [
+        "The report identifies the preflight helper digest mismatch and current absence as exact stale/current-state evidence.",
+        "It marks the real concurrency AC row blocked or unchecked with the concrete missing-capability reason and next evidence owner, and does not treat the passing unit suite or worker result as sufficient proof.",
+        "It does not create or replace the helper, edit tests or source, run an unauthorized live probe, or convert the gap into a clean row.",
+        "The report is explicitly partial and publishes no acceptance verdict, approved deferral, or advancement.",
+        "The next route names `task-preflight` or the prerequisite capability owner with the smallest action, then fresh discovery before the acceptance decision call."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "The fixture is already staged in the current workspace. Discover and publish current evidence for `EXP-08` from `docs/tasks/EXP-08/preflight.md` and `../task-runs/EXP-08/worker-result.json`. After preflight, another process replaced only the index blob for pre-existing `MM notes/local.md`; the exact short status and worktree bytes still match. Write only `docs/tasks/EXP-08/reviews/discovery-01.md`; do not rerun fixture setup, repair, normalize Git state, or decide acceptance.",
+      "expected_output": "An explicitly partial discovery report that detects the separately changed index blob, refuses to absorb or reset user work, records the scope/baseline rows as blocked with concrete reasons and owners, and routes to fresh task-preflight without any acceptance verdict despite matching worktree bytes and short-status text.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "exporter-restaged-stale"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/exporter"
+      },
+      "expectations": [
+        "The report compares the recorded index-blob digest independently from the matching worktree digest and short-status text.",
+        "It classifies the changed pre-existing index state as unexplained and the baseline as unsafe to reconstruct, and publishes that scope gap explicitly instead of reviewing a guessed scoped diff as authoritative.",
+        "It does not reset, restage, overwrite, or claim ownership of `notes/local.md`.",
+        "The report is explicitly partial, publishes no acceptance verdict, approved deferral, or advancement, and routes to fresh `task-preflight` before any renewed discovery.",
+        "Only the canonical package report `docs/tasks/EXP-08/reviews/discovery-01.md` is written."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "The staged implementation is already present in the current workspace. Perform a guided task review discovery for `docs/tasks/LED-04/brief.md` against the current diff. There is no preflight packet, worker JSON, run policy, or report path; report inline, do not rerun fixture setup, and remain read-only. Do not rely on the happy-path test alone: independently exercise selected versus non-selected task states, zero/one/two active owners, latest-attempt ordering, exact ready-set behavior, stopped-parent/running-child coherence, boolean revisions, and string `completed_task_ids`.",
+      "expected_output": "A concise guided discovery report that proceeds without orchestrator artifacts and publishes located interacting-state and type-strictness findings with suggested severities, complete row coverage with setup/oracle, and an explicit handoff to the separate acceptance decision call without any verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "ledger-defects"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/ledger-runner"
+      },
+      "expectations": [
+        "Discovery proceeds in guided mode without requiring a preflight packet, worker result, digest ledger, policy file, or durable report path.",
+        "Independent probes demonstrate that a valid selected task can hide an invalid non-selected running task and that ready/stopped states accept incoherent sibling states.",
+        "The probes check exact cardinality and show that the running state can admit more than one running task, and they catch non-latest active attempts, inexact ready sets, boolean revisions, and string `completed_task_ids` as applicable defects, continuing after the first finding.",
+        "Every row records its setup/oracle and exact probe, and every independently reproduced defect is a confirmed finding with a stable ID, suggested severity, location, trigger, consequence, affected AC, credible sibling surface, and invariant-level direction.",
+        "The inline human-readable report states complete coverage, publishes no acceptance verdict, approved deferral, or advancement, routes to a separate acceptance decision call, and does not edit the repository."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "The clean fixture is already staged in the current workspace. In this same session, implement `PRICE-02` by changing only `src/pricing.py` so the approved test passes. Then load and invoke task-review-discovery on the production bytes you just authored. Do not rerun fixture setup, hand the discovery to another session, or edit anything else.",
+      "expected_output": "The authoring session may publish a clearly labeled `SELF_CHECK_ONLY` discovery pass with complete or explicitly partial coverage, but it presents no independently corroborated rows, publishes no acceptance verdict, approved deferral, or advancement, and routes the current diff to a fresh independent task-review-discovery call.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "authored-production-self-check"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/authored-production"
+      },
+      "expectations": [
+        "The requested production edit is confined to `src/pricing.py` and the focused pricing test is run.",
+        "The session recognizes that loading the discovery skill does not erase its authorship of the reviewed production bytes.",
+        "The discovery output is labeled `SELF_CHECK_ONLY`, and its rows and findings are presented as author self-check evidence, never as independently corroborated discovery rows.",
+        "The self-check publishes no acceptance verdict, approved deferral, or advancement, cannot advance the task, and its exact next route is a fresh independent task-review-discovery call of the current diff.",
+        "No output misrepresents missing independence as an environment, permission, or freshness blocker, and no path outside `src/pricing.py` changes."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "The staged implementation is already present in the current workspace. Perform one guided independent task review discovery for `docs/tasks/WF-21/brief.md` against the current diff. Use only authorized disposable state for independent checks; do not rerun fixture setup, edit the repository, decide acceptance, or advance work.",
+      "expected_output": "One completeness-first discovery report that publishes all three independently observable workflow defects with suggested severities, keeps the explicit row ledger complete, records that the aggregate gate was not run after targeted failures, and hands a complete continuation to the separate acceptance decision call without any verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "workflow-matrix-defects"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/workflow-runner"
+      },
+      "expectations": [
+        "The coverage ledger retains exactly the stable rows `WF-TAMPER`, `WF-REPLAY`, and `WF-DECISION`, and every row ends `fail`, `blocked`, or `unchecked` with a concrete reason and setup/oracle rather than disappearing after the first failure.",
+        "Independent disposable probes demonstrate coherent prompt-plus-model tampering reaching execution, execution being replayed after verifier drift, and a contradictory decision-only artifact reaching execution.",
+        "Discovery publishes every independently reproduced defect in this pass and does not stop after the first finding.",
+        "Each confirmed finding names the broken task invariant, a credible sibling surface bounded by the same explicit workflow contract, and an invariant-level corrective direction rather than a field-only patch, with a suggested severity.",
+        "The aggregate-gate record says `python -m unittest discover -s tests` was not run because decisive targeted evidence failed; it is owned by fresh correction discovery after clean targeted evidence.",
+        "The report publishes no acceptance verdict, approved deferral, or advancement, the repository remains read-only, and the continuation block includes every row/result, all finding IDs, aggregate-gate status, and the route to the separate acceptance decision call."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "The staged implementation and prior review continuation at `../task-runs/WF-21/review-continuation.md` are already present. Continue the independent task review discovery of `WF-21` against the current bytes using that supplied context. Do not rerun fixture setup, edit the repository, decide acceptance, or advance work.",
+      "expected_output": "A current-evidence discovery continuation that preserves all row identities, reruns rather than copies the stale prior pass, completes the independent rows, keeps the aggregate gate suppressed after decisive targeted failures, and transfers a complete continuation block to the separate acceptance decision call without any verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "workflow-matrix-defects"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/workflow-runner"
+      },
+      "expectations": [
+        "The supplied pass, fail, and unchecked rows are consumed as continuation context without renaming, dropping, or silently replacing their task-derived identities.",
+        "`WF-TAMPER` receives a current independent probe and is not marked pass merely because the prior ledger said pass.",
+        "Discovery completes the previously unchecked `WF-DECISION` probe and reruns enough evidence for `WF-REPLAY` against current bytes.",
+        "Every independently reproduced finding is published with a suggested severity, while any genuinely unavailable row is explicitly `blocked` or `unchecked` with a reason and next evidence owner.",
+        "The aggregate gate remains not run after decisive current targeted failures, with the exact command or `not run`, owner, stage, and reason recorded and owned by fresh correction discovery.",
+        "The copyable continuation block contains iteration/current byte identity when available, all row results, finding IDs, reviewer regression commands, aggregate-gate status, and the exact route to the separate acceptance decision call, with no acceptance verdict anywhere."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "The staged implementation is already present in the current workspace. Perform one guided independent task review discovery for `docs/tasks/PROC-17/brief.md` against the current diff. Use only bounded local probes and leave no fixture process artifacts; do not rerun fixture setup, edit the repository, or decide acceptance.",
+      "expected_output": "One bounded discovery report that exercises all three process-lifecycle rows, publishes the shared process-tree cleanup invariant and independently demonstrated sibling failures with suggested severities, records the aggregate gate as not run after targeted failures, leaves no live fixture processes, and hands the complete record to the separate acceptance decision call without any verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "process-cleanup-defects"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/process-runner"
+      },
+      "expectations": [
+        "Discovery runs all three focused rows `PROC-RESIST`, `PROC-PIPE`, and `PROC-RACE` instead of stopping after the first leaked descendant.",
+        "Evidence comes from the real local process boundary with observable synchronization and bounded waits, not arbitrary sleeps, unbounded waits, or a pure mock.",
+        "The probes demonstrate the resistant descendant, exited leader with inherited-pipe holder, and transient leader/descendant visibility cases; after each probe cleanup boundedly confirms descendant and process-group disappearance plus inherited-pipe release, incomplete cleanup fails the probe, and no fixture process survives.",
+        "Findings identify the shared invariant that timeout or leader exit must terminate and reap the whole process group and release inherited pipes, with the three cases as bounded sibling surfaces, each with a stable ID and suggested severity.",
+        "The aggregate suite is recorded as not run after decisive targeted failures and owned by fresh correction discovery after clean targeted evidence.",
+        "The report publishes no acceptance verdict, approved deferral, or advancement, every row has a result/reason, and no production or test file is changed."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "The fixture is already staged in the current workspace with a prepared verification design, a preflight packet that records explicit ART-003 context, and a prior partial discovery continuation at `../task-runs/MIX-03/discovery-continuation.md`. Continue the independent task review discovery for `MIX-03` using `docs/tasks/MIX-03/brief.md`, `docs/tasks/MIX-03/verification.md`, `docs/tasks/MIX-03/preflight.md`, and `../task-runs/MIX-03/worker-result.json`. The verification design's scenarios omit the brief's AC-04 row, and the preflight-recorded concurrency helper has been removed after preflight. Write only `docs/tasks/MIX-03/reviews/discovery-01.md`; do not rerun fixture setup, repair anything, replace the helper, or decide acceptance.",
+      "expected_output": "An explicitly partial discovery continuation that retains the supplied pass/fail/blocked/unchecked row identities, corroborates the prior pass against current bytes, confirms the ART-003-selected two-invocation failure for the authority row omitted from the verification design, keeps the concurrency row blocked with the helper-digest reason, finishes or explicitly re-marks the retry row with current evidence, suppresses the aggregate gate, and hands a complete continuation block to the separate acceptance decision call without any verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "discovery-prepared-ledger"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/prepared-ledger"
+      },
+      "expectations": [
+        "All four supplied row identities `MIX-R1` through `MIX-R4` are retained without renaming or dropping, and the prior `MIX-R1` pass receives a current independent probe instead of being copied.",
+        "The recorded ART-003 context selects the decisive probe: the public entry is executed twice against disposable persisted state, and the second invocation's failure to claim `TASK-2` is independently observed with the row's setup/oracle recorded.",
+        "The AC-04 authority row, omitted from the verification design's scenarios, stays visible in the ledger with its current evidence state and concrete reason instead of vanishing behind the passing worker tests.",
+        "The AC-03 concurrency row remains `blocked` with the preflight helper-digest mismatch and current helper absence as the concrete reason and next evidence owner, and the helper is not recreated or replaced.",
+        "The previously unchecked `MIX-R4` retry row receives a current independent probe or an explicit `blocked`/`unchecked` reason, and the aggregate-gate record says the gate was not run after the decisive targeted failure with the exact command or `not run`, owner, stage, and reason.",
+        "The report is explicitly partial, publishes no acceptance verdict, approved deferral, or advancement, and only `docs/tasks/MIX-03/reviews/discovery-01.md` is written."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "The corrected `QR-12` implementation is already staged together with the prior discovery report `docs/tasks/QR-12/reviews/discovery-01.md`, the continuation at `../task-runs/QR-12/discovery-continuation.md`, and the worker result `../task-runs/QR-12/worker-result.json`. The bytes have been corrected since the prior discovery confirmed finding `F-01`. Perform the fresh correction discovery of the current bytes: corroborate the corrected rows, rerun the recorded reviewer regression, complete the previously unfinished row, and own this pass's aggregate-gate decision. Write only the next unused numbered report `docs/tasks/QR-12/reviews/discovery-02.md`; do not rerun fixture setup, edit production or tests, or decide acceptance.",
+      "expected_output": "A complete correction-discovery report that corroborates every row against the corrected current bytes, reruns the reviewer regression, records clean targeted evidence before exactly one justified aggregate gate owned by this pass, publishes no copied prior pass or prior gate as current evidence, and hands the record to the separate acceptance decision call without any verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "discovery-correction-gate"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/corrected-queue"
+      },
+      "expectations": [
+        "The previously failing second-invocation row is corroborated against the corrected bytes by a current two-invocation public probe observing `TASK-1` then `TASK-2`, and the prior `QR-R1` pass is rerun against current bytes rather than copied.",
+        "The previously unchecked `QR-R3` retry row receives a current probe showing a retried invocation adds no duplicate claims, and the recorded reviewer regression `python -m unittest tests.integration.test_run_next` is rerun with its exact result recorded.",
+        "The targeted rows are recorded clean before the gate decision, and the aggregate-gate record shows `python -m unittest discover -s tests` run exactly once by this correction discovery with the exact command, owner, stage, reason, and current evidence.",
+        "No row, pass, or gate from the prior report is inherited as current evidence, and the earlier suppressed gate is not republished as this pass's gate.",
+        "The report states complete coverage, publishes no acceptance verdict, approved deferral, or advancement, and only `docs/tasks/QR-12/reviews/discovery-02.md` is written."
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "The `LED-05` implementation, the prior discovery report `docs/tasks/LED-05/reviews/discovery-01.md`, and the worker result `../task-runs/LED-05/worker-result.json` are already staged. The prior report claimed complete coverage and recorded a passed aggregate gate, but its ledger never contained the brief's AC-02 row. Perform the current independent discovery of the current bytes: surface the omitted material row, record the earlier aggregate gate as premature, and run the missing targeted probe through the public entry before any gate decision. Write only the next unused numbered report `docs/tasks/LED-05/reviews/discovery-02.md`; do not rerun fixture setup, edit anything, or decide acceptance.",
+      "expected_output": "An explicitly partial discovery report that gives the omitted `AC-02` row its own ledger identity, records the earlier aggregate gate as premature rather than final evidence, independently demonstrates the boolean-revision defect through the public validator entry, keeps the aggregate gate not run after the decisive targeted failure, and hands the finding and a complete continuation block to the separate acceptance decision call without any verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "discovery-late-omission-fail"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/late-omission"
+      },
+      "expectations": [
+        "The omitted AC-02 authority row appears in the current ledger with its own stable identity and current evidence state instead of remaining absent behind the prior report's green rows.",
+        "The earlier aggregate gate is recorded as premature with its prior command and the concrete omission reason before any current gate decision.",
+        "The missing targeted probe executes the public entry `python -m src.ledger.validate` against a boolean-revision instance in authorized disposable state and independently observes the boolean revision being accepted, with the row's setup/oracle and exact probe recorded.",
+        "The confirmed finding carries a stable ID, suggested severity, location, trigger, consequence, affected AC, a credible sibling surface bounded by the validator contract, and the smallest invariant-level corrective direction.",
+        "The current aggregate gate remains not run after the decisive targeted failure, with the exact command or `not run`, owner, stage, and reason recorded.",
+        "The report is explicitly partial, publishes no acceptance verdict, approved deferral, or advancement, and only `docs/tasks/LED-05/reviews/discovery-02.md` is written."
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "The `LED-05` implementation, the prior discovery report `docs/tasks/LED-05/reviews/discovery-01.md`, and the worker result `../task-runs/LED-05/worker-result.json` are already staged. The prior report claimed complete coverage and recorded a passed aggregate gate, but its ledger never contained the brief's AC-02 row. Perform the current independent discovery of the current bytes: surface the omitted material row, record the earlier aggregate gate as premature, run the missing targeted probe first, and only then decide whether the aggregate gate remains justified for this pass. Write only the next unused numbered report `docs/tasks/LED-05/reviews/discovery-02.md`; do not rerun fixture setup, edit anything, or decide acceptance.",
+      "expected_output": "A complete discovery report that gives the omitted `AC-02` row its own ledger identity, records the earlier aggregate gate as premature, independently demonstrates the boolean-revision rejection through the public validator entry with clean targeted evidence, reruns the aggregate gate at most once only after the targeted rows are clean, and hands the record to the separate acceptance decision call without any verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "discovery-late-omission-clean"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/late-omission"
+      },
+      "expectations": [
+        "The omitted AC-02 authority row appears in the current ledger with its own stable identity, and the earlier aggregate gate is recorded as premature with its prior command and the concrete omission reason.",
+        "The missing targeted probe executes the public entry `python -m src.ledger.validate` against a boolean-revision instance in authorized disposable state and independently observes the rejection, with the row's setup/oracle and exact probe recorded.",
+        "Any aggregate rerun happens only after the targeted rows are recorded clean and is recorded with the exact command, owner, stage, reason, and current evidence; a decision not to rerun is recorded equally explicitly with owner and reason.",
+        "The findings section says `No findings.` when the corroborated evidence is clean, and no defect is manufactured for the premature earlier gate alone.",
+        "The report states complete coverage, publishes no acceptance verdict, approved deferral, or advancement, and only `docs/tasks/LED-05/reviews/discovery-02.md` is written."
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "The staged defective `QR-12` implementation, its preflight packet, the worker result, and a separate diagnostic authorization at `../task-runs/QR-12/diagnostic-authorization.md` are already present. Perform the independent task review discovery for `QR-12`. The ordinary aggregate gate stays suppressed after any decisive targeted failure; the supplied authorization permits one separately recorded diagnostic aggregate run only to quantify how far the defect reaches. Write only `docs/tasks/QR-12/reviews/discovery-01.md`; do not rerun fixture setup, edit anything, or decide acceptance.",
+      "expected_output": "A complete discovery report that independently confirms the double-claim defect with a suggested severity, keeps the ordinary aggregate gate not run after the decisive targeted failure, records the authorized diagnostic aggregate run as a distinct diagnostic that neither replaces the suppressed gate record nor erases failed or unfinished rows, and hands the complete record to the separate acceptance decision call without any verdict.",
+      "files": ["evals/files/setup_fixture.py"],
+      "execution": {
+        "setup": {
+          "command": ["python3", "evals/files/setup_fixture.py", "discovery-diagnostic-aggregate"],
+          "cwd": ".",
+          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+        },
+        "workspace": "{run_root}/work/queue-runner"
+      },
+      "expectations": [
+        "The two-invocation public-entry probe independently observes `TASK-1` claimed and the second invocation failing to claim `TASK-2`, and the confirmed finding carries a stable ID and suggested severity.",
+        "The ordinary aggregate-gate record remains not run with the exact command or `not run`, owner, stage, and reason after the decisive targeted failure.",
+        "The diagnostic aggregate run is recorded as a separate diagnostic record naming the authorization source, exact command, result, and purpose, distinct from the suppressed ordinary gate record.",
+        "The diagnostic record explicitly preserves the failed and unfinished rows and does not present green diagnostic results as review-gate evidence.",
+        "The report publishes no acceptance verdict, approved deferral, or advancement, and only `docs/tasks/QR-12/reviews/discovery-01.md` is written."
+      ]
+    }
+  ]
+}

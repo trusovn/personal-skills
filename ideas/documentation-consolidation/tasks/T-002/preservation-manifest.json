@@ -1,0 +1,4199 @@
+{
+  "archive_commit": "0ad1706cecc6f7d115e510762bf74c58d732cb6a",
+  "tag": "archive/documentation-pre-cleanup-2026-10-14",
+  "destination": "https://github.com/trusovn/personal-skills.git",
+  "files": [
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "bytes": 41,
+      "sha256": "014d380a17e3e2445a29ee759e046bfad6452a29384e53b0438dd4cc46fccde0",
+      "blob": "1cec3400bc5f9cdfe8a51cf31b80d7f078513bbd",
+      "retire": false
+    },
+    {
+      "path": "AGENTS.md",
+      "mode": "100644",
+      "bytes": 4735,
+      "sha256": "a1f46dd609e6a45de0c4c7887da7be3175f0b5a1dcc1f2455d3baa098dd2d5f0",
+      "blob": "4d0be232d374928d125fdc3d4bb7eb844dad098f",
+      "retire": false
+    },
+    {
+      "path": "LICENSE",
+      "mode": "100644",
+      "bytes": 1070,
+      "sha256": "836a15b13285864fe1abc799a367cc78f2cf6eda828fd591411b3ba9cc1b4bb9",
+      "blob": "6125717b51440d7b6beec91d5dd2bd57d2d6e6ec",
+      "retire": false
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "bytes": 24273,
+      "sha256": "34ba8cab489af2608eb4e2a70c1c4e947fd38d81430dbcd010e47bb317da5aec",
+      "blob": "f71a050649d3ae91744649c709704e9ec8f2d807",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/FEATURE-MAP.md",
+      "mode": "100644",
+      "bytes": 12891,
+      "sha256": "030aa49eecd2b20fbadb6cd286f81353277d786b065e19a1303b2ec1d7637661",
+      "blob": "d988cdc49557ad22bb4ad355e2d5cb5b2f9655e2",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/concepts/01-delivery-principles.md",
+      "mode": "100644",
+      "bytes": 5162,
+      "sha256": "2e0176142a42cd4b93143bdc3ade5a428d2f8d0ce428d83382fc3ae08e27ceed",
+      "blob": "820fd3c6a55d5e4e24a2ae7ab2722e81f3638a78",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/concepts/02-system-verification-and-test-quality.md",
+      "mode": "100644",
+      "bytes": 5265,
+      "sha256": "71c5155cbd41a763f6fa1dbde2c091eaafab85e4cead5412b3d346ec983bd7a8",
+      "blob": "d791f6026ffcc0e063b2b1ae6769937c1fcb8ff1",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/concepts/03-documentation-and-task-planning.md",
+      "mode": "100644",
+      "bytes": 5847,
+      "sha256": "e8877d0afef364ea6106daba99075eb88f2428fe202b5e853765261fde9d1269",
+      "blob": "69dfcf6954268c89b0ec9c67a55022ec61d4a88d",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/concepts/04-issue-knowledge-and-evidence.md",
+      "mode": "100644",
+      "bytes": 7785,
+      "sha256": "8cea1caccbfdd1ca32780198e3eaa6bfb20d13269bea005b37ecfa64aaf50bb0",
+      "blob": "f6da91837be49b53a1fbf75bc4a0aed47ba25fbb",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/concepts/05-orchestration-and-sandboxing.md",
+      "mode": "100644",
+      "bytes": 5472,
+      "sha256": "9aa77422449935ec01fb446af668248f6b05fa07374760c990583f64b3d2426d",
+      "blob": "cb05f6377d5ee391d8cf6e93e4c386c5dc7ed973",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/stale/deferred-work-after-t-o-new-flow.md",
+      "mode": "100644",
+      "bytes": 15629,
+      "sha256": "8a13153bc878dc98b538723c6601b21af9ba83fb1a99841e5a7c738a8b0c29f4",
+      "blob": "d29d61846ea48b0ddc456e1f85fd960999f38d43",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/stale/issue_triage_portfolio_invariants_discussion_summary.md",
+      "mode": "100644",
+      "bytes": 17922,
+      "sha256": "d4833f9af0b7bcf58447fb63193a2d60a76eddee04aa3be87c4496b20274899d",
+      "blob": "b0945324b5d5852b1882d1116f22e63895c4d594",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/stale/personal-skills-reconciled-roadmap-v2-2026-10-10.md",
+      "mode": "100644",
+      "bytes": 52700,
+      "sha256": "0db9fdd5bcec6a4bd255724b96601d8949fad623efb8bf45badfd48bfdf7872e",
+      "blob": "0db2c53037b546e0d1b9f62a4742aaa61426dd1d",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/stale/personal-skills-system-verification-roadmap-2026-10-10.md",
+      "mode": "100644",
+      "bytes": 41257,
+      "sha256": "83168cc55514d38d15a75289890f65e96e84809bbc26a36ec2e01bc00262cccf",
+      "blob": "b644bc1a96571ab389cc82e882653e14796596c9",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/stale/system-verification-workflow-implementation-plan.md",
+      "mode": "100644",
+      "bytes": 29370,
+      "sha256": "1abd1be4dac87fa0f942daf24736e565ed60201535cbb491ad7817caa2ec7f22",
+      "blob": "e881b56594b1cb9a69d84703673f259c9246bed7",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/stale/t-o-new-flow-plan-amendment-handoff.md",
+      "mode": "100644",
+      "bytes": 13662,
+      "sha256": "35644bb13be3a28815ee12c278c3b39a9f01029b4e2711601197bf321219a5b2",
+      "blob": "e7293f493a70e5962fbd4d9ebca43f4eeccae33b",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/stale/task-planning-coordination-guidance.md",
+      "mode": "100644",
+      "bytes": 4650,
+      "sha256": "7a46013d4921ada4593ba3f787975978865966b621ba238c9674579a6c6b8fb9",
+      "blob": "30dec060060315e6171f71328f17240ea9b16504",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/stale/test-suite-maintainability-integration-proposal.md",
+      "mode": "100644",
+      "bytes": 24542,
+      "sha256": "4d61cc884e9fe05cd544fbd4b4eaf5babb59e5f9300ed8d4a7997b5bec58c6b2",
+      "blob": "0b1908ae034cc7784ad8ce64a3a2087b400d50d0",
+      "retire": false
+    },
+    {
+      "path": "docs/future-work/stale/urgent-test-suite-guardrail-after-T-002.4.md",
+      "mode": "100644",
+      "bytes": 16699,
+      "sha256": "073c1b26ed815b4163d497aca3d6ccb5d6345082a88a8321838ed48acd118e62",
+      "blob": "88f636f6fa6e11e75bffc8117641416d07851548",
+      "retire": false
+    },
+    {
+      "path": "docs/project-plan-review.md",
+      "mode": "100644",
+      "bytes": 14786,
+      "sha256": "a6405529bdea9b2820efc2cbf26f629ffb3618a0d8bb930daa41863d206c848c",
+      "blob": "384d070161e2d9cee41af6124acf1aca85a5f6b8",
+      "retire": false
+    },
+    {
+      "path": "docs/project-plan.md",
+      "mode": "100644",
+      "bytes": 44456,
+      "sha256": "84168fadfc6d0f8b604f0357ef0c29ab01552b10795df70c3d258e430a4f5299",
+      "blob": "b1df1bb0a145f91d7d7f99b451b32e1f0a192acd",
+      "retire": true
+    },
+    {
+      "path": "docs/task-map.json",
+      "mode": "100644",
+      "bytes": 64169,
+      "sha256": "2453a8470d0229bbac4b739cceb59e6480b7001c12116130b9141c2c39268e7a",
+      "blob": "8f546ae206e32859ecd2537abdd1656ae237e9ee",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/BRIEF-P0/brief.md",
+      "mode": "100644",
+      "bytes": 7827,
+      "sha256": "7aa6aa807c906a2795c0b1fcb028eb85a2fa54b29647894e641ede7caea490fd",
+      "blob": "7e4d7ef9cc61a70abd9317a030e928ae1d805d9c",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/INT-FLOW-001/brief.md",
+      "mode": "100644",
+      "bytes": 16257,
+      "sha256": "93ec1b4614fb528f6664fc0b7b903986b0907589cc893039b96d88caa1ed15e5",
+      "blob": "3116f1f1aa4a8e6e81325020946b299608d33518",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/INT-FLOW-001/preflight.md",
+      "mode": "100644",
+      "bytes": 4410,
+      "sha256": "ebac6bc55e48de9c4dee843ebdf863747d3dd4d0c8fe7d2497c95212e459ef94",
+      "blob": "304c1911608b50bf66b786f9d4524a262ca9fb59",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/INT-FLOW-001/results.md",
+      "mode": "100644",
+      "bytes": 9486,
+      "sha256": "1afdd9f2ab12be47e0236d8cdce93386f9a259e06cf04898532bc729116118a3",
+      "blob": "f21363ab7a65a2c2a77f47e3bc4ae93e7cd66aca",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/INT-FLOW-001/reviews/discovery-01.md",
+      "mode": "100644",
+      "bytes": 23865,
+      "sha256": "62d4c46efb4225c57051a2c2b914b21e8a12f3168cdfae65a65fe357457831f8",
+      "blob": "99aa5b3038af649964105b26d30b7258d575fdbe",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/INT-FLOW-001/verification.md",
+      "mode": "100644",
+      "bytes": 20678,
+      "sha256": "55c5f2aad9e1ff89c00e374ec7db5edb7aec087dcb678cab44c7bc154b31537e",
+      "blob": "40ba778f32e7466f688c50929795b95dcbef3d7f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/Q-01/brief.md",
+      "mode": "100644",
+      "bytes": 14817,
+      "sha256": "48709a637a39c4c9ca14f4cd5b008a1b5f45158961bd94c2a8dbd28ad4665ad7",
+      "blob": "be80cdf7c8116ab74d8abdc5f3828de469d2e9c7",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/Q-01/implementation.md",
+      "mode": "100644",
+      "bytes": 8840,
+      "sha256": "f6884fb62c758e9a03e9f947afb7faa337c3406ef36c6452a6bbef839e93b26c",
+      "blob": "0368238a4b69d8aa791399537c7fc97e2ef04095",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/Q-01/preflight.md",
+      "mode": "100644",
+      "bytes": 12383,
+      "sha256": "44b2895f52a24730bf38f4f5bae3b173edb56ad2c9dee1abbdb1942b8286a590",
+      "blob": "e2ae0eafbdf31bd8e3d1a3764179242e39af37c1",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/Q-01/qualification-handoff.md",
+      "mode": "100644",
+      "bytes": 5246,
+      "sha256": "0bba183b2b7c1a34f560266536dd6d1edb826b0109520482e89aa706b67b589f",
+      "blob": "918a8c54ffe0c1185fb71d6191e95ff591b1123f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/Q-01/reviews/acceptance-01.md",
+      "mode": "100644",
+      "bytes": 15603,
+      "sha256": "de813ec13b05ff147fc14a75c40a7f7295c27e2c9d119a11cb89936c20147849",
+      "blob": "1b6e932927b5175b82dec7d19797137008b6ff08",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/Q-01/reviews/discovery-01.md",
+      "mode": "100644",
+      "bytes": 23692,
+      "sha256": "5379576272f9a0ef30d109917dee9ad723ba2de8e6f73389f80be74728926bc3",
+      "blob": "cff0cbb6e04dc6ac89662e823a6a921122282213",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/Q-01/reviews/discovery-02.md",
+      "mode": "100644",
+      "bytes": 25607,
+      "sha256": "fcadff0adb23bdeb808f513aa2b3ceebc80fc7301004dcb8012e57ce68297f7a",
+      "blob": "074b894ab2bfe548cde9e64702b9696ea0dff14e",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/Q-01/reviews/maintainability-01.md",
+      "mode": "100644",
+      "bytes": 4055,
+      "sha256": "83aa317161fe88c168d6c927503bb3063467236fd727c9efdb6d079a74e26959",
+      "blob": "a5f6ef90fc0d5a1abbb597d4b1bb836de01d25d7",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/Q-01/verification.md",
+      "mode": "100644",
+      "bytes": 20669,
+      "sha256": "8824415c585825f0f32e81c75e23cb407856ab0f9419d95539234b5d2cf7da0a",
+      "blob": "3c5e9b04d96188927be1f71569a5ae182d1d39c7",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.1/brief.md",
+      "mode": "100644",
+      "bytes": 8239,
+      "sha256": "50bcec6eb320093de2d78b21280ab7030906c97c491e9a568eceacc47a2fc182",
+      "blob": "36f8c7ba45cf98a9401c2cf7899f89864072197f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.1/preflight.md",
+      "mode": "100644",
+      "bytes": 7325,
+      "sha256": "405a631db56468bafbfd415a7c995d1775064e4620e93c1a4f0c38d8d76035c2",
+      "blob": "4af15cb32c0902522937f0a4f1b722e365debaf9",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.1/verification.md",
+      "mode": "100644",
+      "bytes": 13895,
+      "sha256": "237c9b1d95ee5d788dc4c60b02ff932cb5844664a09c63b0b9a6fd9bcf11bc4a",
+      "blob": "03f1a835520e248a988a3084f4c3f6e5739544b0",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.2/brief.md",
+      "mode": "100644",
+      "bytes": 9196,
+      "sha256": "9438e88d00d9e7199e71e41605b31e1fd02d2047d3c584ee55dee61ab72374b3",
+      "blob": "3ffad5e1f278c23667295439b6a688b6f283ad19",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.2/correction-F-01.md",
+      "mode": "100644",
+      "bytes": 4907,
+      "sha256": "ce0e09b1118e447543aff6fe930d4843e63590dbee980b0d37bc1034ae2821ea",
+      "blob": "ba2562da15c5e9193e55132562d8236f1f42cdaa",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.2/preflight.md",
+      "mode": "100644",
+      "bytes": 6613,
+      "sha256": "680dbab7614dd7b8793f5914746fb5d03bac5dd7081c6e25cab45ff247e7d8c4",
+      "blob": "8e886daaa36b47aaa0e8e2256ebf40dff97eeacb",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.2/result.md",
+      "mode": "100644",
+      "bytes": 5340,
+      "sha256": "5e2cf3f55aac0a60fa9859397ed9e6074ec2d90903a57552ca3c6ed4c117028f",
+      "blob": "8592ba5b08b70fd0811beac472c290569af7bc4d",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.2/verification.md",
+      "mode": "100644",
+      "bytes": 15135,
+      "sha256": "336ad0c9152513cf6411244385daf57fd6fca10999fbd4c579a1a2205d5829a6",
+      "blob": "0c756424369630d3b9eb3a9eec1cfc348bca8546",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.3/brief.md",
+      "mode": "100644",
+      "bytes": 8661,
+      "sha256": "e617a912e04ef854045b54fc34fe12983d6319a9f78336b3c0f148aab9d718d3",
+      "blob": "2bc2ccb2c44611629ea2d5dfe740d00f4c1a9497",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.3/correction-results.md",
+      "mode": "100644",
+      "bytes": 4925,
+      "sha256": "22453c0c6a266a58ed5657f07d0297b92fd731bca4806e2c4e8b42796a60be83",
+      "blob": "b469d95ffac7e0a26389e1045bf097002f579cfe",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.3/preflight.md",
+      "mode": "100644",
+      "bytes": 8582,
+      "sha256": "39af4e6746020326676c8c17e983cb867f869694d9fed3578b8fa1bab4e0c81f",
+      "blob": "4c1087fe077c72a5b97e529ef467be25208a6190",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.3/verification.md",
+      "mode": "100644",
+      "bytes": 15038,
+      "sha256": "09bfe5c789b7faa4851af024e282cf43b10ccd0681a7146ed055fa6954461357",
+      "blob": "b834cfcff8413755b77c83cd67a60fca92376ed1",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.4/brief.md",
+      "mode": "100644",
+      "bytes": 8867,
+      "sha256": "f961cc4a7a05c9ddcc936cc21b7982eae6ef6140710d4fcba7d04b6901b2c9cd",
+      "blob": "1a3407c14a290b514ca62d349541acf0a647df22",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.4/preflight.md",
+      "mode": "100644",
+      "bytes": 7470,
+      "sha256": "8a3ccb7b73b151de1f9e99e0afa477e7e57493cd2ed033e6466703446ae159da",
+      "blob": "9615cc402b760e9b92429a1c27affefbe935f6e2",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001.4/verification.md",
+      "mode": "100644",
+      "bytes": 11949,
+      "sha256": "b174142ae420ad7cae946d752a5f29c3c4ddbc2954752fedb8adf0971da3311c",
+      "blob": "7c2dc4662abe5714155662a8b3938726906cebfa",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-001/brief.md",
+      "mode": "100644",
+      "bytes": 5833,
+      "sha256": "339730f0a562f8beb3c1ecaf2a4b70aa4bc40e4428b7420d8dbcfff27a5992bd",
+      "blob": "8ca21adfc5bf864030d5a8731a28876c60293b7d",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.1/brief.md",
+      "mode": "100644",
+      "bytes": 9896,
+      "sha256": "ddff79b2dd1f3b6c04114ed14f370b0e6a2034ad48b75a0d63bb4ce7989f9d7c",
+      "blob": "3f988c6bf6ddf3680617f32fb5a3e4ec8433b70d",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.1/verification.md",
+      "mode": "100644",
+      "bytes": 19634,
+      "sha256": "87fd489e60b83fac59d74c24cc9d3de5992a607e52b5645d9c8a2eddea5df64d",
+      "blob": "6208b2d52bd29fd234e865e7c70b06563a2dd16f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.2/brief.md",
+      "mode": "100644",
+      "bytes": 9153,
+      "sha256": "2913f3e8d0b1fe76bdc6ace2e8a9004cd47fa676701e2de29fe4cc08775bb700",
+      "blob": "7cd329204c0f208c103767caaae8d64a43453cd1",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.2/preflight.md",
+      "mode": "100644",
+      "bytes": 5499,
+      "sha256": "9902161c2849f1a7f404beab692d7d0baffd753d6f32d41a64a495f59900a567",
+      "blob": "3dd8e3cf5e562fa81986ea0cf00a4873651e3cc3",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.2/verification.md",
+      "mode": "100644",
+      "bytes": 20507,
+      "sha256": "229c7562ed1c65cdca4d27a89141e0ec9115f716ec4fea0ab306d30ad4dd2b43",
+      "blob": "ae7a82786b63df3e8665f62b7fc2886a2bdc52b8",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.3/brief.md",
+      "mode": "100644",
+      "bytes": 11117,
+      "sha256": "5c8ae6113f6be1e38c1fda58efa7caba5b889306401978bf60e31b3867000ec2",
+      "blob": "88361b39ed1c7bd7e7cae8fec2e3d0ef7954e2b3",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.3/correction-result-02.md",
+      "mode": "100644",
+      "bytes": 7499,
+      "sha256": "19b1e3d420983751b4e8cdbf575a737d3c85b59bc71cdb86686bba84b27e909c",
+      "blob": "927873f63fdf67ad50178e97cf39828a5b30d81f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.3/correction-result.md",
+      "mode": "100644",
+      "bytes": 7381,
+      "sha256": "1f9e70e547f330bb020595312da57326edfa04e1d01f3b75b40bd1d2ce11fb67",
+      "blob": "dcab22f4bbcf35de87808d435f11da558efbfbd3",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.3/preflight.md",
+      "mode": "100644",
+      "bytes": 6909,
+      "sha256": "e194494835f4819067ee33c27a47c0027be0e460a648ecac9e40e3c5aa8369c9",
+      "blob": "19815bf11074e2283714a8661972196e5166f3b2",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.3/verification.md",
+      "mode": "100644",
+      "bytes": 19272,
+      "sha256": "aa35a93ad6e196e9336e4652722263b3f72392c4819aaf671d395e76b115cf7f",
+      "blob": "2c70e210a3b75a8e77af5a304d7a3945ea5ca55b",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.4/brief.md",
+      "mode": "100644",
+      "bytes": 9740,
+      "sha256": "8593563b7b697f9e61412bb9074a59784bc88ec635086822c128105c6ba25240",
+      "blob": "42788c15a1bcf04f3d147d2443371f967cde2a2f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.4/composition.json",
+      "mode": "100644",
+      "bytes": 23059,
+      "sha256": "91605a0a0531f5ee9d6fbbbd9b9e5313719e2a411e447406c272aefadfc1e0b4",
+      "blob": "ad9dbba6d6fd6725df55e078e9a39a4b1ab427f6",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.4/preflight.md",
+      "mode": "100644",
+      "bytes": 9818,
+      "sha256": "d5d4f2f75ebc8f8dd8c29b472c3b71f93eb638d7c962b9b39015f5935eedecad",
+      "blob": "de86c7e951d3e31c3ee9e4cd25237ce9023a595e",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.4/results.md",
+      "mode": "100644",
+      "bytes": 8247,
+      "sha256": "1f921a4073e83b9115e2718bb539b87ca860c328a13120d452d624f230b9b6ca",
+      "blob": "e03fc62349d298115b8ad0322749cd9914e91d14",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002.4/verification.md",
+      "mode": "100644",
+      "bytes": 19674,
+      "sha256": "d12ab546b8b716e15311a5922b0cc0dc4777800ce9d5914d4d0ed575af096942",
+      "blob": "cd9bec9d1f32231f65535929190eeebdb4f5c71f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-002/brief.md",
+      "mode": "100644",
+      "bytes": 6680,
+      "sha256": "ad805225aebe147079a7ea96fcafbf6464593aa7fb64683ff448b8b27a61ff5d",
+      "blob": "40268b468247d468adefbe8bb687d3a1b7aec851",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.1/brief.md",
+      "mode": "100644",
+      "bytes": 7235,
+      "sha256": "9693af27578075b1331e39335c185ab226f01a84df2c7718f8e36408e7acd803",
+      "blob": "ffaa83f2684cd9314cee9d3ff2fe9a6cdb255055",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.1/preflight.md",
+      "mode": "100644",
+      "bytes": 4981,
+      "sha256": "398f4c2d716703c0112d22a5468fb274a1f3aa21b87d59d3b6b98c988679d4c8",
+      "blob": "21c496a0dd37a9eda5799e4fd5b19071eba61d72",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.1/verification.md",
+      "mode": "100644",
+      "bytes": 16037,
+      "sha256": "82f31b596fbc99119db30e416cc22be4728ce4c207254f41de354655c7762605",
+      "blob": "73b74595879a0846cdc6925cbf896f93031da252",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.2/brief.md",
+      "mode": "100644",
+      "bytes": 6786,
+      "sha256": "9ef8e1459b99fab8deca899d21bf20215f9c5942ac6a081f5e93b3f51c98d88c",
+      "blob": "1d0f4c4e21cb9e9bf8b4fdc1120ef2187cbad6ae",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.2/preflight.md",
+      "mode": "100644",
+      "bytes": 6062,
+      "sha256": "dba7320bc9026d2a96cd77f4782237d157146340f9f1e30889d236c9db351604",
+      "blob": "f7d0e2aa9deafe266bcdab2b5d873bbcdb4f35b5",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.2/verification.md",
+      "mode": "100644",
+      "bytes": 14238,
+      "sha256": "1a0a1a3c842e50de31dcbe2a614750dcdfd6f9c3692ec4f040f4dc20991982a5",
+      "blob": "69f18ed3d31afdcae8f6dec4f073682c9394b443",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.3/brief.md",
+      "mode": "100644",
+      "bytes": 10587,
+      "sha256": "1b9e712aad4e5487459ab2db88c416b7a75395ea67dced7fba62f3c7871fae4c",
+      "blob": "a4d8fcf9f82b28e2c2f87315b286b23641e2f648",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.3/correction-implementation.md",
+      "mode": "100644",
+      "bytes": 4612,
+      "sha256": "513f094490e279bc91ae7acb90692c81da5261b77aedab4118c0f938e2e4ca3d",
+      "blob": "377e07d53c37e0118ff71a49b06a88c72f2e12ad",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.3/implementation.md",
+      "mode": "100644",
+      "bytes": 7663,
+      "sha256": "52e7a945e8b11f824d83407eb45110110b004976a6b3f7254485f2e39103d2e5",
+      "blob": "5b58366ee02abaef6a31ceed3ae67506cab3ccb7",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.3/preflight.md",
+      "mode": "100644",
+      "bytes": 5220,
+      "sha256": "fd82da4fddcb60d87a13b1e8575de721bb2ebdda061d136db067f1b0c62c4b87",
+      "blob": "e57c9c36e9c4300c70c9ec105746c9d125224b94",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.3/verification.md",
+      "mode": "100644",
+      "bytes": 22226,
+      "sha256": "fdda62c8d3e7d3a9e36c162a9714ff19ccf6d8617b3650f743eb4419b81c8b5e",
+      "blob": "75f63c1a18b1c4402523cab496149e2a916d14c1",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.4/brief.md",
+      "mode": "100644",
+      "bytes": 9146,
+      "sha256": "5834ac29048b28f5cc22e62adf8cbcd2ed0c7b6e104af48cc5aa5e2e90445313",
+      "blob": "42cb74a4d3eb29f60208f702b142518012f6ebee",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.4/composition.json",
+      "mode": "100644",
+      "bytes": 23830,
+      "sha256": "22be5d002effc2c1dc6823e0452411a5505deee63fab8222f1428bdfc1cb0fa4",
+      "blob": "9267b90f807c05d3baa511333b090e9bd49fa97b",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.4/preflight.md",
+      "mode": "100644",
+      "bytes": 2605,
+      "sha256": "6c7539c8dc62433b9192ddb1d3f97c771a6e776556092c5053ba6ed5bf8b2dff",
+      "blob": "02488b315e6ee2ec8e4a760e8f4e31ec03178761",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.4/results.md",
+      "mode": "100644",
+      "bytes": 7085,
+      "sha256": "efd9f2430b62483cbe7ac6b1b5a7216db17bc9efc44615f7926b755eef31f589",
+      "blob": "edfd856a419e46c583c370ec22cd16e6a611ac43",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003.4/verification.md",
+      "mode": "100644",
+      "bytes": 24490,
+      "sha256": "577f425f11304fbf42bbb95110aa502d630e240f69e845cdaa05b98c59faa64c",
+      "blob": "66df63400e6d8cfb3f4839d9b63adf062ae19ae3",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-003/brief.md",
+      "mode": "100644",
+      "bytes": 6200,
+      "sha256": "72e0720e92e9c5c0e23982c057d3d4be3c76e03b358b75f282be290205af3661",
+      "blob": "cb64078f83760618a89613fda8facdc1f39f4c29",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.1/brief.md",
+      "mode": "100644",
+      "bytes": 8667,
+      "sha256": "161c03b2af0905d1c64809a0a9f63b3bb80b1532e51ed21392a12629bba16662",
+      "blob": "0744c01b6db8ece290e7dcdc527821de7ca144a2",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.1/implementation.md",
+      "mode": "100644",
+      "bytes": 13254,
+      "sha256": "cb64a3544c5b898661e51f6a4cd46bff8030d5834ffbb837bf8493bdd2edb51a",
+      "blob": "481a9d54ccde763576b3d0d2f575a90088a4e2e7",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.1/preflight.md",
+      "mode": "100644",
+      "bytes": 6895,
+      "sha256": "3c1ac9f8f5c88c07815c327999449da142c297275b983b8411abfa2fcfafa1a7",
+      "blob": "cef8a728a1a80966d27e629757b131065a4ebd9a",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.1/reviews/discovery-01.md",
+      "mode": "100644",
+      "bytes": 37705,
+      "sha256": "0c0e19e66f654d09f4cd2e2ec5a9e94e10b85a8995fe0a1c3a4234e53cb840fb",
+      "blob": "2d47ea2f8dddb4745ac741284f8252541c1d1c14",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.1/reviews/discovery-02.md",
+      "mode": "100644",
+      "bytes": 29828,
+      "sha256": "1d2503d96faac7dc3e6ed4e545dba5e05a8277990c3e2d813d51ee399fc60489",
+      "blob": "5e46d32d88d6ac75486386f2954485511d91b64a",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.1/verification.md",
+      "mode": "100644",
+      "bytes": 15456,
+      "sha256": "e37f02f4bd864892cc67fa8e03d678a4a32f3493b608715bef32d641eba68b95",
+      "blob": "e27bb0080ac0cd945145667d37ced87ed38dd826",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.2/brief.md",
+      "mode": "100644",
+      "bytes": 9802,
+      "sha256": "ecf57bb5cb33dda3405269c3f6adf05628248d2a4510fe34358d98d8e027512e",
+      "blob": "2fcc271eba983df31badc541eefdfd841927ea5d",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.2/preflight.md",
+      "mode": "100644",
+      "bytes": 4884,
+      "sha256": "8f8af39476e7d6d7960b9f3f0e14efe766383dee54d64db784445ee882c40d1b",
+      "blob": "461b53a417b84aec131e2efa1cafcd9d3af0770e",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.2/results.md",
+      "mode": "100644",
+      "bytes": 31972,
+      "sha256": "7bad160af3b6d69826164fd2ba1403ec40e855c6e782e1decb3a83f345680a83",
+      "blob": "409417ca54eb1878178431a07703534157fde599",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.2/reviews/discovery-01.md",
+      "mode": "100644",
+      "bytes": 22653,
+      "sha256": "3894d340174d81e5daef778c83e05ce96f394d56a03ab071bc81b27f6d3a0607",
+      "blob": "caa680abed8e73abcb183f3f2396f706da27edba",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.2/reviews/discovery-02.md",
+      "mode": "100644",
+      "bytes": 23180,
+      "sha256": "4d1067142a42315b2baa75dbadb599ace564eea1c17a07f60704766c72639dc9",
+      "blob": "50264cc9194fcadc74019cf3774fb1374f4ff040",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.2/reviews/discovery-03.md",
+      "mode": "100644",
+      "bytes": 22444,
+      "sha256": "eb7e3cc05a4f65c880a224aee88d91bccec0b7ea8b076c9d3d92ebd62eb29dbe",
+      "blob": "098724582b7205cb0b2802c14769985619eda4e1",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.2/reviews/discovery-04.md",
+      "mode": "100644",
+      "bytes": 23217,
+      "sha256": "fbcc7ca577ecfae19bf5048551fee0d1aeb1d63e0485ead43c0a844bec9978b9",
+      "blob": "f6943be00fde08b5578c62b76702550deae4753b",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.2/reviews/maintainability-01.md",
+      "mode": "100644",
+      "bytes": 4434,
+      "sha256": "555e42891ffe3e63afd6d6bf750ec5ecce10a929fa18f8b96bb8f8ba3e63c53a",
+      "blob": "e1ec29948a4ee47bedd5d9afa7a01a8d1ed86530",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.2/reviews/maintainability-02.md",
+      "mode": "100644",
+      "bytes": 5094,
+      "sha256": "305dadc736ddd6cf46d96512e24ff73f6b1cd037a4e263adbd74aa77094ce1b1",
+      "blob": "3fa2ce3ae9971e5354cd74f1038df1efa66cb8e5",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.2/verification.md",
+      "mode": "100644",
+      "bytes": 14350,
+      "sha256": "4966f69350e20d8563532d172e26acb6a8536e0c64635a62be0fb11f393c24b8",
+      "blob": "8f04ef7c68be835f2aad36e4c4fac0e055a7d0cb",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.3/brief.md",
+      "mode": "100644",
+      "bytes": 9375,
+      "sha256": "bdf0c28a9184c72438b69466046a7eece5971b34b30adf33e28f244adcdc4098",
+      "blob": "758a4aa7a4288e7b8e758442ae6c422a785099b9",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.3/correction-02.md",
+      "mode": "100644",
+      "bytes": 15024,
+      "sha256": "6a18772094c5dcaaf5eedd9df7b32d10c7f97d1a877220eabc7e6f571015bea7",
+      "blob": "71a208d075b4a7d13b57842cbf17005c71eb24ad",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.3/preflight.md",
+      "mode": "100644",
+      "bytes": 12582,
+      "sha256": "9f643161c31eb7ff1b90328e8f911b04ed79f82f3e80cafe5fabbe91bc1ea971",
+      "blob": "28f8dd107866e450e11c7386ff30dd1cad55cf4b",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.3/results.md",
+      "mode": "100644",
+      "bytes": 27213,
+      "sha256": "5189b2dc3a1ed2de8ca9b7fd673c3836b303af04f30b5cce9ed195990201a16e",
+      "blob": "af61ac08ebe4152ae2159796d1a8c064b4486d17",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.3/reviews/discovery-01.md",
+      "mode": "100644",
+      "bytes": 26329,
+      "sha256": "e22bdf908a5a27d772c302807f04acf72f5786b8bd40a8c5ba12eee27064fb96",
+      "blob": "ceafd28ba97536d6168aec12ca9fc588f76f250d",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.3/reviews/discovery-02.md",
+      "mode": "100644",
+      "bytes": 24511,
+      "sha256": "800e02e5bc5327f485f68d96da032429afadf6d34b3a63efaf94c254f030755a",
+      "blob": "acd7671760829a3b0f692ad77611aab177aa08b1",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.3/reviews/discovery-03.md",
+      "mode": "100644",
+      "bytes": 18461,
+      "sha256": "aa6243099ae3bce756205c5904526adecc96061ecdd292a7fab00731058776f8",
+      "blob": "e94cc36aab87216eb541697955c0b8b85601acd5",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.3/reviews/maintainability-01.md",
+      "mode": "100644",
+      "bytes": 4940,
+      "sha256": "cce4ecc9dd1bd829b868cd32da9ca1e29a5556da639bb4c3af511a5f44e1a567",
+      "blob": "a08f9965cee74d43d8d4ee8c0c5d9d568c5c6680",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.3/reviews/maintainability-02.md",
+      "mode": "100644",
+      "bytes": 5383,
+      "sha256": "d77f5a624788aa63171a84c76189840ca431864cb310066301e8bbab0e595d40",
+      "blob": "3d519da7a7280bf7cf8bfc6ad4a09aa74d1d4db6",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004.3/verification.md",
+      "mode": "100644",
+      "bytes": 14581,
+      "sha256": "50bd1ef5fbd1e196ecfa130eea54d2a86daca0366e52a4b91654b51a7f1617d4",
+      "blob": "a5bddb43cefaffe6991246181afe8795571dd717",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-004/brief.md",
+      "mode": "100644",
+      "bytes": 5683,
+      "sha256": "f4d925897c25197118f915012c0802bc1378589812b82b03a240bc0f2b2e58d1",
+      "blob": "f8cc35c13dd5cc9d3e69ee103728169b24f856e8",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/brief.md",
+      "mode": "100644",
+      "bytes": 7371,
+      "sha256": "51c7a380f88cf493dd443b9e66d625609d9f10b8906eb71c723c566aa1a3b67b",
+      "blob": "dbc24f8a5ce6c23fd2975a81948984f5e08e8750",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/evidence/V-02-setup-reconstruction.md",
+      "mode": "100644",
+      "bytes": 4414,
+      "sha256": "e07b655511b64b50fb0a528b9e61914c9186dfd110683bb98e9e528d7df0ed4a",
+      "blob": "d742119b31c4845fd05f7105c4a88fe6c9f6bda1",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/evidence/V-03-install-projection.md",
+      "mode": "100644",
+      "bytes": 13664,
+      "sha256": "83b7b2dcd473f123f62774eeaab847800035ed769926feba042ebe4e7aa920ee",
+      "blob": "e10bad98ab9c650e866ba77c5e5744cf2d942880",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/evidence/V-04-drift-contrast.md",
+      "mode": "100644",
+      "bytes": 3163,
+      "sha256": "6c967a07eb0f13119f7374dbe5b3e5771573c331e0c5fd66aaf95044818ef239",
+      "blob": "7c9b97658db4c01c246ff762b7c483c10b142310",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/evidence/V-06-consumer-git-exclusion.md",
+      "mode": "100644",
+      "bytes": 5539,
+      "sha256": "b1113e1c4042f183bc7e5779902245e291996b4d074d794a10fe9d6c8a92eb80",
+      "blob": "f46f5cdf531b77e146f792a262d1131ba6019611",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/fixtures.md",
+      "mode": "100644",
+      "bytes": 92045,
+      "sha256": "f43aa5089c5a178662d505cac20c111ac757a3c6ffbc7ccc5f347df9cc66121e",
+      "blob": "062213e21636b696966040299850593b64b8b6ff",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/preflight.md",
+      "mode": "100644",
+      "bytes": 12779,
+      "sha256": "dd2e52866fffb3845134f0c9abd2bb70f0708738c669f6dc1af1b12ed03d761d",
+      "blob": "705fb3da9d845ea9aace91e9accc67c33d84a78a",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/results.md",
+      "mode": "100644",
+      "bytes": 31050,
+      "sha256": "0213374196e730f558980ab932d6a5dca89a76a2b9bf14a69e3346cc81e80803",
+      "blob": "90553f6ff2e7bfd824d9aa3010a84d0257d6065a",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/reviews/acceptance-01.md",
+      "mode": "100644",
+      "bytes": 27980,
+      "sha256": "9fe9fa63360383316037316e09705a0d2f8dc8de9cce59e277275b44bb4c7334",
+      "blob": "26442fff6727722743a2c58354f935f4b6933ea4",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/reviews/discovery-01.md",
+      "mode": "100644",
+      "bytes": 25322,
+      "sha256": "e2611400d2f5fbb4c8d06717edd7d6ebba96cbfbc1eb7b69ea71577dbb62048c",
+      "blob": "fd26a628495e610db293618c9454c907b4cb0bcf",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/reviews/discovery-02.md",
+      "mode": "100644",
+      "bytes": 18418,
+      "sha256": "fb5671278dd53c8d3981ddd2d47ae6a61ccf0f2a9e96520a1983d5193012ffc0",
+      "blob": "0c05c4c3b0227b2910b2b9295dd379b8f3575a9a",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/reviews/discovery-03.md",
+      "mode": "100644",
+      "bytes": 17257,
+      "sha256": "da388b57b7249fd94e0bd586d585534a3d474fd3bf72522d19cffe8f71bdaf4a",
+      "blob": "4c37841f00fe16a661bcb04533f89909f73f69ee",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/reviews/maintainability-01.md",
+      "mode": "100644",
+      "bytes": 6396,
+      "sha256": "2e3b470698ad584fbf24d04cd55b12ab944686e607bbebdde9ccf506e5cb3c16",
+      "blob": "f57648c98e43e76aea27455c6efb44cac42e1477",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/setup_consumer.py",
+      "mode": "100644",
+      "bytes": 1186,
+      "sha256": "9de04c2a82bbb84791583daa8e43bca7e9b984f3aef4fefa410a772afc5231fa",
+      "blob": "7e6abaf6d113fa46069ab660fb49adb5f991ccc9",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.1/verification.md",
+      "mode": "100644",
+      "bytes": 13243,
+      "sha256": "c7aacb05306660ae92548689ea69803f1314427e1559c74e8fd25b8b8ae3d105",
+      "blob": "d04a07a24be32993a913f2f348fbd30c0e966bac",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/brief.md",
+      "mode": "100644",
+      "bytes": 7338,
+      "sha256": "794247bc2477968d6394ce6bdbb9798ab6c06b96ed4d28ab7383da68ab391c77",
+      "blob": "7b7bea494086a04c04edff6e0b41dca527f40584",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/evidence/correction-discovery-01.md",
+      "mode": "100644",
+      "bytes": 8147,
+      "sha256": "bfb9d788653c56473073fd0025b43fc11767cdae449317a8c740d853f2984aac",
+      "blob": "e325ac043c11abbc4ca58bda461becf0a40507b6",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/evidence/preparation-and-recovery-observations.md",
+      "mode": "100644",
+      "bytes": 13547,
+      "sha256": "8851275160ea02f3ec00cc84fcfc60e11c6bf4ad8af8109a549f090c3268cc2c",
+      "blob": "e9d03877a0dbd465362d72e57d2a4da6bfdc2764",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/evidence/run-log.md",
+      "mode": "100644",
+      "bytes": 9589,
+      "sha256": "6472f642617bdfe1dd0f77d6bafe7b1afe13a36c86b3aa69b1859b39f72e5c59",
+      "blob": "97c9940a34621885270f5bf69f8e7dc770a0308f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/evidence/unrun-role-boundaries.md",
+      "mode": "100644",
+      "bytes": 6015,
+      "sha256": "b63a5cd9f0dcab0a166aa2203a6b23a05627bfd69306e37d133fc99751deb752",
+      "blob": "b0bd1a5bed8342de1c16ebd460566b3ff5f1fa51",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/preflight.md",
+      "mode": "100644",
+      "bytes": 15330,
+      "sha256": "f7d367539891d51d1d07b428fc9953b4e10ad726446c74ad5d1af1b8b647b04d",
+      "blob": "5bde84ed969bea3c8f8428aac73cac25ec637640",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/results.md",
+      "mode": "100644",
+      "bytes": 18788,
+      "sha256": "d5ea695107b482fe3ebe7900b22f30b094350abc7206d455d9a9ca58471dc73f",
+      "blob": "13c1f938190bcf8b30f2d7d05583166024099d95",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/reviews/acceptance-01.md",
+      "mode": "100644",
+      "bytes": 18408,
+      "sha256": "a22ba852983fcd862061f9f7346dc8ef34c5677b53bdaba6b4a6e1d35a1f4d26",
+      "blob": "67f08ffd9baecd654be2786e5492f02e5048065a",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/reviews/discovery-01.md",
+      "mode": "100644",
+      "bytes": 34964,
+      "sha256": "61b130846b7c6365820837cb09b20d9be771227dbbb5a476fce436980cc62e09",
+      "blob": "4a3e3eccfa43cfe5b63e0bd0755a488d6b285e04",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/reviews/discovery-02.md",
+      "mode": "100644",
+      "bytes": 28485,
+      "sha256": "a641396c0dc1d1f068ec30997022ae03181eda02abb994e2bd94be9480d4167e",
+      "blob": "86aa2d332252a5473d3982abd2710f97042b9fae",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/reviews/maintainability-01.md",
+      "mode": "100644",
+      "bytes": 8266,
+      "sha256": "b0cd32c3cfc123c328765900b5d1c55d7ac8b0aaf38c000904445ad6de27020e",
+      "blob": "1d7baf1e9e3e575e50b4a25bb10c1ef71f36446a",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.2/verification.md",
+      "mode": "100644",
+      "bytes": 16594,
+      "sha256": "85f58c81d53fc6629baaf3eb663a5b3031d48f4b63982630e51fa7b77cd4431b",
+      "blob": "c36c8e2b44c5f6ca070d39c2916cdd2eb68f0021",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/brief.md",
+      "mode": "100644",
+      "bytes": 9185,
+      "sha256": "0f577d56b18fe48368d6b096a6ef625ca5b64c54e7a4c5db46037fb1d0169fe0",
+      "blob": "ae6fb51794871d429584e5e885acb9a16801079f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/authored-production-self-check.tar.gz",
+      "mode": "100644",
+      "bytes": 15515,
+      "sha256": "4cc52c53380a2c4edd3fa091568405ef81c998da10e10423abcec1c9bae0618b",
+      "blob": "a8d279b1944f01a6b0ef7cd997c3ce950d54b365",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/capture-command.md",
+      "mode": "100644",
+      "bytes": 6617,
+      "sha256": "f9a724ed65b0e340cfbcd456b4c5a51f91cb69651b8945f1623fd88d3e9c09b8",
+      "blob": "c99925749830ba624cc663649eb6fddd97c237b7",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/consequential-uncertainty-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 18811,
+      "sha256": "69fa8222441477c1c00f0f778f3a93b0a19c171187d8816ea67b630d2d8b1ab4",
+      "blob": "b6c3848045a9284abc4767c00b54b685172ab260",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/consequential-uncertainty-resolved-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 18997,
+      "sha256": "f80000c869300a2bc1d90e5b0a998806c657f32be011c74422af2e22bd4465a3",
+      "blob": "6c1aaddf15f7ca7db8f8ec90071882349b75215e",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/consumer-inputs.json",
+      "mode": "100644",
+      "bytes": 22651,
+      "sha256": "66acca30ce56838988c60a1e5a31f741a2b476e4fbd4c018077b0d82908098ad",
+      "blob": "8a038183a151e6830ecc72cf589e799f59cc0861",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/contextual-risk-blockers-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 21107,
+      "sha256": "6e703f89399b751146193f9ba52285151763b3827b8062178cd9fd88e6491bf8",
+      "blob": "f05fdbfb385a3faf66588a35ba9063653a11c178",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/contextual-risk-mitigated-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 20758,
+      "sha256": "d67dea9f09b0338282e04feb522801e8391f602de37575fdb5de45c63535e906",
+      "blob": "e29102636ab531c524345ac1c4c4975547be0250",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/correction-regression-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 23533,
+      "sha256": "7fede51bec25aa84f2b90bd9616f00ead5092040a63e902b53549716236de6e3",
+      "blob": "d845af402645ae8c3342c8657fdd4a5f297842b2",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/coverage-ledger.json",
+      "mode": "100644",
+      "bytes": 26467,
+      "sha256": "edcf1e9a0bce9e430835918b40db7618f22c1ca25d500a6e562139771814284e",
+      "blob": "3ffa57c26a1fc7b73c80e54aeb01e3bc9e107e47",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/deferral-gap.md",
+      "mode": "100644",
+      "bytes": 1376,
+      "sha256": "80ad85ea9c922aac233cd674471c5b9b2a40258c5ed08b901e6ac73cf6fb76b4",
+      "blob": "c49ec8a58685f2ec6713c4d6e62983e126d4ebd2",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/discovery-correction-gate.tar.gz",
+      "mode": "100644",
+      "bytes": 21863,
+      "sha256": "94bbbc8295eab1479e2d79c04910a9978b541d801b3b8ba1be89389e86118b7a",
+      "blob": "c983151fb9e55912eecd788cff6d06c627d35c11",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/discovery-late-omission-clean.tar.gz",
+      "mode": "100644",
+      "bytes": 22057,
+      "sha256": "f7c9608fc9521f95dbea38e01723f8bb8ea46c9a94477d57f5a45c4ed3bd7a9a",
+      "blob": "ccdcc276d1cd6fe5014b6ade23ddb5c7672f9052",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/discovery-late-omission-fail.tar.gz",
+      "mode": "100644",
+      "bytes": 22054,
+      "sha256": "1faf3b2f98e2ea984cd30137d60b355c6bc337336e0e5b06836a06918d71c78a",
+      "blob": "5f33e059afe1a4af71d2a178823b7b4ec14dc224",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/discovery-prepared-ledger.tar.gz",
+      "mode": "100644",
+      "bytes": 19169,
+      "sha256": "ebe9186ddcf359e3b21b30476b20068d55b339da82bfbd0327d61b58f21813bf",
+      "blob": "0548487a1c10e0499dcbeb9bdb1f9c4ad010f306",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/exporter-accept.tar.gz",
+      "mode": "100644",
+      "bytes": 17901,
+      "sha256": "69137b51e53d45c9ced417377bdb26e7fccb46a69c47743cd920d9c069f913d5",
+      "blob": "c2e3dd6eac3438272ac82c70188b705edb59b7dc",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/exporter-restaged-stale.tar.gz",
+      "mode": "100644",
+      "bytes": 18097,
+      "sha256": "79bf4f2c21054b314e709a7133ef64604f5f21835c6d10e0d9a00f0db91792c9",
+      "blob": "afc09e18c1484e448ca70a7d2e1638da3268a1ed",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/final-checks.json",
+      "mode": "100644",
+      "bytes": 696,
+      "sha256": "1204b630fe9ee1dca3c7df76dac62e8fc1886d7fd1278a815b03939f5083fe24",
+      "blob": "fa62aadc86fe1287634bd6156a94e314745e47b9",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/known-issue-committed-work-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 23086,
+      "sha256": "652be8ab158032cbd29e5bc7a2fd37c916c4421ac396e5405e05976b1256c8a7",
+      "blob": "4b104fd74b1b33a91ba8ef9fba403e4534bcc405",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/known-issue-no-links-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 22817,
+      "sha256": "d4f3a4cfd1ad2e5fc8055657cbd616e00f8fc422dc33bf921d0a1f666c321cf8",
+      "blob": "ad76e7326981f392b6642ad2ca27443ea0a6636c",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/known-issue-proposed-work-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 23135,
+      "sha256": "48173584743f5c7581d2f09b30b63eac12a1248f08bc7ff6b2229a189488c1e3",
+      "blob": "550d55e337642302af2dffce4e61c43cea76cc47",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/mixed-conditions-authorized-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 18607,
+      "sha256": "915fce357e59451ae967607bd33cf6a8a6d17b1e2284d84dd2aded4d8f31f3cb",
+      "blob": "722ac304dc2be8fb66a36d5a3a49142215879b8e",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/mixed-conditions-forbidden-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 18662,
+      "sha256": "68c7df5c5d8f350304e629a9127686ede76fbf59539618a0d3b9d3a5e25f549f",
+      "blob": "08ba7087de9b46262d2fa2282a467e4515b1819f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/owner-checks.json",
+      "mode": "100644",
+      "bytes": 1541,
+      "sha256": "d610841625ceeed5007f5716235591ca4a03b112a7d55104d3ef53b2ba62bee3",
+      "blob": "bfd4d0ee04efda6c744d2ffca9723b38810a534d",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/protected-before.json",
+      "mode": "100644",
+      "bytes": 101618,
+      "sha256": "28f580a7e5535df3498564764a6ad80938d755cb81b72bdaf402ef09b816dc9b",
+      "blob": "3f15c3bfe0dee36d1b3958467daa4dcbfdd1d405",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/public-probes.json",
+      "mode": "100644",
+      "bytes": 11087,
+      "sha256": "ba79efd632e90c819e307d020b0ed9757bc076430944dcdaceaca304c9326ee1",
+      "blob": "faa1e12c6c27307482f63565de2deb4a016fbac0",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/queue-defect.tar.gz",
+      "mode": "100644",
+      "bytes": 17106,
+      "sha256": "ecf3c54f9a9e61a56a74ec1052573f322a0c572a558757f24f6907fd2a2c3286",
+      "blob": "beecafcd81e34a85f964ddb9b23e92e4098ac75f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/repeated-review-changed-context-authority-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 29745,
+      "sha256": "9aba4c55612e88bc3d00cb03c4e3ffa27d47ad452c664f35ff47c7c2abd8d236",
+      "blob": "0653cf1eb98eddaeffd52bc969f70483017b68d0",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/repeated-review-formerly-blocked-evidence-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 30438,
+      "sha256": "58dedce6758e7ef93d24de53e97ea8e03c49acca49b727cffa784cb74193d16f",
+      "blob": "c463bb23aff977849f31b0383ab8da4ffe9bb928",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/repeated-review-missed-existing-obligation-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 29807,
+      "sha256": "e8be71cad7c182e4d0a0101145819373a47cbb2ec369e44b239a1ca082627c62",
+      "blob": "371d01ce80ce69b0ef5df4314574ce766dbdd6fb",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/repeated-review-newly-demonstrated-material-risk-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 31000,
+      "sha256": "3131de762e72722488c336da55a8d4fcaa489a9132c73d4fb36dc406f2c2a075",
+      "blob": "3e0e5bbf7a816b9e3b9ba7edb2ed8b01421ac7df",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/serious-delay-uncertainty-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 19126,
+      "sha256": "c99fbd294f80f1eb170d1b0c08998f1ed42910a46dfafe1971322c7b8faddd24",
+      "blob": "4f77021861a2a926231145a49274d3420fb0d600",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/serious-delay-uncertainty-resolved-decision.tar.gz",
+      "mode": "100644",
+      "bytes": 19268,
+      "sha256": "03eb741690cae128dba2a5dc1e2844514f740436fe3e9509e349134ef9ea12e5",
+      "blob": "6404c9e1710271ef7d1857ad2c1c94791604b44f",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/staging.json",
+      "mode": "100644",
+      "bytes": 277050,
+      "sha256": "69b96af4d58398a34f77b5360e5e3379d761fae63571ce75fee78a911d010fb2",
+      "blob": "ff4c3149b4bacfd2f177f833a209b50f2e333f2b",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/evidence/submitted-targeted-checks.json",
+      "mode": "100644",
+      "bytes": 2387,
+      "sha256": "1c172cd741715a9a13dd080c9e5fb7d73e0c46cf0eb38d618567772e09e2cf08",
+      "blob": "5e4c8945d8ae528b399ddbcd0b689a70b589c971",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/preflight.md",
+      "mode": "100644",
+      "bytes": 13228,
+      "sha256": "c076ff391a57d741948af9fcbca36d6a67028ac58e61326cb0049fde060bbc70",
+      "blob": "d34c67be7be04e14d959837c63b5ee2a8cf59998",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/results.md",
+      "mode": "100644",
+      "bytes": 14659,
+      "sha256": "2ba00570f2368e4ea7def50fed341c009c33073d70d56bab60712a4b5cc3dcfa",
+      "blob": "02ff2d8f6c87af6e0358db48dd7216c6b59f15f3",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/reviews/discovery-01.md",
+      "mode": "100644",
+      "bytes": 56926,
+      "sha256": "0a65b6235e1549692266b07b1951167cd5444a2455a8b3d4109577a20798c13e",
+      "blob": "aa766584d9fbba106d187d53fe70a8bd4be8c984",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.3/verification.md",
+      "mode": "100644",
+      "bytes": 21080,
+      "sha256": "2f30d900abb09d337d273dfed738e69fd8205a556551279969510be72ec06190",
+      "blob": "3500cf41b7c5da0695c9637fa39eb3103e8c480e",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.4/brief.md",
+      "mode": "100644",
+      "bytes": 6697,
+      "sha256": "ace5e94abcb08a22abdab6c00ae655ba65d7381dd570bbbb5951a92f0d187420",
+      "blob": "134e466def2888e96774094286370aecf74f6a67",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.5/brief.md",
+      "mode": "100644",
+      "bytes": 10636,
+      "sha256": "e792e6e31e5852205383b54bbf2f827775f7d492b6a64c3c4b8de69316e205d4",
+      "blob": "65e0c7099bb9e4338265ce9c7e310d32895dc94a",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.6/brief.md",
+      "mode": "100644",
+      "bytes": 7286,
+      "sha256": "4edb909f7de664c9dd9d9a05b9dfe87b861562294997bc9676d17cd3a044e0d5",
+      "blob": "ba6e03b374e3126beab344794e95e421515a109e",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.6/evidence/check_report.py",
+      "mode": "100644",
+      "bytes": 2365,
+      "sha256": "93c232d55e2a98af187cdc8457e7c88d72437c5a446ab3a674e3cc022b0238ed",
+      "blob": "8b221ce935a97d0c10975b6ca36f882c6500dc63",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.6/evidence/protected-before.json",
+      "mode": "100644",
+      "bytes": 78963,
+      "sha256": "7dbf3e5246d30831fd6eb92a9057d63776a425fbdd3d1c459c2f8d071f648b7f",
+      "blob": "bc31231243f179acabcdb6970f271874c98e1404",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.6/preflight.md",
+      "mode": "100644",
+      "bytes": 4677,
+      "sha256": "6a97a9a0f2de84d51dde5d1baa8ac0d67744596d3b07c4e86f38df865df54d4b",
+      "blob": "e38f9d310877fa974ff531b5aeb6a4e01de92981",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.6/results.md",
+      "mode": "100644",
+      "bytes": 4763,
+      "sha256": "68baef5312b3c42bfb5066936044a7b40ceb524dfa304446f3611adb795f3689",
+      "blob": "a521f6b4a3f440a96a0480f945af2f6c1b6e926a",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.6/reviews/acceptance-01.md",
+      "mode": "100644",
+      "bytes": 5772,
+      "sha256": "98e5d9d5df08f2e584d4f1d0c9b9fb945a49def751ec3439448a6e25d59f39d6",
+      "blob": "8113a7b1ac30265ed9c73e6dfdc1f839b9bad4ec",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.6/reviews/discovery-01.md",
+      "mode": "100644",
+      "bytes": 23857,
+      "sha256": "8223205a003e89da939a98ac761e09eeb167ccad9718b1892932d12866aa3d28",
+      "blob": "59e48ade9fd79ea7d2deceab572b1c742d3f41ff",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005.6/verification.md",
+      "mode": "100644",
+      "bytes": 4183,
+      "sha256": "ab93f3b190a5f14b8a56a0470ffabfe7024ae4489e05b38f1b446aa22dae4ba3",
+      "blob": "b7c2fa3ad91bcd7270beaf1f77be40d2cb57340b",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005/brief.md",
+      "mode": "100644",
+      "bytes": 9923,
+      "sha256": "00f606b4b83ec7ff31ffa9d69a88d7c5f32d4eaaceaaf042ca61d8a3035c8626",
+      "blob": "bb25098b9023249f26dc486ca5d2abb60007a44e",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/T-005/reassessment.md",
+      "mode": "100644",
+      "bytes": 10735,
+      "sha256": "5ad04df562f5babe3c408e4d5135eef976b818b03169e329bba2f123821ab6c0",
+      "blob": "ab3aa15735219ffba848615d1cae1db5670df957",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/TEST-STAB-001.1/brief.md",
+      "mode": "100644",
+      "bytes": 9107,
+      "sha256": "73471a7e4fdad30a72ee010b9936906f95227bec4a38f8267024efaaa568c100",
+      "blob": "57a6d6469d01b55a8af0cbd2f8f308194aa0fba0",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/TEST-STAB-001.1/preflight.md",
+      "mode": "100644",
+      "bytes": 7092,
+      "sha256": "508b90acaf1165948718b0b80bf4b4094c626d5e21f9719c8c05f9907b218fc4",
+      "blob": "027ed8234d760ea580a55070e78c12d3dc01cf65",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/TEST-STAB-001.1/results.md",
+      "mode": "100644",
+      "bytes": 8851,
+      "sha256": "15fb368c6e0068447241149908ca502d886796852ed9cfa156cb6b705038ec47",
+      "blob": "f53fa8ac593093235dce4b8632ed5e47bfa9694b",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/TEST-STAB-001.1/reviews/discovery-01.md",
+      "mode": "100644",
+      "bytes": 46082,
+      "sha256": "b49d315219ddd63b8dae2fd4b7c8d8a58661c1fdd7fa2a0247c24a8211b25a77",
+      "blob": "8c6e502fe536cb96df7337c47968188b2dda8587",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/TEST-STAB-001.1/verification.md",
+      "mode": "100644",
+      "bytes": 14851,
+      "sha256": "4abfd3a232e7b29689814cd20e65b061dc8b0c556b3ef591145a18840cd0850c",
+      "blob": "5577059cd81efcb2aaa81693e0b49def0fc56836",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/TEST-STAB-001.2/brief.md",
+      "mode": "100644",
+      "bytes": 9816,
+      "sha256": "4ae8ce1d11be7f1ac484f1afae108a0e9a390ba97687aaa6df5bbede913f3389",
+      "blob": "ea055db60d70267c33dca358d218162fe0eb478a",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/TEST-STAB-001.2/preflight.md",
+      "mode": "100644",
+      "bytes": 7577,
+      "sha256": "75e698a1ba0d09dc7f3491d9bce8c1b7806ffecf67721547a54e4ae54a21ec65",
+      "blob": "15b50b5645bb7fdcd7422aff3fca5cc82baa7d30",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/TEST-STAB-001.2/results.md",
+      "mode": "100644",
+      "bytes": 9042,
+      "sha256": "901a22ec4ea4c37783cbc90ebb1445e318a5bb323d927e2278765ac0c21a5fa8",
+      "blob": "7e78c93208cdd3fe046d1091e37fe6c7632b1546",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/TEST-STAB-001.2/verification.md",
+      "mode": "100644",
+      "bytes": 18317,
+      "sha256": "8fcdc8bc9c0adfd257e0fb86e12a3bf4a14123ff3dfc2d70af2b109d40f0254a",
+      "blob": "58b87b23f68ee9a5c1083a982d40d8b78af7d7ea",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/TEST-STAB-001/brief.md",
+      "mode": "100644",
+      "bytes": 7126,
+      "sha256": "07c773157e148056cba4f56fe8ffe0e95d2de51c1efb3fd0ba16be171b6fe0f9",
+      "blob": "42604661d02974bd8babb969ae96664844e6fe17",
+      "retire": true
+    },
+    {
+      "path": "docs/tasks/index.json",
+      "mode": "100644",
+      "bytes": 7334,
+      "sha256": "5b859d147c0da2b1d864e8441269ebeae2fae574caf23254abf21640f2b40f36",
+      "blob": "333c15daac8add582daa71ef3b02551a47d39147",
+      "retire": true
+    },
+    {
+      "path": "ideas/documentation-consolidation.brief.md",
+      "mode": "100644",
+      "bytes": 12163,
+      "sha256": "3f40854566a9fa9fdf9399870beb5e48167d7c97f5385906cd0efa709c8b3a08",
+      "blob": "0c127abcbdce9895096d56a5ef06932bebf97e75",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/project-plan-review.md",
+      "mode": "100644",
+      "bytes": 17391,
+      "sha256": "31ffdb66574278512f8ff6292a0c425a429ff40eb9cb156f74e3eec51fde046c",
+      "blob": "ced43fba4e813b9fe4922b95c9ea76d934cfc2db",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/project-plan.md",
+      "mode": "100644",
+      "bytes": 29254,
+      "sha256": "f1ddf8fd3c9c3865dfa5c5eac1b58b46ef309be74e9088037bae97b8df1ca22c",
+      "blob": "a8e4e0b25005896d684c5a4b84c8ffea46a59e0e",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/task-map.json",
+      "mode": "100644",
+      "bytes": 26011,
+      "sha256": "6f5b838776eb4e0ddc7badecceb911562e5e3262af93a882ca2eca2fc69d9201",
+      "blob": "02fa20c7fa03d47a03049bd9b5fe54b6cdc3b802",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/brief.md",
+      "mode": "100644",
+      "bytes": 16836,
+      "sha256": "94cc2e185f1aef939a17d23db629cfef90bd33d6aca7727ad3de1ddaf65a2ebf",
+      "blob": "62e32efa44c79980c657cdb163f097c5969de2a1",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/preflight.md",
+      "mode": "100644",
+      "bytes": 18224,
+      "sha256": "f60a74cd02f97ec032fc97a2fede49695729f1d383345ea94dd9ba20dab7ef5e",
+      "blob": "7a59b0d5ddf1b07fd317c4b75cd198905abbb261",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/results.md",
+      "mode": "100644",
+      "bytes": 162077,
+      "sha256": "30046268c14ad93d836b318e4b9cd5e1cecc7e440985689dfc46a8efb32009bb",
+      "blob": "7ba463a9b31cda74911f6d5f8e0dd0d4639cc577",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/acceptance-01.md",
+      "mode": "100644",
+      "bytes": 5366,
+      "sha256": "02cd412507e2bf265900bbeca2a9464e97cc5f9a263a0692470da16eb3e1092f",
+      "blob": "36ba01c2cac56e3975379f8d1a2a44499773fcf7",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/discovery-01.md",
+      "mode": "100644",
+      "bytes": 24402,
+      "sha256": "3d2ca9c430bf71c0dd521d42117a4ebdf54ece6d57c0b28983b5aa45e70d71c8",
+      "blob": "27adaefa1091687a7eff58feb4e8848fc5707f0e",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/discovery-02.md",
+      "mode": "100644",
+      "bytes": 17475,
+      "sha256": "44375e4e35c126547d37b6050720f8af4574a0d9e30c27983b7eb8a1ba0f7337",
+      "blob": "7858a5823f35fbf199f87bf8c4d7a219eb6e014c",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/discovery-03.md",
+      "mode": "100644",
+      "bytes": 15668,
+      "sha256": "6485ca875fdf74ed8448cedc51e705b2df22985f10857aad50520a3fbc950aa7",
+      "blob": "6b7e1ec5a7d8ad8cd139a03483efcc6e7876723f",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/discovery-04.md",
+      "mode": "100644",
+      "bytes": 30074,
+      "sha256": "3b06c915f18c45fff8972ab4df74024cafca64bd1fba0972271269f5f6917362",
+      "blob": "aeb5bda4eb433f962e98383ee3fb79454ebdea63",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/reviews/discovery-05.md",
+      "mode": "100644",
+      "bytes": 25940,
+      "sha256": "25d0092d539bbb7f253c5fe661cac2bb0a1334a1129b2bf49d839c8df9593636",
+      "blob": "e0ece0edb993427979a96f1794c6a298bf3c20b5",
+      "retire": false
+    },
+    {
+      "path": "ideas/documentation-consolidation/tasks/T-001/verification.md",
+      "mode": "100644",
+      "bytes": 16095,
+      "sha256": "962a9b138d3491eff9ee4d6a372226af8cdbc9f7062d389308c1d8f699d616b1",
+      "blob": "466649589415556db695b97200e5761151b91175",
+      "retire": false
+    },
+    {
+      "path": "scripts/install_development_skills.py",
+      "mode": "100644",
+      "bytes": 23910,
+      "sha256": "7423852ffc55738e28ff9562007fa4b511b537a20b2dd24275886fb237370d78",
+      "blob": "733660ddf14079482a000e1579254e5cd6dcb08f",
+      "retire": false
+    },
+    {
+      "path": "scripts/ollama-models.json",
+      "mode": "100644",
+      "bytes": 1609,
+      "sha256": "fea9ac0f77cb02aa286e1dfbcc7794b42d76e07bd73f9aba3badc7129e7422cf",
+      "blob": "00abf37d2f599aadad8f2ac7ddf563ed5a8757f2",
+      "retire": false
+    },
+    {
+      "path": "scripts/ollama_delegate.py",
+      "mode": "100644",
+      "bytes": 19796,
+      "sha256": "449f1b2b27ac008b12d595c70b2efecc8620cd4012c59d44a6c4eef3820ffeb9",
+      "blob": "3d8f095433a66c60268ed9f05587ddf21306b94d",
+      "retire": false
+    },
+    {
+      "path": "scripts/run-evidence.md",
+      "mode": "100644",
+      "bytes": 5564,
+      "sha256": "6d22776ccfdc600a8edf4dff0d2aa3059ab1ec04201cafcc809ba45a639e6987",
+      "blob": "215d7e2edd9df56039f4a80e0f7f2bfe32533d5d",
+      "retire": false
+    },
+    {
+      "path": "scripts/run_evidence.py",
+      "mode": "100755",
+      "bytes": 20534,
+      "sha256": "ca3aa13c4a4c443924938598935205099f639bd39da848f175149e5d5074209a",
+      "blob": "526b884010d8f90a78a660f7d2062dd1a104d7c4",
+      "retire": false
+    },
+    {
+      "path": "scripts/runtime-context.md",
+      "mode": "100644",
+      "bytes": 2361,
+      "sha256": "7c8f3340a5f4c94dbc44947af07dc18fb729ff9373ddbb272048bd7a580222e0",
+      "blob": "56a673223d6a8a51f020325421c813d0b4c3c037",
+      "retire": false
+    },
+    {
+      "path": "scripts/runtime-context.schema.v1.json",
+      "mode": "100644",
+      "bytes": 1876,
+      "sha256": "5ef06905b0112acd252f20e1e636444ba1c25d19805474bc6efcc67756176566",
+      "blob": "b37a1a5a196b36fd808ed05d69934ac2d49289ca",
+      "retire": false
+    },
+    {
+      "path": "scripts/runtime_context.py",
+      "mode": "100755",
+      "bytes": 7188,
+      "sha256": "49392889c17a7f9f83a62695867a3bd31c4c1767997b5cad2e1dd0085d85ac42",
+      "blob": "b8158073604f5375c884595897653456417c527c",
+      "retire": false
+    },
+    {
+      "path": "scripts/workflow_version.py",
+      "mode": "100644",
+      "bytes": 10155,
+      "sha256": "2dd89ff03a709d046992e9de6ecf9b04e8103edc0dbc4b2dc80e773010125e43",
+      "blob": "3480f3cd5b4476e92f4303cf545460ab46376aac",
+      "retire": false
+    },
+    {
+      "path": "skills/README.md",
+      "mode": "100644",
+      "bytes": 11491,
+      "sha256": "8e8e5b0db9169071e28f78a0af4d1de8661102ae83f48012014e127edf946503",
+      "blob": "334a2364d1bc05026d2b12978a1cfba7b91b411f",
+      "retire": false
+    },
+    {
+      "path": "skills/ai-flow-foundation/SKILL.md",
+      "mode": "100644",
+      "bytes": 8634,
+      "sha256": "fc26141c335975d262c3e1978129e06abbb35f3027a2dff89a00d4c725d291d6",
+      "blob": "a00e9d713d6bb180b4e03e1b651626725b3c7dc9",
+      "retire": false
+    },
+    {
+      "path": "skills/ai-flow-foundation/templates/ai-foundation.md",
+      "mode": "100644",
+      "bytes": 2065,
+      "sha256": "ab8d1fc246a68ac081ed8a6a3704198732451ac5241acd61f9603cb60c2c15db",
+      "blob": "562a0a5176b84e373fab3e96bfb5f81268ff699c",
+      "retire": false
+    },
+    {
+      "path": "skills/architecture-guardrails/SKILL.md",
+      "mode": "100644",
+      "bytes": 15861,
+      "sha256": "fde86e50f9f6037f7be61a067cfcb3cc55197e65565e1c07a5f06f83c5fcf016",
+      "blob": "089ae66082f1857c9309b3f9d360330ba867f6b6",
+      "retire": false
+    },
+    {
+      "path": "skills/architecture-guardrails/evals/evals.json",
+      "mode": "100644",
+      "bytes": 2895,
+      "sha256": "7b50c746b46cf55a4e9da361314bca9a7ff7854793294531d8d9930eec5e4777",
+      "blob": "567e2c46f241d27482f33da641ecd9bc4a387742",
+      "retire": false
+    },
+    {
+      "path": "skills/architecture-guardrails/references/dotnet.md",
+      "mode": "100644",
+      "bytes": 2684,
+      "sha256": "12609dc1e6c46a6372a7d37d0d48149b0eede0418944a4b2a37d5dddcb91bb48",
+      "blob": "bde33ee0fca295e39cba18e9cf033402f2aa56e1",
+      "retire": false
+    },
+    {
+      "path": "skills/architecture-guardrails/references/enforcement-model.md",
+      "mode": "100644",
+      "bytes": 6419,
+      "sha256": "9fe3bf7d04e61b7859ba67d34c4825623c440c7ec948f2c4f6303cecc4e34885",
+      "blob": "7d242d7e3ec1301e97dd90a0f161094693f7d607",
+      "retire": false
+    },
+    {
+      "path": "skills/architecture-guardrails/references/java.md",
+      "mode": "100644",
+      "bytes": 2808,
+      "sha256": "d7647076d4d646857a69d9d7d6b015b8f5183c905e95ac2c18e4175267f229ab",
+      "blob": "f41efae8389e391c90b7d2ce7b2af6fdeeea9837",
+      "retire": false
+    },
+    {
+      "path": "skills/architecture-guardrails/references/javascript-typescript.md",
+      "mode": "100644",
+      "bytes": 5520,
+      "sha256": "dc4b59bff201c184798a27d33de1cea01fc656418cde9534aa9756235ca9db76",
+      "blob": "218b1ed932e44be82019a2ea70fb48ee41fa95a6",
+      "retire": false
+    },
+    {
+      "path": "skills/architecture-guardrails/references/python.md",
+      "mode": "100644",
+      "bytes": 3580,
+      "sha256": "173a0dc18e2254082d980a1e518423b9ffeb01fde1864933cf17941657d5be20",
+      "blob": "9db6dba2bf5319750c7b29911a85eac49b33daa4",
+      "retire": false
+    },
+    {
+      "path": "skills/architecture-guardrails/templates/gates.yaml",
+      "mode": "100644",
+      "bytes": 668,
+      "sha256": "9726dc7bea108e6068bec9cb6df8ffbb51d3a48b797726dfb706b660176bba36",
+      "blob": "195ee3b4be1800dc54ec38318d59a3954c645305",
+      "retire": false
+    },
+    {
+      "path": "skills/ask-user-questions/SKILL.md",
+      "mode": "100644",
+      "bytes": 5345,
+      "sha256": "34a5d62b9c5cd9d6b16db91dfb96f989a35688e690d1324a45db4b6d70ccc5a2",
+      "blob": "36b90c0d5daf092bf2c0f3bec2f7fb80de7d44de",
+      "retire": false
+    },
+    {
+      "path": "skills/ask-user-questions/evals/evals.json",
+      "mode": "100644",
+      "bytes": 947,
+      "sha256": "8aefe4692b6cf6fadfb7476b2756daa1f68b264fdf9407d8737f983c6bf30229",
+      "blob": "904beac1e3912bbc93fcd6cd5bd085af666afcbe",
+      "retire": false
+    },
+    {
+      "path": "skills/foundation-readiness-review/SKILL.md",
+      "mode": "100644",
+      "bytes": 9196,
+      "sha256": "583235afffc4cc1685fd4b9b0b1e2fc7f0ac5a124dfafe013a3c473455fba844",
+      "blob": "f4e4a87f7cb3d07a1e23aa38d6836cc0e3358afb",
+      "retire": false
+    },
+    {
+      "path": "skills/foundation-readiness-review/references/delivery-routing.md",
+      "mode": "100644",
+      "bytes": 4977,
+      "sha256": "3dd01ca2b63c33c3c591362430a61367332c178d056cb0a5bc28b1b47c9d53c7",
+      "blob": "82f5f1fc55182a9140b45b867ffa8957d2d0c135",
+      "retire": false
+    },
+    {
+      "path": "skills/foundation-readiness-review/templates/foundation-review.md",
+      "mode": "100644",
+      "bytes": 1816,
+      "sha256": "cdc1fd4dec2325469d9e70ac79532b520ee94360b05d731eef1f2695f02775c2",
+      "blob": "75bb108c2ddc4a99a8c3488d43d27578ddc0b8e4",
+      "retire": false
+    },
+    {
+      "path": "skills/idea-brief/SKILL.md",
+      "mode": "100644",
+      "bytes": 7535,
+      "sha256": "b3d9b5762814c427effcaac93ea428b9a163b022d425df34af68eee6321adc6f",
+      "blob": "14abc963b430be2ca79d4c950ad8606f0dbe2dbd",
+      "retire": false
+    },
+    {
+      "path": "skills/idea-brief/evals/evals.json",
+      "mode": "100644",
+      "bytes": 1732,
+      "sha256": "2178078cf5e99dc6ec99d23b4fbcae9da1333cc26c0e72d39746d9b52adfd53a",
+      "blob": "68b774c90d9e641c5b00e418aed6e8d131eb7143",
+      "retire": false
+    },
+    {
+      "path": "skills/idea-brief/references/vision-template.md",
+      "mode": "100644",
+      "bytes": 2914,
+      "sha256": "02c9338131dab83910192ef52e2d9238248422b6541956bc1325d17174d3d5aa",
+      "blob": "5bb5d0496eba6d280a9676591155de67f59c9ec4",
+      "retire": false
+    },
+    {
+      "path": "skills/idea-challenger/SKILL.md",
+      "mode": "100644",
+      "bytes": 6735,
+      "sha256": "ef6d1ca29716e4310ce6a58ccc3311285ad44d9e445ea3b7cd71e98150481822",
+      "blob": "3d19944cf04ea9d7c8e26591b3abbbc25446a1b7",
+      "retire": false
+    },
+    {
+      "path": "skills/idea-challenger/evals/evals.json",
+      "mode": "100644",
+      "bytes": 1413,
+      "sha256": "31d4da1a8edd8f7d68003aae64e55939dc9f6cf0d399a4589f8e91e01b03b7e9",
+      "blob": "3b368efb1684c682d033e6806df8a38d355cc9a4",
+      "retire": false
+    },
+    {
+      "path": "skills/idea-investigator/SKILL.md",
+      "mode": "100644",
+      "bytes": 10937,
+      "sha256": "7bed4519379691eb019a7eeadcd5c77ed5d8aa05cd493bee2858298d1991fa42",
+      "blob": "6e3cedbd118a0ce78037c11c56789d555a3189cb",
+      "retire": false
+    },
+    {
+      "path": "skills/idea-investigator/evals/evals.json",
+      "mode": "100644",
+      "bytes": 1407,
+      "sha256": "6edf10d2e21aa1306cda466e25dd3a75ea7c556cfe1daf8150aa121fdafe470e",
+      "blob": "df5f17358d134060ea9a69f467ee7b2e33525050",
+      "retire": false
+    },
+    {
+      "path": "skills/ollama-delegate/README.md",
+      "mode": "100644",
+      "bytes": 2751,
+      "sha256": "bedf867803a49e7483076d2f12e06f5f848d2363586d12ae03e00e63dedaf743",
+      "blob": "389b06e7dd9775ce4a112756c8192387eb50be3c",
+      "retire": false
+    },
+    {
+      "path": "skills/ollama-delegate/SKILL.md",
+      "mode": "100644",
+      "bytes": 6124,
+      "sha256": "bb775840081d3efe5ea4c50f4936f8539601c359b5555d396d8e8950d0ad75c9",
+      "blob": "f546b10a2cb7e08f55efe0f524dd4fcf9b22bfff",
+      "retire": false
+    },
+    {
+      "path": "skills/project-bootstrap/SKILL.md",
+      "mode": "100644",
+      "bytes": 11663,
+      "sha256": "f4a10ad767a37f383c6be87e5828c1cc65aac9b336f51abd78129b39b56c4ce3",
+      "blob": "42992b2c736d8cea1483c4077769cf7139b2d2f6",
+      "retire": false
+    },
+    {
+      "path": "skills/project-bootstrap/templates/foundation-plan.md",
+      "mode": "100644",
+      "bytes": 1337,
+      "sha256": "cb69fef2d25d3ba024fd44263fe84d5909eb8471267e224b1b884b4ae455110d",
+      "blob": "6ade3f6972374472b396a4dec02ad2441604f610",
+      "retire": false
+    },
+    {
+      "path": "skills/project-bootstrap/templates/project-charter.md",
+      "mode": "100644",
+      "bytes": 778,
+      "sha256": "a964172375619bee52898e719e4076957008fe93c495be3a0d46f6bb16c03630",
+      "blob": "7fcf7011692d61121904cb0ad5356713427a2801",
+      "retire": false
+    },
+    {
+      "path": "skills/project-delivery-plan/SKILL.md",
+      "mode": "100644",
+      "bytes": 15829,
+      "sha256": "4a06045e3f595ebccb2dfa311d890be00bdf6da84aea3b141f8e7c3cd27fa037",
+      "blob": "8e86ed44d936f4957f9f11e1e07cba99c3d8b959",
+      "retire": false
+    },
+    {
+      "path": "skills/project-delivery-plan/evals/evals.json",
+      "mode": "100644",
+      "bytes": 1507,
+      "sha256": "a87fd7309847d598a56a253254aed5c5867ee20a2f1c42ac3e028f1f288ab007",
+      "blob": "fb28b930242e1304d7e87b5de0a1e376f7186b3d",
+      "retire": false
+    },
+    {
+      "path": "skills/project-delivery-plan/references/project-plan-template.md",
+      "mode": "100644",
+      "bytes": 3768,
+      "sha256": "7b766a9173cfd69c6fe619441c8b0710c36f18a0b2fe00e3fae13e6aaf8c097e",
+      "blob": "e053690125c92600f388980981f09c7b37b464f4",
+      "retire": false
+    },
+    {
+      "path": "skills/project-delivery-plan/references/task-map-contract.md",
+      "mode": "100644",
+      "bytes": 3820,
+      "sha256": "390c85a439d334783e05685584937d64b4098e6d8258f0f967d4f4a80b29effc",
+      "blob": "743cb76bdca8cad2c5d096b2aa8210ff3f086836",
+      "retire": false
+    },
+    {
+      "path": "skills/project-delivery-plan/scripts/validate_task_map.py",
+      "mode": "100755",
+      "bytes": 10668,
+      "sha256": "9197993b30294d9b319270ea72918ed7de3ff52242f542ec2a021adcb1c8d50e",
+      "blob": "19992fea8a6b0bba6627dd5d2f3384d73b3df697",
+      "retire": false
+    },
+    {
+      "path": "skills/project-direction/SKILL.md",
+      "mode": "100644",
+      "bytes": 7936,
+      "sha256": "37d3dcbbdd554fa892486663d0a5b7dbc0ca438faeddfc6ed7f15bc8dd108d55",
+      "blob": "e0e8feb3db515140aaa2935d0b1abda69dd0104d",
+      "retire": false
+    },
+    {
+      "path": "skills/project-direction/evals/evals.json",
+      "mode": "100644",
+      "bytes": 4043,
+      "sha256": "3eb304b4dfaf38753622403ccbdb5c3e1606c6edceb4845507c6428717da0a10",
+      "blob": "9ec9378c507ad332ff0fa858f651c4cf168c8844",
+      "retire": false
+    },
+    {
+      "path": "skills/project-direction/evals/files/setup_fixture.py",
+      "mode": "100644",
+      "bytes": 5940,
+      "sha256": "ca9a9ccf557d2b294ec22df1d3a681c97199d25b1592c4beb158ab06dee9590b",
+      "blob": "0268a89cb07f72c842771f9d1fef24e8434133be",
+      "retire": false
+    },
+    {
+      "path": "skills/project-direction/references/direction-template.md",
+      "mode": "100644",
+      "bytes": 3765,
+      "sha256": "c24e84d2f3663bae45bf0b9dcccd53f1fb1465f9ea137755c77ac495212cad5d",
+      "blob": "e04a803becbfc90b27f8703b57a12894a5f2072e",
+      "retire": false
+    },
+    {
+      "path": "skills/project-plan-verification/SKILL.md",
+      "mode": "100644",
+      "bytes": 14058,
+      "sha256": "8f7100d365ff4ae61a4936917e1c9279ea515d0844cadde8d0232fa63b05c4f4",
+      "blob": "6168bf455430c0c7bd6a0aa2c3f5576f531b0299",
+      "retire": false
+    },
+    {
+      "path": "skills/project-plan-verification/evals/evals.json",
+      "mode": "100644",
+      "bytes": 1577,
+      "sha256": "96e612fd7597dda0ea64a624b2c4166b67227118b85c9c8f03654b51527ca0f9",
+      "blob": "c9494bdafe7b98e4b07f72ba40f90eb7aa214388",
+      "retire": false
+    },
+    {
+      "path": "skills/project-plan-verification/references/plan-verification-report-template.md",
+      "mode": "100644",
+      "bytes": 2349,
+      "sha256": "a99edffaaaa97e670c77f17fc9b9ce8b331dc4d63b74d5fc977662a3f9da0a8b",
+      "blob": "2dc047e1d1a626cacc0b271b921e9f26e799136d",
+      "retire": false
+    },
+    {
+      "path": "skills/project-plan-verification/references/review-checklist.md",
+      "mode": "100644",
+      "bytes": 2270,
+      "sha256": "001171e14aebc28f3948ac2f77154f2032787df7fa6018c4039bc1152fb7e92f",
+      "blob": "b53d50a0eef02b407c03b0741125e3af9df6d4db",
+      "retire": false
+    },
+    {
+      "path": "skills/project-plan-verification/scripts/verify_plan_artifacts.py",
+      "mode": "100755",
+      "bytes": 7538,
+      "sha256": "9623b17eafadb68b41dc1647d0aca09b6327b049e2c5d3a9a1250dd883bb13a8",
+      "blob": "c151d93a84c2315655b8158e824dbc8573c17cbf",
+      "retire": false
+    },
+    {
+      "path": "skills/repo-foundation/SKILL.md",
+      "mode": "100644",
+      "bytes": 20419,
+      "sha256": "f9f215c02b85ca0898c7f501ce705092b58f45c64b738b08f6318f147c85736c",
+      "blob": "c6b37f4bab27e705910898b8a4843913d9b7a229",
+      "retire": false
+    },
+    {
+      "path": "skills/repo-foundation/references/contract-index.schema.json",
+      "mode": "100644",
+      "bytes": 1144,
+      "sha256": "20909763d0dd62ca41a5c501cf08c1b1f2858427beeb47a829c91daaf94df846",
+      "blob": "a1917502894744c75f156fd8f9745f5c2a46cd74",
+      "retire": false
+    },
+    {
+      "path": "skills/repo-foundation/references/contract-registry.md",
+      "mode": "100644",
+      "bytes": 4071,
+      "sha256": "e3de6c72ae09b3344a486bcea27b0a41542e5034c5d6bac69c21b66ec8939c31",
+      "blob": "da9f84777084f1308baf8d892a47aa55c40927fa",
+      "retire": false
+    },
+    {
+      "path": "skills/repo-foundation/references/subsystem-contract.schema.json",
+      "mode": "100644",
+      "bytes": 2451,
+      "sha256": "c7b243da6f3772f9fe1b3e5e03180c3ff271beee0a2990f634c66b5ad207ac6d",
+      "blob": "b9d71e1d270547e23498c3ab0d4e306bdc642bf2",
+      "retire": false
+    },
+    {
+      "path": "skills/repo-foundation/scripts/check_contracts.py",
+      "mode": "100755",
+      "bytes": 11039,
+      "sha256": "00f38e439f5347804a1c78646ecf9bf8b9fba805cfbb88075226b447d987b928",
+      "blob": "e41fe59d79a45779ec4cdd9fc49c5f33b2dd196c",
+      "retire": false
+    },
+    {
+      "path": "skills/senior-code-review/SKILL.md",
+      "mode": "100644",
+      "bytes": 9387,
+      "sha256": "9974ca642d3c562eef36ce085f5d07127b7fa902acf2f1d27764988293ced85d",
+      "blob": "b7dc897216d86bb791e1f7f0e332e88190a6d76c",
+      "retire": false
+    },
+    {
+      "path": "skills/senior-code-review/evals/evals.json",
+      "mode": "100644",
+      "bytes": 3470,
+      "sha256": "75bda6a247ef9d5dc26089e9ad185156cb836a215abbeec38e827133c749e459",
+      "blob": "2c73187bc40d76549f3b3e48ec0e8f4ea79dc39c",
+      "retire": false
+    },
+    {
+      "path": "skills/senior-code-review/evals/files/go-inventory-reservation.diff",
+      "mode": "100644",
+      "bytes": 1288,
+      "sha256": "ee4a0d78aae32dd21fc35f718156fc8d9c7d91220f08938f169818fbafb7eae1",
+      "blob": "2ec68258340049ffbe6368f7d99da772398bb858",
+      "retire": false
+    },
+    {
+      "path": "skills/senior-code-review/evals/files/python-payment-status.diff",
+      "mode": "100644",
+      "bytes": 1661,
+      "sha256": "f24bce7d25a429194057fce0c393ed986f81f4b07eae4fbf3e75899f857206b5",
+      "blob": "395952f2b0d64d173fa5c0501a9a72a12af153b5",
+      "retire": false
+    },
+    {
+      "path": "skills/senior-code-review/evals/files/typescript-account-email.diff",
+      "mode": "100644",
+      "bytes": 1294,
+      "sha256": "43702ff285594a3698c0d44f0d253ec63e4bd408fd1a2221f53d4db0619e6923",
+      "blob": "dff21eeec55a95a1c0137b756b4f0ec9fe9d08ee",
+      "retire": false
+    },
+    {
+      "path": "skills/senior-code-review/references/review-dimensions.md",
+      "mode": "100644",
+      "bytes": 6399,
+      "sha256": "b79f2118e427c42129c6830f0bf4dc8bdf389b52b2aed9a3cc685527fb91e442",
+      "blob": "733898a8efce331d64c65d639d6ca161222007b6",
+      "retire": false
+    },
+    {
+      "path": "skills/session-handoff/SKILL.md",
+      "mode": "100644",
+      "bytes": 8307,
+      "sha256": "eea77fa4f445c545cef8847452fc583aeb5221ea24ae991c2e69d52406057516",
+      "blob": "975a3a653522a691e20360f9da4e552fd8a9dd37",
+      "retire": false
+    },
+    {
+      "path": "skills/session-handoff/evals/evals.json",
+      "mode": "100644",
+      "bytes": 3629,
+      "sha256": "cf5a61610ce35cb0e2f3e6ccf9945633f264d1900a711802b35a8f0cb9d624aa",
+      "blob": "d4d47a71fd578b2f7c96956806efd31aacad55ed",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/LICENSE.txt",
+      "mode": "100644",
+      "bytes": 11345,
+      "sha256": "bc6b3af2f331cbc7fb0da1344efb2cbe5877a31498b4d70dbc7000f3405a1362",
+      "blob": "4f881c52d1f72f4cfb720e339e2d35c3058d01a9",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/SKILL.md",
+      "mode": "100644",
+      "bytes": 34440,
+      "sha256": "949b7cc1a614a44bdcd0d143314e3923c630c5cd51378d4a1bbce91684318ac6",
+      "blob": "251d13a0ba09dfdab896ab3113e4e10e08aeb762",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/agents/analyzer.md",
+      "mode": "100644",
+      "bytes": 10376,
+      "sha256": "bf68f4cac5a56c673a928c2e6d619586c5b93ea364026ab37547772cb45a663a",
+      "blob": "14e41d6068635f4dd3fb878fd1626312395dda63",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/agents/comparator.md",
+      "mode": "100644",
+      "bytes": 7287,
+      "sha256": "fe1fc9787c495d864c5d6eada47396478572325fde1b33a96d78bf4b849b7a3e",
+      "blob": "80e00eb45db3ee53a132fc2ba97fd59a7339e563",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/agents/grader.md",
+      "mode": "100644",
+      "bytes": 9049,
+      "sha256": "57134da0c1a4eea33fbd74a1c9c44aa814f07d6bc64de303edb586f941e5d21a",
+      "blob": "558ab05c0a9a8bb062ef4c51823d4d76c3acf7c4",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/assets/eval_review.html",
+      "mode": "100644",
+      "bytes": 7058,
+      "sha256": "ce477dcc74dc1c0d1d3352646a79167b5a63634e936b1019160025065974e452",
+      "blob": "938ff32aed9bffabf723bd5492d720f4736c8e4d",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/docs/codex-behavioral-eval-runner-future-work.md",
+      "mode": "100644",
+      "bytes": 7834,
+      "sha256": "719241edcb63e253936956c84b91f0a6ef65e256f7f7c03126c82bf518611923",
+      "blob": "79b9af05a822230d77fde850d6b7fd27e261a2cf",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/docs/history/IMPLEMENTATION-BRIEF-codex-behavioral-eval-runner-mvp.md",
+      "mode": "100644",
+      "bytes": 12081,
+      "sha256": "b980eb7d87bf36b7136598e4bb1929df4501158997811ae27687125f942dbee1",
+      "blob": "9958fc92f2ac906af8ef52779a9c52a13583bfeb",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/eval-viewer/generate_review.py",
+      "mode": "100644",
+      "bytes": 16365,
+      "sha256": "fc9d1b9243fe5ab6012ebd579bd76d0035de1b79fd3b969de114defab26478fb",
+      "blob": "7fa5978631fed1ed545591dbb2b0eb21ce3f3d08",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/eval-viewer/viewer.html",
+      "mode": "100644",
+      "bytes": 44998,
+      "sha256": "a53213426ee1100441d701a3a0d49cda7a842f992d2c36463f4d3cc0258575fa",
+      "blob": "6d8e96348a02e66c3363d2ff3b3ae58ac11e6382",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/references/schemas.md",
+      "mode": "100644",
+      "bytes": 12996,
+      "sha256": "b868d48f33dba6049870d1e2206d6dace266affb1e1a686c72d56613fd835aa8",
+      "blob": "9e43f2bc8834fd7fc52896fbdf4d6cf45729c782",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/scripts/__init__.py",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/scripts/aggregate_benchmark.py",
+      "mode": "100755",
+      "bytes": 14386,
+      "sha256": "123ef128ea5ccc01a4b1ac212ef5567f21e9c13d3d240609780beeb3200c49aa",
+      "blob": "3e66e8c105be9bab9f0e9c61f0d1482619401580",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/scripts/generate_report.py",
+      "mode": "100755",
+      "bytes": 12847,
+      "sha256": "13df7118a3c50c83c4c3250a606d5f2b20b25a3d44cbc392b3d669ec75281453",
+      "blob": "959e30a0014ec165c41a2bb7420b7dfe1416bbac",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/scripts/improve_description.py",
+      "mode": "100755",
+      "bytes": 11116,
+      "sha256": "87d864570220b699fac52da309d2d6efdb060647bfebc74f768128e646accf80",
+      "blob": "06bcec76122446986e3610c20a39c466de36f495",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/scripts/package_skill.py",
+      "mode": "100755",
+      "bytes": 4234,
+      "sha256": "1a33059b0db1ef73375d46d513e5ea81369d2e8838c970597b0d52ddef8d1c0f",
+      "blob": "f48eac444656ddc41204aac1760a217951ce609e",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/scripts/quick_validate.py",
+      "mode": "100755",
+      "bytes": 3972,
+      "sha256": "67cf5703402013936c8fb75ad6a1afecd8841d45cc5e606b634eb05825fde365",
+      "blob": "ed8e1dddce77b16af13c6f36b3fe86c4ac7c590c",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/scripts/run_behavior_evals.py",
+      "mode": "100644",
+      "bytes": 12668,
+      "sha256": "b8e478500c89fe531d51ed76606dabcb5fbe4c409013c257d9e7124b8a25bc18",
+      "blob": "a8380df3600db74baf7d2aa661035854c10612ca",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/scripts/run_eval.py",
+      "mode": "100755",
+      "bytes": 11464,
+      "sha256": "43e3b8f80dbf69c343967ba77e268fae991d9fa3ed68b32a0ff02532cd48657f",
+      "blob": "e58c70bea39d5b252a1e819f242bbdcdf20e8b87",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/scripts/run_loop.py",
+      "mode": "100755",
+      "bytes": 13605,
+      "sha256": "7bd6f674203168520517eec94c55f493c0d154339b061b4d7c0f0dad187d0f21",
+      "blob": "30a263d674ef19de11c756d6f7537f91a421909e",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/scripts/utils.py",
+      "mode": "100644",
+      "bytes": 1661,
+      "sha256": "3af8ae62c40c73ab712207436a0d9a981e845f25c5a7040229eb189cc8e45bb1",
+      "blob": "51b6a07dd57174197a937034b7eecebd5768ff8a",
+      "retire": false
+    },
+    {
+      "path": "skills/skill-creator/tests/test_run_behavior_evals.py",
+      "mode": "100644",
+      "bytes": 14959,
+      "sha256": "f3a3f0ba665d855434101cdee0860f949778f26c6e98b3057f0aefb76a8332fe",
+      "blob": "f4ce60a851bb78bdc191fb31161668323c4623f7",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/README.md",
+      "mode": "100644",
+      "bytes": 34146,
+      "sha256": "fa77bb70e2329ccb65f96b319b0f079862fed3975237271984f42740ba84aeec",
+      "blob": "edbb289f1bf5acd0b7a533cda38afd7ac2dcb219",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+      "mode": "100644",
+      "bytes": 32967,
+      "sha256": "b7d54caf420cd17a99f9f872a531d43c9458fff6d1df0fa8d5225382416bbd8a",
+      "blob": "eac807fc776204f5b08bf17194c1d476e4bc5fd3",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/bounded-task-implementer/evals/evals.json",
+      "mode": "100644",
+      "bytes": 18415,
+      "sha256": "c39b31b8c4a492dcaf6bb3d5efb78593b74987ffa8512ac1e0ac0d51a911cc21",
+      "blob": "f2d1e5f72c783b4089c2bcf061ea520a1e7af285",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/bounded-task-implementer/evals/files/setup_fixture.py",
+      "mode": "100644",
+      "bytes": 65968,
+      "sha256": "eb1a52a7f9256fd84f7a1b1034c5cd450416a3712f9dc366380d8eb6c54753f4",
+      "blob": "77bca8bb765f473418d7b9f0ffaaaf2eb041de3d",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/EVALUATION-2026-07-21.md",
+      "mode": "100644",
+      "bytes": 39237,
+      "sha256": "c7fe5855c46d7b50f5a91a680da289681305cfbe04c6621d87d79a9aa7e64ee6",
+      "blob": "e96690c6d5c46780fb8d3dc469db4adfdc1d2273",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/GLOBAL-DECISIONS-task-implementation-flow.md",
+      "mode": "100644",
+      "bytes": 18654,
+      "sha256": "2bc7da7ef476328925bf4ba87bb212af065e094fa1edc6c8b463b4c4ad8d6b7d",
+      "blob": "81fddf5785d99ca346fe40ef63000ef541284473",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/IMPLEMENTATION-BRIEF-bounded-task-implementer.md",
+      "mode": "100644",
+      "bytes": 15419,
+      "sha256": "46709dd13a3828bd5ae752289c2014d79f606dc11222e614ede8bd4ac6762ee8",
+      "blob": "080de287ede14df007e9c4f0b109697b82591470",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/IMPLEMENTATION-BRIEF-task-acceptance-review.md",
+      "mode": "100644",
+      "bytes": 20109,
+      "sha256": "761aeafa1c110f97c024e5a0c0ce8c8b2ccd5b7937f11b8b015bd6ffbb736ca1",
+      "blob": "1f5c52310167891044f2d45faa838c2d61685b4b",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/IMPLEMENTATION-BRIEF-task-brief-designer.md",
+      "mode": "100644",
+      "bytes": 15531,
+      "sha256": "0575e6fbbcc11641d341aa2f3d714c8a6621053d02ae77d93a6f1def759d9988",
+      "blob": "241fea8255f8f73ebabf866d87c6ae8ac7d123f9",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/evaluations/IMPLEMENTATION-BRIEF-task-preflight.md",
+      "mode": "100644",
+      "bytes": 13391,
+      "sha256": "8c1ba82d856e01b44c7dde9938a6070f96d28e6a7150dfd83be5646881ade00a",
+      "blob": "290eb57454f3eb5a66440346fc49dfb1f1ed80e7",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/standalone-policy-qualification-results-T-005.md",
+      "mode": "100644",
+      "bytes": 10301,
+      "sha256": "edea218c6e7fa2b2f638ffcd9a36e5780cb53dcdd7f7b7cb0d3dd8df4f7b380d",
+      "blob": "fa87c15183001484e7a424caa1947293cbc5ba4d",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/task-decomposition-follow-up-2026-10-09.md",
+      "mode": "100644",
+      "bytes": 13047,
+      "sha256": "07a4ae5a7db55199535937505faac86aba519908180d64c6089363470604c178",
+      "blob": "54ce6d679ea6c3b11c6a32f85cc544ee2697e75f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/docs/verification-and-review-policy-plan-2026-10-08.md",
+      "mode": "100644",
+      "bytes": 19289,
+      "sha256": "5c2802017978f8509e78277c82be48c275c5b6663fbbef8079c9374b74c8e233",
+      "blob": "2396e4b780e24aa1e3eac4c5f90c334848d8283c",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-acceptance-review/SKILL.md",
+      "mode": "100644",
+      "bytes": 30281,
+      "sha256": "2c12b30de78b3617759e5bdad55b089d3044ac8ebd1945ff32d150a7714fd04b",
+      "blob": "d7bbda65a6c8a2a0ee3807f84fe6f1005e5962e1",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-acceptance-review/evals/evals.json",
+      "mode": "100644",
+      "bytes": 56732,
+      "sha256": "d563afe9cd7db881a8caae86d8473c859c7c93ca8c484c223669427f2707651c",
+      "blob": "d7f26884caeee13f405e7bdb100970d07ee1145c",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-acceptance-review/evals/files/setup_fixture.py",
+      "mode": "100644",
+      "bytes": 126294,
+      "sha256": "7299b8df33bac41317a7b7204c40e8b074ace1a7d09464b2ce4005d9726e4ef0",
+      "blob": "1d05cb0b6bf175dfd8a348613dea1b3ba01dd475",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-acceptance-review/references/acceptance-report-template.md",
+      "mode": "100644",
+      "bytes": 14135,
+      "sha256": "82d22bc6607b2730f5b171403e17dfeb247d27fb0fde6986fdf4b0868b6dd580",
+      "blob": "05c490af58cc4252bdf1adc9e2f9b48ded7a92ee",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-acceptance-review/references/tests-only-reproducer.md",
+      "mode": "100644",
+      "bytes": 2932,
+      "sha256": "e74b95d43c8d6123c7d95e64556db88ac21df5e21f5dac0b3949c8589b0d6276",
+      "blob": "8d5744712bc5fac7a533c4d6febca3223564ff2f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+      "mode": "100644",
+      "bytes": 28731,
+      "sha256": "40c3cd2c28a9499931a018fbb94a3ead1df503268f3660bf7e61fd097129ceba",
+      "blob": "86a486563c81543cdf2b569407ac4746e682f83f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/evals/evals.json",
+      "mode": "100644",
+      "bytes": 24913,
+      "sha256": "ea3e6657def9279a6083d1740f0da610be814da5d9ba9a71e21b7d01c2a41310",
+      "blob": "794f98bb0006c3af1d52ad0e6fa3f5c1da16ddea",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/evals/files/setup_fixture.py",
+      "mode": "100644",
+      "bytes": 17364,
+      "sha256": "09391b99e5320b8f45d4ffebdc3aedf38b42f54a4069a7fa327a9168ecf55b32",
+      "blob": "de814635aa97ef7202395544ff06bec1e14a5452",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md",
+      "mode": "100644",
+      "bytes": 5388,
+      "sha256": "6cc29bbfbecdebf835bce4605a8a4d66fd4f4ea675bdfde30ab30e02534a87a2",
+      "blob": "849783e6b3a33411ea588ebd45fc9b5465c1ca0b",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/references/task-brief-template.md",
+      "mode": "100644",
+      "bytes": 13362,
+      "sha256": "92d0c95f53fcf50b389f5171c6b30649f94a2b97a87750f94593dfa61af237a7",
+      "blob": "7a5f47e040cfd2f143d6f1fe1967dc3eb8d573f9",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/references/task-sizing.yaml",
+      "mode": "100644",
+      "bytes": 703,
+      "sha256": "832e48267d8579a5183f4c7543dae2eea06bc44b65cce7b3bce15c917b917b7c",
+      "blob": "d5e0774afa47f947dfe536f17d56676321e3420c",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-brief-designer/tests/test_package_resources.py",
+      "mode": "100644",
+      "bytes": 2469,
+      "sha256": "0b4fd5fe47ae9a36df43d4c027d02cc5106e24087c92e01688fccc64c7e0987c",
+      "blob": "22acb8bdecf4818bab136e7f0de7ee450bbb90e0",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-contract-registry-updater/SKILL.md",
+      "mode": "100644",
+      "bytes": 6998,
+      "sha256": "2cf8535599465000056d7ce8145febd81d52a1a3d0b300b4651a9ff4460f2cf9",
+      "blob": "75c58c6d0888bbaa578c4da98ce3c0cacf1469d2",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-maintainability-review/SKILL.md",
+      "mode": "100644",
+      "bytes": 21199,
+      "sha256": "94021a76438f20800ce49db9c54c08cfb6c734daffc981844a57157dbc3b40d0",
+      "blob": "23c1ae0d3bcde15a8e9c1337b2ec84fa86aded9d",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-maintainability-review/evals/evals.json",
+      "mode": "100644",
+      "bytes": 10623,
+      "sha256": "947b0bd8c111c82c107db7cc1d7314e0d914f04c54b0295a5b187240cf184604",
+      "blob": "cd074d87beacdbba6f8b77a360d2879002c73fd9",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-maintainability-review/evals/files/setup_fixture.py",
+      "mode": "100644",
+      "bytes": 25313,
+      "sha256": "ab6e30ce9c4ea2f4651025e1fe8ca3b09520165b6abe28ea66443306096567bd",
+      "blob": "8314bb0d6615c2110197d171aa472b07bb8a99e5",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-preflight/SKILL.md",
+      "mode": "100644",
+      "bytes": 17097,
+      "sha256": "505a75b34979ca8e4cceaa774bdf6ce455ad424a371483f36beacfba604cc6e3",
+      "blob": "91d71a2e9fc326d78b682446de564f6accda22d3",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-preflight/evals/evals.json",
+      "mode": "100644",
+      "bytes": 20167,
+      "sha256": "eb577c81e2bd5ac252c56deedfd147684bb6308b73c3b8a87869a35d6ea93097",
+      "blob": "083433328357742f573faf0a4a21f7fe7c62a9c0",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-preflight/evals/files/setup_fixture.py",
+      "mode": "100644",
+      "bytes": 25227,
+      "sha256": "5f75155ed1e03fc88620fe7fdde35689fcd14aef726c96c9ced0a431c9343756",
+      "blob": "c7cc2eeb2b8b0dabfdd0f1c25df3cf869a83fc24",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md",
+      "mode": "100644",
+      "bytes": 6449,
+      "sha256": "3a00012e9e1678203953f496beb209b8b7adc98eea78564d5833a1fc3f63f21b",
+      "blob": "7983b91d7e3956eb101c93987b44ee9fbdee0f2c",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-review-discovery/SKILL.md",
+      "mode": "100644",
+      "bytes": 16195,
+      "sha256": "200e789cffdf1f72fe5b3ecf2aab6688e587674f137542fe3f80805cd09ba910",
+      "blob": "007102f58db6ca9c5eccd710adf2aa58d454e3a9",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-review-discovery/evals/evals.json",
+      "mode": "100644",
+      "bytes": 33855,
+      "sha256": "27b05cab827331e3613a956878d4b9004f5eb8424eeb80bfb19c5679ea662a1a",
+      "blob": "63ce1c7eb2843cdf417d5beac72a6f277cbb4672",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-review-discovery/evals/files/setup_fixture.py",
+      "mode": "100644",
+      "bytes": 55525,
+      "sha256": "e80a210ac9602cf8f3c03960873aa23a00cc2289c36efd660c2616ab37f44c37",
+      "blob": "93831016d67ae49a0e006f151cf675d4a0a9fda8",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-review-discovery/references/discovery-report-template.md",
+      "mode": "100644",
+      "bytes": 10007,
+      "sha256": "bcd0db3b8e8d59cf145ae2e430b70cf67c218e3a2d44bca368d50864b6015605",
+      "blob": "5013239cc202d9c83f82b60030e236e66d4a0b8d",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-verification-designer/SKILL.md",
+      "mode": "100644",
+      "bytes": 12949,
+      "sha256": "b3d911b75c8b5c9481c7d77922ae2b3a88e31f2228f31c488f76bce24aebde0c",
+      "blob": "72c9fa4aa9422940be8b479ad33d11055666b997",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-verification-designer/evals/evals.json",
+      "mode": "100644",
+      "bytes": 11784,
+      "sha256": "2ac399c2e83892d83b004673a4fb6681c0f075cee62d79da4ef8deda8cd3eca1",
+      "blob": "a84aedd7bf791aac7f50bd6304079a101a320213",
+      "retire": false
+    },
+    {
+      "path": "skills/task-implementation-flow/task-verification-designer/evals/files/setup_fixture.py",
+      "mode": "100644",
+      "bytes": 12406,
+      "sha256": "3383feb64e32b934271b6099d6c0d7321384d49f8284c6957a17a7d7b64da3e3",
+      "blob": "5c9175039fa8b9dfd4cfe0619c03f738455ff5b5",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/SKILL.md",
+      "mode": "100644",
+      "bytes": 7160,
+      "sha256": "411565f1d5560aa11654a90ad2f2b9ff33f8d5b9165ab8d0406a3414d4cdc55b",
+      "blob": "6fca8407c73b189115682667b74ad90f2230f72a",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/assets/examples/fast-local-flow.json",
+      "mode": "100644",
+      "bytes": 850,
+      "sha256": "4c0f7e1caf612419b817521c3811b924280245528f4c2b2a6e118bab365a8984",
+      "blob": "a9a7240963c7430ddbfa21e75c5a4b2947076fca",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/assets/examples/minimal-run-policy.json",
+      "mode": "100644",
+      "bytes": 2038,
+      "sha256": "039bd87fbe6df6ac07390a42c63142b6be64d0db50c8b4bb12712321a95a9447",
+      "blob": "1a69eb0e43ec4a6e2fe53498d6bd89c94ae4e060",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/assets/examples/minimal-task-manifest.json",
+      "mode": "100644",
+      "bytes": 414,
+      "sha256": "e91bd5f8d80a8b7cf48cdd5954b42e46c43014063671dfcd2e286119c06e1c3e",
+      "blob": "331ddaa34c137f3758e23ed11d8ff462ebec3a50",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/assets/examples/reviewed-flow.json",
+      "mode": "100644",
+      "bytes": 1018,
+      "sha256": "f3d6b74ccedeeb62cdaf8aca3e8cb55cdb3dcd9075eba7c8b238ea416bb116b0",
+      "blob": "34b8d6c4103e18336dca0d7366541e36129c4887",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/assets/examples/strong-local-flow.json",
+      "mode": "100644",
+      "bytes": 1064,
+      "sha256": "0418c45e7a6f8d14cf89cf18db30f268aa601cab4310f4430eeabaab0ba2606c",
+      "blob": "549182384874305a4f4ee59c2b18bceec3c7e03f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/assets/flow-profile.schema.json",
+      "mode": "100644",
+      "bytes": 3288,
+      "sha256": "6c3c0f3e1c3ab05203a02b4c57adcaa81a6cf83ce0a73e3725b76ebc28f621d5",
+      "blob": "8a331640e0fe5b21679fc619e22bbd62245dbb0e",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/assets/handoff.schema.json",
+      "mode": "100644",
+      "bytes": 1865,
+      "sha256": "9e2bf070bd480b1ba75a18ccaceb2c851b23b3a04f6b4441e9004ed31d022829",
+      "blob": "f2342dc5d49e8076f876066dcc0e6d96cb41007b",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/assets/run-policy.schema.json",
+      "mode": "100644",
+      "bytes": 3334,
+      "sha256": "be68d79efc8147549dbebb19ec762069312e302113c61f1347b6e0204b4b6837",
+      "blob": "e8f6817f58e0a632099a6ab323277267b6df1ec3",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/assets/step-outcome.schema.json",
+      "mode": "100644",
+      "bytes": 1323,
+      "sha256": "698e4ff1a7067ae757f12fed19d78591b1205f9df30f63fdcdc26a4f36b9f17d",
+      "blob": "cc410f962a6d3af014ee2331a06986f941b8392c",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/assets/task-manifest.schema.json",
+      "mode": "100644",
+      "bytes": 1525,
+      "sha256": "72fe5dd9612aec182f376da4f4f1807c123436780202efc2394ef488f00fd78b",
+      "blob": "b5c0e937159527eec19bfc7702bd08006bfa30b5",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/assets/worker-result.schema.json",
+      "mode": "100644",
+      "bytes": 1956,
+      "sha256": "32effc1988202bb7b16280169c4914b7300d6632d22ac805827b517675fec9ac",
+      "blob": "b0c6f2120fe38c7232cdc8a9a20a4c42b06020e4",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/code-guided-orchestration.brief.md",
+      "mode": "100644",
+      "bytes": 26877,
+      "sha256": "3079de7c8e572f6db317d4e03bae36e0fe59299132baec93ad2605772f82c116",
+      "blob": "38afd44a1a71dcd610fb0db821872ddfbcb90c66",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/controller-contract.md",
+      "mode": "100644",
+      "bytes": 5749,
+      "sha256": "ec62a8356d02d61e20d9b9a4c63f12ad441706e127cc48a68b02abbbff175214",
+      "blob": "f4db7474ce08de4e1dba1b190b1577630a0780c8",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/direction-revised.md",
+      "mode": "100644",
+      "bytes": 11769,
+      "sha256": "33952de9ee979886ac55694adc7db722944a31eaf8aa0a1e8994d22dea33fdb0",
+      "blob": "55246f47a331b48ef7e88964fd146f4c2da551c2",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/direction.md",
+      "mode": "100644",
+      "bytes": 15463,
+      "sha256": "d361fb51bc41813b2893965172cc97892de3221b58b81cb05ac360eeab3be332",
+      "blob": "89502aa473370089f633a064fc5a8fffbe5a7612",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/execution-brief-pilot-measurement.md",
+      "mode": "100644",
+      "bytes": 2520,
+      "sha256": "fbe9c4cf9f03ee6a4c9fcc498c171a4c237a32451f9f58ee632a6c9dfaa8bb12",
+      "blob": "99ebd02e82966eccd792de8e41b2b1dd545a8451",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/execution-brief-template.md",
+      "mode": "100644",
+      "bytes": 2178,
+      "sha256": "9931aed81796dbbc409d8786815748e2a26c22598c47c8d1cccc0a0cdb1275e5",
+      "blob": "c1967b84a58400af5bf1277fa0f093db2341e89a",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-1-handoff.md",
+      "mode": "100644",
+      "bytes": 4327,
+      "sha256": "7a4b5ebc45701db94a19ad68d7e52bbcb089491bae4424d368c0da4986e06d63",
+      "blob": "e6192fc711ffcefa80062c9546ae5fb0b95f0998",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-1-plan.md",
+      "mode": "100644",
+      "bytes": 11641,
+      "sha256": "3c9eb38fe8858d2e09b4d3b5eec68facf70bb8a08def4e3b51c4f5b90e22a34c",
+      "blob": "d9c786c898d32b6f5fdf1ade1618b344663e9b3b",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-2-handoff.md",
+      "mode": "100644",
+      "bytes": 6666,
+      "sha256": "b7bbfc2616ece62c2ab5303c23f9b9154ac2381c09689f153bf2a873da686ca8",
+      "blob": "fc53068514d0b0700da91fa53285a32933dc8abf",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-2-plan.md",
+      "mode": "100644",
+      "bytes": 24341,
+      "sha256": "69e889c7e562298e4eb4a1815e7fb66593ddb094d30399262d42b82523deadaa",
+      "blob": "6b7c5588730a75fcee44a401c97b766fba88587d",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-2-unusual-path-correction-result.md",
+      "mode": "100644",
+      "bytes": 2156,
+      "sha256": "c0254d9b9d3340c8f5049dab13604426d46937e8d70dfa9e038a1481741a9af9",
+      "blob": "7c615a2da7d2e4a506587825ea75faa4fbeb0207",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-mid-review.md",
+      "mode": "100644",
+      "bytes": 8596,
+      "sha256": "e6d2fcaaaa5a5f0bdbacd5e33412ce20ea07d03dee8b2ff67fbe57531f4e8f7b",
+      "blob": "2e38b5138d94496fcee62334510ca227e21538ab",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-plan.md",
+      "mode": "100644",
+      "bytes": 19450,
+      "sha256": "8f30291bda35be1568dcc4f38efbfed70e3190b1bae1ddb7b5a3067166fd1d14",
+      "blob": "6020eb31ebd136cdd7ef2a63befc7f43d528cf5f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-01-result.md",
+      "mode": "100644",
+      "bytes": 2125,
+      "sha256": "e91a984ac591e38e649e246d4ed40552f61499186f3a9b71680712fc26578354",
+      "blob": "316c820b4031e1710574b1eb9e8530ab22082d3a",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-01-verification-sandbox-proof.md",
+      "mode": "100644",
+      "bytes": 5146,
+      "sha256": "1f70f479bfc41d6582b62418306b1e838510cfde31a0d313101ce00813500d0a",
+      "blob": "f37ed981a4d23a03c03ff28947fba186d5d810df",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-02-extract-controller-state.md",
+      "mode": "100644",
+      "bytes": 4785,
+      "sha256": "0533562add297670bb84df7004bcf0974f0bafbfc6b3d39a9ade3164bb21d438",
+      "blob": "48bb2af19212689733a04ed088718695b898889a",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-02-result.md",
+      "mode": "100644",
+      "bytes": 2845,
+      "sha256": "6c075f1726ff200a6587f4e43ac6e618053dbad77b07bdf874bb194dc8a19cff",
+      "blob": "83c6b1168dd69bf2204c417ea166936c7a6517e6",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03-extract-controller-git.md",
+      "mode": "100644",
+      "bytes": 4745,
+      "sha256": "3d4fef02cda3ec1bb9ec205a32e7d00e2ee56ca6f3b8f7daf75c96594d63c5e9",
+      "blob": "bf490e3a558aab4072172e2696041573d40c392f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03-result.md",
+      "mode": "100644",
+      "bytes": 4100,
+      "sha256": "6229c8f6868c2227c91e11d1e1bdaf372b64534771e4e6deae30d6a662e7e85c",
+      "blob": "6ddbca03bcd25cedbe3fe9460449d02b854de0e9",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03A-correct-git-baseline-contract-handoff.md",
+      "mode": "100644",
+      "bytes": 9815,
+      "sha256": "399097fe38b58c4566b4268c295c0170da11de41d98091a8109d2dfa0b7527d5",
+      "blob": "2b4d5a8ce1beb67f0aaa94c285531d0e33d3603d",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03A-result.md",
+      "mode": "100644",
+      "bytes": 5736,
+      "sha256": "213091a62662d75e4144c32c54c3f457c702b8ea5d7ff3626600ec4102e484b1",
+      "blob": "e81f4e5a4c6195dd34151754802b180a83822eb9",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03B-repair-controller-git-boundary-handoff.md",
+      "mode": "100644",
+      "bytes": 10020,
+      "sha256": "a1af0fb53bd0030eec626d7483467aa38934bae2d560f63366d6698244c5ec77",
+      "blob": "f5f48859acd9c7df5a44a84f5c95d904f1afcb2a",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-03B-result.md",
+      "mode": "100644",
+      "bytes": 6566,
+      "sha256": "6a43b13a430ca52fec110994279de8763784ce61870369e947214e82640466ba",
+      "blob": "19d23d041c9edc7102793d2be29f87340fd0171e",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04-acceptance-report.md",
+      "mode": "100644",
+      "bytes": 19065,
+      "sha256": "bd2300f35878f103570bf1cbec34e1a358e10acb4c87f20189ff49dbf1f3c955",
+      "blob": "b0f61850b0dbe9016adf000a90437177f9388e8a",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04-result.md",
+      "mode": "100644",
+      "bytes": 10374,
+      "sha256": "a6a99c4ee93aace57ff18768060fa88affa9130cc62fb1111f14e9b38c47cd0d",
+      "blob": "7a20be38c9839d8fdbff5cd1300ccf685375b814",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04-stage-3-state-model.md",
+      "mode": "100644",
+      "bytes": 33767,
+      "sha256": "c3be72f8e5198c7618b5665cf451f7e8f839a63fc24379eff3f42c857d52f7d1",
+      "blob": "dc518a8d0155687088a9aa711164eb1233769af1",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04A-post-acceptance-git-identity.md",
+      "mode": "100644",
+      "bytes": 21481,
+      "sha256": "016e417945a3a191d69cda038cb39028b0bce52072ead7c6e51e92a61087cb1a",
+      "blob": "f95e64ee874fcdec9c9dd8f2305098a4a27a378b",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04A-repair-state-coherence-handoff.md",
+      "mode": "100644",
+      "bytes": 17838,
+      "sha256": "6d1671dad694de63b5c980e0eed19c0f81827cc0f29a7dc88f3d73292052d4d7",
+      "blob": "efb24e62b6dcdf4959e9ef90fc1c5c0bf68d6020",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-04A-result.md",
+      "mode": "100644",
+      "bytes": 5143,
+      "sha256": "7ca66f84e0467b803682ebc0ef3b8128d36c02d81c935fa154a3cfc957403386",
+      "blob": "51dbb8519f67143c950a962423782166cd2686fb",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-05-record-and-identity-contracts.md",
+      "mode": "100644",
+      "bytes": 6755,
+      "sha256": "16a9428b45af132119bec3de0b5e4ad47e638820d8021217da2434c837cfa69f",
+      "blob": "7d1f70bd02f1a9588662de0ed277d5564bf45538",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-05-result.md",
+      "mode": "100644",
+      "bytes": 4231,
+      "sha256": "85aabfdc366616ad79128279d798ba9f22bad8b4742bc97dab5f9f00537c7877",
+      "blob": "aab1e35e803e6079cffaa12c71243a0111df9d46",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-06-result.md",
+      "mode": "100644",
+      "bytes": 5220,
+      "sha256": "1f3d94c6983f89b6c25e6d5e450d3840ef41b01355b471e01148eee2e0f5c637",
+      "blob": "54d82bc0c2e0db972b8c6d2e4f33c5d0d779810c",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-06-verification-command-plan.md",
+      "mode": "100644",
+      "bytes": 6784,
+      "sha256": "0e343b31e9e66d60aa9b3ac275fd58c7f8d93f248a8d32d60d80a33fa58f680a",
+      "blob": "cc1b59c199dd2c57b34b05aecac021cffdca85ad",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-07-result.md",
+      "mode": "100644",
+      "bytes": 7153,
+      "sha256": "5bb97ebc51b0a479ba53ec1d1022127f8d048cab58c41f684d987736e6116874",
+      "blob": "88c16547aa4d60d0145f29b95bc43172ab2ea17c",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-07-verification-executor.md",
+      "mode": "100644",
+      "bytes": 6970,
+      "sha256": "5df9a5ed6f9c35175979a83794396810a86a8951f60619e7dfc33559d7b0b353",
+      "blob": "64fce3987bc7ff750d17b74b9d504991be373ca6",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-08-inspect-and-decide.md",
+      "mode": "100644",
+      "bytes": 9689,
+      "sha256": "efa85666fd2bd54b0ff3ace7abaf242e84dbf6635f9f5ecae6363656f0c49074",
+      "blob": "21b41426ea04e0ffddc59752d88ca8294649807f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-08-result.md",
+      "mode": "100644",
+      "bytes": 10000,
+      "sha256": "08ab2bdd31483e5a1c59793edc16b06b8e1f1c2bc250881d295e911dbdb22f41",
+      "blob": "c0c438fb5846b4387feca9d80607b4194cbcc58d",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-09-recover-running-and-stop.md",
+      "mode": "100644",
+      "bytes": 3117,
+      "sha256": "989c37fa7f295f1e9f4cd2121eb066c5b22634ccd964ae6d269702afbf29a880",
+      "blob": "821ce73d4780601fb6f50eddbae84e767e5d85aa",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-10-same-thread-resume.md",
+      "mode": "100644",
+      "bytes": 2980,
+      "sha256": "f4bb5516e8271b8f8575cd6954472ed113a0e49ffc22afa20d3eaff857f3ed8f",
+      "blob": "84c3992962359abc962f8f8fe1f24200ba4c320e",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-11-acceptance-operation.md",
+      "mode": "100644",
+      "bytes": 3160,
+      "sha256": "b694e3e4a3556b9b5549f3365ae8dcc5503a8c3a12ef28a949637d972bbfe84d",
+      "blob": "40760d4cd2aee42b5dcdb53f682760f540322e35",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-12-release-dependencies.md",
+      "mode": "100644",
+      "bytes": 3150,
+      "sha256": "0378b536897d0eb0920b26f0636644e46c891a5d5a7dd4d72e2867ca3e12ffd2",
+      "blob": "767afe9bca0dc14f77682b7e21e3bd1ce7812169",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-13-exact-path-commit.md",
+      "mode": "100644",
+      "bytes": 3184,
+      "sha256": "9ce399fb0261d37319775b2f75417f5de2f5359dd4b695bef1cfe65fff63a109",
+      "blob": "d3a864ad888c1ea0122cc27265c08c62c761a33b",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-13B-exact-commit-publication.md",
+      "mode": "100644",
+      "bytes": 2629,
+      "sha256": "9401d8958f10e8bf0bfd29aa91f7554c1842affab957f1bda06ba776b00e432a",
+      "blob": "9b9ef9c1474e644f32e8aa941b66d01c7b64c550",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-14-commit-finalization.md",
+      "mode": "100644",
+      "bytes": 2903,
+      "sha256": "8fb3c288eb374c6602f3f2cd70f39aa5cd375f945d13ad4f0e90a11ef2b804dd",
+      "blob": "a28f5d31e498dd44f395d875dac84f368c1b4bfe",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-15-finalization-recovery.md",
+      "mode": "100644",
+      "bytes": 2944,
+      "sha256": "45c1db3806b6581c7ef8981a9e9ed68f868afb59ede58a2e2fcb1100f471bd42",
+      "blob": "97d8d149c7a0f598d1760768f14b9d0585666405",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-16-stage-3-closure.md",
+      "mode": "100644",
+      "bytes": 2700,
+      "sha256": "58daf1d697c7664f9906887a2a3d647ef2539d91a7c4e1c2c4d195dd946bfd1e",
+      "blob": "3e75b0872af5c09c5d27e59a0a25ae530203a221",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-T1-human-tracker-contract.md",
+      "mode": "100644",
+      "bytes": 2695,
+      "sha256": "1133857661ce03d622720863ee004cb4f5d261cff8ab08d4b93dc62e3dfc9ab4",
+      "blob": "93e72a2a567746109730f634a4cae9fe06f7a5f1",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-T2-human-tracker-adapter.md",
+      "mode": "100644",
+      "bytes": 2401,
+      "sha256": "9b5cc962e1f682851a710e049c04b4edabb4b805d7c22cf1b0cb2774ae33bf94",
+      "blob": "0acc61c443dcf620a106d56afc3d57f88d9766a2",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/S3-T3-human-tracker-finalization.md",
+      "mode": "100644",
+      "bytes": 2628,
+      "sha256": "cb029ab21cff30504b676cf04b56da07f6e4de70af713a2c015409b2faa19a17",
+      "blob": "8b2099a8f18976d8eda46434ecd33d30778b26db",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/stage-3-first-three-task-review.md",
+      "mode": "100644",
+      "bytes": 5590,
+      "sha256": "7e553f5d815817de26e694251726fab11b2b3d508830873e333c1fb0fe4fb668",
+      "blob": "b2c1c2e680f8e86a8cbd44a868363837d29444f6",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/stage-3-tasks/stage-3-tasks-04-08-review.md",
+      "mode": "100644",
+      "bytes": 8539,
+      "sha256": "bc8616742ae033b58fbe5cc8dbec22c8273a165fa7db611a10584f5a7e0e60cf",
+      "blob": "a085eb241a163e290266f2c59a21cbef30808207",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/history/v1-agent-output.analysis.md",
+      "mode": "100644",
+      "bytes": 16275,
+      "sha256": "359f89db1eee8193f66ff12d01c65cb3d94947747717fe2c895ba758552b00bb",
+      "blob": "8f78dfeca330cb7156573430da454e4278f007bc",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/README.md",
+      "mode": "100644",
+      "bytes": 8228,
+      "sha256": "7452f3d98528e1ec17f089a6655fe6f65ea53c5c4a194af4479cb0319ee8a80b",
+      "blob": "1b312805257bd66fcc0ccbaf35223ee88cbb6400",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/audit_spike.py",
+      "mode": "100644",
+      "bytes": 5061,
+      "sha256": "9dd9244ab084d6c197a50f966c7a0bcd8ac098773f07e947c28037ba4da312ec",
+      "blob": "a1b0436257c3579dd386bc9ec9a1ad0181b4b3f0",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/acceptance.events.jsonl",
+      "mode": "100644",
+      "bytes": 93010,
+      "sha256": "f34c4c404eea22e3f6142af6ed08e98aedb8783eb613c92c59d70ad4814d0d4e",
+      "blob": "bcc4f029c01553db0f5d43c5fc34a1d1e2bf32ba",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/acceptance.last.txt",
+      "mode": "100644",
+      "bytes": 270,
+      "sha256": "2b60adb9b4f66dec100dacd64601de2c364afa0c4480f175ad91d9d3f4b2aa4a",
+      "blob": "824cb6d039a26c6bcf72e3f09a586b54d91de73f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/acceptance.prompt.txt",
+      "mode": "100644",
+      "bytes": 1010,
+      "sha256": "245f3d04eb5644f486a490edbd6293af87234e3785fb5ea2397e545600b5a0b1",
+      "blob": "4889e2fca798f151bfbf4067c857571e8d39c90c",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/acceptance.stderr.txt",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/audit.json",
+      "mode": "100644",
+      "bytes": 19859,
+      "sha256": "cae9386ab9b9894d6175ba1a71c77b1ec180eb9cf619fa2dd077a1f440aed3c7",
+      "blob": "2df260c7d7442def58acd1979909a78b69b9951c",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/brief.events.jsonl",
+      "mode": "100644",
+      "bytes": 70811,
+      "sha256": "c9b116fddf5ad6ded9ed28966f439e824b27580c8f970b562f28fefb87d5bd11",
+      "blob": "f0bc5b94dbe2c3b1eba4a9d99e3d7d55316bb4a4",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/brief.last.txt",
+      "mode": "100644",
+      "bytes": 335,
+      "sha256": "d517fcda001a3d057883889f05310e2d3e80f4d1fee93686757057c824d6e744",
+      "blob": "b69602a23c30750673c9c7968af6a9d0f890481f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/brief.prompt.txt",
+      "mode": "100644",
+      "bytes": 737,
+      "sha256": "aec096f02aac1f0631efcb8d92d49c10c1e343c4bba0d7fe982a09f48da6cecc",
+      "blob": "f5be83a197dbad82b418e74fe8c061567e1d35c2",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/brief.stderr.txt",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/controller-architecture.txt",
+      "mode": "100644",
+      "bytes": 25,
+      "sha256": "f3041ab31340bb721b117d18070acc616ad307e62e833fcd1c84c398d69e9648",
+      "blob": "a82640bf3038164780f572a8f94b14bf1eee5eda",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/controller-behavior.txt",
+      "mode": "100644",
+      "bytes": 431,
+      "sha256": "c5d399a97b5a6c22c28c31ba03c030974da56bd3dbf6e1fd6691af7c446e5a59",
+      "blob": "0bd1fac0701092f4c25a1dedfdf6ba672a72caf5",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/final-integrity.txt",
+      "mode": "100644",
+      "bytes": 152,
+      "sha256": "995c9b85470cf2320ea0fda7da325b8a3aa606c8f0d33b632c7e6103c8658d4e",
+      "blob": "17461895afa5230bdce7bcb189bcda8b0c543c33",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture-baseline.patch",
+      "mode": "100644",
+      "bytes": 2348,
+      "sha256": "07c11f28efb3377f4f367020724f231a966b33fa0399cab1dca77c804252f74a",
+      "blob": "2b06695c5b942988c3e8e097bab3659a22fd506a",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/.gitignore",
+      "mode": "100644",
+      "bytes": 34,
+      "sha256": "2bd5696b90495524e4c39e2179e5752973ad72d00117817a0bd09184202c1eab",
+      "blob": "ea047af3bd3424a548e0cd27164717c992012174",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/AGENTS.md",
+      "mode": "100644",
+      "bytes": 2038,
+      "sha256": "57fd2c7dd428e2ba3672d1dee9a9726f933cd51b1a5f66da290f6eb90ff654b9",
+      "blob": "e1668fcdc5c3bd3a0852797d34a90aed5107e969",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/README.md",
+      "mode": "100644",
+      "bytes": 292,
+      "sha256": "2f6dd9fcc6b1e1e6f92aa6f1e0bc3ecc14c70c8d3d308980f6afa5a03a51ba5f",
+      "blob": "67e1b07d8bfe34ce0d2e46b0aeaf620af7ffe19f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/authority.md",
+      "mode": "100644",
+      "bytes": 1260,
+      "sha256": "4fc7349de4fdcd14ca1b2795307f0bbea1e7620884e5ef988e331417a62c5df3",
+      "blob": "3ff34bcaab281507eead33abc560b72085975899",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/catalog.py",
+      "mode": "100644",
+      "bytes": 185,
+      "sha256": "5198cf2f936aa18774bfa800f2700d35e2ed35fcebe951b4802efb3a4244ba18",
+      "blob": "4f3a0a757dc62cc1fb1699910dbad52c6b15ac25",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/dependencies.json",
+      "mode": "100644",
+      "bytes": 15,
+      "sha256": "e51cca7a311dfb4b19dfbb483d04f09e19529d180ee7aec53427185e1c4818d8",
+      "blob": "e4935ef7188edf59ecac0d1c964a83b9e67ec282",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/contracts/catalog.json",
+      "mode": "100644",
+      "bytes": 511,
+      "sha256": "2e1c297f6d7a351bc53a4fcb8cbafdd1da023b3c88343cb48fd2a5168f6a97f2",
+      "blob": "c9defeb3f43980d471a7fbbd608061b2fa026ffd",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/contracts/index.json",
+      "mode": "100644",
+      "bytes": 210,
+      "sha256": "8ec4f6f31a3dfbef65e09fa1b44df1cdd7be883a14db82a0c1017445df8f106c",
+      "blob": "7e130c44035538041c2d41ad7223c82a37904022",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/brief.md",
+      "mode": "100644",
+      "bytes": 11558,
+      "sha256": "83cd92efeb30639a5475430aba4477150a84b133b98525752b6df488a3ffeee9",
+      "blob": "ca01f2592fdf3748a9210e361958ea65105fe085",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/preflight.md",
+      "mode": "100644",
+      "bytes": 10581,
+      "sha256": "a5d4a284458da72f751e033b4590d96ecbe834aac85ff13f2b428f9567c1fd8e",
+      "blob": "34291a6bd935db84b261197983ba4ff46545cab2",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/reviews/.gitkeep",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/reviews/acceptance-01.md",
+      "mode": "100644",
+      "bytes": 10448,
+      "sha256": "b016e1f6aa90d0853b52935ffa33347071ef9a2cf0fc673657cd57d1bcbc58fa",
+      "blob": "6e2d9e1ded0525282543b342872a52cdcc9fd4e3",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/reviews/maintainability-01.md",
+      "mode": "100644",
+      "bytes": 840,
+      "sha256": "c05000a090a4828ee788ba1fb57d1955858665505110e0438e41cf42b3ab60d4",
+      "blob": "14bff56db9d64d211f563c985277ca52a619b63c",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/docs/tasks/SYN-01/verification.md",
+      "mode": "100644",
+      "bytes": 3460,
+      "sha256": "e8f4727604fded0551956f4cae661cd9d1d36ae3b9ff595aadbda2672d0caa1a",
+      "blob": "a59e3da3cd7250181b64cfa56d6b08f97cd9644b",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/run-policy.json",
+      "mode": "100644",
+      "bytes": 1259,
+      "sha256": "82ad4578dce7ca9468a90276a1e29100417fb559c5d6eb38333c937d049baa20",
+      "blob": "8728a72271614e1881f256f13343209572c71888",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/tests/__init__.py",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/tests/test_catalog.py",
+      "mode": "100644",
+      "bytes": 720,
+      "sha256": "d1a39536a3741982377a7f3a374c9fa9c11baebfed868b920e0efc1f1f6bb0d1",
+      "blob": "4c647278c7b6af53577a9b9678ee4f75ffa81f2b",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/tools/check_architecture.py",
+      "mode": "100644",
+      "bytes": 244,
+      "sha256": "cd468098acf799dbca5be2724a3924e25725ec77f5d2441ba1f05ff5a198250d",
+      "blob": "c67e13d6d9e51da8450a6c7e4f5367e1c1221c18",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/tools/check_contracts.py",
+      "mode": "100755",
+      "bytes": 11039,
+      "sha256": "00f38e439f5347804a1c78646ecf9bf8b9fba805cfbb88075226b447d987b928",
+      "blob": "e41fe59d79a45779ec4cdd9fc49c5f33b2dd196c",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/fixture/worker-result.schema.json",
+      "mode": "100644",
+      "bytes": 1956,
+      "sha256": "32effc1988202bb7b16280169c4914b7300d6632d22ac805827b517675fec9ac",
+      "blob": "b0c6f2120fe38c7232cdc8a9a20a4c42b06020e4",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.events.jsonl",
+      "mode": "100644",
+      "bytes": 90264,
+      "sha256": "c90d2db2cc32f28e2c05fffa30b2a7c70295a732c9ede03d45f5d07b8fea5508",
+      "blob": "7d93397abdbcec26f1a3d83062db605f39bf2a0f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.last.txt",
+      "mode": "100644",
+      "bytes": 1891,
+      "sha256": "700d63c66ba0dfa8a0903af4e69df5e77b167337d427c31577c3a8ff583831e4",
+      "blob": "c993a88dec83f481623824e1cd58216036dccbf7",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.prompt.txt",
+      "mode": "100644",
+      "bytes": 845,
+      "sha256": "3f559514022c86029009c68bb57663bd1cd1d2336df4ae569b298a9d172246de",
+      "blob": "cf5b22fda099732cb97cb1833b4c5b3d30e2e659",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.stderr.txt",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/installed-bundle.tar.gz",
+      "mode": "100644",
+      "bytes": 208250,
+      "sha256": "1533645b594a2f169494bb5d4a2d7befa94c8b49a72a5ebf17c2abbd0251b628",
+      "blob": "178120f41cf99ab77b50d34fa7327dcf6b6d8517",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/installed-manifest.json",
+      "mode": "100644",
+      "bytes": 11045,
+      "sha256": "12204d81b787d8ffd123775fedf0617e8b18036b1a7403825da2bfefff00f5d3",
+      "blob": "b50bb6bcbdeaf3316147d85635115c0ff34f7755",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/ledger.json",
+      "mode": "100644",
+      "bytes": 192890,
+      "sha256": "cb8efac36a85dce00f2cb865c1da247a41f57762c71e3cafe51d18a373bf54a2",
+      "blob": "e696965ac3017bbe897fba04d2dfbd5901130b71",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/maintainability.events.jsonl",
+      "mode": "100644",
+      "bytes": 48065,
+      "sha256": "c294cf5a69fe26fcb5e2bb6d919551ae671bbf59d09785130eb1bccfadeaa985",
+      "blob": "260e490b1a188364a7acd72747b081ecf3a84997",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/maintainability.last.txt",
+      "mode": "100644",
+      "bytes": 263,
+      "sha256": "ab53c84ad2429d2142c5534ac33c07a45fa14d4917f980cdcb13a9c3583e54bd",
+      "blob": "27390d96ac7b0bdfb071051481e6c2438132c938",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/maintainability.prompt.txt",
+      "mode": "100644",
+      "bytes": 871,
+      "sha256": "04263872b295fc5c694202669f86f23587f2e5792e0924b418474e7d6c8355ff",
+      "blob": "f3bf39b58996c6cac537b8982204a0eb523df282",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/maintainability.stderr.txt",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/preflight.events.jsonl",
+      "mode": "100644",
+      "bytes": 68949,
+      "sha256": "0f348e7dfadfe959da4f3d6559fea0e57534208c4c139f3ed75bad78dcf9ada6",
+      "blob": "040299abe9cc511eca42c5b6035d3ed37871ca47",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/preflight.last.txt",
+      "mode": "100644",
+      "bytes": 374,
+      "sha256": "c28e17fa687776c2c96857bcd4a2d48deaf360a6ec080d3d9518de8c8152ef16",
+      "blob": "e5d8a998ea344097a37ec564ad5c20f1b68f0325",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/preflight.prompt.txt",
+      "mode": "100644",
+      "bytes": 741,
+      "sha256": "af17380efae30e5d6dd378faa80f85d59b775511beac01049c89e4b8d4b6f05e",
+      "blob": "cab180a47564dfee4156d463bae4b5724e695fa1",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/preflight.stderr.txt",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/registry.events.jsonl",
+      "mode": "100644",
+      "bytes": 77399,
+      "sha256": "dfcf7e51c015c654c789bdfaeda84f951524b9f9ec321dcec7dec74e3a10a0fe",
+      "blob": "60c97d1ba23ec27ecc74c4b588249de63c39b1e7",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/registry.last.txt",
+      "mode": "100644",
+      "bytes": 589,
+      "sha256": "c7eb7c4c7da1918503f7eb5ff9b369ff75484973a4238fd055ba7abc94119b6e",
+      "blob": "5339a83a9b3a943943fcdf70901759aef1782fa0",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/registry.prompt.txt",
+      "mode": "100644",
+      "bytes": 905,
+      "sha256": "cf48bdf4c9f84fe03386ddf85a0f3cbbc7e60694dbe5c177f76795416b571b1f",
+      "blob": "fcf2688aa48084796ed166ae8f5e03718a755e3a",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/registry.stderr.txt",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/setup-observations.txt",
+      "mode": "100644",
+      "bytes": 654,
+      "sha256": "ad1af32ccf5de83d4d5fb11f77773cc0e16b28147b26a3640843e69ec8ec0db6",
+      "blob": "f6b54898feee28486213a9437fb52ed825644ef2",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/telemetry-audit.json",
+      "mode": "100644",
+      "bytes": 3666,
+      "sha256": "110dd3fbe6681d8c9c0defb46ce61ee88255c4c1ea004ff3b50d350c6fe4358b",
+      "blob": "1b04aca84223315a9f4824034b389a5dcaeed222",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/telemetry-verification.txt",
+      "mode": "100644",
+      "bytes": 148,
+      "sha256": "e42271d23e4e008b17ef03873c4bd74713464b50fd18f549fbf8dbf286c4ab34",
+      "blob": "3593d418aa32b22ff1bae064a79d1838b768c2bb",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-1/brief.events.jsonl",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-1/brief.prompt.txt",
+      "mode": "100644",
+      "bytes": 729,
+      "sha256": "be80edba6c2b1455bd3ef09fc5999e82fc850a69b93cab4e91ffa584f2400115",
+      "blob": "d7c1108aa36e3d05c98d4228c9b419bc8157e1db",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-1/brief.stderr.txt",
+      "mode": "100644",
+      "bytes": 199,
+      "sha256": "2d8b902fb51c4fb0108c58a40b037f3ed52641f00cdae67901d7cbda9b4b8473",
+      "blob": "f3bc6933f0a368082712d8956331a63915934503",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-1/ledger.json",
+      "mode": "100644",
+      "bytes": 26688,
+      "sha256": "616823c0516103c8bcea0effd6cd6ddf622f45020fffd9659dfee511592f234d",
+      "blob": "06f7eda19e885e808ae6f27bf4f50b8276e6237e",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-2/brief.events.jsonl",
+      "mode": "100644",
+      "bytes": 719,
+      "sha256": "28cf80f7e91b5c21a026c82ac61b44095fff3b4cde790d6aa03f541b8473bb00",
+      "blob": "e99faee28dd7a3064aff8c6a03f3dd1216cd0412",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-2/brief.prompt.txt",
+      "mode": "100644",
+      "bytes": 729,
+      "sha256": "be80edba6c2b1455bd3ef09fc5999e82fc850a69b93cab4e91ffa584f2400115",
+      "blob": "d7c1108aa36e3d05c98d4228c9b419bc8157e1db",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-2/brief.stderr.txt",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/transport-attempt-2/ledger.json",
+      "mode": "100644",
+      "bytes": 26688,
+      "sha256": "616823c0516103c8bcea0effd6cd6ddf622f45020fffd9659dfee511592f234d",
+      "blob": "06f7eda19e885e808ae6f27bf4f50b8276e6237e",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/verification.events.jsonl",
+      "mode": "100644",
+      "bytes": 42011,
+      "sha256": "8677ad2fbe8ddfc37da7b3189e19ece06e5945c0aa2108c3edb165505d16bc5d",
+      "blob": "f4a9afaa9359b4b79f0f3d83f6cfca4caaa9499e",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/verification.last.txt",
+      "mode": "100644",
+      "bytes": 352,
+      "sha256": "9226081b3beceb43b97a482b86165335c6e85c449b532394301409d4d046982e",
+      "blob": "4a9b78509f29c50dd8755415fa9f2acc3fb9a2fc",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/verification.prompt.txt",
+      "mode": "100644",
+      "bytes": 577,
+      "sha256": "4a0c75a17a3598a2a08da1e0dc8ba7e52200b84209044e076d62e95d6e7d61c9",
+      "blob": "1e116fb1649022feb18e1edbbaa696831e3acc5b",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/verification.stderr.txt",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/integration-guidance.md",
+      "mode": "100644",
+      "bytes": 9594,
+      "sha256": "b7fa157646db52d242078ed31a813698f69c53e17fce956bf71479c2d1d5cfbf",
+      "blob": "ba41b4f51c73a42a078e5b754bc8529889c88ed5",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/issues.md",
+      "mode": "100644",
+      "bytes": 12975,
+      "sha256": "c42b5dc8841b79f6a753b73a0dcb3df6c9c31c96bcd44a03baea5b8981985f20",
+      "blob": "24a67d8954cca9d2a3d8756b2b6593014642db6d",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/integration-spike-2026-10-08/run_spike.py",
+      "mode": "100644",
+      "bytes": 15762,
+      "sha256": "6b4387d122a4469d979ca12a3fcb79800fa9afff8d62d4fe4e917ab628a3b701",
+      "blob": "8cd58920a6339125da584d9838370c158097e5b9",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/stage-3-mvp-rebaseline.md",
+      "mode": "100644",
+      "bytes": 26595,
+      "sha256": "f8ff9753e62f3da6fbfe41444b317bb8304d89f406e5116b62953104765d715e",
+      "blob": "730aa389c498eca160866eb7995f65ed756d173d",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/stage-3-mvp-task-actualization-map.md",
+      "mode": "100644",
+      "bytes": 10023,
+      "sha256": "763db20de3952771e917f73e4fc7842db3b6fe5573031f8e539c4da874c2a87e",
+      "blob": "27b8a1f607c91637adeba590c73bdbcc1aa8ffd3",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/stage-3-mvp-tasks/MVP-2-flow-contract.md",
+      "mode": "100644",
+      "bytes": 20746,
+      "sha256": "1e7778efbf319c68cb8a1120e682d49865ce67ada8088263d79d94842d11337b",
+      "blob": "450fbc7ce8911466421b379052f20850cc1281d1",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/stage-3-mvp-tasks/MVP-2-result.md",
+      "mode": "100644",
+      "bytes": 12922,
+      "sha256": "6c170ababae4cb1db1e4906cca5ef1e95854e0c7fa145a47cc1c530bf3d1ac41",
+      "blob": "6e3c5f7f43d6c43e5b22563ffc964eda55a30277",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/stage-3-retrieval-surface-follow-up.md",
+      "mode": "100644",
+      "bytes": 2882,
+      "sha256": "d59f78cb02b8aca7fba272bd16d6d825e4cb498e5c0b49ed26ad134c9230cede",
+      "blob": "bad634e0a661db43e1ff1e574f55b8ba5999b563",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/transport-decision.md",
+      "mode": "100644",
+      "bytes": 2543,
+      "sha256": "d68f081d91c7b29f59d6c28d94e87135de8b0ff87a3daed3ee41655f69eb964e",
+      "blob": "4a7bad39cb11fead105efa5e3819fc7771745f77",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/docs/verification-sandbox-decision.md",
+      "mode": "100644",
+      "bytes": 8004,
+      "sha256": "a2e8b556ad9313979e302a94e12772f74c4768ffb01ed79f074c4866ebbc8e86",
+      "blob": "74be7842782b61b5bb8d6695536118c2c2242f6b",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/evals/evals.json",
+      "mode": "100644",
+      "bytes": 6164,
+      "sha256": "d0f4a2ae20e795e6a23995966b5b5fdb5bee2bd6b4b3684d5bf0449856f11def",
+      "blob": "3c11caba7994063197fb4d73e3b511497fc9f175",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/references/architecture-map.md",
+      "mode": "100644",
+      "bytes": 2496,
+      "sha256": "d40cae50571a8da9a9bc47e9ecc84b42e7b9de514accdd8d2bc783f269016dd3",
+      "blob": "0ad791429a7ccace7b72dfa4db47c8e6da9844fb",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/references/index.md",
+      "mode": "100644",
+      "bytes": 1467,
+      "sha256": "c8b6a16e85af0382bf53d9265d1fb5ed9958336ed92206c4348350f5cbfbeff1",
+      "blob": "4e406d74db1a00e625c87c0efaccfe271c15ad58",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/references/operator-guide.md",
+      "mode": "100644",
+      "bytes": 3408,
+      "sha256": "0cbb91b2fb80850a99b6ebe316678f6c11c6cc179acffbda15c57cd53aa361ef",
+      "blob": "a0501a2bad0b972ea74747c67126756b8cbe45f2",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/scripts/codex_worker.py",
+      "mode": "100644",
+      "bytes": 18265,
+      "sha256": "001a2f5fbf78a0532d342f71e9f8467f1d35073f0133868503d6bb15e70f3ba2",
+      "blob": "db8cafd5f044a008c0fd6ba570d30d84cb79beb9",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/scripts/controller.py",
+      "mode": "100644",
+      "bytes": 80429,
+      "sha256": "ccce1556fde615a2490ea1234fcab68dfeabb5c57f9c8c28a1ad00bdfec60b50",
+      "blob": "3c36e12f294b2273a1b7fb28e3d34e66e98f4498",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/scripts/controller_git.py",
+      "mode": "100644",
+      "bytes": 19596,
+      "sha256": "49f8685c5a33850250f70587f111d84fba40c33412e9ad11c1590ab13a42c905",
+      "blob": "8d6c3a0dacce0ce80767143315e2004e68cd7bbc",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/scripts/controller_state.py",
+      "mode": "100644",
+      "bytes": 67056,
+      "sha256": "b3ebc6c5244982b33cacf563b70d46c01336c4a476e46940d75ee595dca2bb02",
+      "blob": "03a233e9c0f581c0ff60665f89942589a7623481",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/scripts/verification_runner.py",
+      "mode": "100644",
+      "bytes": 33595,
+      "sha256": "7cb7bfd633dbb346f2b96bc3cb191818ed160035cfc6d665037b9797c1baf66a",
+      "blob": "15a3f6e90fc8765132c25a2307c597a5bc291afd",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_codex_worker.py",
+      "mode": "100644",
+      "bytes": 19172,
+      "sha256": "30dabec6e379918c4f20bd00778997628c7363a16aecccbcc725606a50b7fdcd",
+      "blob": "0b43d717cefc31623604271e204c6c2dfb338d0f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_controller.py",
+      "mode": "100644",
+      "bytes": 132081,
+      "sha256": "62440a5d6ea1e7b451c7afa6944f8cc279eae3124a89f8212e02cec6105ef833",
+      "blob": "30d888831971ff1f305783d94afd7a05452fb05f",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_controller_git.py",
+      "mode": "100644",
+      "bytes": 30973,
+      "sha256": "d2618265009e03b7f2deb14522b02cc04f9458ccb3014675b699feb0dc67cc3d",
+      "blob": "5dbd77d5e96a9330b6712a765dcc72d2935832e7",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_controller_state.py",
+      "mode": "100644",
+      "bytes": 73977,
+      "sha256": "70466c992ee63602a9968bc72530a1f2b03b9479e4e38d7fe623d92b7fc1c1c2",
+      "blob": "4f12f95da72d8ed2797ec51502fa25ea8df2d4a9",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_retrieval_surface.py",
+      "mode": "100644",
+      "bytes": 4961,
+      "sha256": "8fc05fafe77505b3c54f58a24bb0a3ffe0ea0141f42164a7bc2d2b1303a5d1d8",
+      "blob": "16f64e6e4ccdf215efb2176a058fd1bf32c8d558",
+      "retire": false
+    },
+    {
+      "path": "skills/task-orchestrator/tests/test_verification_runner.py",
+      "mode": "100644",
+      "bytes": 37619,
+      "sha256": "eef2132f63adce69d2b2d721b409b986f3ae3b1331e775120ee021f26277bc2c",
+      "blob": "7f91a096cdc8cf0b95e86266666c262603b53ee4",
+      "retire": false
+    },
+    {
+      "path": "skills/testing-discipline/SKILL.md",
+      "mode": "100644",
+      "bytes": 16646,
+      "sha256": "67a3cb0fd90496d3ab12623ecae1298566ff1933cf21e8f8d47d24680dd26e38",
+      "blob": "0071374309007a23516a7460276ab19013b75db4",
+      "retire": false
+    },
+    {
+      "path": "skills/testing-discipline/agents/openai.yaml",
+      "mode": "100644",
+      "bytes": 237,
+      "sha256": "f728e83185815d87e3854a31eb2b25c51548b6abbd96831ada1ac0e56cc34348",
+      "blob": "bb8d981421f15bae0c78918856675601dd53f644",
+      "retire": false
+    },
+    {
+      "path": "skills/testing-discipline/references/test-catalog.md",
+      "mode": "100644",
+      "bytes": 13210,
+      "sha256": "05b9b5369d90d45aee1f15bdb96ac2e5f1be24c4b796e2c2ef219ab851e49b9d",
+      "blob": "77c5ddd0219c687848ab6853205a009239ac1d5e",
+      "retire": false
+    },
+    {
+      "path": "tests/README.md",
+      "mode": "100644",
+      "bytes": 5822,
+      "sha256": "6e8d22932631a39a688fec4158f0cce978efb343cbebc96bb03865ed7c8d0adc",
+      "blob": "409f107d5bbabc0798b0f5446122c0c9082030bf",
+      "retire": false
+    },
+    {
+      "path": "tests/review_fixture_support.py",
+      "mode": "100644",
+      "bytes": 2450,
+      "sha256": "9a79bd1fd7b5a8a245220d4a0b028fedb4b7b5c601eb2c651632ed89daa15dfe",
+      "blob": "f30fa9406a14d6dee44fa4a0626eaf6d17a3e525",
+      "retire": false
+    },
+    {
+      "path": "tests/staging_fixture_support.py",
+      "mode": "100644",
+      "bytes": 1776,
+      "sha256": "a068cfb000446d4766f897f8ebc799988021590d92c545b64441cbb771c1e418",
+      "blob": "dfa1a568baa2f1ba5e07cca0bd5bdb0641e9d558",
+      "retire": false
+    },
+    {
+      "path": "tests/test_bounded_task_implementer.py",
+      "mode": "100644",
+      "bytes": 40654,
+      "sha256": "94fadfa2b3087ffec5d0b7ac5d15c0f34a2b72744ef4aec9de3ec98c2bf986c4",
+      "blob": "a4a8703b5e1aa33774fec63013412602ffcb9fe0",
+      "retire": false
+    },
+    {
+      "path": "tests/test_contextual_export_risks.py",
+      "mode": "100644",
+      "bytes": 6825,
+      "sha256": "c459ccbd2b5b0215fb046159bf2a29053457dd86e9de6d9c29417a7b9a18cf55",
+      "blob": "6cdd4309c233aeec5c0aef25f92fc5c8a9027a0a",
+      "retire": false
+    },
+    {
+      "path": "tests/test_contextual_known_issues.py",
+      "mode": "100644",
+      "bytes": 12774,
+      "sha256": "2058a99ad6766a35453664cb91338e81576d23c4a014bcb8cbed892ffbb52cdb",
+      "blob": "a64580fcd4aad8bc75fb60729f813a432149dbc1",
+      "retire": false
+    },
+    {
+      "path": "tests/test_contextual_uncertainty_inputs.py",
+      "mode": "100644",
+      "bytes": 8571,
+      "sha256": "d1c0c5b6699bd91d1d23e64fd441b051659223e6b29b0077f035b6f610b10528",
+      "blob": "c9b09eed014868f2b251493e026cd08210881467",
+      "retire": false
+    },
+    {
+      "path": "tests/test_install_development_skills.py",
+      "mode": "100644",
+      "bytes": 90643,
+      "sha256": "5eead744e1a7315082fb73f91a19b81488d7371bc867c792fc34e0144e7d082d",
+      "blob": "e99aed8ebdffabff2d2fac1d089e55a66fdf95f4",
+      "retire": false
+    },
+    {
+      "path": "tests/test_ollama_delegate.py",
+      "mode": "100644",
+      "bytes": 12155,
+      "sha256": "0b6c97a96d122bde90a984d2b26aed47a8f112e21282bc2db9f2ded59347f41b",
+      "blob": "951736e156e67c230700cc570224018b85c7aaf6",
+      "retire": false
+    },
+    {
+      "path": "tests/test_review_composition.py",
+      "mode": "100644",
+      "bytes": 62996,
+      "sha256": "9c8c4eeb0162148ca24e2f353bec2dab3a8b7f01d91b9009cea6f2c48ad9d0cb",
+      "blob": "173d3c292e811ec223a3c2d51925cb718fda12ab",
+      "retire": false
+    },
+    {
+      "path": "tests/test_run_evidence.py",
+      "mode": "100644",
+      "bytes": 21441,
+      "sha256": "a969a2e4ead9f502dbefa00b1a2db5cc1e48d0b396164b7ea2b0268970e5a9ad",
+      "blob": "d524b0671be7c6fa6a41e260282ad38e6d55d635",
+      "retire": false
+    },
+    {
+      "path": "tests/test_run_evidence_availability.py",
+      "mode": "100644",
+      "bytes": 7811,
+      "sha256": "9570e4e84bb049ee01ef572a94c842cd7d0a9682ecb4f4ba5bd2227a6baae9fc",
+      "blob": "981317852e10bf420841f49ae9bf05f6d00c2a4b",
+      "retire": false
+    },
+    {
+      "path": "tests/test_runtime_context.py",
+      "mode": "100644",
+      "bytes": 7685,
+      "sha256": "93bfbeb69b3502b9787c2165a1ba91a6f6d37856d70ed5f68b2cf559e7fd34f1",
+      "blob": "1354c0353b312c1e97b1fba8718cc1491dc7f4a5",
+      "retire": false
+    },
+    {
+      "path": "tests/test_senior_review_discipline.py",
+      "mode": "100644",
+      "bytes": 1305,
+      "sha256": "f15a2984f1ed248f6b46aa84f539d907fdfc94fe6d525c5d8c5eada952a556f8",
+      "blob": "76aa4747c593b0431f6acfd61bce3ff2036ac447",
+      "retire": false
+    },
+    {
+      "path": "tests/test_task_acceptance_review.py",
+      "mode": "100644",
+      "bytes": 26901,
+      "sha256": "2d1d08a9d2b6e8a09129950c3ff8a11bcbc155a2df4cd4950bdd63ab573d32a6",
+      "blob": "1d2974511649d0c73e16cdb1f520ed861e121ad5",
+      "retire": false
+    },
+    {
+      "path": "tests/test_task_flow_guides.py",
+      "mode": "100644",
+      "bytes": 25009,
+      "sha256": "86e7132472b2a2da79e6b66974cbf24089b4c29f15a89e79a5f9757ea15a2ead",
+      "blob": "70bd0a5a198d55e7c7f631530ea6c9f91c7ad4cf",
+      "retire": false
+    },
+    {
+      "path": "tests/test_task_maintainability_review.py",
+      "mode": "100644",
+      "bytes": 34387,
+      "sha256": "3a25b02f74b28c7a7ecce6b6b3c5d07012bff68e3ec5b3f96c9a919570a9e5eb",
+      "blob": "05836b14510804f4a583cba82c991810a72914b9",
+      "retire": false
+    },
+    {
+      "path": "tests/test_task_preflight.py",
+      "mode": "100644",
+      "bytes": 14667,
+      "sha256": "1b539cdd78ad803c0a2244212dca59db7b60ee0c9556c651089cbacd54a50696",
+      "blob": "9846043043f24acf0baba88468827bde719c17e6",
+      "retire": false
+    },
+    {
+      "path": "tests/test_task_preparation_contracts.py",
+      "mode": "100644",
+      "bytes": 18261,
+      "sha256": "51e7bb7afd57d4acca11a70d6670d89222cc712ab67874a4ebb1c16ab8fd1f00",
+      "blob": "ea74fac268ad9ea5674e8ebe3f79e2a573f38c1b",
+      "retire": false
+    },
+    {
+      "path": "tests/test_task_review_discovery.py",
+      "mode": "100644",
+      "bytes": 24510,
+      "sha256": "75f0ec7b5f2dba7ef2ca82fee61ae3ff78c52f49ccdf06fa0df56622f6b5aff8",
+      "blob": "eb94ce17a10cc4df25ec9676b7ea3ef214883b71",
+      "retire": false
+    },
+    {
+      "path": "tests/test_workflow_version.py",
+      "mode": "100644",
+      "bytes": 17683,
+      "sha256": "12aa118eff331c003505a97a5e0af9a7b8fcba1d54d099e837b54d8e8c5330a2",
+      "blob": "dbc47d3280d10d46f69de16acc8560ba34474f16",
+      "retire": false
+    }
+  ]
+}

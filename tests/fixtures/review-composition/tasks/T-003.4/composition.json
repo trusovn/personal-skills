@@ -1,0 +1,400 @@
+{
+  "artifact": "T-003.4 composed handoff continuity and installed source projection record",
+  "status": "fixture data — composed from the reviewed T-003.1-.3 child-owned cases and current source bytes, never observed role outputs",
+  "producers": [
+    "bounded-task-implementer (T-003.4) composed this record; no skill-call agent produced or consumed it"
+  ],
+  "intended_consumers": [
+    "task-review-discovery — a fresh session that did not author the reviewed bytes",
+    "task-acceptance-review — a fresh decision call admitting the discovery report",
+    "task-preflight — later readiness reassessment of the recorded route and recovery facts",
+    "T-005 — actual separate producing/consuming role calls under its own authorization"
+  ],
+  "evidence_categories": {
+    "structural_tests": "focused route/row/projection assertions in tests/test_review_composition.py and tests/test_install_development_skills.py over this record, the three overview routes, the staged child fixtures, and the canonical installer",
+    "actual_behavior": "real fixture staging and probes (implementer route-cases/change-effects/record-correction, maintainability four-blockers/genuine-stop) and the canonical installer run in disposable committed Git targets; no active installation was touched",
+    "semantic_contract_inspection": "focused reading of the reviewed T-003.1-.3 SKILL.md bytes, the three overview routes, and the correction/revision/disposition guidance they compose",
+    "unrun_agent_compliance": "no actual skill-call agent has produced or consumed the composed inputs; actual separate-call compliance and installed-flow qualification are owned by T-005"
+  },
+  "fixture_sources": {
+    "implementer": "skills/task-implementation-flow/bounded-task-implementer/evals/files/setup_fixture.py",
+    "maintainability": "skills/task-implementation-flow/task-maintainability-review/evals/files/setup_fixture.py",
+    "command": ["python3", "<fixture path>", "<scenario>"],
+    "env": { "EVAL_WORK_ROOT": "<disposable work root>" },
+    "note": "reuse the child-owned setup fixtures; no new reusable runner was created for this composition"
+  },
+  "child_case_references": [
+    {
+      "id": "CCR-01",
+      "kind": "supplied conditional route cases",
+      "owner_test": "tests/test_bounded_task_implementer.py",
+      "fixture": "skills/task-implementation-flow/bounded-task-implementer/evals/files/setup_fixture.py",
+      "scenarios": ["route-cases"],
+      "owner_test_confirms_scenarios": true,
+      "signal": "nineteen supplied route cases map conditional-stage policy and current/stale stage evidence to the expected submission route; the child owns the case setup and oracles",
+      "used_for": "ROUTE-01 (V-01)"
+    },
+    {
+      "id": "CCR-02",
+      "kind": "supplied change-effect cases",
+      "owner_test": "tests/test_bounded_task_implementer.py",
+      "fixture": "skills/task-implementation-flow/bounded-task-implementer/evals/files/setup_fixture.py",
+      "scenarios": ["route-cases"],
+      "case_source": "change-effects/cases.json",
+      "owner_test_confirms_scenarios": true,
+      "signal": "nine change-effect cases route by actual changed bytes and current proof; the genuine reference contract rejects the boolean revision while the executable-reference defect admits it despite its label",
+      "used_for": "EFF-01 (V-05)"
+    },
+    {
+      "id": "CCR-03",
+      "kind": "supplied correction record and owned stop",
+      "owner_test": "tests/test_bounded_task_implementer.py",
+      "fixture": "skills/task-implementation-flow/bounded-task-implementer/evals/files/setup_fixture.py",
+      "scenarios": ["record-correction"],
+      "owner_test_confirms_scenarios": true,
+      "signal": "four row states keep stable identities through correction; two failed fixes of one target end in an owned non-complete stop with unfinished rows and a next owner",
+      "used_for": "ROWS-01 (V-03)"
+    },
+    {
+      "id": "CCR-04",
+      "kind": "four confirmed maintainability blockers plus a genuine stop",
+      "owner_test": "tests/test_task_maintainability_review.py",
+      "fixture": "skills/task-implementation-flow/task-maintainability-review/evals/files/setup_fixture.py",
+      "scenarios": ["four-blockers", "genuine-stop"],
+      "owner_test_confirms_scenarios": true,
+      "signal": "four independent defect oracles MNT-B1-MNT-B4 with a non-blocking preference control remain four; the genuine stop preserves outstanding coverage and its next owner",
+      "used_for": "FIND-01 (V-02)"
+    },
+    {
+      "id": "CCR-05",
+      "kind": "mixed-condition decision inputs",
+      "owner_test": "tests/test_contextual_uncertainty_inputs.py",
+      "fixture": "skills/task-implementation-flow/task-acceptance-review/evals/files/setup_fixture.py",
+      "scenarios": [
+        "mixed-conditions-authorized-decision",
+        "mixed-conditions-forbidden-decision"
+      ],
+      "owner_test_confirms_scenarios": true,
+      "evals": [
+        {
+          "skill": "task-acceptance-review",
+          "eval_id": 13,
+          "scenario": "mixed-conditions-authorized-decision"
+        }
+      ],
+      "signal": "a confirmed blocker plus a blocked missing-proof row stay visible together; authorized bounded correction keeps CHANGES_REQUESTED while the run policy that denies production edits keeps INCONCLUSIVE",
+      "used_for": "ROWS-01 (V-03)"
+    },
+    {
+      "id": "CCR-06",
+      "kind": "late-omission recovery inputs",
+      "owner_test": "tests/test_task_review_discovery.py",
+      "fixture": "skills/task-implementation-flow/task-review-discovery/evals/files/setup_fixture.py",
+      "scenarios": ["discovery-late-omission-clean", "discovery-late-omission-fail"],
+      "owner_test_confirms_scenarios": true,
+      "evals": [
+        {
+          "skill": "task-review-discovery",
+          "eval_id": 14,
+          "scenario": "discovery-late-omission-clean"
+        },
+        {
+          "skill": "task-review-discovery",
+          "eval_id": 13,
+          "scenario": "discovery-late-omission-fail"
+        }
+      ],
+      "signal": "the earlier aggregate stays explicitly premature; the omitted row receives current targeted proof before discovery reconsiders a still-justified aggregate",
+      "used_for": "GATE-01 (V-06, V-07)"
+    },
+    {
+      "id": "CCR-07",
+      "kind": "readiness revision-recovery inputs",
+      "owner_test": "tests/test_task_preflight.py",
+      "fixture": "skills/task-implementation-flow/task-preflight/evals/files/setup_fixture.py",
+      "scenarios": ["revision-recovery"],
+      "owner_test_confirms_scenarios": true,
+      "evals": [
+        { "skill": "task-preflight", "eval_id": 10, "scenario": "revision-recovery" }
+      ],
+      "signal": "affected old readiness is superseded; focused ready for the new revision precedes revised evidence and the new decision; changed requirements return to design",
+      "used_for": "REV-01 (V-04)"
+    },
+    {
+      "id": "CCR-08",
+      "kind": "repeated-review disposition inputs",
+      "owner_test": "tests/test_task_acceptance_review.py",
+      "fixture": "skills/task-implementation-flow/task-acceptance-review/evals/files/setup_fixture.py",
+      "scenarios": [
+        "repeated-review-formerly-blocked-evidence-decision",
+        "repeated-review-missed-existing-obligation-decision",
+        "repeated-review-changed-context-authority-decision",
+        "repeated-review-newly-demonstrated-material-risk-decision"
+      ],
+      "scenario_inventory": "review_fixture_support.CONTEXTUAL_CONTRAST_SETUPS",
+      "signal": "unchanged compatible exposure retains the accepted disposition while a demonstrated current regression or missed obligation stays visible with its justified reopening reason",
+      "used_for": "DISP-01 (V-08)"
+    }
+  ],
+  "records": [
+    {
+      "id": "ROUTE-01",
+      "kind": "conditional submission route matrix reconciled across the overviews, the implementer template, and the installed guide",
+      "case_source": "CCR-01 route-cases staging",
+      "policy_matrix": [
+        {
+          "policy": "neither conditional stage",
+          "case": "INIT-NEITHER",
+          "full_route": "discovery → acceptance"
+        },
+        {
+          "policy": "maintainability only; architecture gate required",
+          "case": "INIT-MAINT-GATE",
+          "full_route": "architecture gate → fresh maintainability review → discovery → acceptance"
+        },
+        {
+          "policy": "maintainability only; no architecture gate",
+          "case": "INIT-MAINT-NOGATE",
+          "full_route": "fresh maintainability review → discovery → acceptance"
+        },
+        {
+          "policy": "registry only",
+          "case": "INIT-REGISTRY",
+          "full_route": "registry updater → discovery → acceptance"
+        },
+        {
+          "policy": "both; architecture gate required",
+          "case": "INIT-BOTH-GATE",
+          "full_route": "architecture gate → fresh maintainability review → registry updater → discovery → acceptance"
+        },
+        {
+          "policy": "both; no architecture gate",
+          "case": "INIT-BOTH-NOGATE",
+          "full_route": "fresh maintainability review → registry updater → discovery → acceptance"
+        }
+      ],
+      "currentness_and_reentry_examples": {
+        "STATE-MAINT-GATE-COMPLETE": "fresh maintainability review → discovery → acceptance",
+        "STATE-BOTH-UPDATER-COMPLETE": "architecture gate → fresh maintainability review → discovery → acceptance",
+        "STATE-BOTH-INAPPLICABLE": "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+        "CORR-NEITHER": "discovery → acceptance",
+        "CORR-MAINT-GATE": "architecture gate → fresh maintainability review → discovery → acceptance",
+        "CORR-REGISTRY": "registry updater → discovery → acceptance",
+        "CORR-BOTH-FULL": "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+        "CORR-BOTH-MIXED": "registry updater → discovery → acceptance"
+      },
+      "rules": [
+        "with no current stage completion the full route is the applicable row and its first stage is the first outstanding owner; current applicable completion removes only satisfied stages while stale or missing completion leaves the obligation outstanding",
+        "production correction re-enters every applicable stage whose proof is stale for the corrected bytes, then fresh discovery and separate acceptance; naming a stage never executes it"
+      ],
+      "public_agreement": {
+        "root_readme": "README.md",
+        "profile_guide": "skills/README.md",
+        "flow_readme": "skills/task-implementation-flow/README.md",
+        "implementer_template": "skills/task-implementation-flow/bounded-task-implementer/SKILL.md 'Name the complete ordered submission route'",
+        "installed_guide": "the installed .agents/skills/README.md projected by the canonical installer; projection and route wording are asserted by the T-003.4 installer case"
+      }
+    },
+    {
+      "id": "FIND-01",
+      "kind": "four confirmed maintainability findings reach the correction input without truncation",
+      "case_source": "CCR-04 four-blockers staging",
+      "findings": ["MNT-B1", "MNT-B2", "MNT-B3", "MNT-B4"],
+      "finding_fields": [
+        "Location:",
+        "Observation:",
+        "Consequence:",
+        "Smallest correction direction:"
+      ],
+      "preference_control": "Non-blocking preference control — no confirmed material regression",
+      "oracle_integrity_tokens": ["remain four", "genuine-stop", "outstanding coverage"],
+      "correction_input": {
+        "carried_findings": ["MNT-B1", "MNT-B2", "MNT-B3", "MNT-B4"],
+        "integrity_rule": "all four finding identities and their location, observation, consequence and smallest correction direction remain available downstream; no cap, verdict-based early stop or review-scope expansion drops or adds a finding, and carrying four findings adds no wider survey or quota"
+      }
+    },
+    {
+      "id": "ROWS-01",
+      "kind": "stable row identities, owned stop history, and mixed-condition routes across correction",
+      "case_source": "CCR-03 record-correction staging plus CCR-05 mixed-condition inputs",
+      "row_states": {
+        "ROW-ORIGINAL": "passed",
+        "ROW-EXACT-BYTES": "failed",
+        "ROW-REMOTE-ANCHOR": "blocked",
+        "ROW-REPLAY-BOUNDARY": "unchecked"
+      },
+      "stop_record": {
+        "attempts": 2,
+        "distinct_targets": 1,
+        "status": "non-complete",
+        "next_owner": "result-integrity owner",
+        "unfinished_rows": [
+          "ROW-EXACT-BYTES",
+          "ROW-REMOTE-ANCHOR",
+          "ROW-REPLAY-BOUNDARY"
+        ],
+        "coverage_states": ["passed", "failed", "blocked", "unchecked"]
+      },
+      "mixed_condition_routes": {
+        "mixed-conditions-authorized-decision": "CHANGES_REQUESTED",
+        "mixed-conditions-forbidden-decision": "INCONCLUSIVE"
+      },
+      "rules": [
+        "a green corrected target never closes unfinished siblings and never certifies changed bytes with an old semantic verdict",
+        "authorized bounded correction retains the CHANGES_REQUESTED route; prevented correction retains INCONCLUSIVE and the confirmed blocker; neither verdict permits advancement",
+        "genuine stops preserve attempts, discarded hypotheses, partial changes, findings, unfinished rows and next owner; two distinct failed fixes of one target do not permit a silent third ordinary fix and create no global round counter"
+      ]
+    },
+    {
+      "id": "REV-01",
+      "kind": "revision recovery rejects obsolete readiness even after recovery",
+      "case_source": "CCR-07 preflight revision-recovery inputs",
+      "source_guidance_tokens": [
+        "A reasoned coverage revision under unchanged requirements retains IDs and supersedes affected readiness/evidence",
+        "New proof cannot excuse old readiness or its substitution after recovery",
+        "Changed requirements return to task design",
+        "ordinary corrections/clarifications do not restart design"
+      ],
+      "rules": [
+        "original IDs and the revision reason survive; affected old readiness/evidence is superseded and current revised-scenario proof alone cannot rescue old readiness",
+        "focused ready for the new revision precedes its evidence and new-decision route; reintroduced old readiness stays inadmissible and indispensable unavailable proof keeps its reason/owner rather than becoming ready",
+        "changed requirements return to the task design/decision owner; ordinary authorized correction and expected report effects alone do not restart task design"
+      ]
+    },
+    {
+      "id": "EFF-01",
+      "kind": "actual effects distinguish reference, evidence, and production routes",
+      "case_source": "CCR-02 change-effects/cases.json",
+      "case_routes": {
+        "clarification": "clarifying artifact owner → discovery → acceptance",
+        "evidence": "capability owner → discovery → acceptance",
+        "production": "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+        "tests-policy-exception": "registry updater → discovery → acceptance",
+        "reference": "registry updater → acceptance",
+        "reference-executable": "architecture gate → fresh maintainability review → registry updater → discovery → acceptance",
+        "reference-missing-proof": "registry updater → discovery → acceptance",
+        "scenario": "verification designer → focused preflight → revised-scenario evidence → acceptance",
+        "authority": "task designer/decision owner"
+      },
+      "reference_probe": "from docs.contract import accepts; assert accepts(1); assert not accepts(True)",
+      "tests_only_rule": "explicit policy exception",
+      "rules": [
+        "genuine reference-only correction with applicable behavioral proof retains registry updater → fresh acceptance; executable/behavioral effects or absent applicable proof require affected discovery/gates and a current separate decision",
+        "clarification and evidence requests retain their artifact/evidence owner; neither implies a production fix",
+        "a tests-only label waives nothing by itself; only an explicit policy exception changes its stated obligations"
+      ]
+    },
+    {
+      "id": "GATE-01",
+      "kind": "discovery-owned aggregate record and late-omission recovery",
+      "case_source": "CCR-06 late-omission inputs",
+      "gate_record_fields": ["command", "status", "owner", "stage", "reason"],
+      "source_guidance_tokens": [
+        "Decisive failure suppresses the ordinary aggregate absent a distinct authorized diagnostic purpose",
+        "Clean evidence permits one justified current gate",
+        "A later omitted row makes the earlier gate premature: targeted recovery precedes any justified rerun",
+        "Acceptance consumes without duplication; conditional gate duties remain intact"
+      ],
+      "rules": [
+        "failure and the next legitimate occurrence distinguish defective from corrected behavior; all safely runnable required/material rows and selected probes need current targeted evidence before routine aggregate proof",
+        "clean discovery owns one justified aggregate for its current review with command/not-run, owner/stage, reason and current evidence; prior evidence cannot substitute",
+        "the earlier aggregate stays explicitly premature until the omitted row receives current targeted proof; acceptance consumes the record without duplicate execution"
+      ]
+    },
+    {
+      "id": "DISP-01",
+      "kind": "stable disposition contrast preserves regression visibility",
+      "case_source": "CCR-08 repeated-review inputs",
+      "reopening_reasons": [
+        "regression",
+        "formerly blocked evidence",
+        "a missed existing obligation",
+        "changed context",
+        "changed authority",
+        "newly demonstrated material risk"
+      ],
+      "repeated_review_scenarios": [
+        "repeated-review-formerly-blocked-evidence-decision",
+        "repeated-review-missed-existing-obligation-decision",
+        "repeated-review-changed-context-authority-decision",
+        "repeated-review-newly-demonstrated-material-risk-decision"
+      ],
+      "source_guidance_tokens": [
+        "unchanged compatible exposure preserves the accepted deferral",
+        "optional improvements never restart correction, and no global correction-round limit is added",
+        "A new correction blocker needs current proof, materiality, and an explicit reason"
+      ],
+      "rules": [
+        "unchanged exposure retains the accepted disposition and optional improvement does not create correction; a real regression or missed required obligation stays visible with current evidence, materiality and its justified reopening reason",
+        "authority changes return to their owner; no new requirement or global correction limit is introduced"
+      ]
+    }
+  ],
+  "installer_projection": {
+    "changed_families_by_child": {
+      "T-003.1": ["bounded-task-implementer"],
+      "T-003.2": ["task-maintainability-review"],
+      "T-003.3": ["task-acceptance-review", "task-review-discovery"]
+    },
+    "affected_families": [
+      "bounded-task-implementer",
+      "task-maintainability-review",
+      "task-contract-registry-updater",
+      "task-review-discovery",
+      "task-acceptance-review"
+    ],
+    "projection_ownership": {
+      "bounded-task-implementer": "existing preparation-family projection cases in tests/test_install_development_skills.py",
+      "task-review-discovery": "existing discovery-family projection case in tests/test_install_development_skills.py",
+      "task-acceptance-review": "existing acceptance-family projection case in tests/test_install_development_skills.py",
+      "task-maintainability-review": "new maintainability/registry-updater projection case added by T-003.4 in tests/test_install_development_skills.py",
+      "task-contract-registry-updater": "new maintainability/registry-updater projection case added by T-003.4 in tests/test_install_development_skills.py (named affected family in docs/tasks/T-003.4/verification.md V-09)"
+    },
+    "guide": "skills/README.md is projected to .agents/skills/README.md; the installed guide satisfies the ROUTE-01 semantics and the T-003.4 installer case asserts its route wording",
+    "reinstall": "stale managed files are removed and managed bytes restored on rerun; unmanaged files, skill packages, helpers and AGENTS text outside the managed block survive",
+    "declarations": "DEVELOPMENT_SKILL_SOURCES, PROFILE_SKILLS_README and SHARED_SCRIPT_FILES stay unchanged: no reviewed .1-.3 output renamed, moved, added or removed a selected skill, and no shared runtime dependency changed",
+    "active_installation": "no refresh of the active repository .agents/ installation occurred; the canonical installer ran only against disposable committed Git targets"
+  },
+  "t005_unrun_boundaries": [
+    {
+      "boundary": "an actual bounded-task-implementer submission that maps every verification scenario ID to current evidence or an explicit blocked/unchecked reason under review: immediate",
+      "owner": "T-005",
+      "unrun_reason": "requires an actual separate implementer role call; this composition only supplies the route/row/finding inputs"
+    },
+    {
+      "boundary": "actual conditional stage calls: the deterministic architecture gate when policy requires it and a fresh task-maintainability-review, plus the task-contract-registry-updater stage when it applies",
+      "owner": "T-005",
+      "unrun_reason": "no conditional-stage agent call was made; the conditional semantics here are structural and fixture observations only"
+    },
+    {
+      "boundary": "an actual fresh task-review-discovery report over the composed inputs, including the justified aggregate union named in docs/tasks/T-003.4/verification.md",
+      "owner": "T-005",
+      "unrun_reason": "discovery evidence for these bytes is owned by a fresh discovery call; this composition supplies its inputs, not its report"
+    },
+    {
+      "boundary": "an actual separate task-acceptance-review decision call consuming that discovery report without duplicate execution",
+      "owner": "T-005",
+      "unrun_reason": "same separate-call authorization; no local check substitutes for the decision call"
+    },
+    {
+      "boundary": "correction re-entry: a production correction re-entering every applicable conditional stage whose proof is stale, then fresh discovery and separate acceptance",
+      "owner": "T-005",
+      "unrun_reason": "the composed correction/re-entry cases are fixture data until real role calls consume them"
+    },
+    {
+      "boundary": "revised verification → focused preflight → current revised-scenario evidence and a new decision, including old-ready rejection after recovery",
+      "owner": "T-005",
+      "unrun_reason": "requires actual preflight and decision role calls over the supplied revision inputs"
+    },
+    {
+      "boundary": "mixed correction/evidence/authority continuation across separate calls with stable row identities and separate owners",
+      "owner": "T-005",
+      "unrun_reason": "the mixed-condition routes are supplied inputs; their separate-call continuation behavior is unobserved"
+    },
+    {
+      "boundary": "installed-flow multi-call qualification against the active installation and the projected disposable targets",
+      "owner": "T-005",
+      "unrun_reason": "final behavioral qualification belongs to T-005 under its own authorization; no local result claims it"
+    }
+  ]
+}

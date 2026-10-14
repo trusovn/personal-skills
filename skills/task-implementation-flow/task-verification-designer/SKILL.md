@@ -1,6 +1,6 @@
 ---
 name: task-verification-designer
-description: Design a compact, implementation-neutral verification specification for one executable task brief before implementation. Use when a task has non-obvious acceptance or failure semantics, state/lifecycle behavior, finite material cases, or enough test-design burden that a dedicated pass would help the implementation agent. Produce a separate verification.md in the task folder. Do not write tests or production code, invent requirements, redesign the task, or require this stage for every task.
+description: Design a compact, implementation-neutral verification specification for one executable task brief before implementation. A supplied executable task package always requires this stage; an unpackaged direct edit uses it when non-obvious acceptance or failure semantics, state/lifecycle behavior, finite material cases, or test-design burden justify it. Produce a separate verification.md in the task folder. Do not write tests or production code, invent requirements, or redesign the task.
 ---
 
 # Task Verification Designer
@@ -11,9 +11,9 @@ verification scenarios. The goal is to answer:
 > What observations would convincingly show that this task was implemented
 > according to its specification?
 
-This is an optional preparation stage between task design and implementation.
-It is not a second requirements document and is not mandatory merely because the
-skill exists.
+This is a derived preparation stage between task design and implementation. It
+is not a second requirements document. For a supplied executable task package,
+it is required before ready preflight and implementation.
 
 Repository and user instructions outrank this skill. Preserve existing user
 work and never claim ownership of it.
@@ -39,8 +39,10 @@ inside the verification artifact.
 
 ## When this stage adds value
 
-Use the skill when explicitly requested or when the task brief recommends it.
-Typical reasons include:
+Every supplied executable task package uses this stage, even when its brief
+recommends `inline` verification or the edit is small. An unpackaged
+conversational direct edit uses the skill when explicitly requested or when its
+task reasoning recommends it. Typical reasons include:
 
 - several distinct acceptance criteria whose evidence is not obvious;
 - negative, unchanged-state, recovery, retry, resume, migration, ordering, or
@@ -52,9 +54,9 @@ Typical reasons include:
 - enough verification reasoning that separating it from implementation reduces
   cognitive load for the implementation agent.
 
-Do not use this stage by default for a small localized change with one obvious
-regression and an unambiguous oracle. More scenarios are not automatically
-better.
+Do not use this stage by default for an **unpackaged** small localized change
+with one obvious regression and an unambiguous oracle. More scenarios are not
+automatically better.
 
 ## Artifact location
 
@@ -82,6 +84,19 @@ Before overwriting an existing `verification.md`, require its singular
 `Source brief:` value to resolve to the package's `brief.md`. If the declaration
 is absent, malformed, or names another brief, leave the target unchanged and
 report the artifact conflict.
+
+## Authority, coverage, and revision
+
+Identify the source brief and a revision in every `verification.md`. Map every
+material AC and finite-risk row to stable scenario IDs with setup, action, and a
+decisive oracle. A scenario cannot add a requirement, and green evidence for
+other scenarios cannot waive an omitted AC.
+
+When unchanged authority exposes a coverage gap, record the reason for the
+revision, retain existing scenario IDs, add only the needed justified scenario,
+and route affected readiness and evidence to focused preflight. A changed
+requirement or unresolved expected result routes to task design or the decision
+owner; scenario editing cannot settle it.
 
 ## Workflow
 
@@ -166,13 +181,31 @@ task.
 
 ## Cross-task integration boundary
 
-This initial skill version does **not** own verification design across sibling
-tasks, decomposed-child composition, or parent-level integration closure.
+This skill does **not** own verification design across sibling tasks,
+decomposed-child composition, or parent-level integration closure.
 
-Task-local use of a real boundary is still allowed when needed to prove that
-single task's own ACs. If the supplied brief can only be verified by composing
-separate task outputs, report that limitation to the caller rather than
-inventing cross-task scenarios here.
+An executable integration leaf is different: when its own explicit ACs
+require composing supplied producer outputs at stated consumer boundaries,
+derive task-local scenarios for exactly those composition ACs. The leaf's
+brief and supplied inputs remain the authority; the composition stays inside
+the leaf's own acceptance scope. Task-local use of a real boundary is still
+allowed when needed to prove that single task's own ACs.
+
+Still refuse the boundary crossings this skill does not own:
+
+- a non-executable composite parent (`Task kind: composite` with
+  `Status: decomposed`): route the request to its dependency-ready
+  executable leaf instead of designing parent-level closure;
+- invented sibling requirements, system-wide integration strategy, or
+  parent-level composition closure: do not invent or own a sibling task's
+  requirements, system-wide integration strategy, or parent-level closure;
+- unavailable inputs or an unresolvable oracle: report the unavailable input
+  or capability to its owner or preflight, route an expected result the
+  authority cannot settle to task design or the decision owner, and never
+  fabricate a report or claim readiness to bypass the gap.
+
+Packaged preparation remains mandatory for that leaf: derived
+`verification.md` and a ready `preflight.md` still precede implementation.
 
 ## Output contract
 
@@ -182,6 +215,8 @@ Write one standalone artifact:
 # Verification Design: <TASK-ID> — <title>
 
 Source brief: <path>
+Source brief revision: <identified brief revision or supplied revision>
+Verification revision: <integer>
 Authority: derived from the task brief and its cited normative sources
 Status: ready
 
@@ -218,6 +253,9 @@ Variants:
 
 - Treat this file as derived verification guidance, not a replacement for the
   task brief.
+- Preserve stable scenario IDs across a reasoned coverage revision. A revised
+  artifact supersedes affected readiness and evidence until focused preflight
+  produces a ready result for the new revision.
 - Implement the smallest production and test changes that satisfy the brief and
   exercise these scenarios.
 - Concrete test structure, framework usage, helpers, and file placement remain

@@ -16,30 +16,35 @@ work and never claim ownership of it.
 
 Use `guided` by default.
 
-Use `high-assurance` when the user requests it or supplies a ready preflight
-packet, worker-result schema, orchestrator invocation, or other machine
-contract. If guided work discovers security, migration, destructive-state,
-concurrency, multi-writer, or audit requirements that the current inputs cannot
-safely support, pause and recommend the smallest escalation rather than
-silently building the full artifact chain.
+Use `high-assurance` when the user requests it or the caller supplies a machine
+contract: a worker-result schema with a durable result path, an orchestrator
+invocation, or another strict freshness/result contract. Supplying a ready task
+package alone — including its canonical `preflight.md` — is compact guided
+readiness, not a high-assurance packet; such an invocation stays guided and
+never selects the high-assurance profile. If guided work discovers security,
+migration, destructive-state, concurrency, multi-writer, or audit requirements
+that the current inputs cannot safely support, pause and recommend the smallest
+escalation rather than silently building the full artifact chain.
 
 ### Guided inputs
 
-Require enough to identify the repository, bounded outcome, and authority. A
-user request or `ready` task brief is sufficient when it makes the intended
-behavior clear. A separate preflight packet, result schema, run directory, and
-tracker are not required.
+Two entry routes share the guided profile; they never merge.
 
-Use focused local discovery to resolve relevant paths, nearby tests, commands,
-and current Git state. Ask only when a missing product, architecture,
-compatibility, scope, ownership, or permission decision could materially change
-the result.
+#### Conversational direct edits
 
-When the caller supplies a durable task brief, require it to be the `brief.md`
-inside one dedicated task package. Refuse a direct legacy brief such as
-`docs/tasks/API-31.md` even when no `verification.md` exists, and route it to
-`task-brief-designer` for package normalization. A bounded conversational user
-request is not a durable brief and may still be implemented directly.
+A bounded conversational user request with no durable task package may be
+implemented directly. Require enough to identify the repository, bounded
+outcome, and authority; a small clear request is sufficient when it makes the
+intended behavior clear. No preflight packet, result schema, run directory, or
+tracker is required for these requests; the compact self-preflight and
+verification discipline still apply.
+
+#### Packaged guided entry
+
+A durable task brief is only accepted as the `brief.md` inside one dedicated
+task package. Refuse a direct legacy brief such as `docs/tasks/API-31.md` even when no `verification.md` exists, and route it to `task-brief-designer` for
+package normalization. A package cannot be relabeled a conversational request
+to bypass these prerequisites.
 
 Before accepting a task brief, reject it as non-executable when it declares
 `Task kind: composite` and `Status: decomposed`. Read `docs/tasks/index.json`
@@ -47,15 +52,47 @@ when present to identify its dependency-ready executable leaf, then reroute the
 caller to that leaf (or report that no dependency-ready leaf is available).
 Never implement a decomposed parent.
 
+Before any package implementation edit, check entry applicability against the
+current package state. For the executable leaf, entry requires:
+
+- a `verification.md` whose `Source brief:` declaration resolves to the
+  package's `brief.md`, at a verification revision the readiness references;
+  missing or mismatched derived verification routes to
+  `task-verification-designer` and then current `task-preflight`;
+- a current applicable ready `preflight.md` bound to the same brief,
+  verification revision, authority, and scope; missing, blocked, or stale
+  readiness routes to `task-preflight` as the readiness owner; and
+- matching authority and scope. Composite or blocked-design tasks, legacy
+  direct briefs, and readiness naming another task, revision, or scope route to
+  `task-brief-designer` or the authority owner, followed by affected
+  preparation.
+
+The implementer is not the readiness owner and does not repeat broad
+discovery. Within the bounded preflight context, re-check only the recorded
+current material facts: dependency availability, ownership overlaps,
+permissions, decisive capabilities, and authority revisions. Expected
+implementation or report effects alone do not stale guided readiness; a
+material dependency, ownership, permission, capability, or authority change,
+or a verification scenario revision, prevents reuse of affected obsolete
+readiness and routes to focused `task-preflight`. A feasible task-owned future
+test whose setup, tools, and observation boundary stay within scope may be
+implemented; its absence is not a missing decisive capability. Packaged guided
+entry requires no worker-result schema, exact digest chain, run directory, or
+tracker; optional evidence instrumentation stays best-effort.
+
 When the executable task folder contains `verification.md`, or the caller
 supplies a verification-design artifact, require its `Source brief:` declaration
 to resolve to the package's `brief.md`, then read it before inventing task-local
 tests. Treat it as derived guidance under the brief: preserve its scenario/AC
 coverage unless repository facts make a scenario infeasible, but do not let it
-override the brief or constrain concrete test structure unnecessarily. If the
-brief only recommends a separate verification-design pass and no artifact
-exists, implementation may still proceed unless the caller or repository made
-that recommendation mandatory.
+override the brief or constrain concrete test structure unnecessarily. A package
+whose brief recommends a separate verification-design pass but has no artifact
+routes to `task-verification-designer` before entry.
+
+Use focused local discovery to resolve relevant paths, nearby tests, commands,
+and current Git state. Ask only when a missing product, architecture,
+compatibility, scope, ownership, or permission decision could materially change
+the result.
 
 ## Optional run evidence
 
@@ -139,6 +176,18 @@ Require:
 Missing or inconsistent high-assurance inputs return the schema-valid
 non-complete result required by the caller. Do not downgrade silently to guided
 mode.
+
+## Test and eval maintenance
+
+For either profile, use [testing-discipline](../../testing-discipline/SKILL.md)
+as the authority when adding or changing tests, evals, or fixtures. Before adding
+coverage, inspect relevant existing cases, setup helpers, and fixture generators
+for gaps and overlap. Prefer updating, reusing, or consolidating them over
+appending cases or copying setup infrastructure; add coverage for distinct
+behavioral evidence that is missing. Before removing obsolete or redundant
+tests or evals, identify the remaining coverage and preserve distinct scenarios,
+failure modes, and boundary evidence. Keep maintenance within the task's scope;
+ordinary small changes need no separate report or workflow stage.
 
 ## Guided workflow
 
@@ -240,7 +289,13 @@ will not exercise.
 The correction handoff must carry:
 
 - the authoritative brief reference and preceding verdict;
+- the applicable verification revision and preflight/context references;
+- the first outstanding applicable conditional stage and the complete remaining
+  route;
 - the complete coverage ledger and complete findings;
+- stable finding/scenario IDs, incomplete reasons and separate correction,
+  evidence/capability and authority owners, including influenced sibling surfaces;
+- attempts, exact results and discarded hypotheses when correction has stopped;
 - the current scoped diff and reviewer reproducer commands;
 - correction evidence attached to the failed rows, separately from reviewer
   row status;
@@ -266,32 +321,118 @@ regression passed.”
 Implemented: READY_FOR_REVIEW
 
 - Authority: <exact authoritative brief path>
+- Preflight/context reference: <exact readiness, verification revision and context paths>
 - Preceding verdict: <verdict>
+- Finding/scenario IDs: <complete stable inventories>
 - Complete findings and invariant: <findings and broken invariant>
+- Influenced sibling surfaces: <contract-implied cases and current evidence or remaining owner>
+- Attempts and discarded hypotheses: <exact probes/results and retained partial diff, or none>
 - Current scoped diff: <changed paths and concise diff summary>
 - Coverage ledger:
-  - <row identity> — prior status: <status>; implementation evidence: <evidence or none>; next owner/status: <owner and unchanged reviewer status>
+  - <row identity> — prior status: <status>; implementation evidence: <command, setup/oracle and result, or none>; Incomplete reason: <reason or none>; next owner/status: <owner and unchanged reviewer status>
 - Reviewer reproducer: `<exact command>` — <implementation outcome>
 - Owning suite: `<exact command>` — <implementation outcome>
-- Broad/aggregate gate: <exact command, run-or-skipped decision, reason, and owner>
+- Broad/aggregate gate: <exact command, run-or-skipped decision, reason, owner and stage, current evidence>
 - Remaining reviewer coverage: <unchecked or blocked rows, or none>
-- Next: fresh `task-acceptance-review`
+- Next: the first outstanding applicable stage and complete ordered remainder
+  through fresh independent `task-review-discovery` evidence to a fresh
+  `task-acceptance-review` decision
 ```
 
 Report implementation outcomes separately from reviewer row status. Do not
 mark a row accepted, passed, or checked for the corrected bytes unless a fresh
 reviewer does so in a separate invocation.
 
+## Name the complete ordered submission route
+
+Every required-review submission names the first outstanding applicable stage
+and the complete ordered remainder, then ends the implementer invocation. When
+independent functional review is required, the applicable route is, in order:
+
+1. the canonical deterministic architecture gate, only when repository policy
+   requires it for the changed bytes;
+2. fresh `task-maintainability-review`, when maintainability review applies;
+3. `task-contract-registry-updater`, when a registry stage applies;
+4. fresh independent `task-review-discovery` evidence; then
+5. the separate fresh `task-acceptance-review` decision.
+
+The conditional policies produce these routes:
+
+- neither conditional stage: discovery → acceptance;
+- maintainability review only: architecture gate (when required) → fresh
+  maintainability review → discovery → acceptance;
+- registry stage only: registry updater → discovery → acceptance;
+- both: architecture gate (when required) → fresh maintainability review →
+  registry updater → discovery → acceptance.
+
+Include the architecture gate only when repository policy requires it, and a
+conditional stage only when it applies to the current submission; never invent
+an obligation and never drop one. A conditional stage counts as completed only
+when its evidence is applicable and current for the submitted bytes, including
+its reviewed scope: stale, missing, or superseded evidence leaves that stage
+owed in its ordered position, and a prior verdict's label alone is not current
+evidence. Name the first outstanding applicable stage and every remaining stage
+behind it; discovery is the first owner only when every applicable conditional
+stage already has current evidence.
+
+A production correction re-enters every conditional stage whose reviewed scope
+the correction affected, before fresh discovery and the separate fresh
+acceptance decision; current evidence for the corrected scope keeps an
+unaffected stage out of the route. A tests-only correction still re-enters
+applicable conditional stages unless repository authority explicitly authorizes
+skipping them. Apply an explicit exception only to its authorized scope and
+retain the remaining route. Choose correction routes by actual effects and current behavioral proof,
+not by filenames or category labels:
+
+- Clarification returns to the clarifying artifact owner; an evidence request is not a production-fix request
+  and returns to discovery/capability ownership before a separate current decision.
+- A genuine reference-only correction may use registry updater → fresh acceptance
+  only when actual unchanged executable/behavioral effects and applicable current
+  behavioral proof justify it. Otherwise repeat affected discovery/gates and
+  obtain a separate current decision.
+- A material coverage gap under unchanged requirements returns to
+  verification designer → focused preflight → current revised-scenario evidence
+  → new acceptance decision. Retain scenario IDs and the revision reason;
+  affected old readiness/evidence is superseded. New proof cannot admit revised
+  work under old readiness, even if old readiness is substituted after recovery.
+- Changed requirements return to task design/decision ownership;
+  ordinary corrections and clarifications do not restart task design, and
+  expected implementation/report effects alone do not stale readiness.
+
+For mixed conditions, preserve acceptance's precedence: an authorized bounded
+blocker correction yields `CHANGES_REQUESTED` despite other unfinished proof;
+prevented correction or missing decisive proof without an eligible blocker yields
+`INCONCLUSIVE`. Neither permits advancement. Carry every finding and unfinished
+row, reason and separate owner through the coordinator rather than collapsing routes.
+
+Preserve accepted dispositions while relevant exposure/context is unchanged.
+Optional improvements never restart correction. New blockers require current
+proof, contextual materiality and an explicit reason: regression, formerly blocked
+evidence, missed obligation, changed context/authority or newly demonstrated
+material risk. Changed authority returns to its owner; add no global correction-round limit.
+
+Naming the route never launches, delegates to, or waits for any
+of those reviewers in the implementer invocation. When independent functional
+review is not required, no route is imposed and the existing milestone or
+no-review result semantics are unchanged. The requirement, not the metadata
+label, decides the route: `review: milestone` or no-review metadata alone
+neither imposes a route nor excuses the outstanding conditional stages and
+fresh discovery when independent functional review is explicitly required.
+
 ## Preserve review provenance
 
 `review: immediate` means finish implementation checks, emit the handoff, and
 end the implementer invocation at `READY_FOR_REVIEW`. Here, "route" means name
-a fresh `task-acceptance-review` as the next owner; it does not mean invoke or
-manage that review. A same-session self-check is useful when labeled as
+the first outstanding applicable stage and the complete ordered remainder from
+"Name the complete ordered submission route" as the next owners, ending in
+fresh independent `task-review-discovery` evidence and the separate fresh
+`task-acceptance-review` decision; it does not mean invoke or manage those
+calls. A same-session self-check is useful when labeled as
 implementation evidence, and its defects may be fixed, but it is not an
 independent review.
 
-Loading, quoting, or following `task-acceptance-review` in the current session
+Loading, quoting, or following `task-review-discovery` or
+`task-acceptance-review` in the current session
 does not reset provenance. If the current session authored any production bytes
 under review, it must not emit `ACCEPT` or describe those bytes as independently
 reviewed. Do not load the review skill, spawn or delegate to a reviewer, wait
@@ -308,7 +449,18 @@ required check that cannot run within the authorized environment.
 
 After two materially different fixes fail the same targeted behavior, stop
 ordinary editing. Record the failure, discarded hypotheses, owning component or
-contract, and one recommended next approach.
+contract, and one recommended next approach. Retain the partial diff, every
+unfinished row/finding, exact attempt probes/results, reasons and next owners;
+stopped work is non-complete and cannot advance. This same-target stop is not a
+global correction-round counter. Task/user budgets, cancellation and genuine
+capability stops retain these continuation obligations.
+
+Continue through ordinary uncertainty under a stated reasonable assumption
+within current authority; it alone does not create a blocker, design restart or
+routine user prompt. Resolve credible serious consequences of delay or
+materially costly later repair within current authority first. An unresolved
+decision-critical exception retains one focused authority question naming the
+consequence, needed fact and decision owner. Required proof is never waived.
 
 Treat the brief's tool/time/context budget as a soft checkpoint by default. At
 the checkpoint, summarize progress and continue while the task remains bounded
@@ -327,15 +479,24 @@ Implemented: <outcome, READY_FOR_REVIEW, or non-complete status>
 
 - Changed: <paths or none>
 - Verified: <exact commands and results>
-- AC evidence: <concise mapping>
+- AC evidence: <every verification scenario ID mapped to its current command, setup/oracle, and result, or an explicit blocked/unchecked reason and next owner>
+- Preflight/context reference: <exact paths of the consumed readiness and context artifacts>
+- Remaining obligations: <unfinished task obligations carried forward, or none>
 - Residual risks / skipped checks: <none or specifics>
-- Next: <fresh task-acceptance-review, user decision, fresh preflight, or complete>
+- Next: <the first outstanding applicable stage and complete ordered remainder through fresh task-review-discovery evidence to the separate task-acceptance-review decision, user decision, fresh preflight, or complete>
 ```
 
 Omit empty bullets when prose is clearer. Link to created artifacts rather than
-embedding their serialized contents. For guided `review: immediate` work, use
-`READY_FOR_REVIEW` as the submission state and exactly name a fresh
-`task-acceptance-review` as next owner, then end the response without a review
+embedding their serialized contents. Green tests cannot excuse an omitted AC or
+scenario. Every scenario ID of the consumed verification design must be
+accounted for with current evidence or an explicit blocked/unchecked reason and
+next owner; implementer claims remain submission evidence, not independent
+acceptance. For guided `review: immediate` work, use
+`READY_FOR_REVIEW` as the submission state and name the first outstanding
+applicable conditional stage — including a policy-required architecture gate —
+and the complete ordered remainder through fresh independent
+`task-review-discovery` evidence and the separate fresh `task-acceptance-review`
+decision as next owner, then end the response without a review
 verdict. Retain the existing human result semantics for milestone or no-review
 work.
 
@@ -360,8 +521,10 @@ For the existing worker-result schema:
 - `decisions`: local reversible task choices only.
 - `questions`: unresolved input/authority issues and whether they block.
 - `risks`: residual gaps or skipped stronger evidence.
-- `next_action`: one exact route. For immediate review, route to a fresh
-  `task-acceptance-review`.
+- `next_action`: one exact route. For immediate review, route to the first
+  outstanding applicable conditional stage and the complete ordered remainder
+  through fresh independent `task-review-discovery` evidence to the separate
+  fresh `task-acceptance-review` decision.
 
 ## Boundaries and routing
 
@@ -369,9 +532,12 @@ For the existing worker-result schema:
   re-check is needed.
 - Missing product/architecture authority or wider scope routes to the user or
   `task-brief-designer`.
-- Completed work routes to a fresh `task-acceptance-review` when independent
-  review is requested or required; this invocation ends with the handoff and
-  the next owner is started separately. Otherwise return it to the user.
+- Completed work routes through the first outstanding applicable conditional
+  stage and the complete ordered remainder to fresh independent
+  `task-review-discovery` evidence and the separate fresh
+  `task-acceptance-review` decision when independent review is requested or
+  required; this invocation ends with the handoff and the next owner is started
+  separately. Otherwise return it to the user.
 - Do not approve your own work, update an official plan/tracker, commit/push,
   install dependencies, use the network, launch subagents, or modify
   orchestration state unless explicitly authorized.

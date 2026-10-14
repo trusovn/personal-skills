@@ -1,6 +1,6 @@
 ---
 name: task-preflight
-description: Check whether one bounded task is safe and executable against the current repository, then return a concise ready or blocked result. Use when asked to preflight, readiness-check, resolve task commands or ownership, or prepare a durable execution packet. Default to a lightweight guided check; use the full freshness packet only for explicit high-assurance or orchestrated work. Do not implement, redesign requirements, or treat missing stage paperwork alone as a blocker.
+description: Check whether one bounded task is safe and executable against the current repository, then return a concise ready or blocked result. Use when asked to preflight, readiness-check, resolve task commands or ownership, or prepare a durable execution packet. Require derived verification and compact durable readiness for executable packages; keep direct requests inline and exact freshness for high-assurance work. Do not implement or redesign requirements.
 ---
 
 # Task Preflight
@@ -28,17 +28,23 @@ exact freshness/ownership evidence is proportionate to the task's risk.
   `docs/tasks/API-31.md`, even when no `verification.md` exists, and route it to
   `task-brief-designer` for package normalization. A bounded conversational
   request is not a durable brief.
-- Return a compact inline readiness result unless the user requests a file.
-- When the executable task package contains `verification.md`, or the caller
-  supplies it, require its `Source brief:` declaration to resolve to the
-  package's `brief.md`. Only then read it as derived guidance and preserve its
-  scenario/AC coverage without treating it as requirements authority.
+- For every supplied executable package, require `verification.md` beside
+  `brief.md` and require its `Source brief:` declaration to resolve to that
+  brief. Read it as derived guidance under the brief and cited authority.
+  Missing or mismatched verification cannot produce ready readiness; route
+  the defect to `task-verification-designer` after any needed package repair.
+- Write compact durable readiness to the canonical `preflight.md` beside
+  `brief.md`, including for routine packages. Use the guided sections of
+  `references/execution-packet-template.md`; no separate context artifact,
+  digest ledger, tracker, machine schema or instrumentation is required merely
+  because a package exists. A request for inline output cannot bypass this rule.
+  An unpackaged conversational request may receive inline readiness.
 - Inspect the minimum current state needed to protect ownership and identify
   concrete readiness uncertainty, then classify the standalone preflight's
   value before doing broader readiness work. This classification guides
   effort; it is not a readiness status or a required machine-schema field.
-- The standalone stage is optional; `bounded-task-implementer` may perform the
-  same compact self-preflight.
+- Standalone preflight is required for an executable package. For an unpackaged
+  direct request, `bounded-task-implementer` may perform the compact self-check.
 - Before preflighting a task brief, reject it as non-executable when it declares
   `Task kind: composite` and `Status: decomposed`. Read `docs/tasks/index.json`
   when present to identify its dependency-ready executable leaf, then reroute
@@ -67,11 +73,10 @@ the route merely because the brief named it.
   source, and an authorized durable packet path. Refuse a direct legacy brief
   and route it to `task-brief-designer` for package normalization. The packet
   path must be `preflight.md` beside the package's `brief.md`.
-- When the executable task package contains `verification.md`, or the caller
-  supplies a verification-design artifact, treat it as a derived packet input:
+- Require the executable package's `verification.md` as a derived packet input:
   require its `Source brief:` declaration to resolve to the package's
   `brief.md`, preserve its scenario/AC coverage, and record its exact path and
-  digest. Record `none` when no artifact applies.
+  digest and revision. Missing or mismatched verification prevents ready.
 - Capture exact baseline and content identities so another agent or process can
   safely rely on the packet later.
 - Produce the complete packet from
@@ -80,7 +85,8 @@ the route merely because the brief named it.
 ## Guided workflow
 
 1. Read applicable instructions, the task/request, and any applicable
-   task-local verification design. Confirm the expected behavior is
+   task-local verification design (required for a supplied package). Confirm
+   the expected behavior is
    sufficiently clear; route a material product or architecture gap back to the
    owner rather than guessing.
 2. Inspect `git status --short`, the intended change area, and any declared
@@ -97,9 +103,19 @@ the route merely because the brief named it.
 5. Resolve the relevant implementation paths, closest tests, public entry
    point, and lowest-cost targeted command. Focused discovery is allowed; do
    not perform generic repository archaeology.
-6. For each acceptance criterion, confirm an observable oracle. When
-   verification design applies, account for every scenario ID and keep blocked
-   coverage visible. Require the real boundary only where unit/module evidence
+6. For every material AC and scenario, confirm the authority relationship,
+   coverage, setup, decisive boundary, command feasibility, dependencies,
+   permissions and ownership. An omitted AC, unsupported scenario or weak oracle
+   prevents ready even when other evidence is green. Keep each gap visible with
+   evidence, owner and smallest correction route; never invent requirements or
+   drop a required row. Verification defects route to `task-verification-designer`;
+   unclear requirements route to task design or the authority owner.
+   An absent task-owned future test is allowed when its fixture, tool and boundary
+   are feasible within scope: name the planned proof and command, and record that
+   it has not run. An unavailable indispensable capability blocks with concrete
+   evidence and its prerequisite owner; it is not new implementation scope.
+   Readiness does not claim that future behavior passed. Require the real
+   boundary only where unit/module evidence
    cannot prove wiring, persistence, process, database, filesystem,
    concurrency, recovery, authorization, or another material behavior.
 7. Run an authorized cheap local baseline only when it distinguishes a broken
@@ -108,10 +124,49 @@ the route merely because the brief named it.
    complete.
    Ask before slow, flaky, privileged, destructive, live, or networked checks
    unless already authorized.
-8. Return `ready` with the exact targeted command and oracle, scope/ownership
-   result, relevant capability result, meaningful warning or blocker,
-   implementation stops, and exact next action; otherwise return `blocked`
-   with the evidence, owner, and smallest next action.
+8. Record compact decision context and current applicability as described below.
+   Write `ready` or `blocked` to the package's canonical `preflight.md`; for a
+   noncanonical requested path, return blocked content without writing there.
+   Direct requests may return inline. Include the exact targeted command and
+   oracle, scope/ownership and capability results, warnings/stops and next action.
+   Blocked output includes evidence, owner and smallest next action.
+
+## Decision context and current applicability
+
+Bind packaged readiness to the source brief and its revision (use a supplied
+revision/reference; exact digests are only required in high-assurance mode),
+allowed scope and verification revision. Link relevant task/project direction,
+architecture and current/planned contracts. Carry compact decision context:
+intended use and operating envelope, important failure consequences, relevant
+business priorities, required consumers, credible same-kind maintenance/planned changes,
+mitigations and decision-relevant unknowns. Use supplied facts; do not invent
+business policy or require a complete context dossier.
+
+Reassess relevant known issues against this task's exposure and obligations.
+Unrelated issues do not trigger broad rediscovery. A missing known-issues file
+means no recorded deferrals, not a preparation blocker. Record ordinary unknowns
+as reasonable assumptions and continue without routine questions or automatic
+blockers. Required proof, capability, permissions and ownership remain binding.
+For credible serious consequences of delay or materially costly later repair,
+resolve uncertainty within current authority first. Only a still unresolved
+decision-critical fact calls for one focused question explaining the consequence
+and needed fact; preserve the unresolved condition and its decision owner.
+Do not mark readiness ready while that decision-critical condition is unresolved.
+
+Under unchanged authority, a reasoned verification revision must
+retain existing scenario IDs and state why coverage changed. Reject
+affected obsolete readiness even when IDs are unchanged. Perform focused
+preflight on added/revised obligations and affected
+feasibility, reuse unchanged relevant facts, and record a current decision bound
+to the new revision. Do not restart task design or full discovery for a justified
+coverage revision. Preserve non-artifact repository files.
+
+Material authority, prerequisite/dependency, ownership, permission or capability
+changes require reconsideration and a current readiness decision on affected facts.
+Expected implementation or report effects alone do not force full rediscovery.
+Changed requirements return to `task-brief-designer` or the decision owner;
+derived scenarios cannot settle them. These guided applicability rules do not
+relax exact high-assurance freshness checks.
 
 For a marginal direct invocation, still perform steps 1-8 sufficiently to give
 a truthful `ready` or `blocked` result. Limit the check to applicable
@@ -132,17 +187,21 @@ Block when:
 - safe execution needs an unauthorized destructive, privileged, live, or
   networked action.
 
-Do not block guided work solely because there is no durable packet,
-content-digest ledger, worker-result schema, exact broader gate, or separate
-preflight artifact. Record relevant uncertainty and let implementation resolve
-ordinary local details before editing.
+Do not require a content-digest ledger, worker-result schema or exact broader
+gate for guided work. Direct requests need no durable artifact. Packages require
+verification and canonical readiness; missing verification is a coverage gap,
+not optional paperwork. Record relevant uncertainty and let implementation resolve
+ordinary in-scope details, including feasible future tests.
 
 ## High-assurance workflow
 
-1. Read the complete brief, any applicable task-local verification design,
+1. Read the complete brief, required packaged task-local verification design,
    cited authority, applicable instructions, dependency source, and run policy.
    Confirm status `ready_for_preflight`. Treat verification design as derived
    guidance under the brief rather than independent requirements authority.
+   Apply the same complete coverage, feasibility and context checks as guided
+   packages; feasible absent future tests never waive required capabilities or
+   the exact freshness checks below.
 2. Resolve the durable packet path first. It must be the executable task
    package's `preflight.md`. A different path is a contract error: return
    blocked content without writing it and route package normalization or a
@@ -190,13 +249,16 @@ Use exactly one status:
 - `ready`: implementation can begin under the recorded scope and policy;
 - `blocked`: a concrete failed condition has an owner and smallest next action.
 
-For guided mode, default to a short human-readable result containing:
+For guided mode, use a compact canonical package packet or inline direct-request
+result containing:
 
 - status and `standalone_preflight_value: marginal | material`, including the
   routine basis or exact uncertainty resolved;
 - only implementation deltas: confirmed scope and user-work ownership,
   targeted command and observable oracle, relevant helper/capability result,
   material warnings or blockers, and implementation stops;
+- source brief/scope/verification revision, per-AC/scenario authority and
+  feasibility conclusions, referenced decision context and current applicability;
 - whether the standalone stage added enough value to recommend it for the next
   materially similar task; and
 - the exact next action.
@@ -215,7 +277,9 @@ blocked packet is evidence, not authorization to implement.
 - Keep current-state failures—dirty overlap, dependency failure, missing path
   or helper, invalid command, environment, or permissions—here.
 - Route wider scope or shared infrastructure through brief design.
-- Do not edit source/tests/docs/config/dependencies, implement, approve, update
+- Write only canonical readiness for packages or an explicitly requested direct
+  readiness artifact. Do not edit other source/tests/docs/config/dependencies,
+  implement, approve, update
   trackers, launch subagents, or modify orchestration state.
 
 ## Definition of done
@@ -227,4 +291,6 @@ blocked packet is evidence, not authorization to implement.
   meaningful gaps are explicit.
 - Guided output is delta-focused, and marginal direct requests still receive a
   truthful readiness check without freshness paperwork or broad baselines.
+- Every supplied executable package has source-matched justified verification
+  and compact canonical readiness with complete feasibility and decision context.
 - High-assurance mode remains independently reproducible and freshness-safe.

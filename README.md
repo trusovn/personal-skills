@@ -47,6 +47,7 @@ Current source skills:
 - `task-contract-registry-updater`
 - `task-maintainability-review`
 - `task-preflight`
+- `task-review-discovery`
 - `task-verification-designer`
 - `task-orchestrator`
 - `testing-discipline`
@@ -90,6 +91,9 @@ The installer:
 - validates the staged evidence/runtime installation before replacing managed
   targets and runs the installed `run_evidence.py ... availability` check again
   after replacement;
+- installs into a genuine unborn target repository (a fresh `git init` with no
+  commit yet): workflow identity and both availability gates report the unborn
+  state explicitly without creating a commit or fabricating one;
 - supports using the source repository as the target because all selected files
   are staged before managed destinations are replaced; and
 - is safe to rerun as the normal update mechanism for this profile.
@@ -99,6 +103,48 @@ To refresh the project-local installation in this source repository itself, run:
 ```bash
 python3 scripts/install_development_skills.py .
 ```
+
+### Checking the installed profile for drift
+
+The installer also has an explicit read-only check mode that compares an
+installed development profile with its canonical source without changing
+anything:
+
+```bash
+python3 /path/to/personal-skills/scripts/install_development_skills.py \
+  --check /path/to/target-repo
+```
+
+The check never installs, stages copies, refreshes, writes files or Git
+metadata, or starts an evidence run. It compares every file in each selected
+skill package (references, evals, and setup files included), the installed
+profile guide, every explicitly managed shared script/config/schema under
+`.agents/scripts/`, and the marked `AGENTS.md` block against the source
+projection, applying the same transient exclusions as installation
+(`__pycache__`, `*.pyc`, `.DS_Store`, `node_modules`). Source-side
+enumeration follows directory symlinks exactly as install-time copying
+does, so content linked into a selected source package is compared like any
+other file the installer copies; installed trees are never traversed
+through inner symlinks. Acyclic directory aliases — several links to one
+directory, or a link to an existing sibling directory — are copied by the
+installer and therefore compared at every linked path; only a link that
+closes a directory cycle back to one of its own ancestors fails with
+`cannot enumerate source skill directory: <path>: directory cycle` and
+exit 2. Unmanaged bytes never
+cause drift: unselected skills, non-selected scripts, other `.agents`
+content, and `AGENTS.md` text outside the marked block are not compared.
+
+Results and exit semantics are stable for human and subprocess callers: the
+check prints one JSON object with `match`, `compared_paths`, and the
+changed, missing, and unexpected managed paths in `differences`; exit 0 means
+the managed projection matches, exit 1 means managed drift (including a
+missing installation), and exit 2 means the check itself failed — unusable
+source or target, required content that cannot be read or whose directory
+cannot be enumerated, or malformed/ambiguous `AGENTS.md` markers — and a
+failure never reports a match. Source inputs are
+resolved relative to the installer's own location, not the caller's working
+directory. The check compares only current bytes and retains no versions:
+refresh deliberately by rerunning the installer between check invocations.
 
 **Maintenance contract for future skill changes:**
 `scripts/install_development_skills.py` is part of the distribution surface.
@@ -169,7 +215,10 @@ bounded task into a formal/orchestrated workflow.
 
 See `scripts/runtime-context.md` for the runtime identity contract and
 `scripts/run-evidence.md` for evidence lifecycle, snapshot, recovery, and
-deterministic-check semantics.
+deterministic-check semantics. Unborn-repository support covers installation,
+workflow identity, and the availability check only; the run-evidence
+collector's `begin`/`finish`/`recover` lifecycle still requires a resolved
+HEAD.
 
 ## Workflow version fingerprints
 
@@ -182,7 +231,11 @@ python3 scripts/workflow_version.py bounded-task-implementer
 
 The tool prints JSON with the skill ID, a SHA-256 fingerprint, the current Git
 commit, current branch (or `null` for detached HEAD), repository dirty state,
-and workflow dirty state. For source-repository skills, the fingerprint is derived from the current contents
+and workflow dirty state. A repository whose HEAD still names its unborn first
+branch reports `repository_commit` as `null` with the unborn branch in
+`repository_branch`; that unborn identity is explicit, fabricates no commit,
+and is replaced by the first real commit. An actual Git failure remains a
+reported error and is never reported as a missing first commit. For source-repository skills, the fingerprint is derived from the current contents
 and relative paths of tracked plus non-ignored untracked files inside that skill
 directory. For an explicit installed skills tree beside the active shared scripts,
 the same fingerprint framing reads the installed package files directly instead
@@ -196,7 +249,9 @@ separate from repository provenance. `repository_commit` and
 `repository_dirty` and `workflow_dirty` show whether the repository or this
 workflow differs from committed state. Unrelated repository changes therefore
 do not change a skill fingerprint. There are no manually incremented per-skill
-versions.
+versions. The unborn, first-commit, and later committed states keep one
+fingerprint for equivalent package bytes; only the commit identity tracks Git
+HEAD.
 
 Fingerprint semantics are a compatibility contract. Changes to input
 selection/exclusion, path normalization, canonical ordering, hash framing, or
@@ -299,22 +354,60 @@ The normal human-driven path is deliberately lightweight:
 clear request or task brief
   -> task-brief-designer       when the implementation contract has gaps
   -> task-verification-designer
-                               when task-local verification semantics are non-obvious
-  -> task-preflight            when readiness needs an independent check
+                               required for a supplied executable task package
+  -> task-preflight            required ready preflight for that package
   -> bounded-task-implementer  implementation and progressive verification
   -> architecture gate + task-maintainability-review
                                when repo policy requires maintainability review
-  -> task-acceptance-review    fresh independent functional review when risk requires it
+  -> task-contract-registry-updater
+                               when the repository uses implemented-contract
+                               discovery and a durable cross-task contract changed
+  -> task-review-discovery     fresh session publishing current evidence
+                               whenever independent review is required
+  -> task-acceptance-review    separate fresh decision that admits the
+                               discovery report and decides every finding
+  -> coordinator recording     approved deferrals are recorded by the human
+                               coordinator before authorized continuation
 ```
-For small, unambiguous work, go directly to `bounded-task-implementer`; it
-performs a compact self-preflight. When the repo declares a required
+For small, unambiguous **unpackaged conversational** work, go directly to
+`bounded-task-implementer`; it performs a compact self-preflight. A supplied
+executable task package always follows verification design and ready preflight
+first. Packaged guided readiness is compact canonical `preflight.md`, bound to
+the brief, scope and verification revision, with complete proof feasibility and
+referenced decision context. Feasible future tests may be absent; indispensable
+capability gaps block. Reasoned coverage revisions need focused new readiness;
+expected implementation/report effects alone do not force rediscovery. On
+packaged entry the implementer verifies current applicable readiness without
+becoming the readiness owner, and its submission maps every verification
+scenario ID to current evidence or an explicit blocked/unchecked reason and
+next owner.
+When the repo declares a required
 maintainability gate, run that gate and a fresh `task-maintainability-review`
-before functional acceptance. Use `testing-discipline` alongside implementation
+before the contract-registry stage, fresh discovery evidence and functional
+acceptance. Every required-review submission names the first outstanding
+applicable stage and the complete ordered remainder; a conditional stage
+counts only with evidence current for the submitted bytes, and an implementation
+correction, including a tests-only correction, re-enters the stages it affected
+before fresh discovery and acceptance. When acceptance approves a bounded non-material
+deferral, the human coordinator alone records it, before authorized
+advancement, in `docs/known-issues.md` (or the repository's declared path);
+discovery and acceptance never write the tracker. A relevant later preflight
+or acceptance reassesses recorded known issues against its own task's
+exposure and obligations — unchanged compatible exposure preserves the
+deferral, changed exposure routes through the record's follow-up owner, and
+unrelated issues trigger no broad issue search. Use `testing-discipline`
+alongside implementation
 or review when behavioral evidence, test design, or QA risk is material. Use
 `senior-code-review` for general diff/PR review when the stricter focused review
 contracts are not needed. Use `ollama-delegate` when a separate Ollama-backed
 model should independently inspect the repository under one of the installed
 skill contracts; its V1 repository tools are intentionally read-only.
+
+Significant changed tests, evaluations, fixtures and harness code are a risk
+reason for the existing conditional maintainability review. Significance follows
+ownership, dependencies, scenario authority, isolation, oracle structure or
+harness behavior. An ordinary assertion edit alone does not require this review;
+a tests-only label never waives an affected required review.
 
 The detailed guided, maintainability-gated, and high-assurance variants are
 documented in
@@ -356,12 +449,37 @@ project-bootstrap
   -> project-delivery-plan
   -> project-plan-verification
   -> task brief
+  -> separate verification design (required for a supplied executable task package)
+  -> ready preflight
   -> bounded implementation
   -> deterministic architecture validation
   -> maintainability review
   -> contract-registry synchronization
+  -> independent review discovery
   -> acceptance review
 ```
 
 Planning artifacts (`project-plan.md`, `task-map.json`, task briefs) may describe future contracts. `docs/contracts/*.json` describes reusable contracts that are currently implemented. Stable plan IDs connect the two when a planned contract materializes. Executable declarations and code/tests remain the underlying authority.
 <!-- contract-registry-flow:root-readme:end -->
+
+## Archived delivery documents
+
+Completed delivery documents were archived and retired. Some qualification was
+incomplete; future issues will use new work. The future-work catalog remains
+active in [docs/future-work/FEATURE-MAP.md](docs/future-work/FEATURE-MAP.md).
+
+Fixed archive tag: `archive/documentation-pre-cleanup-2026-10-14`.
+Exact commit: `0ad1706cecc6f7d115e510762bf74c58d732cb6a` ([original docs](https://github.com/trusovn/personal-skills/tree/0ad1706cecc6f7d115e510762bf74c58d732cb6a/docs)).
+Recover it in a fresh directory:
+
+```sh
+git init delivery-history
+git -C delivery-history fetch --no-tags https://github.com/trusovn/personal-skills.git refs/tags/archive/documentation-pre-cleanup-2026-10-14:refs/tags/archive/documentation-pre-cleanup-2026-10-14
+git -C delivery-history rev-parse archive/documentation-pre-cleanup-2026-10-14^{commit}
+git -C delivery-history switch --detach 0ad1706cecc6f7d115e510762bf74c58d732cb6a
+```
+
+Check that the printed commit equals the exact SHA above. Historical verdicts and
+unrun qualification limits remain as originally recorded. Composition tests use
+owned local inputs under `tests/fixtures/review-composition/`; archive recovery
+is not required to run them.

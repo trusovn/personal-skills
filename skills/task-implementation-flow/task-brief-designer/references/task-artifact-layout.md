@@ -43,13 +43,12 @@ docs/tasks/
     brief.md
 ```
 
-Only create `verification.md` when a separate `task-verification-designer`
-pass is actually used. Do not create an empty placeholder when verification
-design stays inline.
-
-Only create `preflight.md` when standalone/high-assurance preflight actually
-produces a durable artifact. Guided review remains conversational unless the
-user, repository, or high-assurance route requires a report.
+For an executable task package, create derived `verification.md` before a
+ready `preflight.md`; both are required before implementation. Do not create an
+empty placeholder: the verification artifact identifies its source brief and
+revision, maps material ACs to scenarios, and the preflight records the ready
+revision. A small conversational direct edit can use inline checks only while
+it is not supplied as a task package.
 
 High-assurance freshness does not require these canonical files to be ignored
 or Git-status-neutral. The producing stage records exact status before and
@@ -143,10 +142,9 @@ inventing a special parent implementation/review stage.
 - `project-plan-verification`: owns `docs/project-plan-review.md`.
 - `task-brief-designer`: owns task brief design, decomposition, and structural
   `docs/tasks/index.json` entries it creates.
-- `task-verification-designer`: owns a durable `verification.md` in the
-  executable task package only when the optional stage is used.
-- `task-preflight`: owns a durable `preflight.md` only when its invocation
-  requires one.
+- `task-verification-designer`: owns the required derived `verification.md` in
+  an executable task package before implementation.
+- `task-preflight`: owns the required ready `preflight.md` for that package.
 - semantic reviewers: own separate numbered review artifacts only when a durable
   report is required.
 - runtime orchestration: owns execution state elsewhere; workers/reviewers do

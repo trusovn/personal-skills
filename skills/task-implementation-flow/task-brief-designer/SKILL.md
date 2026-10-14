@@ -1,6 +1,6 @@
 ---
 name: task-brief-designer
-description: Create, tighten, or gap-check one bounded implementation task from a user request, issue, approved plan, specification, or existing brief. Use when asked to make work implementation-ready, define acceptance criteria and verification, estimate and recursively split oversized work into bounded child briefs, prepare an agent handoff, or repair a task contract. Prefer a lightweight delta over rewriting an adequate brief. Do not implement, certify current repository readiness, or invent unresolved product or architecture decisions.
+description: Create, tighten, or gap-check one bounded implementation task from a user request, issue, approved plan, specification, or existing brief. Use when asked to make work implementation-ready, define acceptance criteria and verification, estimate oversized work and split it into bounded child briefs only when coherent boundaries justify the split, prepare an agent handoff, or repair a task contract. Prefer a lightweight delta over rewriting an adequate brief. Do not implement, certify current repository readiness, or invent unresolved product or architecture decisions.
 ---
 
 # Task Brief Designer
@@ -35,9 +35,11 @@ concurrency, multi-writer, or similar risk.
 - If an existing task already has a clear outcome, bounded scope, acceptance
   criteria, and useful verification, do not rewrite it. Return a concise gap
   check or make only the requested/local missing additions.
-- Produce a compact `ready` brief when a durable artifact is useful. The
-  routine readiness route is implementer self-preflight. Recommend standalone
-  guided preflight only for a named material readiness uncertainty.
+- Produce a compact `ready` brief when a durable artifact is useful. Its
+  readiness route is standalone guided preflight after derived verification.
+  Reserve implementer self-preflight for unpackaged conversational direct
+  edits, with standalone preflight there only for a named material
+  readiness uncertainty.
 
 ### High assurance
 
@@ -50,6 +52,19 @@ Do not upgrade a routine task merely because a fuller template exists. If a
 guided task discovers a genuine high-assurance need, name the reason and the
 smallest additional artifact or decision required.
 
+## Binding packaged preparation
+
+A supplied executable task package always requires a derived `verification.md`,
+then a ready `preflight.md`, before implementation. This applies to compact
+documentation work as well as code changes. A small clear conversational direct
+edit may retain inline verification and a safety check only while no task package
+has been supplied; it cannot use the conversational direct-edit exception to
+bypass packaged preparation.
+
+Composite/decomposed work, blocked design, and direct legacy briefs are not
+prepared as executable packages. Route them to the dependency-ready leaf, the
+task or decision owner, or package normalization respectively.
+
 ## Load flow policy
 
 Before estimating a task that could become implementation-ready, read
@@ -57,13 +72,15 @@ Before estimating a task that could become implementation-ready, read
 live there intentionally; do not copy them into this skill or silently replace
 them with personal defaults.
 
-Each configured maximum is exclusive: split only when the corresponding
-estimate is greater than that maximum. An estimate equal to a maximum fits.
+Each configured maximum is exclusive: a maximum triggers the boundary
+decision below only when the corresponding estimate is greater than it. An
+estimate equal to a maximum fits.
 
 When creating or updating durable task artifacts, read
 `references/task-artifact-layout.md`. Repository or user authority may choose a
 different task-package root or directory name, but every durable task must keep
-its `brief.md` and optional artifacts inside one dedicated package directory.
+its `brief.md` and required preparation artifacts inside one dedicated package
+directory.
 Do not create or consume direct briefs under the shared task root.
 
 ## Minimum inputs
@@ -197,36 +214,41 @@ an unapproved premise.
    budget as a soft checkpoint unless higher-priority instructions explicitly
    make it hard. When `review: immediate`, preserve implementation as the next
    action and add the ordered follow-on: immediately after implementation or
-   correction, hand the completed bytes to a fresh independent acceptance
-   reviewer. Apply this to surgical gap-checks as well as newly drafted briefs;
+   correction and any applicable conditional stages, hand the completed bytes
+   to a fresh independent `task-review-discovery` call, and hand its report to
+   a separate `task-acceptance-review` decision. Apply this to surgical
+   gap-checks as well as newly drafted briefs;
    a generic implementation next action or a review workflow loaded in the
    authoring or implementation session does not state independent acceptance.
 10. Give every durable brief one human-readable readiness route:
-    - `implementer self-preflight` for routine guided work;
-    - `standalone guided preflight — <material uncertainty>` only when naming
-      the concrete uncertainty that makes a separate readiness check useful; or
+    - `standalone guided preflight` for an executable task package, after its
+      derived verification; `— <material uncertainty>` may name the concrete
+      focus of that required check;
+    - `implementer self-preflight` only for an unpackaged conversational
+      direct edit while no task package has been supplied; or
     - `high-assurance preflight` when the selected profile requires it.
     Do not add a route metadata key. Current repository facts may require the
     implementer or orchestrator to escalate the recommendation at execution
     time. A prerequisite feasibility/proof task from step 4 is a design
     dependency, not a readiness route.
-11. Explicitly classify whether a separate `task-verification-designer` pass
-    is recommended before implementation:
+11. Explicitly classify the verification reasoning before implementation:
     - `inline` when the task is small and its decisive tests/oracles are
       obvious from the brief;
     - `separate — <reason>` when non-obvious negative/lifecycle semantics,
       finite material cases, boundary behavior, or multiple plausible-wrong
       implementations make a focused verification-design pass useful.
-    This is a recommendation, not a mandatory stage. Do not recommend it merely
-    because the skill exists, and do not use it to compensate for ambiguous
-    requirements that should block or return to the decision owner.
+    For a supplied executable task package, either classification still requires
+    binding preparation: write the derived `verification.md`, then obtain ready
+    `preflight.md`. Do not use it to compensate for ambiguous requirements that
+    should block or return to the decision owner.
 12. Read `references/task-brief-template.md`. Use only the core sections for a
     guided brief; add the high-assurance sections only for that profile.
 
 ## Sizing and decomposition contract
 
-Treat the execution estimate as a decomposition gate, not merely descriptive
-metadata.
+Treat the execution estimate as a gate that forces a boundary-quality
+decision, not merely descriptive metadata and not an automatic split
+command.
 
 1. Estimate the candidate implementation task after its authority, outcome,
    scope, acceptance criteria, and decisive verification are clear. Estimate
@@ -241,11 +263,21 @@ metadata.
    applies to the complete pair; for example, a `strong` + `high` rule means
    both values together, not either value independently. Numeric maxima trigger
    only when the estimate is greater than the maximum; equality fits.
-3. When any active decomposition trigger matches, split by default. Prefer
-   coherent behavioral, ownership, interface, state-transition, or artifact
-   boundaries whose outputs can be consumed explicitly by later work. Do not
-   split by arbitrary file halves, architectural layers, equal call counts, or
-   a detached "write tests" task merely to force estimates below a threshold.
+3. When any active decomposition trigger matches, make an explicit boundary
+   decision; never split automatically on the trigger alone. Prefer coherent
+   behavioral, ownership, interface, state-transition, or artifact boundaries
+   whose outputs can be consumed explicitly by later work. Before committing
+   to a split, assess the candidate boundary for clear single ownership of
+   each child outcome, stable explicitly consumable handoffs, independent
+   implementation and verification per child, shared edit/test surfaces the
+   split would force back together, likely contract renegotiation, and net
+   delivery benefit including coordination and rework cost. Prefer a split
+   when settled boundaries produce independently verifiable outcomes with
+   cheaper coordination than keeping the work whole; reject a poor partition
+   by keeping coherent work together or choosing a better boundary. A
+   component/layer split alone is not sufficient evidence. Do not split by
+   arbitrary file halves, architectural layers, equal call counts, or a
+   detached "write tests" task merely to force estimates below a threshold.
 4. The original task becomes a `composite` parent with status `decomposed`.
    It is a coordination/coverage contract and is never a launch target for
    `bounded-task-implementer`. Give child IDs stable numeric suffixes such as
@@ -261,17 +293,22 @@ metadata.
    profile. Only leaf tasks may be handed to implementation. A decomposition is
    not successful merely because the parent was renamed: it must reduce the
    triggering work and leave each leaf within the active envelope, unless the
-   explicit unsplittable override below applies.
+   permitted no-split override below applies.
 7. If a parent-level acceptance criterion can only be proven after sibling work
    composes, create a final executable integration child that owns that proof
    and any required wiring. Do not invent a special composite-parent
    implementation or acceptance-review stage.
-8. Use an unsplittable override only when the active sizing profile allows it
-   and further decomposition would destroy a real atomic boundary or create
-   coordination-only handoffs. The executable leaf must record
-   `decomposition_override: cannot_split_safely`, the triggered limit(s), the
-   concrete reason, and residual execution risk. Strong reasoning by itself is
-   not evidence that a task is irreducible.
+8. A triggered task may remain one executable leaf when concrete coupling or
+   coordination/rework costs favor keeping it whole, even without strict
+   atomicity. Use this no-split decision only when the active sizing profile
+   allows the override, and record `decomposition_override:
+   cannot_split_safely` with the triggered limit(s), the candidate boundary
+   considered, the concrete coupling/coordination reason, and residual
+   execution risk. Mere preference or high reasoning alone is insufficient:
+   strong reasoning by itself is not evidence that a task is irreducible.
+   Respect explicit hard authority limits; the decision may not override an
+   authority-declared hard constraint, and it stays within the active
+   policy's override permission.
 9. Before writing the decomposition package, verify:
    - children collectively cover the parent outcome and every parent AC;
    - no approved requirement, invariant, interface, or contract impact
@@ -291,9 +328,11 @@ metadata.
 
 For surgical gap-checks of an existing executable brief, sizing remains
 mandatory. Add the execution-sizing evidence as the smallest local addition;
-if its estimate triggers decomposition, replace the executable handoff with a
-composite parent and bounded child briefs. Do not use the gap-check form to
-avoid a triggered split.
+when its estimate triggers the boundary decision, either keep the executable
+leaf with the recorded reasoned no-split decision or replace the executable
+handoff with a composite parent and bounded child briefs. Do not use the
+gap-check form to avoid a triggered boundary decision, and do not split
+merely to silence the trigger.
 
 ## Finite-risk coverage contract
 
@@ -349,7 +388,9 @@ For a gap check, report only:
   `task-verification-designer` pass, with the concrete reason when separate;
   and
 - when `review: immediate`, the ordered handoff from implementation or
-  correction to fresh independent acceptance review immediately afterward.
+  correction through applicable conditional stages and fresh independent
+  `task-review-discovery` evidence to the separate `task-acceptance-review`
+  decision immediately afterward.
 
 When supplied direction does not authorize a needed product, priority,
 assurance, trust, intervention, or scope choice, return only:
@@ -434,7 +475,7 @@ design task.
   with a direction delta.
 - Guided briefs avoid high-assurance artifact ceremony unless risk justifies it.
 - Every executable leaf records sizing evidence and fits the active sizing
-  profile or carries the allowed explicit unsplittable override.
+  profile or carries the allowed explicit reasoned no-split override.
 - Every composite parent has complete child coverage, explicit dependencies,
   and no implementation handoff of its own.
 - High-assurance briefs preserve exact stage and evidence contracts.

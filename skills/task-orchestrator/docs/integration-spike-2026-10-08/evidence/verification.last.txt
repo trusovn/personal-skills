@@ -1,0 +1,5 @@
+Created [verification.md](/private/tmp/task-flow-spike-2026-10-08/docs/tasks/SYN-01/verification.md).
+
+It maps AC-01–AC-03 to three public-API scenarios covering filtering, case sensitivity, ordering, duplicates, default/empty prefixes, non-mutation, and empty outcomes. `git diff --check` passed.
+
+Implementation handoff is included in the artifact.

@@ -1,0 +1,253 @@
+{
+  "stage_order": "passed",
+  "unique_actor_sessions": [
+    "01a11c7c-bbc8-7b91-95cc-a47772a9c4ab",
+    "01a11c7e-b30a-7560-8f8e-70ea0e8db16e",
+    "01a11c7f-d641-7102-a2e5-dbc66093b1b7",
+    "01a11c81-c6ea-7cf0-9739-e3a3ffb13a72",
+    "01a11c83-1f40-7473-929f-8c11c1c67f57",
+    "01a11c83-ec56-7b01-aff6-381e3098887e",
+    "01a11c84-81e3-7b73-92f3-c7f10cd7abfc"
+  ],
+  "requested_runtime": "gpt-5.6-terra / medium",
+  "between_stage_content_continuity": "passed",
+  "maintainability_to_acceptance_byte_identity": "passed",
+  "public_api_cases": 8,
+  "validator_probes": [
+    {
+      "case": "valid registry",
+      "exit_code": 0,
+      "output": "contract registry OK: 1 subsystem(s), 0 indexed plan ref(s)\n"
+    },
+    {
+      "case": "invalid summary type",
+      "exit_code": 1,
+      "output": "ERROR: docs/contracts/catalog.json: provides[0].summary must be a string\ncontract registry validation failed: 1 error(s)\n"
+    }
+  ],
+  "invalid_worker_or_effect_rejections": 3,
+  "actor_commands": {
+    "brief": [
+      {
+        "command": "/bin/zsh -lc \"pwd && rg --files -g 'AGENTS.md' -g 'authority.md' -g 'run-policy.json' -g 'dependencies.json' -g 'SKILL.md' -g '*.md' .agents/skills/task-implementation-flow/task-brief-designer .agents/skills/task-implementation-flow | sort\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,240p' AGENTS.md && sed -n '1,260p' authority.md && sed -n '1,260p' run-policy.json && sed -n '1,220p' dependencies.json && sed -n '1,300p' .agents/skills/task-implementation-flow/task-brief-designer/SKILL.md && sed -n '1,260p' .agents/skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md && sed -n '1,300p' .agents/skills/task-implementation-flow/task-brief-designer/references/task-brief-template.md\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '240,560p' .agents/skills/task-implementation-flow/task-brief-designer/SKILL.md && sed -n '1,260p' .agents/skills/task-implementation-flow/task-brief-designer/references/task-sizing.yaml && sed -n '1,260p' authority.md && sed -n '1,260p' run-policy.json && git status --short && rg --files docs/tasks docs 2>/dev/null | sort\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '260,620p' .agents/skills/task-implementation-flow/task-brief-designer/references/task-brief-template.md && find . -maxdepth 3 -type f -not -path './.git/*' -print | sort && sed -n '1,240p' catalog.py && sed -n '1,260p' tests/test_catalog.py && sed -n '1,240p' docs/contracts/catalog.json && sed -n '1,240p' docs/contracts/index.json && git status --short\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'date -Iseconds && git status --porcelain=v1 && git diff -- catalog.py tests/test_catalog.py docs/contracts/catalog.json docs/contracts/index.json README.md'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"git diff --check && git status --short && rg -n '\"'^(Status|Task kind|agent_tier:|reasoning:|review:|budget:|## Execution sizing|## Readiness route|## Verification-design recommendation|## Outcome|## Authority and scope|## Work and acceptance criteria|## Verification|## Stops and handoff|## High-assurance addendum|### Artifact identity|### Knowledge ledger|### AC execution matrix|### Legacy-assumption and risk checks|### Verification-capability inventory|### High-assurance handoffs|## Expected contract impact)'\"' docs/tasks/SYN-01/brief.md && test -f docs/tasks/SYN-01/brief.md\"",
+        "exit_code": 0
+      }
+    ],
+    "verification": [
+      {
+        "command": "/bin/zsh -lc \"pwd && rg --files -g 'AGENTS.md' -g 'authority.md' -g 'run-policy.json' -g 'brief.md' -g 'SKILL.md' .agents/skills/task-implementation-flow/task-verification-designer docs/tasks/SYN-01 . | sed -n '1,160p'\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,240p' AGENTS.md && sed -n '1,240p' authority.md && sed -n '1,260p' run-policy.json && sed -n '1,300p' .agents/skills/task-implementation-flow/task-verification-designer/SKILL.md && sed -n '1,300p' docs/tasks/SYN-01/brief.md\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,240p' .agents/skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md && if [ -e docs/tasks/SYN-01/verification.md ]; then sed -n '1,260p' docs/tasks/SYN-01/verification.md; else echo 'verification.md absent'; fi && sed -n '1,220p' catalog.py && sed -n '1,260p' tests/test_catalog.py\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,280p' docs/tasks/SYN-01/verification.md && git diff --check -- docs/tasks/SYN-01/verification.md && git status --short -- docs/tasks/SYN-01/verification.md\"",
+        "exit_code": 0
+      }
+    ],
+    "preflight": [
+      {
+        "command": "/bin/zsh -lc \"pwd && rg --files -g 'AGENTS.md' -g 'authority.md' -g 'run-policy.json' -g 'dependencies.json' -g 'brief.md' -g 'verification.md' -g 'SKILL.md' .agents/skills/task-implementation-flow/task-preflight docs/tasks/SYN-01 . | sort\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,240p' AGENTS.md && sed -n '1,260p' authority.md && sed -n '1,260p' run-policy.json && sed -n '1,260p' dependencies.json && sed -n '1,320p' docs/tasks/SYN-01/brief.md && sed -n '1,320p' docs/tasks/SYN-01/verification.md && sed -n '1,400p' .agents/skills/task-implementation-flow/task-preflight/SKILL.md\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,400p' .agents/skills/task-implementation-flow/task-preflight/references/execution-packet-template.md && rg --files catalog.py tests tools docs/contracts README.md .agents/scripts 2>/dev/null | sort && git status --short && git rev-parse --verify HEAD\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"shasum -a 256 AGENTS.md authority.md run-policy.json dependencies.json docs/tasks/SYN-01/brief.md docs/tasks/SYN-01/verification.md catalog.py tests/test_catalog.py docs/contracts/catalog.json docs/contracts/index.json README.md tools/check_architecture.py tools/check_contracts.py && sed -n '1,240p' catalog.py && sed -n '1,320p' tests/test_catalog.py && sed -n '1,260p' docs/contracts/catalog.json && sed -n '1,260p' docs/contracts/index.json && sed -n '1,260p' README.md && sed -n '1,320p' tools/check_architecture.py && sed -n '1,380p' tools/check_contracts.py && python3 --version && git diff --check\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.test_catalog -v'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 tools/check_architecture.py && PYTHONDONTWRITEBYTECODE=1 python3 tools/check_contracts.py --root .'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"date -Iseconds && git status --short && git rev-parse --verify HEAD && shasum -a 256 AGENTS.md authority.md run-policy.json dependencies.json docs/tasks/SYN-01/brief.md docs/tasks/SYN-01/verification.md catalog.py tests/test_catalog.py docs/contracts/catalog.json docs/contracts/index.json README.md tools/check_architecture.py tools/check_contracts.py && git diff --check && find . -type f -mmin -5 -not -path './.git/*' -print | sort\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'git status --short && git diff --check && git diff --name-only && git ls-files --others --exclude-standard && shasum -a 256 AGENTS.md authority.md run-policy.json dependencies.json docs/tasks/SYN-01/brief.md docs/tasks/SYN-01/verification.md catalog.py tests/test_catalog.py docs/contracts/catalog.json docs/contracts/index.json README.md tools/check_architecture.py tools/check_contracts.py docs/tasks/SYN-01/preflight.md'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"git status --short && git diff --check && git diff --name-only && rg -n 'Pending recapture|Status:|Post-write|Final non-packet|Next exact action' docs/tasks/SYN-01/preflight.md && shasum -a 256 AGENTS.md authority.md run-policy.json dependencies.json docs/tasks/SYN-01/brief.md docs/tasks/SYN-01/verification.md catalog.py tests/test_catalog.py docs/contracts/catalog.json docs/contracts/index.json README.md tools/check_architecture.py tools/check_contracts.py docs/tasks/SYN-01/preflight.md\"",
+        "exit_code": 0
+      }
+    ],
+    "implementation": [
+      {
+        "command": "/bin/zsh -lc \"pwd && rg --files -g 'AGENTS.md' -g 'authority.md' -g 'run-policy.json' -g 'SKILL.md' -g 'preflight.md' -g 'worker-result.schema.json' -g 'catalog.py' -g 'test_catalog.py' -g 'README.md' | sort\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,240p' AGENTS.md && sed -n '1,240p' authority.md && sed -n '1,240p' run-policy.json && sed -n '1,260p' .agents/skills/task-implementation-flow/bounded-task-implementer/SKILL.md && sed -n '1,260p' docs/tasks/SYN-01/preflight.md && sed -n '1,260p' worker-result.schema.json\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"wc -l .agents/skills/task-implementation-flow/bounded-task-implementer/SKILL.md && sed -n '261,620p' .agents/skills/task-implementation-flow/bounded-task-implementer/SKILL.md && rg --files -uu .agents/skills/task-implementation-flow/bounded-task-implementer .agents/scripts | sort && sed -n '1,260p' docs/tasks/SYN-01/brief.md && sed -n '1,300p' docs/tasks/SYN-01/verification.md && git status --short && git rev-parse HEAD\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,260p' .agents/skills/task-implementation-flow/bounded-task-implementer/SKILL.md && printf '\\\\n-- freshness --\\\\n' && shasum -a 256 docs/tasks/SYN-01/brief.md docs/tasks/SYN-01/verification.md authority.md dependencies.json AGENTS.md run-policy.json catalog.py tests/test_catalog.py tools/check_architecture.py tools/check_contracts.py && printf '\\\\n-- environment --\\\\n' && python3 --version && git rev-parse HEAD && git status --short && printf '\\\\n-- source/tests/contracts --\\\\n' && sed -n '1,220p' catalog.py && sed -n '1,280p' tests/test_catalog.py && sed -n '1,240p' docs/contracts/index.json && sed -n '1,240p' docs/contracts/catalog.json\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.test_catalog -v'",
+        "exit_code": 1
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.test_catalog -v'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 tools/check_architecture.py'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'git diff --check && git diff -- catalog.py tests/test_catalog.py && git status --short'",
+        "exit_code": 0
+      }
+    ],
+    "maintainability": [
+      {
+        "command": "/bin/zsh -lc \"pwd && rg --files -g 'AGENTS.md' -g 'authority.md' -g 'run-policy.json' -g 'SKILL.md' -g 'brief.md' -g 'catalog.py' -g 'test_catalog.py' -g 'implementation.last.txt' | sed -n '1,160p'\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg --files --hidden .agents | rg 'task-maintainability-review/SKILL\\\\.md|task-maintainability-review|authority\\\\.md|run-policy\\\\.json' && sed -n '1,240p' AGENTS.md && sed -n '1,240p' authority.md && sed -n '1,240p' run-policy.json && sed -n '1,260p' .agents/skills/task-implementation-flow/task-maintainability-review/SKILL.md\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '261,620p' .agents/skills/task-implementation-flow/task-maintainability-review/SKILL.md && sed -n '1,260p' docs/tasks/SYN-01/brief.md && rg --files --hidden .agents/skills/task-implementation-flow | sed -n '1,200p' && find . -maxdepth 3 -type f \\\\( -name '*architecture*' -o -path './.quality/*' \\\\) -print\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"git status --short && git diff -- catalog.py tests/test_catalog.py && sed -n '1,220p' catalog.py && sed -n '1,300p' tests/test_catalog.py && sed -n '1,240p' /Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.last.txt && PYTHONDONTWRITEBYTECODE=1 python3 tools/check_architecture.py\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"git status --short && git diff --check && sed -n '1,260p' tools/check_architecture.py && find docs/tasks/SYN-01/reviews -maxdepth 1 -type f -print 2>/dev/null || true && sed -n '1,220p' docs/contracts/catalog.json && sed -n '1,160p' README.md\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"git status --short && sed -n '1,200p' docs/tasks/SYN-01/reviews/maintainability-01.md\"",
+        "exit_code": 0
+      }
+    ],
+    "registry": [
+      {
+        "command": "/bin/zsh -lc \"pwd && rg --files -g 'AGENTS.md' -g 'authority.md' -g 'run-policy.json' -g 'README.md' -g 'brief.md' -g 'maintainability-01.md' -g 'SKILL.md' . .agents 2>/dev/null\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,240p' AGENTS.md && sed -n '1,260p' authority.md && sed -n '1,260p' run-policy.json && sed -n '1,320p' .agents/skills/task-implementation-flow/task-contract-registry-updater/SKILL.md\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,360p' .agents/skills/repo-foundation/SKILL.md && sed -n '1,260p' docs/tasks/SYN-01/brief.md && sed -n '1,260p' docs/tasks/SYN-01/reviews/maintainability-01.md && sed -n '1,260p' /Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.last.txt && git status --short && git diff -- catalog.py tests/test_catalog.py docs/contracts README.md\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,320p' .agents/skills/repo-foundation/references/contract-registry.md && sed -n '1,240p' docs/contracts/catalog.json && sed -n '1,240p' docs/contracts/index.json && sed -n '1,280p' README.md && sed -n '1,360p' tools/check_contracts.py && rg -n -i 'select_names|catalog' README.md docs AGENTS.md authority.md run-policy.json --glob '\"'!docs/tasks/**'\"'\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 tools/check_contracts.py --root . --write-index'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 tools/check_contracts.py --root . && git diff --check && git status --short && git diff -- docs/contracts/catalog.json docs/contracts/index.json README.md'",
+        "exit_code": 0
+      }
+    ],
+    "acceptance": [
+      {
+        "command": "/bin/zsh -lc \"pwd && rg --files -g 'AGENTS.md' -g 'authority.md' -g 'run-policy.json' -g 'SKILL.md' -g 'brief.md' -g 'preflight.md' -g 'implementation.last.txt' -g 'README.md' -g 'catalog.py' -g 'test_catalog.py' . /Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence 2>/dev/null\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,240p' AGENTS.md && sed -n '1,240p' authority.md && sed -n '1,260p' run-policy.json && sed -n '1,320p' .agents/skills/task-implementation-flow/task-acceptance-review/SKILL.md && sed -n '1,260p' docs/tasks/SYN-01/brief.md && sed -n '1,320p' docs/tasks/SYN-01/preflight.md && sed -n '1,320p' /Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.last.txt\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '241,520p' .agents/skills/task-implementation-flow/task-acceptance-review/SKILL.md && sed -n '1,360p' .agents/skills/task-implementation-flow/task-acceptance-review/references/acceptance-report-template.md && rg --files .agents/skills/task-implementation-flow/task-acceptance-review/references && git status --short && git diff --name-status && git diff -- catalog.py tests/test_catalog.py docs/contracts/catalog.json docs/contracts/index.json README.md && git status --porcelain=v2 --branch && git rev-parse HEAD && shasum -a 256 AGENTS.md authority.md run-policy.json dependencies.json docs/tasks/SYN-01/brief.md docs/tasks/SYN-01/preflight.md docs/tasks/SYN-01/verification.md catalog.py tests/test_catalog.py tools/check_architecture.py tools/check_contracts.py\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,260p' docs/tasks/SYN-01/reviews/maintainability-01.md && sed -n '1,280p' docs/tasks/SYN-01/verification.md && sed -n '1,180p' catalog.py && sed -n '1,220p' tests/test_catalog.py && sed -n '1,240p' docs/contracts/catalog.json && sed -n '1,240p' docs/contracts/index.json && sed -n '1,120p' README.md && git log --oneline -5 && git diff --check && git diff --numstat && find docs/tasks/SYN-01/reviews -maxdepth 1 -type f -print | sort\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"PYTHONDONTWRITEBYTECODE=1 python3 - <<'PY'\nfrom catalog import select_names\n\nnames = [\\\"ant\\\", \\\"Bee\\\", \\\"beetle\\\", \\\"Bee\\\", \\\"Bison\\\", \\\"Beech\\\"]\nassert select_names(names, \\\"Bee\\\") == [\\\"Bee\\\", \\\"Bee\\\", \\\"Beech\\\"]\nassert select_names(names, \\\"be\\\") == [\\\"beetle\\\"]\nassert select_names(names, \\\"e\\\") == []\noriginal = [\\\"Bee\\\", \\\"ant\\\", \\\"Bee\\\"]\nassert select_names(original) == original\nassert select_names(original, \\\"\\\") == original\nassert original == [\\\"Bee\\\", \\\"ant\\\", \\\"Bee\\\"]\nassert select_names([], \\\"Bee\\\") == []\nassert select_names([\\\"ant\\\", \\\"beetle\\\"], \\\"Bee\\\") == []\nprint(\\\"independent public API probes passed\\\")\nPY\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.test_catalog -v'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 tools/check_architecture.py'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'PYTHONDONTWRITEBYTECODE=1 python3 tools/check_contracts.py --root .'",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"date '+%Y-%m-%dT%H:%M:%S%:z' && git status --short && git diff --check && git diff -- catalog.py tests/test_catalog.py docs/contracts/catalog.json README.md && git diff -- docs/contracts/index.json && shasum -a 256 AGENTS.md authority.md run-policy.json dependencies.json docs/tasks/SYN-01/brief.md docs/tasks/SYN-01/verification.md catalog.py tests/test_catalog.py docs/contracts/catalog.json docs/contracts/index.json README.md tools/check_architecture.py tools/check_contracts.py\"",
+        "exit_code": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"git status --short && git diff --name-status && git diff --check && test -f docs/tasks/SYN-01/reviews/acceptance-01.md && sed -n '1,24p' docs/tasks/SYN-01/reviews/acceptance-01.md\"",
+        "exit_code": 0
+      }
+    ]
+  }
+}

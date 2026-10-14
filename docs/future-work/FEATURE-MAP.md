@@ -1,6 +1,6 @@
 # Personal Skills — Future Feature Map
 
-**Revision:** 2026-10-12 · consolidated concept edition  
+**Revision:** 2026-10-14 · consolidated concept edition; I-04 pilot clarified  
 **Status:** Candidate feature portfolio, **not** an authorized project plan or runtime status tracker.  
 **Goal:** Improve system-level verification and safely automate more of delivery, without adding unnecessary stages, documents or agents.
 
@@ -30,6 +30,7 @@ Use this order of questions: (1) Which material failure or unowned proof would i
 | **Next cost/correctness test** | **D-02** following D-01 | Compare full old-vs-lean task/review lifecycle, including corrections; adopt only if fidelity holds |
 | **Opportunistic scoped source change** | **Q-01**, once T-003 owner is clear | Test-asset architectural defects are not detected by merely passing tests |
 | **Operational exploratory spikes** | **I-01/I-02** replay; **E-01** local evidence spike | Establish actual recurring issues, stale deferrals and transport feasibility without a platform build |
+| **Later optional decision-model pilot** | **I-04** semantic triage benchmark | Compare Jev or another typed model against rules and a cheap LLM on historical findings; no new gate, skill or decision authority |
 | **Conditional implementation** | **V-02 → V-03 → V-04**, **D-03/04/07** | Only after matching pilots show material gain; existing plans may be strengthened instead |
 | **Later infrastructure** | **O-01/02/03**, **E-02/03**, **O-05** | Mechanize established behavior and eventually qualify isolated candidate merges |
 
@@ -78,7 +79,7 @@ Posture: **PILOT** = investigate before committing; **CANDIDATE** = valuable bou
 | **I-01** | Preserve every issue occurrence and connect recurrence/regression to correction cycles | **CANDIDATE · pilot first** | Numbered review/run history; uncertain dedup explicitly labeled |
 | **I-02** | Reconsider deferrals when relied-on safeguards or context change | CANDIDATE | Small safe-while / reconsider-when representation; existing coordinator authority |
 | **I-03** | Mechanically flag known hazardous combinations and stale assumptions | CONDITIONAL | I-01/02 and validated guarantee/dependency links |
-| **I-04** | Investigate broader-context compound risk only where reasoning adds real value | PILOT · later | Replay shows missed consequential decisions beyond rules/local review |
+| **I-04** | Evaluate broader-context issue risk and advisory classification of confirmed findings | PILOT · later | Replay real review records against rules and a cheap LLM; measure critical under-triage and cost before any routing integration |
 
 ### E — Evidence and observability
 

@@ -1,10 +1,15 @@
 # Verification Design: T-001 — Audit preservation and retirement eligibility
 
 Source brief: ideas/documentation-consolidation/tasks/T-001/brief.md
-Source brief revision: SHA-256 `5f417e6d157800711d6d763592c4173932118c9dec7c18190dec947ac0404d42` (untracked working-tree bytes)
-Verification revision: 1
+Source brief revision: SHA-256 `94cc2e185f1aef939a17d23db629cfef90bd33d6aca7727ad3de1ddaf65a2ebf` (current working-tree bytes)
+Verification revision: 2
 Authority: derived from the task brief and its cited normative sources
 Status: ready
+
+Revision 2 records the owner's 2026-10-14 clarification that standard run-evidence
+instrumentation is required and its authorized effects do not fail AC-05.
+Scenario IDs are unchanged. Prior preflight bindings and review dispositions
+remain historical; focused preflight and renewed discovery must use revision 2.
 
 Normative sources: [task brief](brief.md), [owner-approved direction](../../../documentation-consolidation.brief.md), [cleanup-v1 plan](../../project-plan.md) §§1–2, 4, 8 FLOW-001, 10–12, and [task map](../../task-map.json) T-001 / IF-001. The [plan review](../../project-plan-review.md) accepts planning, not current eligibility or cleanup permission.
 
@@ -130,11 +135,11 @@ Oracle / boundary:
 Variants:
 - Supplied decisions and unresolved gates where present; global versus candidate-specific blockers. Inspect actual cases without making missing owner decisions to manufacture an eligible case.
 
-### V-05 — A stable audit leaves originals, index and refs unchanged
+### V-05 — A stable audit preserves protected state and attributes instrumentation
 
 Covers: AC-05; R-04 / INV-006
 
-Intent: Reject an audit that edits originals, stages inputs, advances Git refs or counts its new output as original preservation evidence.
+Intent: Reject an audit that edits originals, stages inputs, changes refs outside the run-evidence namespace or counts its new output as original preservation evidence. Standard run-evidence instrumentation is required and is not itself an audit failure.
 
 Given:
 - Initial scoped input identities, Git state, index and refs are recorded before the audit output write.
@@ -144,15 +149,17 @@ When:
 - ART-002 is written to `ideas/documentation-consolidation/tasks/T-001/results.md` and final scoped identities/state are checked.
 
 Then:
-- Audited inputs, existing user work, index and refs match the initial state.
+- Audited inputs, existing user work, index and refs outside `refs/personal-skills/run-evidence/` match the initial state.
+- Run-evidence metadata, snapshot objects and begin/recovery/finish refs are authorized instrumentation. Record their effects separately; namespace membership does not authorize changes to protected files, the index or other refs.
 - New audit output is attributed, and preparation/review artifacts remain distinct from original preservation inputs. Preparation/review files are not overwritten as audit output.
 - No archive/tag/publication, staging, deletion, migration, navigation/backlog edit, report rewrite, installation refresh or live-model eval is performed.
 
 Oracle / boundary:
-- Compare actual before/after scoped paths, contents/hashes, types/modes, status, index and refs with the recorded baseline; inspect the attributed change set rather than relying solely on the author's read-only claim.
+- Compare actual before/after scoped paths, contents/hashes, types/modes, status, index and refs with the recorded baseline; distinguish authorized run-evidence changes from protected-state drift and inspect the attributed change set rather than relying solely on the author's read-only claim.
 
 Variants:
 - Audit start → output write → final identity check with stable inputs. Observed drift follows V-06.
+- Authorized begin/recovery/finish instrumentation changes are attributed without failing V-05; changes to protected state still fail it.
 
 ### V-06 — Observed drift invalidates affected facts until reinspection
 

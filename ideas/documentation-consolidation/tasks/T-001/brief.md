@@ -87,8 +87,12 @@ limits. Use compact tables rather than copying historical reports.
   assessment. Unresolved global preservation/archive choices block archive
   advancement; unresolved candidate dispositions block affected retirement.
   Even an eligible assessment is not archive execution or deletion permission.
-- **AC-05 — Read-only and current.** Audited inputs, Git index/refs and existing
-  user work remain unchanged. Record initial/final scoped identities and any
+- **AC-05 — Read-only and current.** Audited inputs, Git index, refs outside the
+  run-evidence namespace and existing user work remain unchanged. Standard
+  run-evidence instrumentation is required; its metadata, snapshot objects and
+  refs under `refs/personal-skills/run-evidence/` are authorized task artifacts,
+  not audit failures. Record their changes separately from protected state.
+  Record initial/final scoped identities and any
   drift. Drift invalidates affected facts until re-inspected; never resolve it
   by restoring or overwriting user files. Attribute the new audit output and
   keep all preparation/review files distinct from original preservation inputs.
@@ -100,7 +104,7 @@ limits. Use compact tables rather than copying historical reports.
 | R-01 / INV-001, INV-006: intended originals have explicit identity and inclusion | Tracked unchanged, staged, unstaged, untracked and relevant ignored assets; index/worktree divergence; ordinary files versus any discovered external-content boundary | ART-002 reconciles actual Git/index/filesystem inventory with exact scoped paths, versions and modes; unresolved inclusion is blocked | Enumerate real inputs using Git and filesystem reads; compare inventory to manifest and explain each exclusion | Independently rebuild scoped inventory and compare membership; inspect divergent or nontracked inputs when present, otherwise verify their recorded absence | Audit implementer before submission; fresh discovery reviewer corroborates current output |
 | R-02 / INV-004, INV-006: eligibility does not hide unfinished work | Candidate families: `docs/tasks/`, old project plan, old task map; completed, unfinished and unknown dispositions where present; retained future-work including `stale/` and old plan review | Every candidate maps to source evidence/disposition; unresolved cases remain blockers, retained families stay outside deletion scope | Reconcile candidate rows against reports and backlog; list Q-001–Q-003 decisions or gates | Challenge a completion inference against its original evidence and follow pending-work references; verify unknowns cannot appear eligible | Audit implementer; fresh discovery reviewer owns final aggregate reconciliation after corrections |
 | R-03 / INV-003: live input dependencies are visible | Executable reads, fixture/setup closure, active navigation and historical-only references | Each discovered live consumer has its full necessary input mapping and existing evidence owner/selector; historical mentions alone do not require migration | Search path carriers and inspect actual reader/setup code and existing tests; trace known composition consumers to their input closure | Trace a real reader through fixture/setup inputs independently and compare with ART-002; inspect reference-search coverage | Audit implementer before submission; fresh discovery reviewer corroborates closure |
-| R-04 / INV-006: discovery cannot change originals or advance on stale facts | Audit start -> output write -> final identity check; stable inputs versus observed drift | Before/after content, scoped status, index and refs agree except attributed task artifacts; changed inputs invalidate affected assessment | Capture and compare identities; report drift/blockers rather than modifying inputs | Compare final scoped identities and change set with the recorded baseline; check any drift disposition | Audit implementer at submission/correction; fresh discovery reviewer checks final bytes |
+| R-04 / INV-006: discovery cannot change originals or advance on stale facts | Audit start -> output write -> final identity check; stable inputs versus observed drift | Before/after content, scoped status, index and refs outside the run-evidence namespace agree; task output and authorized run-evidence artifacts are attributed separately; changed protected inputs invalidate affected assessment | Capture and compare identities; report drift/blockers rather than modifying inputs | Compare final scoped identities and change set with the recorded baseline; check any drift disposition | Audit implementer at submission/correction; fresh discovery reviewer checks final bytes |
 
 ## Verification
 
@@ -120,7 +124,7 @@ verification harness or feasibility prerequisite is needed.
 |---|---|---|
 | Targeted inventory | Real candidate tree and relevant preservation inputs match manifest membership, identities, modes and Git states; omissions cannot be reported as complete | Implementer resolves scoped commands during preparation; existing entry points include `git rev-parse HEAD`, `git status --porcelain=v1 --untracked-files=all`, `git ls-files --stage`, `git diff --raw`, `git diff --cached --raw`, and scoped `git ls-files --others --ignored --exclude-standard -- <paths>`. Use filesystem hashing and account for deletion/type/symlink cases. |
 | Targeted evidence/consumer reconciliation | Original reports contradict unsupported completion claims; each live reader's required inputs appear in the consumer map | Scoped `rg -n` searches plus source/report reads; record actual search roots, patterns and traced closure. Known starting points: `tests/test_review_composition.py`, `tests/review_fixture_support.py`, `tests/staging_fixture_support.py` and `tests/README.md`. |
-| Negative / unchanged state | Unknown inclusion, unfinished work, absent owner choices or drift yield explicit blockers; existing inputs/index/refs remain unchanged | Check actual cases against the manifest; compare initial/final identities. No destructive fault injection or new test harness. |
+| Negative / unchanged state | Unknown inclusion, unfinished work, absent owner choices or protected-state drift yield explicit blockers; existing inputs/index/refs outside the run-evidence namespace remain unchanged | Check actual cases against the manifest; compare initial/final identities and attribute authorized run-evidence changes separately. No destructive fault injection or new test harness. |
 | Owning suite selection | Document the existing consumer suite and further selectors discovered by the audit; a passing suite would not prove eligibility | Known T-003 baseline selector: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_review_composition.py`. T-001 selects commands; it need not run consumer suites merely to produce the audit. |
 | Broader gate | Full manifest, obligation and consumer reconciliation against current repository facts | Fresh independent discovery reviewer after implementation/correction. No broad test suite, network recovery or live-model run belongs to this audit. |
 
@@ -128,6 +132,11 @@ Fail-first regression: N/A; this task creates an audit record, not executable
 behavior. Verification must reject unsupported/missing rows through source
 reconciliation. A schema, path search or syntax check alone is insufficient.
 No archive recovery, migration equivalence or agent compliance is proved here.
+
+Owner clarification, 2026-10-14: run-evidence is the standard required workflow.
+Its authorized instrumentation effects alone are not a failure of AC-05.
+Historical reports retain their original findings; renewed review uses this
+clarified boundary. The prior preflight bindings require a focused refresh.
 
 ## Expected contract impact
 

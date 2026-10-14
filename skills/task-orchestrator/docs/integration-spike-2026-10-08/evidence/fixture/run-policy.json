@@ -1,0 +1,31 @@
+{
+  "id": "synthetic-flow-spike-v1",
+  "profile": "high-assurance",
+  "task_id": "SYN-01",
+  "repository": "/private/tmp/task-flow-spike-2026-10-08",
+  "implementation_paths": [
+    "catalog.py",
+    "tests/test_catalog.py"
+  ],
+  "preparation_artifacts": [
+    "docs/tasks/SYN-01/brief.md",
+    "docs/tasks/SYN-01/verification.md"
+  ],
+  "preflight_artifact": "docs/tasks/SYN-01/preflight.md",
+  "maintainability_artifact": "docs/tasks/SYN-01/reviews/maintainability-01.md",
+  "acceptance_artifact": "docs/tasks/SYN-01/reviews/acceptance-01.md",
+  "registry_paths": [
+    "docs/contracts/catalog.json",
+    "docs/contracts/index.json",
+    "README.md"
+  ],
+  "runtime_output_directory": "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence",
+  "worker_schema": "worker-result.schema.json",
+  "worker_result": "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/docs/integration-spike-2026-10-08/evidence/implementation.last.txt",
+  "network": false,
+  "dependency_installation": false,
+  "actor_commits": false,
+  "controller_preparation_commit": true,
+  "cheap_local_checks": true,
+  "instrumentation": "optional; use same-installation helper only when applicable"
+}

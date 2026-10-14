@@ -1,0 +1,8 @@
+test_default (test_catalog.CatalogTests.test_default) ... ok
+test_returns_empty_for_empty_input_or_no_matches (test_catalog.CatalogTests.test_returns_empty_for_empty_input_or_no_matches) ... ok
+test_selects_case_sensitive_prefix_matches_in_order (test_catalog.CatalogTests.test_selects_case_sensitive_prefix_matches_in_order) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.002s
+
+OK

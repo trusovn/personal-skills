@@ -1,0 +1,7 @@
+Created [brief.md](/private/tmp/task-flow-spike-2026-10-08/docs/tasks/SYN-01/brief.md).
+
+It is high-assurance, `ready_for_preflight`, mandates the separate verification-design pass, and defines the required downstream order.
+
+Verified: `git diff --check` passed; only the new brief is present.
+
+Skill handoff: high-assurance preflight.

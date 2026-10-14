@@ -1,0 +1,10 @@
+Preflight is ready. I wrote the canonical packet: [preflight.md](/private/tmp/task-flow-spike-2026-10-08/docs/tasks/SYN-01/preflight.md).
+
+Authorized baseline checks passed:
+
+- Targeted unittest: 1 passed
+- Owning suite: 1 passed
+- Architecture check: passed
+- Read-only contract validation: passed
+
+The only working-tree delta is the new preflight packet. Handoff complete.

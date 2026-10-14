@@ -1,0 +1,53 @@
+diff --git a/README.md b/README.md
+index 94911bf..67e1b07 100644
+--- a/README.md
++++ b/README.md
+@@ -1,5 +1,5 @@
+ # Synthetic catalog
+ 
+-Public API: `catalog.select_names(names)` returns all names in input order, preserving duplicates. The input list is unchanged.
++Public API: `catalog.select_names(names, prefix="")` returns names that start with the case-sensitive prefix in input order, preserving duplicates. The default empty prefix returns all names. The input list is unchanged.
+ 
+ Contract discovery: `docs/contracts/index.json`.
+diff --git a/catalog.py b/catalog.py
+index 8cd076f..4f3a0a7 100644
+--- a/catalog.py
++++ b/catalog.py
+@@ -1,3 +1,3 @@
+-def select_names(names):
+-    """Return all names in input order, preserving duplicates."""
+-    return list(names)
++def select_names(names, prefix=""):
++    """Return names that start with prefix, preserving input order and duplicates."""
++    return [name for name in names if name.startswith(prefix)]
+diff --git a/docs/contracts/catalog.json b/docs/contracts/catalog.json
+index 4d8d1aa..c9defeb 100644
+--- a/docs/contracts/catalog.json
++++ b/docs/contracts/catalog.json
+@@ -8,7 +8,7 @@
+     {
+       "name": "select_names",
+       "kind": "function",
+-      "summary": "Return all names in input order, preserving duplicates.",
++      "summary": "Return names that start with the case-sensitive prefix in input order, preserving duplicates; the default empty prefix returns all names.",
+       "declarations": [
+         "catalog.py"
+       ]
+diff --git a/tests/test_catalog.py b/tests/test_catalog.py
+index ffcfe27..4c64727 100644
+--- a/tests/test_catalog.py
++++ b/tests/test_catalog.py
+@@ -5,4 +5,13 @@ class CatalogTests(unittest.TestCase):
+     def test_default(self):
+         names = ["Bee", "ant", "Bee"]
+         self.assertEqual(select_names(names), names)
++        self.assertEqual(select_names(names, ""), names)
+         self.assertEqual(names, ["Bee", "ant", "Bee"])
++
++    def test_selects_case_sensitive_prefix_matches_in_order(self):
++        names = ["ant", "Bee", "beetle", "Bee", "Bison", "Beech"]
++        self.assertEqual(select_names(names, "Bee"), ["Bee", "Bee", "Beech"])
++
++    def test_returns_empty_for_empty_input_or_no_matches(self):
++        self.assertEqual(select_names([], "Bee"), [])
++        self.assertEqual(select_names(["ant", "beetle"], "Bee"), [])

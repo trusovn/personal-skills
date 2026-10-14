@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "id": "catalog",
+  "owner_paths": [
+    "catalog.py"
+  ],
+  "provides": [
+    {
+      "name": "select_names",
+      "kind": "function",
+      "summary": "Return names that start with the case-sensitive prefix in input order, preserving duplicates; the default empty prefix returns all names.",
+      "declarations": [
+        "catalog.py"
+      ]
+    }
+  ],
+  "invariants": [
+    {
+      "statement": "The input list is unchanged."
+    }
+  ],
+  "module_docs": [
+    "README.md"
+  ]
+}

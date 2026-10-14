@@ -1,0 +1,7 @@
+Observed initial installer error in an unborn Git repository:
+error: staged run-evidence availability failed: workflow_unavailable; fatal: ambiguous argument 'HEAD': unknown revision or path not in the working tree.
+Workaround used for this experiment: initial empty commit before canonical installation.
+
+Codex task API rejected terra-medium; CLI rejected terra. No fixture effects occurred.
+Resolved user-authorized model discovery from local models_cache.json: gpt-5.6-terra; medium effort supported.
+Outer sandbox initially blocked Codex app-server initialization. Approved outer escalation retained workspace-write / approval-never for every actor.

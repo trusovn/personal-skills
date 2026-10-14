@@ -1,0 +1,114 @@
+{
+  "source": "existing launcher argv and Codex JSONL events; no new actor runs",
+  "stages": [
+    {
+      "stage": "brief",
+      "requested_model": "gpt-5.6-terra",
+      "requested_effort": "medium",
+      "session_id": "01a11c7c-bbc8-7b91-95cc-a47772a9c4ab",
+      "usage": {
+        "input_tokens": 246147,
+        "cached_input_tokens": 216064,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4717,
+        "reasoning_output_tokens": 791
+      },
+      "shared_evidence_lifecycle_invoked": false
+    },
+    {
+      "stage": "verification",
+      "requested_model": "gpt-5.6-terra",
+      "requested_effort": "medium",
+      "session_id": "01a11c7e-b30a-7560-8f8e-70ea0e8db16e",
+      "usage": {
+        "input_tokens": 153497,
+        "cached_input_tokens": 132608,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1845,
+        "reasoning_output_tokens": 209
+      },
+      "shared_evidence_lifecycle_invoked": false
+    },
+    {
+      "stage": "preflight",
+      "requested_model": "gpt-5.6-terra",
+      "requested_effort": "medium",
+      "session_id": "01a11c7f-d641-7102-a2e5-dbc66093b1b7",
+      "usage": {
+        "input_tokens": 418445,
+        "cached_input_tokens": 382720,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5806,
+        "reasoning_output_tokens": 891
+      },
+      "shared_evidence_lifecycle_invoked": false
+    },
+    {
+      "stage": "implementation",
+      "requested_model": "gpt-5.6-terra",
+      "requested_effort": "medium",
+      "session_id": "01a11c81-c6ea-7cf0-9739-e3a3ffb13a72",
+      "usage": {
+        "input_tokens": 413211,
+        "cached_input_tokens": 365824,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3381,
+        "reasoning_output_tokens": 890
+      },
+      "shared_evidence_lifecycle_invoked": false
+    },
+    {
+      "stage": "maintainability",
+      "requested_model": "gpt-5.6-terra",
+      "requested_effort": "medium",
+      "session_id": "01a11c83-1f40-7473-929f-8c11c1c67f57",
+      "usage": {
+        "input_tokens": 212807,
+        "cached_input_tokens": 189440,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1794,
+        "reasoning_output_tokens": 455
+      },
+      "shared_evidence_lifecycle_invoked": false
+    },
+    {
+      "stage": "registry",
+      "requested_model": "gpt-5.6-terra",
+      "requested_effort": "medium",
+      "session_id": "01a11c83-ec56-7b01-aff6-381e3098887e",
+      "usage": {
+        "input_tokens": 239165,
+        "cached_input_tokens": 217088,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1522,
+        "reasoning_output_tokens": 273
+      },
+      "shared_evidence_lifecycle_invoked": false
+    },
+    {
+      "stage": "acceptance",
+      "requested_model": "gpt-5.6-terra",
+      "requested_effort": "medium",
+      "session_id": "01a11c84-81e3-7b73-92f3-c7f10cd7abfc",
+      "usage": {
+        "input_tokens": 501741,
+        "cached_input_tokens": 462336,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 6091,
+        "reasoning_output_tokens": 994
+      },
+      "shared_evidence_lifecycle_invoked": false
+    }
+  ],
+  "usage_totals": {
+    "input_tokens": 2185013,
+    "cached_input_tokens": 1966080,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 25156,
+    "reasoning_output_tokens": 4503
+  },
+  "canonical_run_manifests_present": false,
+  "runtime_context_files_supplied": false,
+  "canonical_stage_timing_collected": false,
+  "limit": "Requested model/effort are launcher configuration, not independent server-side configuration confirmation. Raw usage is transport-reported. Shared instrumentation was not exercised."
+}

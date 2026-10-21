@@ -41,6 +41,12 @@ task-brief-designer
 Use `senior-code-review`, `ollama-delegate`, `testing-discipline`, and
 `session-handoff` on demand rather than as mandatory stages in either flow.
 
+To understand intended work and progress, read the project plan's opening,
+then the current implementation result or acceptance report. See the
+[implementation output contract](task-implementation-flow/bounded-task-implementer/SKILL.md#output-contract)
+and [acceptance output contract](task-implementation-flow/task-acceptance-review/SKILL.md#output-contract)
+for their different evidence and decision roles.
+
 A required-review submission names the first outstanding applicable stage and
 the complete ordered remainder: the architecture gate only when policy requires
 it, fresh maintainability review when applicable, the contract-registry

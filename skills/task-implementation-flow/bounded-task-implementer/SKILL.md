@@ -318,6 +318,8 @@ exact authority path or command with prose such as “the task” or “the revi
 regression passed.”
 
 ```markdown
+<Explain the correction's practical result, current evidence limits, and next actor in plain language.>
+
 Implemented: READY_FOR_REVIEW
 
 - Authority: <exact authoritative brief path>
@@ -472,9 +474,20 @@ context boundary prevents reliable completion.
 
 ### Guided or ordinary interactive invocation
 
+Open with the practical result and its contribution to the requested outcome,
+what the checks support, material limits, and the next actor/action or owner
+decision. For interrupted work, identify what was last checked and what remains
+unfinished. Use ordinary language before task IDs and execution metadata.
+Inspect the existing explanation first: retain clear prose, move or rewrite it
+in place, and add only missing information. Keep detailed evidence in its owning
+record and link to it; do not create a parallel progress ledger or update the
+approved plan. This also applies to the correction handoff above.
+
 Return a concise human-readable summary, not raw JSON:
 
 ```markdown
+<Practical change and why it matters; checked scope and material limits; next actor/action or owner decision.>
+
 Implemented: <outcome, READY_FOR_REVIEW, or non-complete status>
 
 - Changed: <paths or none>

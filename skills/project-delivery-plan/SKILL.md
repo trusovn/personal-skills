@@ -297,6 +297,31 @@ Use `DELEGATED` deliberately. It should mean "safe to decide locally without cha
 
 Populate `docs/project-plan.md` using the bundled template.
 
+First inspect the plan's existing explanations. Keep a clear explanation where
+it already works; otherwise move or rewrite it, replacing its old occurrence.
+Add only information that is missing. Do not prepend a second summary or task
+sequence to a plan that already explains the same result.
+
+Lead with the existing product outcome in plain language: who benefits, which
+concrete situation improves, and the first useful proof or next owner decision
+when relevant. Link to the governing authority instead of copying its full
+direction. If purpose or direction is missing or conflicting, say what is
+unknown and who must resolve it; do not invent an approved purpose.
+
+For multi-task plans, show what each task gives the owner or enables next, with
+links to its detailed scope. Derive this view from the task outcomes already
+defined in step 8; reuse an existing readable task list or table and link to it
+from the opening when appropriate. Keep one outcome per task in the plan.
+Internal work names the later useful result it enables. Use a short list or
+table; explain tasks without requiring the reader to decode their IDs.
+
+Keep scope, task contracts, and evidence in their owning sections or records.
+Link to an identified current report for progress rather than copying mutable
+status into the plan; if no current report is known, do not imply otherwise.
+Distinguish intended results from demonstrated results when material. Avoid
+routine statements about unchanged areas. This presentation creates no extra
+overview file, required workflow stage, or progress ledger.
+
 Populate `docs/task-map.json` according to `references/task-map-contract.md`.
 
 Run:

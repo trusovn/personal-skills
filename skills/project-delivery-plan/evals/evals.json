@@ -3,21 +3,84 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "The foundation for a small React/Spring Boot AI-assisted policy-change app is ready. Create the delivery plan so later task agents can implement it independently. I care especially about document-version provenance, stale analysis, human approval, and the AI provider seam.",
-      "expected_output": "Creates a compact project plan and task map with explicit artifacts, interfaces, invariants, state transitions, end-to-end flows, and task input/output placement without devolving into class-level implementation design.",
-      "files": []
+      "prompt": "Use project-delivery-plan in the staged small-change/ repository. Read docs/request.md, docs/foundation-review.md, docs/current-report.md, docs/historical-acceptance.md and docs/handover-note.md. Create the planning package if authority is sufficient; otherwise state the missing decision without inventing it. Keep the practical result understandable, connect tasks to it and link the current report for progress. Preserve conflicting and historical evidence boundaries. Do not implement or rewrite supplied records.",
+      "expected_output": "A proportionate plan and task map for the supplied header change, preserving values and order; practical purpose first, no completion claim.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "small-change"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/small-change"
+      },
+      "expectations": [
+        "The opening explains the supplied purpose or its absence, with planned work distinguished from actual evidence.",
+        "The current interruption and conflicting handover remain visible; historical acceptance does not certify this request.",
+        "Task contributions reuse outcomes; technical contracts, preparation and independent review remain intact; no parallel status ledger."
+      ]
     },
     {
       "id": 2,
-      "prompt": "Turn this approved 6-feature product concept into an implementation plan. Do not use full SDD. The plan must make it obvious what each future task consumes and produces and which runtime interfaces it owns.",
-      "expected_output": "Plans data/process/state flow before task decomposition, includes producer/consumer closure and interface contracts, and produces validator-compatible task-map structure.",
-      "files": []
+      "prompt": "Use project-delivery-plan in the staged multi-task/ repository. Read docs/request.md, docs/foundation-review.md, docs/current-report.md, docs/historical-acceptance.md and docs/handover-note.md. Create the planning package if authority is sufficient; otherwise state the missing decision without inventing it. Keep the practical result understandable, connect tasks to it and link the current report for progress. Preserve conflicting and historical evidence boundaries. Do not implement or rewrite supplied records.",
+      "expected_output": "A plan and task map with readable contributions for durable operations, CLI integration and restart verification, preserving reassignment and restart semantics.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "multi-task"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/multi-task"
+      },
+      "expectations": [
+        "The opening explains the supplied purpose or its absence, with planned work distinguished from actual evidence.",
+        "The current interruption and conflicting handover remain visible; historical acceptance does not certify this request.",
+        "Task contributions reuse outcomes; technical contracts, preparation and independent review remain intact; no parallel status ledger."
+      ]
     },
     {
       "id": 3,
-      "prompt": "Plan a simple CRUD admin app with one backend and one frontend. Keep planning proportionate; I still want tasks to fit together safely.",
-      "expected_output": "Uses the same flow/interface discipline but keeps the plan compact, delegates local choices, and avoids manufacturing SDD-level ceremony for a simple project.",
-      "files": []
+      "prompt": "Use project-delivery-plan in the staged missing-direction/ repository. Read docs/request.md, docs/foundation-review.md, docs/current-report.md, docs/historical-acceptance.md and docs/handover-note.md. Create the planning package if authority is sufficient; otherwise state the missing decision without inventing it. Keep the practical result understandable, connect tasks to it and link the current report for progress. Preserve conflicting and historical evidence boundaries. Do not implement or rewrite supplied records.",
+      "expected_output": "A non-ready explanation asking the owner for beneficiary and practical purpose, without inventing requirements or an executable plan.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "missing-direction"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/missing-direction"
+      },
+      "expectations": [
+        "The opening explains the supplied purpose or its absence, with planned work distinguished from actual evidence.",
+        "The current interruption and conflicting handover remain visible; historical acceptance does not certify this request.",
+        "Task contributions reuse outcomes; technical contracts, preparation and independent review remain intact; no parallel status ledger."
+      ]
     }
   ]
 }

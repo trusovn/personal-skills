@@ -19,7 +19,8 @@
         "The blocking located finding tied to the repeated-flow AC is preserved with its stable ID, current location, trigger, consequence, evidence, affected AC, and smallest corrective direction without a patch.",
         "The consumed aggregate-gate record keeps the discovery-owned exact command or not-run, owner/stage, reason, and current evidence without re-execution.",
         "The verdict is exactly `CHANGES_REQUESTED` routed to the same `bounded-task-implementer` thread followed by fresh discovery and a new acceptance decision.",
-        "Only `docs/tasks/QR-12/reviews/acceptance-01.md` is added; source, tests, existing task artifacts, the discovery report, and tracker state are not modified."
+        "Only `docs/tasks/QR-12/reviews/acceptance-01.md` is added; source, tests, existing task artifacts, the discovery report, and tracker state are not modified.",
+        "Before dense identity fields, the opening explains the practical result, what the independent evidence supports, the verdict limitation and next actor. It preserves findings or missing proof rather than equating clear prose or passing unit checks with acceptance."
       ]
     },
     {
@@ -40,7 +41,8 @@
         "Scope is reconciled from the preflight baseline: the unchanged index/worktree identities of pre-existing `MM` user work are confirmed and only allowed task-owned paths changed.",
         "The findings section says `No findings.` and does not manufacture a defect when the admitted evidence is clean.",
         "The verdict is exactly `ACCEPT`, any residual limits are stated, and the route is only to `task-orchestrator` without updating tracker or orchestration state.",
-        "Packaging alone does not force high-assurance digests or machine results onto the decision."
+        "Packaging alone does not force high-assurance digests or machine results onto the decision.",
+        "Before dense identity fields, the opening explains the practical result, what the independent evidence supports, the verdict limitation and next actor. It preserves findings or missing proof rather than equating clear prose or passing unit checks with acceptance."
       ]
     },
     {
@@ -61,7 +63,8 @@
         "It does not treat the passing unit suite or worker result as sufficient proof, and does not create or replace the helper, edit tests or source, or run an unauthorized live probe.",
         "The verdict is exactly `INCONCLUSIVE`, not `ACCEPT` or `CHANGES_REQUESTED`.",
         "The next route names `task-preflight` or the prerequisite capability owner with the smallest action, followed by fresh discovery and a new acceptance decision.",
-        "Only the canonical package report `docs/tasks/SCH-09/reviews/acceptance-01.md` is written."
+        "Only the canonical package report `docs/tasks/SCH-09/reviews/acceptance-01.md` is written.",
+        "Before dense identity fields, the opening explains the practical result, what the independent evidence supports, the verdict limitation and next actor. It preserves findings or missing proof rather than equating clear prose or passing unit checks with acceptance."
       ]
     },
     {

@@ -106,7 +106,8 @@
         "The submission maps every verification scenario ID (V-01, V-02) to current commands, setup/oracle, and results, and carries the preflight/context reference before the READY_FOR_REVIEW handoff.",
         "The final guided result uses `READY_FOR_REVIEW` and names the first outstanding applicable stage and the complete ordered remainder — with neither conditional stage applicable, fresh independent `task-review-discovery` evidence and the separate fresh `task-acceptance-review` decision — as the next action.",
         "The implementer does not emit `ACCEPT`, claim independent review, or load, quote, or execute the task-review-discovery or task-acceptance-review role in the authoring session.",
-        "Any self-check is explicitly labeled as implementation evidence rather than an acceptance verdict."
+        "Any self-check is explicitly labeled as implementation evidence rather than an acceptance verdict.",
+        "The report opens with the practical expired-session result, actual checks, remaining independent review and next actor before dense metadata; it does not call its own work independently accepted."
       ]
     },
     {
@@ -160,6 +161,33 @@
         "The implementer refuses entry for the relabeled documentation package and names `task-preflight` as the earlier owner for the missing ready preflight.",
         "No repository path is edited and the pre-existing fixture states remain intact.",
         "The result is non-complete and does not claim implementation or independent acceptance."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Use bounded-task-implementer in the staged api-immediate repository, from docs/tasks/API-32/brief.md and its supplied verification and preflight. This run is deliberately interrupted: validate entry, run the existing targeted expired-session regression, then stop without editing production or tests and without running the owning suite. Report the observed failure, last checked scope, remaining scenario evidence and next actor in a human-readable interrupted result. Do not claim completion or independent acceptance.",
+      "expected_output": "An interrupted report opening with the practical unfinished session fix; the targeted failure is actual evidence, V-01 remains unchecked, and the next implementer must fix and verify before discovery and separate acceptance.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "api-immediate"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/api-immediate"
+      },
+      "expectations": [
+        "The targeted regression actually fails because expired sessions are accepted; source and tests are unchanged.",
+        "The opening explains the unfinished practical result and next implementer action before workflow metadata.",
+        "V-02 failure and V-01 unchecked scope, unrun owning suite and outstanding independent review are retained; no completed or accepted claim."
       ]
     }
   ]

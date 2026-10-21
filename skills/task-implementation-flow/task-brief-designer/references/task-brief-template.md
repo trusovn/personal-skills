@@ -1,5 +1,11 @@
 # Task Brief: `<TASK-ID>` — `<imperative title>`
 
+For an executable brief, place the existing Outcome and any supplied Direction
+trace immediately after the title, before status and execution metadata.
+When updating a brief, reuse or rewrite those sections and remove any displaced
+copy; add only missing information. Do not add a parallel owner summary. Composite and
+blocked-design outputs keep their separate forms below.
+
 Status: `ready | ready_for_preflight | decomposed | blocked_design`
 
 Task kind: `executable | composite`
@@ -133,7 +139,12 @@ has been supplied.
 
 ## Outcome
 
-`<One testable sentence describing the approved result.>`
+`<One testable sentence in plain language: what this task gives the owner or
+which later useful result it enables.>`
+
+Link to the project purpose rather than repeating it. Keep detailed scope and
+acceptance criteria in their owning sections. Preserve an unknown purpose as
+unknown; a material authority gap follows the existing blocked/delta route.
 
 ## Direction trace
 

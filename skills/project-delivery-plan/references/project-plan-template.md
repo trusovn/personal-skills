@@ -1,12 +1,28 @@
 # Project Plan — <project>
 
+## Product outcome
+
+<In plain language: who benefits and which concrete situation improves.
+Include the first useful proof or next owner decision when relevant. Cite the
+authority below; keep detailed scope in section 2.>
+
+For a multi-task plan, use one readable task-outcome list or table. Reuse an
+existing one by linking to it, or place it here:
+
+- [<Task name>](#t-001--task-title): <what it gives the owner or enables next>.
+
+Move or rewrite existing explanations instead of adding another version.
+The detailed task map below adds technical placement without repeating outcomes.
+Do not create another requirements list or status table. For a small
+plan, fold the sequence into the outcome paragraph when that is clearer.
+Link to an identified current work report when available; progress belongs in
+that report. Retain material unknowns and source conflicts without inventing
+purpose, approval, or demonstrated results.
+
 Status: `DRAFT | READY_FOR_PLAN_VERIFICATION | VERIFIED`
 Plan version: `<version/date/commit or other project convention>`
 
 ## 1. Planning authority
-
-### Product outcome
-<What completed product outcome this plan delivers.>
 
 ### Authoritative inputs
 - `<project charter / approved proposal / foundation review / AI foundation / repo rules>`
@@ -87,13 +103,20 @@ Repeat for every critical journey.
 
 The machine-readable authoritative task map is `docs/task-map.json`. This section is the human-readable view.
 
-| Task | Outcome | Depends on | Flow placement | Consumes | Produces/changes | Interfaces | Invariants | Integration boundary |
-|---|---|---|---|---|---|---|---|---|
-| T-001 | ... | ... | FLOW-001 steps 1–3 | ART-... | ART-... | IF-... | INV-... | ... |
+Link to the single readable task-outcome view. Keep cross-task placement here.
+
+| Task | Depends on | Flow placement | Consumes | Produces/changes | Interfaces | Invariants | Integration boundary |
+|---|---|---|---|---|---|---|---|
+| T-001 | ... | FLOW-001 steps 1–3 | ART-... | ART-... | IF-... | INV-... | ... |
 
 ### Task-planning handoff notes
 
 For each task, preserve only nuances needed to keep it compatible with the system plan. Leave task-local design/decomposition to the downstream task planner.
+
+### T-001 — <task title>
+
+<Detailed scope and cross-task handoff nuances. Reference the single task
+outcome; do not repeat it as another requirement or progress claim.>
 
 ## 11. System verification map
 

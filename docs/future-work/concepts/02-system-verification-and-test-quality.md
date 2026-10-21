@@ -1,6 +1,6 @@
 # System verification and test quality — direction
 
-**Covers:** `V-01`–`V-05`, `Q-01`, `Q-02`. **Status:** Conceptual, not an approved skill redesign.
+**Covers:** `V-01`–`V-05`, `Q-02`; Q-01 is an existing source capability. **Status:** Remaining verification and suite-maintenance candidates, not an approved redesign.
 
 ## Desired outcomes
 
@@ -18,7 +18,7 @@ A multi-task project can show which critical flows, interfaces and invariants ar
 
 **V-05 — Advanced techniques only when necessary.** Property-based, state-machine/model-based, fault-injection and mutation tests are options for important guarantees that lack a cheaper decisive oracle. Use risk and observability, not a technique quota, to select them.
 
-**Q-01 — Independently review changed tests as software.** Detect introduced or worsened duplication, fragile shared fixtures, obscure ownership, false-positive structural checks and brittle harness coupling even if the suite passes. Compare only authorized changed/influenced test surfaces, preserve review independence and byte freshness, and distinguish consequential maintainability defects from personal style. This is separate future authorization, not scope hidden in archived [T-003](https://github.com/trusovn/personal-skills/blob/0ad1706cecc6f7d115e510762bf74c58d732cb6a/docs/tasks/T-003/brief.md).
+**Q-01 — Independently review changed tests as software.** Detect introduced or worsened duplication, fragile shared fixtures, obscure ownership, false-positive structural checks and brittle harness coupling even if the suite passes. Compare only authorized changed/influenced test surfaces, preserve review independence and byte freshness, and distinguish consequential maintainability defects from personal style. This is already source-implemented in [task-maintainability-review](../../../skills/task-implementation-flow/task-maintainability-review/SKILL.md#review-contract), including tests-only submissions and significant test architecture as a reason for conditional review. It is not a future stage to add. This status records source capability, not a new independent behavioral qualification.
 
 **Q-02 — Bounded test-suite restructuring.** Consolidate repeated setup across discovery/acceptance, improve explicit suite ownership and replace brittle text-only checks where a behavioral oracle is available. Retain legitimate independent fixtures, negative cases and stable textual contracts. Wait for flow interfaces to settle and prove regression protection before deleting checks.
 
@@ -34,7 +34,7 @@ A multi-task project can show which critical flows, interfaces and invariants ar
 
 1. Does V-01 find a consequential gap not already owned by the current planning and verification processes? If not, improve existing checks rather than add another stage.
 2. Can V-03 demonstrate a materially new interface effect with limited extra execution cost? If not, narrow the policy.
-3. Does Q-01 catch a changed-test architecture failure that current implementation/review misses? If so, authorize its smallest scope before broad Q-02 cleanup.
+3. Use the existing Q-01 review to identify a concrete changed-test architecture problem. Authorize only the bounded Q-02 cleanup justified by that problem and preserve its distinct oracles.
 4. Does independent final closure find something not caught by accepted task packages? Distinguish a gap in product quality from simply another report.
 
 **Already covered, not a new feature:** basic existing-test maintenance guidance in source, the current system verification map, task-local verification design, and the archived [T-004/T-005 qualification effort](https://github.com/trusovn/personal-skills/blob/0ad1706cecc6f7d115e510762bf74c58d732cb6a/docs/tasks/T-005/reassessment.md). That effort ended with incomplete qualification preserved; future issues use new work.

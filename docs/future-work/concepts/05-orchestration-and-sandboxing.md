@@ -6,6 +6,16 @@
 
 A trusted controller can automate repetitive handoffs and recovery while preserving independent decisions and auditable evidence. Eventually, implementation and verification may happen in restricted, reproducible repository clones, and the original repository is updated only with the exact independently qualified candidate.
 
+## Existing baseline
+
+The source already contains an experimental `task-orchestrator` with `init`,
+`run-next` and `inspect` for supplied manifests and policies. The
+[repository status](../../../README.md#task-orchestrator-status) describes its
+limits: semantic correction loops, safe recovery, atomic acceptance/dependency
+release and unattended end-to-end execution are not supplied. The capabilities
+below are extensions to evaluate, not a claim that no controller exists or that
+its current implementation is qualified for unattended use.
+
 ## Orchestration capabilities
 
 **O-01 — Machine-admissible stage outcomes.** Define minimal typed outcomes and trusted evidence about invoked versions, file effects, completed checks, unresolved rows and reviewer independence. A structured agent claim is not by itself a trusted observation: collect filesystem/repository/command facts across the proper boundary.

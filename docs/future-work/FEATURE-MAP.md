@@ -1,12 +1,12 @@
 # Personal Skills — Future Feature Map
 
-**Revision:** 2026-10-14 · consolidated concept edition; I-04 pilot clarified  
+**Revision:** 2026-10-21 · reconciled with completed documentation work and current source capabilities
 **Status:** Candidate feature portfolio, **not** an authorized project plan or runtime status tracker.  
 **Goal:** Improve system-level verification and safely automate more of delivery, without adding unnecessary stages, documents or agents.
 
 ## Start here
 
-This map contains **30 future feature candidates in six families**. It is deliberately compact: choose a feature here, read its concept note, then reevaluate requirements and the current repository before authorizing a scoped plan. Historical detailed proposals are **not required reading** and may be archived; their useful directions have been consolidated into these five notes.
+This map tracks **29 remaining feature candidates in six families**, including the unfinished parts of D-01/D-05. Q-01 is source-implemented and listed separately below. It is deliberately compact: choose a feature here, read its concept note, then reevaluate requirements and the current repository before authorizing a scoped plan. Historical detailed proposals are **not required reading** and may be archived; their useful directions have been consolidated into these five notes.
 
 | Concept note | What it answers | Feature families |
 |---|---|---|
@@ -24,11 +24,10 @@ Use this order of questions: (1) Which material failure or unowned proof would i
 
 | Selection lane | Suggested choice | Why / exit decision |
 |---|---|---|
-| **Finish current authorized work** | Remaining T-003 children, then T-004/T-005 under their actual dependencies | Establish stable flow and honest installed-behavior qualification; no portfolio additions to active ACs |
 | **First independent investigation** | **V-01** | Find consequential system-proof gaps beyond the verification map already present—or conclude a new stage is unnecessary |
-| **Parallel foundational design** | **D-01** | Settle who owns facts/guards before shortening skills and templates |
+| **Next documentation design** | Remaining **D-01** | Extend the completed plan/brief/report ownership choices to rule and skill/template instruction ownership |
 | **Next cost/correctness test** | **D-02** following D-01 | Compare full old-vs-lean task/review lifecycle, including corrections; adopt only if fidelity holds |
-| **Opportunistic scoped source change** | **Q-01**, once T-003 owner is clear | Test-asset architectural defects are not detected by merely passing tests |
+| **Later test-suite maintenance** | **Q-02**, for a demonstrated duplication or brittle-oracle problem | Q-01 review guidance already exists; select a bounded cleanup with retained behavioral coverage |
 | **Operational exploratory spikes** | **I-01/I-02** replay; **E-01** local evidence spike | Establish actual recurring issues, stale deferrals and transport feasibility without a platform build |
 | **Later optional decision-model pilot** | **I-04** semantic triage benchmark | Compare Jev or another typed model against rules and a cheap LLM on historical findings; no new gate, skill or decision authority |
 | **Conditional implementation** | **V-02 → V-03 → V-04**, **D-03/04/07** | Only after matching pilots show material gain; existing plans may be strengthened instead |
@@ -36,9 +35,20 @@ Use this order of questions: (1) Which material failure or unowned proof would i
 
 **Delivery history:** The prior delivery docs were retired under the owner-approved cleanup. [Original evidence](https://github.com/trusovn/personal-skills/blob/0ad1706cecc6f7d115e510762bf74c58d732cb6a/docs/tasks/index.json) preserves incomplete qualification and historical verdicts. Future issues use new work; this catalog remains active.
 
+## Completed work and existing capabilities
+
+| Item | Current state | Remaining boundary / source |
+|---|---|---|
+| Owner-readable plans, task contributions, and work reports; bounded D-01 / human-facing D-05 | **Completed and accepted** through the four documentation-clarity tasks | [Completion and acceptance](../documentation-clarity-acceptance.md). This establishes the reading experience, not automatic status collection or a full ownership redesign. |
+| Q-01 — review changed tests/evals/harnesses as software | **Source-implemented** in the existing conditional maintainability review | [Owning skill](../../skills/task-implementation-flow/task-maintainability-review/SKILL.md#review-contract) and [flow guide](../../skills/task-implementation-flow/README.md). Do not reopen as a new stage; this catalog claims no additional behavioral qualification. |
+| Standalone delivery refactor | **Retired delivery work**, with incomplete qualification preserved in the archive | [Repository archive guidance](../../README.md#archived-delivery-documents). Do not resume old T-003/T-004/T-005 identifiers as current work. |
+
+Historical proposals in `stale/` are retained for reference. Their task status,
+next actions, and proposed designs do not control this catalog or current source.
+
 ## Feature catalog
 
-Posture: **PILOT** = investigate before committing; **CANDIDATE** = valuable bounded idea needing authorization; **CONDITIONAL** = implement only if a smaller result proves necessity; **LATER** = preserve direction, not near-term work. Dependencies shown are decision dependencies unless stated otherwise; a small independent experiment may precede a future full implementation.
+Posture: **PARTIAL** = a bounded part is complete and only the stated remainder is future work; **PILOT** = investigate before committing; **CANDIDATE** = valuable bounded idea needing authorization; **CONDITIONAL** = implement only if a smaller result proves necessity; **LATER** = preserve direction, not near-term work. Dependencies shown are decision dependencies unless stated otherwise; a small independent experiment may precede a future full implementation.
 
 ### V — System verification
 
@@ -54,11 +64,11 @@ Posture: **PILOT** = investigate before committing; **CANDIDATE** = valuable bou
 
 | ID | Desired outcome | Posture | Unlock / boundary |
 |---|---|---|---|
-| **D-01** | Assign one owner to each rule/fact and clarify prevention vs adversarial verification vs routing | **CANDIDATE · design next** | Read-only role/authority map first; retain preventive safety |
+| **D-01** | Extend existing plan/brief/report ownership to rules and skill/template instructions; clarify prevention, adversarial verification and routing | **PARTIAL · remaining design** | The accepted reading-experience work settled its bounded information ownership; map the remaining rules first; [pilot self-sufficient output templates](concepts/03-documentation-and-task-planning.md#skill-and-template-instruction-ownership--d-01-then-d-02) with lean skill entry points under D-02; retain preventive safety and avoid active-task collisions |
 | **D-02** | Validate that lean documents/skills preserve correctness while lowering lifecycle cost | **PILOT** | D-01; complex and small existing tasks, fresh reviewers |
 | **D-03** | Make each stage output concise, unique and linked to detailed evidence | CONDITIONAL | D-02 fidelity and cost success; no active task collision |
 | **D-04** | Stop plan/JSON graph from restating contracts independently | CONDITIONAL | Normative-source choice and existing consumer review |
-| **D-05** | Show accepted/blocked/unknown status and next owner from current evidence | CANDIDATE | Read-only derived view; no reviewer edits to plan |
+| **D-05** | Derive current accepted/blocked/unknown status and next owner across records | **PARTIAL · automation remains** | Plain-language report openings and navigation are accepted; only pursue automated aggregation if a real need remains; no reviewer edits to plan |
 | **D-06** | Retrieve minimal current context for each role with stable links | CONDITIONAL | D-01 and sufficiently reliable reference/identity graph |
 | **D-07** | Mechanically check identities, references, stale revisions and forbidden changes | CANDIDATE | Trusted canonical inputs; cannot self-prove behavior |
 
@@ -66,8 +76,7 @@ Posture: **PILOT** = investigate before committing; **CANDIDATE** = valuable bou
 
 | ID | Desired outcome | Posture | Unlock / boundary |
 |---|---|---|---|
-| **Q-01** | Independently identify material maintainability defects in *changed tests/evals/harnesses* | **CANDIDATE** | Separately authorize after T-003 ownership/scope; preserve byte freshness |
-| **Q-02** | Reduce duplicated fixtures and brittle structural tests without losing oracles | CANDIDATE · later | Stable review flow and Q-01 guidance; prove retained coverage |
+| **Q-02** | Reduce duplicated fixtures and brittle structural tests without losing oracles | CANDIDATE · later | Use existing Q-01 guidance; select an actual suite defect and prove retained coverage |
 | **Q-03** | Distinguish good splits, justified keep-whole and honest reasons with adversarial evals | CANDIDATE | Keep implemented boundary-quality P0; fix F0 semantics, test F1 behavior |
 | **Q-04** | Settle shared interfaces and dependent proof before separately briefing related tasks | CANDIDATE | Existing planning/verification skills; JIT briefing by default |
 | **Q-05** | Elaborate later child briefs progressively and tune splitting using real cost | CONDITIONAL | Observed stale briefs, handoff churn or costly rework |
@@ -77,7 +86,7 @@ Posture: **PILOT** = investigate before committing; **CANDIDATE** = valuable bou
 | ID | Desired outcome | Posture | Unlock / boundary |
 |---|---|---|---|
 | **I-01** | Preserve every issue occurrence and connect recurrence/regression to correction cycles | **CANDIDATE · pilot first** | Numbered review/run history; uncertain dedup explicitly labeled |
-| **I-02** | Reconsider deferrals when relied-on safeguards or context change | CANDIDATE | Small safe-while / reconsider-when representation; existing coordinator authority |
+| **I-02** | Detect changed deferral assumptions and prompt reassessment across later work | CANDIDATE | Recording reassessment conditions and task-local known-issue reassessment already exist; remaining work is reliable change-triggered tracking |
 | **I-03** | Mechanically flag known hazardous combinations and stale assumptions | CONDITIONAL | I-01/02 and validated guarantee/dependency links |
 | **I-04** | Evaluate broader-context issue risk and advisory classification of confirmed findings | PILOT · later | Replay real review records against rules and a cheap LLM; measure critical under-triage and cost before any routing integration |
 
@@ -114,7 +123,7 @@ flowchart LR
   E1 -.-> O5
 ```
 
-Solid arrows indicate a useful typical sequence (some can be independently prototyped); dotted arrows are helpful inputs, **not prerequisites for a disposable experiment**. Q-01 is a separate test-review extension; Q-03/04 can be scheduled when their owning skills are not under active changes. D-04, O-01 and cloud storage do **not** block V-01.
+Solid arrows indicate a useful typical sequence (some can be independently prototyped); dotted arrows are helpful inputs, **not prerequisites for a disposable experiment**. Q-01 is already part of conditional maintainability review; Q-03/04 remain candidates and must respect current source ownership. D-04, O-01 and cloud storage do **not** block V-01.
 
 ## Updating the map without recreating documentation sprawl
 

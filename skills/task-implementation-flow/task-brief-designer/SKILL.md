@@ -117,6 +117,14 @@ an unapproved premise.
    outcome it enables. Ground "why now" in approved sequencing or a real
    dependency rather than inventing priority. Separate confirmed requirements
    from implementation choices and unresolved decisions.
+   Reuse clear existing explanations; move or rewrite them instead of adding
+   another version. Put the outcome and, when supplied, direction trace before dense
+   execution metadata. Explain the practical contribution in plain language;
+   link to project purpose and prerequisite outcomes instead of restating them.
+   Do not add a separate owner summary or another requirements/status list.
+   If purpose is unknown, retain that uncertainty and use the existing
+   authority-gap route when it prevents a ready brief. Mention unchanged areas
+   only when they affect interpretation, scope, or the next action.
 3. Run a delta check before drafting:
    - outcome testable;
    - allowed and prohibited scope clear enough to prevent adjacent work;

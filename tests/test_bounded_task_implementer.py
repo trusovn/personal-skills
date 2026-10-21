@@ -16,6 +16,7 @@ import unittest
 from pathlib import Path
 
 from review_fixture_support import FLOW, ROOT
+from staging_fixture_support import stage_setup
 
 IMPLEMENTER = FLOW / "bounded-task-implementer"
 
@@ -57,6 +58,41 @@ ROUTE_PART_TOKENS = {
 
 
 class ImplementerContractTest(unittest.TestCase):
+
+    def test_reading_evals_supply_authority_and_conflicting_result_records(self):
+        package = ROOT / "skills/project-delivery-plan"
+        evals = json.loads((package / "evals/evals.json").read_text())["evals"]
+        for case in evals:
+            scenario = case["execution"]["setup"]["command"][-1]
+            with self.subTest(scenario=scenario):
+                work = stage_setup(self, package / "evals/files/setup_fixture.py", scenario)
+                docs = work / scenario / "docs"
+                request = (docs / "request.md").read_text()
+                self.assertIn({"small-change": "header name,status",
+                               "multi-task": "Reject reassignment without writing",
+                               "missing-direction": "No beneficiary"}[scenario], request)
+                self.assertIn("foundation ready", (docs / "foundation-review.md").read_text())
+                self.assertIn("No implementation edits", (docs / "current-report.md").read_text())
+                self.assertIn("old version only", (docs / "historical-acceptance.md").read_text())
+                self.assertIn("conflicts with current-report.md", (docs / "handover-note.md").read_text())
+                self.assertFalse((docs / "project-plan.md").exists())
+
+    def test_interrupted_reading_eval_exercises_a_real_failure(self):
+        case = next(case for case in json.loads(
+            (IMPLEMENTER / "evals/evals.json").read_text())["evals"] if case["id"] == 9)
+        work = stage_setup(self, IMPLEMENTER / "evals/files/setup_fixture.py",
+                           case["execution"]["setup"]["command"][-1])
+        root = work / "api-immediate"
+        before = (root / "src/auth/session.py").read_bytes()
+        result = subprocess.run(
+            [sys.executable, "-m", "unittest",
+             "tests.auth.test_session.SessionTest.test_expired_session_is_invalid"],
+            cwd=root, capture_output=True, text=True)
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("True is not false", result.stderr)
+        self.assertEqual(before, (root / "src/auth/session.py").read_bytes())
+        self.assertEqual("", subprocess.check_output(
+            ["git", "status", "--short"], cwd=root, text=True).strip())
 
     def test_correction_handoff_retains_evidence_provenance_and_separate_routes(self):
         text = " ".join((IMPLEMENTER / "SKILL.md").read_text().split())

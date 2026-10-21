@@ -33,7 +33,7 @@ These are responsibility boundaries, not a mandate to create a file or agent for
 
 ## Decisions and authority
 
-The accepted `t-o-new-flow` plan, task packages and exact-byte independent reviews remain current implementation authority. This portfolio and its concept notes are **proposals**, not amendments. Current executable packages continue to require their specified preparation and verification artifacts. The independent plan reviewer should not edit the plan it certifies; a derived read model may report whether an acceptance decision still matches current artifact identities.
+The `t-o-new-flow` delivery documents were retired; their historical identities and qualification limits remain in the [archive](../../../README.md#archived-delivery-documents). Current source skills, repository rules and authorized task contracts govern new work. This portfolio and its concept notes are **proposals**, not amendments. Current executable packages continue to require their specified preparation and verification artifacts. The independent plan reviewer should not edit the plan it certifies; a derived read model may report whether an acceptance decision still matches current artifact identities.
 
 ## General promotion rule for future ideas
 

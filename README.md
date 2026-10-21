@@ -412,6 +412,9 @@ a tests-only label never waives an affected required review.
 The detailed guided, maintainability-gated, and high-assurance variants are
 documented in
 [`skills/task-implementation-flow/README.md`](skills/task-implementation-flow/README.md).
+That guide also explains how to follow the plan's intended result through the
+current work report to the evidence and next action, without copying progress
+into the plan.
 ### Task orchestrator status
 
 `task-orchestrator` is an experimental, incomplete high-assurance execution

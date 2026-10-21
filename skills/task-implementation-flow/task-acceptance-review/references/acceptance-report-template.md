@@ -1,5 +1,13 @@
 # Task Acceptance Report: `<TASK-ID>` — `<brief title>`
 
+<In plain language, explain the change's contribution to the requested outcome,
+what current admitted evidence supports, whether work may advance, and any
+material limitation. Name the next actor/action and any owner decision. Derive
+this opening from the verdict and evidence below, linking supporting records
+rather than repeating their ledgers. Keep reported checks, independent findings,
+and historical acceptance distinct; missing/stale evidence remains visible.
+Reuse an existing explanation where possible.>
+
 | Field | Value |
 |---|---|
 | Verdict | `ACCEPT | CHANGES_REQUESTED | INCONCLUSIVE | none — SELF_CHECK_ONLY` |

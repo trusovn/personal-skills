@@ -339,9 +339,23 @@ only after the human coordinator records any acceptance-approved deferral
 
 ## Output contract
 
+For human-readable decisions and durable reports, open with what the reviewed
+change means for the requested outcome, what the admitted evidence supports,
+what may advance or remains unresolved, and the next actor/action or owner
+decision. Put this explanation before dense identity fields while retaining the
+required verdict and provenance. Derive it from the decision and evidence below;
+it is not a second verdict or ledger. Reuse or move an existing clear explanation
+rather than adding a competing summary. Link supporting records and preserve
+their scope and age: reported checks, current independent findings, and historical
+acceptance are distinct. Missing or stale decisive evidence stays visible; do
+not imply that unchecked areas passed. Keep progress in the report, not the
+approved plan.
+
 For guided decision, default to a concise human-readable response:
 
 ```markdown
+<Practical result, supported disposition and material limits, then next actor/action or owner decision.>
+
 Verdict: ACCEPT | CHANGES_REQUESTED | INCONCLUSIVE
 or
 SELF_CHECK_ONLY — not an independent verdict

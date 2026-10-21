@@ -112,6 +112,18 @@ schema, disposable probe state, and machine worker-result locations may remain
 runtime inputs/outputs; they are not substitutes for the canonical durable task
 artifacts above.
 
+### Reading plans and work reports
+
+For the project owner, start with the plan's intended result and task
+contributions, then follow the current implementation result or acceptance
+report for progress. Their openings explain the practical change, checked scope,
+material gaps, and next actor or owner decision. Implementation reports changes
+and checks; discovery supplies independent evidence; acceptance decides what may
+advance. When maintaining navigation in an existing project guide, link to the
+plan and the latest identified report instead of copying their status. If the
+current report cannot be established or sources conflict, say so and name who
+must resolve it. Keep each report's scope and age visible.
+
 ## Guided profile: default
 
 Use guided mode for most ordinary bounded tasks, especially when a person is

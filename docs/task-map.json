@@ -1,0 +1,483 @@
+{
+  "schema_version": "1.0",
+  "project": "Make development understandable to the project owner",
+  "plan_path": "docs/project-plan.md",
+  "capabilities": [
+    {
+      "id": "CAP-001",
+      "name": "Understand intent",
+      "outcome": "Explain purpose and current contribution.",
+      "flows": [
+        "FLOW-001"
+      ]
+    },
+    {
+      "id": "CAP-002",
+      "name": "Understand progress",
+      "outcome": "Explain supported result, gaps and next decision.",
+      "flows": [
+        "FLOW-002"
+      ]
+    },
+    {
+      "id": "CAP-003",
+      "name": "Establish usefulness",
+      "outcome": "Assess emitted installed outputs and owner comprehension.",
+      "flows": [
+        "FLOW-003"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "ART-001",
+      "name": "Existing authority and evidence",
+      "kind": "other",
+      "source_of_truth": "Existing direction, task and review owners",
+      "producer": "Existing records",
+      "consumers": [
+        "T-001",
+        "T-002",
+        "T-003",
+        "T-004"
+      ],
+      "lifecycle": "Read-only inputs; preserve reviewed identities and historical decisions."
+    },
+    {
+      "id": "ART-002",
+      "name": "Pilot and ownership decisions",
+      "kind": "audit",
+      "source_of_truth": "T-001 result/evidence record",
+      "producer": "T-001",
+      "consumers": [
+        "Owner",
+        "T-002",
+        "T-003"
+      ],
+      "lifecycle": "Proposed until owner clarity checkpoint passes."
+    },
+    {
+      "id": "ART-003",
+      "name": "Planning and brief guidance",
+      "kind": "configuration",
+      "source_of_truth": "Owning source skill packages",
+      "producer": "T-002",
+      "consumers": [
+        "Planners",
+        "Task designers",
+        "T-003",
+        "T-004"
+      ],
+      "lifecycle": "Candidate source; installed behavior requires later qualification."
+    },
+    {
+      "id": "ART-004",
+      "name": "Reporting guidance and navigation",
+      "kind": "configuration",
+      "source_of_truth": "Owning source skills and existing guides",
+      "producer": "T-003",
+      "consumers": [
+        "Implementers",
+        "Acceptance reviewers",
+        "Owner",
+        "T-004"
+      ],
+      "lifecycle": "Versioned guidance; each emitted report retains its own scope and age."
+    },
+    {
+      "id": "ART-005",
+      "name": "Qualification evidence and feedback",
+      "kind": "audit",
+      "source_of_truth": "T-004 result/evidence record and owner feedback",
+      "producer": "T-004",
+      "consumers": [
+        "Owner",
+        "Independent discovery",
+        "Separate acceptance"
+      ],
+      "lifecycle": "Bound to candidate identity; preserve corrections and unrun gaps."
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "IF-001",
+      "name": "Authority to explanation",
+      "owner": "Planner/task designer",
+      "consumer": "Owner",
+      "inputs": [
+        "ART-001"
+      ],
+      "outputs": [
+        "ART-002",
+        "ART-003"
+      ],
+      "contract": "See plan section 3: preserve purpose, authority and uncertainty; flag conflicts."
+    },
+    {
+      "id": "IF-002",
+      "name": "Evidence to result explanation",
+      "owner": "Implementer and separate acceptance reviewer",
+      "consumer": "Owner",
+      "inputs": [
+        "ART-001"
+      ],
+      "outputs": [
+        "ART-004"
+      ],
+      "contract": "See plan sections 2-3: reported checks and independent disposition stay distinct; stale or missing proof cannot become current success."
+    },
+    {
+      "id": "IF-003",
+      "name": "Source to disposable installation",
+      "owner": "Source maintainer",
+      "consumer": "Fresh consuming session",
+      "inputs": [
+        "ART-003",
+        "ART-004"
+      ],
+      "outputs": [
+        "ART-005"
+      ],
+      "contract": "See plan sections 3 and 5: canonical installer, exact candidate identity, no active-session refresh; missing behavior evidence remains incomplete."
+    }
+  ],
+  "invariants": [
+    {
+      "id": "INV-001",
+      "statement": "Owner understands the opening without decoding IDs or reading technical appendices.",
+      "applies_to": [
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "FLOW-001",
+        "FLOW-002"
+      ],
+      "verification": "Owner comprehension checks in T-001 and T-004."
+    },
+    {
+      "id": "INV-002",
+      "statement": "Preserve source identity, authority, limitations and planned/reported/independently supported distinctions.",
+      "applies_to": [
+        "IF-001",
+        "IF-002",
+        "ART-003",
+        "ART-004"
+      ],
+      "verification": "Evidence contrast cases in T-004."
+    },
+    {
+      "id": "INV-003",
+      "statement": "Retain required preparation, independent discovery, separate acceptance and correction duties; approved plans are not mutable status stores.",
+      "applies_to": [
+        "FLOW-001",
+        "FLOW-002",
+        "ART-003",
+        "ART-004"
+      ],
+      "verification": "Focused regression and independent evidence."
+    },
+    {
+      "id": "INV-004",
+      "statement": "No duplicate mandatory overview, status ledger or narrative contract.",
+      "applies_to": [
+        "ART-002",
+        "ART-003",
+        "ART-004"
+      ],
+      "verification": "Before/after output and guide review."
+    },
+    {
+      "id": "INV-005",
+      "statement": "Qualification binds source and installed versions without refreshing the active installation.",
+      "applies_to": [
+        "IF-003",
+        "ART-005",
+        "FLOW-003"
+      ],
+      "verification": "Disposable installation and fresh-consumer evidence in T-004."
+    }
+  ],
+  "flows": [
+    {
+      "id": "FLOW-001",
+      "name": "Understand intent",
+      "trigger": "Owner asks what is being built",
+      "terminal_outcome": "Owner explains result, task contribution and next useful proof.",
+      "steps": [
+        {
+          "id": "FLOW-001-S01",
+          "actor": "Planner",
+          "action": "Read authority and prepare pilot or revised planning explanation",
+          "consumes": [
+            "ART-001"
+          ],
+          "produces": [
+            "ART-002",
+            "ART-003"
+          ],
+          "interfaces": [
+            "IF-001"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-003",
+            "INV-004"
+          ],
+          "state_transition": "Proposed example -> owner clarity decision; unclear remains proposed"
+        },
+        {
+          "id": "FLOW-001-S02",
+          "actor": "Owner",
+          "action": "Read opening and task contribution; identify unresolved questions",
+          "consumes": [
+            "ART-002",
+            "ART-003"
+          ],
+          "produces": [],
+          "interfaces": [],
+          "invariants": [
+            "INV-001",
+            "INV-002"
+          ],
+          "state_transition": "Missing direction -> explicit question, not invented purpose"
+        }
+      ]
+    },
+    {
+      "id": "FLOW-002",
+      "name": "Understand progress",
+      "trigger": "Work completes, fails or is interrupted",
+      "terminal_outcome": "Owner sees supported result, remaining gap and next actor/decision.",
+      "steps": [
+        {
+          "id": "FLOW-002-S01",
+          "actor": "Implementer and reviewers",
+          "action": "Use existing evidence to explain reported changes and separate independent disposition",
+          "consumes": [
+            "ART-001",
+            "ART-003"
+          ],
+          "produces": [
+            "ART-004"
+          ],
+          "interfaces": [
+            "IF-002"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-003",
+            "INV-004"
+          ],
+          "state_transition": "Completion claim -> scoped independent decision, or incomplete/rejected"
+        },
+        {
+          "id": "FLOW-002-S02",
+          "actor": "Coordinator and owner",
+          "action": "Navigate to current report and assess next action",
+          "consumes": [
+            "ART-004",
+            "ART-001"
+          ],
+          "produces": [],
+          "interfaces": [],
+          "invariants": [
+            "INV-002",
+            "INV-003",
+            "INV-004"
+          ],
+          "state_transition": "Changed bytes -> prior verdict historical; uncertain latest remains unknown"
+        }
+      ]
+    },
+    {
+      "id": "FLOW-003",
+      "name": "Qualify usefulness",
+      "trigger": "Candidate guidance ready",
+      "terminal_outcome": "Qualified candidate or correction route with explicit remaining gaps.",
+      "steps": [
+        {
+          "id": "FLOW-003-S01",
+          "actor": "Maintainer and fresh consumers",
+          "action": "Install disposable candidate and produce outputs from supplied inputs",
+          "consumes": [
+            "ART-001",
+            "ART-003",
+            "ART-004"
+          ],
+          "produces": [
+            "ART-005"
+          ],
+          "interfaces": [
+            "IF-003"
+          ],
+          "invariants": [
+            "INV-002",
+            "INV-003",
+            "INV-005"
+          ],
+          "state_transition": "Candidate -> observed outputs or explicit unrun gap"
+        },
+        {
+          "id": "FLOW-003-S02",
+          "actor": "Owner and independent reviewers",
+          "action": "Check clarity, accuracy, safeguards and disposition",
+          "consumes": [
+            "ART-005"
+          ],
+          "produces": [],
+          "interfaces": [],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-003",
+            "INV-004",
+            "INV-005"
+          ],
+          "state_transition": "Observed candidate -> supported advance decision or correction; no automatic acceptance"
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Try an understandable example",
+      "outcome": "Owner can explain this change from a concrete pilot opening.",
+      "depends_on": [],
+      "capabilities": [
+        "CAP-001",
+        "CAP-002"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-002"
+      ],
+      "consumes": [
+        "ART-001"
+      ],
+      "produces": [
+        "ART-002"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-002"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-003",
+        "INV-004"
+      ],
+      "integration_boundary": "Owner answers the five reading questions from the example; unresolved confusion blocks T-002.",
+      "task_planner_context": "Use this documentation change; hypothetical result text stays labeled. Reuse normal task evidence and record ownership decisions. See plan section 5."
+    },
+    {
+      "id": "T-002",
+      "title": "Connect plans and tasks to purpose",
+      "outcome": "Planning guidance makes result and task contribution understandable.",
+      "depends_on": [
+        "T-001"
+      ],
+      "capabilities": [
+        "CAP-001"
+      ],
+      "flows": [
+        "FLOW-001"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002"
+      ],
+      "produces": [
+        "ART-003"
+      ],
+      "interfaces": [
+        "IF-001"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-003",
+        "INV-004"
+      ],
+      "integration_boundary": "Supplied small and multi-task packages yield accurate openings and retain required technical/preparation detail.",
+      "task_planner_context": "Requires actual owner clarity checkpoint, not pilot-file existence. Reuse direction trace; change adjacent skills only for demonstrated compatibility gaps. See plan section 5."
+    },
+    {
+      "id": "T-003",
+      "title": "Explain results and next action",
+      "outcome": "Existing result and acceptance records expose supported progress and remaining decisions.",
+      "depends_on": [
+        "T-002"
+      ],
+      "capabilities": [
+        "CAP-002"
+      ],
+      "flows": [
+        "FLOW-002"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002",
+        "ART-003"
+      ],
+      "produces": [
+        "ART-004"
+      ],
+      "interfaces": [
+        "IF-002"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-003",
+        "INV-004"
+      ],
+      "integration_boundary": "Successful, interrupted, rejected and incomplete-evidence cases explain result, limits and next actor without unsupported acceptance.",
+      "task_planner_context": "Keep implementer claims, independent discovery and acceptance distinct; retain identity fields, findings and approved plan immutability. See plan section 5."
+    },
+    {
+      "id": "T-004",
+      "title": "Qualify the complete reading experience",
+      "outcome": "Installed candidate outputs demonstrate clarity and accuracy, with honest gaps.",
+      "depends_on": [
+        "T-003"
+      ],
+      "capabilities": [
+        "CAP-001",
+        "CAP-002",
+        "CAP-003"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-003",
+        "ART-004"
+      ],
+      "produces": [
+        "ART-005"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-002",
+        "IF-003"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-003",
+        "INV-004",
+        "INV-005"
+      ],
+      "integration_boundary": "Fresh installed consumers emit source-faithful outputs; wrong claims are rejected; owner confirms comprehension; required independent reviews remain separate.",
+      "task_planner_context": "Inspect existing coverage and installer surfaces; reuse fixtures. Model-consuming checks need prior approval. Never refresh active installation. Record candidate identities and unrun evidence. See plan sections 5-6."
+    }
+  ],
+  "open_system_questions": []
+}

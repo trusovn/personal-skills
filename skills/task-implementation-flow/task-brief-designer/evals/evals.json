@@ -193,6 +193,7 @@
       "expectations": [
         "The output creates only `docs/tasks/EXPORT-2/brief.md` and keeps status `ready` with proportionate guided metadata and implementer self-preflight.",
         "A `Direction trace` contains all five fields: Direction contribution, User-observable effect, Why now, Direction decisions used, and New direction decisions required.",
+        "The title, Outcome and Direction trace explain in short, concrete sentences what the owner can do and why export comes next. The reader does not need to decode plan IDs or unexplained technical terms; any necessary unfamiliar term is explained on first use. This replaces dense opening wording rather than adding a second owner summary, and preserves the detailed technical scope below.",
         "Direction contribution traces to the approved portable-backup outcome, and User-observable effect says the owner can create a restorable local export.",
         "Why now cites the approved first useful proof or the export-before-restore dependency without inventing a new priority.",
         "Direction decisions used cites exact sections of `docs/project-direction.md`, and New direction decisions required is exactly `None`.",

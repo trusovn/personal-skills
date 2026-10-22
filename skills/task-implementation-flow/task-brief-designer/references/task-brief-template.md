@@ -2,6 +2,9 @@
 
 For an executable brief, place the existing Outcome and any supplied Direction
 trace immediately after the title, before status and execution metadata.
+Use a title and opening that explain the result, its user and its place in the
+approved sequence. Use short sentences and explain unfamiliar terms when first
+needed. Plan IDs can support this explanation; they must not replace it.
 When updating a brief, reuse or rewrite those sections and remove any displaced
 copy; add only missing information. Do not add a parallel owner summary. Composite and
 blocked-design outputs keep their separate forms below.
@@ -139,8 +142,8 @@ has been supplied.
 
 ## Outcome
 
-`<One testable sentence in plain language: what this task gives the owner or
-which later useful result it enables.>`
+`<A short paragraph in plain language: what this task gives the owner or next
+implementer, and which useful result it enables. Make the result testable.>`
 
 Link to the project purpose rather than repeating it. Keep detailed scope and
 acceptance criteria in their owning sections. Preserve an unknown purpose as
@@ -150,12 +153,12 @@ unknown; a material authority gap follows the existing blocked/delta route.
 
 Include this section when governing direction was supplied. Omit it otherwise.
 
-- Direction contribution: `<approved outcome, scenario, priority, or boundary
-  this task advances>`
+- Direction contribution: `<what this task helps the owner do, within the
+  approved outcome, scenario, priority or boundary>`
 - User-observable effect: `<direct effect, or "No direct effect; enables
   <next demonstrable outcome>">`
-- Why now: `<approved sequence or real technical dependency leading toward the
-  next demonstrable outcome>`
+- Why now: `<who needs this result next and what it lets them do, based on the
+  approved sequence or a real dependency>`
 - Direction decisions used: `<exact paths, sections, or decision IDs>`
 - New direction decisions required: `None`
 

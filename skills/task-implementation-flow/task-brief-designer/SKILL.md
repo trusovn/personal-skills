@@ -119,8 +119,14 @@ an unapproved premise.
    from implementation choices and unresolved decisions.
    Reuse clear existing explanations; move or rewrite them instead of adding
    another version. Put the outcome and, when supplied, direction trace before dense
-   execution metadata. Explain the practical contribution in plain language;
-   link to project purpose and prerequisite outcomes instead of restating them.
+   execution metadata. Write the title, outcome and direction trace so the owner
+   can understand what the task delivers, who uses it and why it comes next
+   without decoding plan IDs or workflow jargon. Use short sentences, concrete
+   verbs and consistent terms, following ASD-STE100 principles without claiming
+   formal compliance. Explain an unfamiliar technical term when first needed;
+   keep exact IDs and technical detail in the scope, criteria and evidence where
+   they are useful. Preserve required trace fields and precise task boundaries.
+   Link to project purpose and prerequisite outcomes instead of restating them.
    Do not add a separate owner summary or another requirements/status list.
    If purpose is unknown, retain that uncertainty and use the existing
    authority-gap route when it prevents a ready brief. Mention unchanged areas

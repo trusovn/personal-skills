@@ -33,12 +33,20 @@ class RetrievalSurfaceTest(unittest.TestCase):
             "assets/flow-profile.schema.json",
             "assets/handoff.schema.json",
             "assets/step-outcome.schema.json",
-            "docs/stage-3-retrieval-surface-follow-up.md",
+            "docs/README.md",
+            "docs/direction-local-harness.md",
+            "docs/local-harness-orchestration-plan.md",
+            "docs/local-harness-task-map.json",
         )
 
         missing = [path for path in expected if not (SKILL_ROOT / path).is_file()]
 
         self.assertEqual([], missing)
+        self.assertEqual(
+            {"README.md", "direction-local-harness.md",
+             "local-harness-orchestration-plan.md", "local-harness-task-map.json"},
+            {path.name for path in (SKILL_ROOT / "docs").iterdir()},
+        )
 
     def test_skill_routes_through_controller_and_matches_commit_policy(self):
         skill = (SKILL_ROOT / "SKILL.md").read_text()
@@ -116,7 +124,7 @@ class RetrievalSurfaceTest(unittest.TestCase):
         self.assertIn("scripts/controller.py", expectations)
         self.assertIn("scripts/controller_git.py", expectations)
         self.assertIn("tests/test_controller_git.py", expectations)
-        self.assertIn("docs/history/", expectations)
+        self.assertIn("docs/direction-local-harness.md", expectations)
 
 
 if __name__ == "__main__":

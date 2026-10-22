@@ -2,7 +2,7 @@
 
 Status: operator reference
 
-Freshness: 2026-07-23
+Freshness: 2026-10-22
 
 This guide covers only the public controller behavior implemented today.
 
@@ -68,6 +68,17 @@ scope, structured worker results, and configured verification. A positive
 decision is mechanical eligibility, not semantic acceptance. The current CLI
 does not yet atomically accept the task, release dependencies, or advance.
 
+## Revise a flow at a safe boundary
+
+```bash
+python3 <skill-dir>/scripts/controller.py revise-flow \
+  --run-dir <external-run-dir> \
+  --flow <flow-profile.json>
+```
+
+The controller validates the closed profile and safe task boundary, then records
+a flow revision. This command does not provide a complete reviewed runner.
+
 ## Interruption and recovery
 
 The current public controller has no safe-stop or resume command. On an
@@ -79,7 +90,8 @@ interrupted, timed-out, or ambiguous attempt:
 3. Determine whether the recorded process is live, absent, or ambiguous.
 4. Stop and report the evidence.
 5. Route implementation of safe reconciliation or same-thread continuation to
-   MVP-3 in the current Stage 3 rebaseline.
+   the recovery work in the proposed local harness plan; check its readiness in
+   the [current development documents](../docs/README.md).
 
 Do not use direct `codex_worker.py resume` to bypass missing controller
 reconciliation. That older route cannot provide the controller-owned process
@@ -90,4 +102,4 @@ and state guarantees required by the current design.
 Report the run/task/attempt identifiers, ledger state, process evidence, Git
 state, structured result and verification paths, semantic-review status, and
 the next available controller command. If the required command does not exist,
-name the owning MVP increment instead of inventing an operational workaround.
+name the missing capability instead of inventing an operational workaround.

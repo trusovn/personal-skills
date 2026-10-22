@@ -9,7 +9,6 @@ import sys
 import textwrap
 
 WORK = Path(os.environ.get("EVAL_WORK_ROOT", "/work"))
-SKILLS = Path(__file__).resolve().parents[3]
 
 
 def write(root: Path, relative: str, content: str) -> None:
@@ -98,17 +97,62 @@ def technical_audit() -> None:
         evidence to audit, not as permission to edit implementation or plans.
         """,
     )
-    source = SKILLS / "task-orchestrator" / "docs"
-    targets = {
-        "direction.md": source / "direction.md",
-        "stage-3-mvp-rebaseline.md": source / "stage-3-mvp-rebaseline.md",
-        "MVP-2-flow-contract.md":
-            source / "stage-3-mvp-tasks" / "MVP-2-flow-contract.md",
-    }
-    for name, source_path in targets.items():
-        destination = root / "docs" / "source" / name
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, destination)
+    # Keep the audit scenario independent of another skill's evolving docs.
+    write(root, "docs/source/direction.md", """
+        # Local task orchestrator: technical direction
+        Status: owner-approved goals; proposed mechanisms
+
+        The owner wants to submit defined local tasks once, then let the system
+        implement, check, independently review and correct each task in order
+        without copying prompts or routinely supervising agents.
+        Trustworthy readiness and approved scope take priority over progress;
+        ordinary recovery should not need a new owner decision.
+        First useful proof: one task completes the reviewed path after a
+        correction, preserves evidence and reports ready without intervention.
+
+        The local owner and repository are trusted. Agent outputs are fallible.
+        Work is sequential. Preserve owner changes and stop for unclear intent,
+        new permissions or exhausted corrections. No remote publishing, parallel
+        writers, malicious-host defense or automatic permission expansion.
+        The owner controls scope, authority, readiness and intervention rules.
+
+        Proposed architecture: an immutable policy, normalized task manifest,
+        controller-owned ledger, candidate digest and exact-path commit gate.
+        Workers return structured evidence but never accept their own changes.
+        A supervisor may interpret findings only within approved authority.
+        These mechanisms are implementation choices, not additional owner goals.
+        Older prototype notes used a prompt-only supervisor; they are superseded.
+    """)
+    write(root, "docs/source/delivery-plan.md", """
+        # Proposed local task flow delivery
+        Status: proposal; not an owner-approved direction change
+
+        Use closed preflight/implement/verify/review/accept steps, three correction
+        cycles and durable attempt records. Use a cheaper coordinator and stronger
+        workers. Resume when process ownership is known; otherwise stop.
+        The plan offers fast, reviewed and strong profiles as an owner-facing
+        feature, although the approved goal asks for one dependable reviewed path.
+        It defers local commits until after the first proof. The source direction
+        proposes a commit gate but does not establish an approved commit requirement;
+        clarify the owner's completion boundary instead of inventing approval.
+        All scheduling and recovery are assigned to deterministic controller code;
+        the owner has approved the outcome, not this allocation of responsibilities.
+    """)
+    write(root, "docs/source/flow-contract.md", """
+        # Proposed flow contract
+        Status: implementation contract draft
+
+        Bind task, flow revision, actor role, correction count and candidate
+        identity to outcomes. Keep verification separate from independent review;
+        a worker completion report cannot establish semantic acceptance.
+        Frozen implementation mapping: light/standard/strong select low/medium/high
+        reasoning. Reuse implementation sessions below a fixed 50 percent context
+        threshold; then hand off scope, findings and evidence to a fresh agent.
+        The practical goal is continuity without losing authority or useful work;
+        exact models, thresholds and record formats remain technical choices.
+        A draft appendix proposes cryptographic protection against a hostile local
+        operator. That contradicts the trusted-local scope and lacks owner approval.
+    """)
     commit(root)
 
 

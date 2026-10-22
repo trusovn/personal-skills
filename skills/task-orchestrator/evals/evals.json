@@ -20,14 +20,14 @@
     {
       "id": 2,
       "prompt": "The current controller run was interrupted after recording a worker attempt. Continue the same worker thread safely and do not lose the partial diff.",
-      "expected_output": "The agent retrieves the current recovery limitation, inspects controller and process evidence, refuses to relaunch or directly resume through the transport adapter, and reports that safe reconciliation and same-thread recovery belong to MVP-3.",
+      "expected_output": "The agent retrieves the current recovery limitation, inspects controller and process evidence, refuses to relaunch or directly resume through the transport adapter, and reports that safe reconciliation and same-thread recovery remain proposed local harness work.",
       "files": [],
       "expectations": [
         "It inspects the ledger, attempt record, process identity, Git state, and any structured result before proposing another launch.",
         "It does not call scripts/codex_worker.py resume or codex exec resume as a public recovery path.",
         "It distinguishes a live, absent, and ambiguous prior process and never launches over a live or ambiguous one.",
         "It states that the current public controller has no safe stop or resume command.",
-        "It routes the missing behavior to the current Stage 3 MVP-3 plan rather than docs/history/."
+        "It routes the missing behavior through docs/README.md to the proposed local harness recovery work, using the current direction and plan."
       ]
     },
     {
@@ -40,7 +40,7 @@
         "It identifies tests/test_controller_git.py as the primary targeted suite.",
         "It includes tests/test_controller.py only when the public command or cross-module controller flow is affected.",
         "It gives the exact targeted unittest command from references/architecture-map.md.",
-        "It does not use docs/history/ as current implementation authority."
+        "It selects current code and tests without loading completed task paperwork."
       ]
     },
     {
@@ -53,30 +53,30 @@
         "It lists scripts/controller.py init, run-next, and inspect in order.",
         "It does not present codex_worker.py as an operator command.",
         "It calls a positive inspect result mechanical eligibility rather than semantic acceptance.",
-        "It avoids docs/history/ unless historical evidence is explicitly requested."
+        "It uses current operator guidance without loading completed task paperwork."
       ]
     },
     {
       "id": 5,
-      "prompt": "Which document is authoritative for the remaining Stage 3 MVP work, and which documents should I avoid loading while I create new task briefs?",
-      "expected_output": "The agent identifies the Stage 3 MVP rebaseline as the governing current plan, uses the retrieval follow-up for deferred information-architecture work, and treats docs/history as opt-in evidence.",
+      "prompt": "Which documents govern future local harness work, is the proposed plan ready for implementation, and which documents should I avoid loading while I create new task briefs?",
+      "expected_output": "The agent follows docs/README.md to the confirmed local harness direction, distinguishes intended work from existing commands, and states that the corrected plan still needs fresh independent verification.",
       "files": [],
       "expectations": [
-        "It identifies docs/stage-3-mvp-rebaseline.md as the governing high-level plan.",
-        "It identifies docs/stage-3-retrieval-surface-follow-up.md as a planning companion rather than a runtime contract.",
-        "It treats docs/history/ as non-authoritative and avoids loading completed task briefs by default.",
-        "It distinguishes current operator references from the current plan and historical evidence."
+        "It identifies docs/direction-local-harness.md as the complete owner-confirmed direction.",
+        "It identifies docs/local-harness-orchestration-plan.md and its task map as proposed artifacts requiring fresh independent plan verification before implementation.",
+        "It starts from the four active planning files and avoids completed task paperwork.",
+        "It distinguishes current operator references from the current direction and proposed plan."
       ]
     },
     {
       "id": 6,
       "prompt": "Our feature folder has an approved plan and task briefs but no normalized task-orchestrator manifest. Can the current skill prepare and run everything unattended now?",
-      "expected_output": "The agent truthfully reports that plan preparation and the unattended runner are unfinished MVP-6 work and does not fabricate a current command or silently normalize ambiguous authority.",
+      "expected_output": "The agent truthfully reports that plan preparation and the unattended runner are unfinished work, with plan preparation explicitly deferred by the local harness proposal and does not fabricate a current command or silently normalize ambiguous authority.",
       "files": [],
       "expectations": [
         "It states that current code requires an already normalized, operator-confirmed manifest and run policy.",
         "It does not claim that plan-to-manifest preparation or automatic advance exists.",
-        "It routes the missing preparation and thin operator interface to MVP-6.",
+        "It distinguishes the proposed coordinator interface from deferred plan preparation and does not add plan preparation to the approved delivery.",
         "It does not silently infer scope, dependencies, permissions, or verification authority.",
         "It does not fall back to the historical prompt-only supervisor workflow."
       ]

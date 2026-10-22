@@ -1,0 +1,866 @@
+{
+  "schema_version": "1.0",
+  "project": "Local harness-led task orchestration",
+  "plan_path": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+  "capabilities": [
+    {
+      "id": "CAP-001",
+      "name": "Local reviewed execution",
+      "outcome": "Harness-led implementation and independent bounded correction with a final code gate and safe local commit before advancement",
+      "flows": [
+        "FLOW-001"
+      ]
+    },
+    {
+      "id": "CAP-002",
+      "name": "Durable recovery",
+      "outcome": "Replacement coordinator resumes safely from persisted state",
+      "flows": [
+        "FLOW-002"
+      ]
+    },
+    {
+      "id": "CAP-003",
+      "name": "Enforced gates",
+      "outcome": "Invalid evidence or authority never releases dependencies",
+      "flows": [
+        "FLOW-001",
+        "FLOW-003"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "ART-001",
+      "name": "Approved manifest and run policy",
+      "kind": "configuration",
+      "source_of_truth": "User-authorized initialization persisted by controller",
+      "producer": "User and controller",
+      "consumers": [
+        "All actors via bounded projections"
+      ],
+      "lifecycle": "Immutable during active work; explicit revision at safe boundaries only."
+    },
+    {
+      "id": "ART-002",
+      "name": "Run/task state and operations",
+      "kind": "persisted",
+      "source_of_truth": "Controller ledger",
+      "producer": "Controller",
+      "consumers": [
+        "Coordinator",
+        "Harness adapter"
+      ],
+      "lifecycle": "Atomic reservations and state versions; reserved/running/terminal/unknown operations; persistent three-correction task counter; invalid requests leave authoritative state unchanged; separate append-only diagnostics allowed."
+    },
+    {
+      "id": "ART-003",
+      "name": "Candidate and scope evidence",
+      "kind": "persisted",
+      "source_of_truth": "Controller Git inspection",
+      "producer": "Controller",
+      "consumers": [
+        "Verifier",
+        "Reviewer",
+        "Acceptance"
+      ],
+      "lifecycle": "Relevant tracked/untracked bytes and baseline; edits supersede evidence."
+    },
+    {
+      "id": "ART-004",
+      "name": "Assignment and actor outcome",
+      "kind": "persisted",
+      "source_of_truth": "Controller assignment and adapter-observed outcome",
+      "producer": "Controller and adapter",
+      "consumers": [
+        "Actors",
+        "Controller"
+      ],
+      "lifecycle": "Bind run/task/flow/operation/role; preserve rejected outcomes as history; no authority from actor claims."
+    },
+    {
+      "id": "ART-005",
+      "name": "Verification evidence",
+      "kind": "persisted",
+      "source_of_truth": "Controller verification runner",
+      "producer": "Verification runner",
+      "consumers": [
+        "Reviewer",
+        "Acceptance"
+      ],
+      "lifecycle": "Command/environment/outcome bound to candidate; superseded records remain historical."
+    },
+    {
+      "id": "ART-006",
+      "name": "Review findings and verdict",
+      "kind": "persisted",
+      "source_of_truth": "Independent reviewer outcome admitted by controller",
+      "producer": "Reviewer via adapter",
+      "consumers": [
+        "Coordinator",
+        "Correction worker",
+        "Acceptance"
+      ],
+      "lifecycle": "Stable findings across cycles; fresh reviewer resolves findings; edits invalidate verdict."
+    },
+    {
+      "id": "ART-007",
+      "name": "Acceptance, commit/finalization and intervention records",
+      "kind": "persisted",
+      "source_of_truth": "Controller",
+      "producer": "Controller",
+      "consumers": [
+        "Coordinator",
+        "Dependency selection",
+        "Recovery"
+      ],
+      "lifecycle": "Persist final-gate approval and task-scoped commit intent/receipt; reconcile unknown commit outcomes; release dependencies atomically only after proven commit; idempotent replay; intervention preserves evidence without release."
+    },
+    {
+      "id": "ART-008",
+      "name": "Supported harness contract",
+      "kind": "configuration",
+      "source_of_truth": "T-001 capability report",
+      "producer": "T-001 investigator",
+      "consumers": [
+        "Adapter implementer",
+        "Operator guide"
+      ],
+      "lifecycle": "Versioned supported transport, permissions, lifecycle, safe local commit/reconciliation, intervention notification mechanism and limitations."
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "IF-001",
+      "name": "Status and reserve",
+      "owner": "Controller",
+      "consumer": "Coordinator",
+      "inputs": [
+        "ART-001",
+        "ART-002",
+        "ART-007"
+      ],
+      "outputs": [
+        "ART-002",
+        "ART-004"
+      ],
+      "contract": "Return status and permitted actions; reserve against expected version; enforce authority, single-writer ownership and persistent three-correction limit before launch. Invalid requests leave authoritative state/version and workspace unchanged; separate diagnostic append allowed."
+    },
+    {
+      "id": "IF-002",
+      "name": "Launch, wait, cancel and reconcile",
+      "owner": "Harness adapter",
+      "consumer": "Controller and coordinator",
+      "inputs": [
+        "ART-002",
+        "ART-004",
+        "ART-008"
+      ],
+      "outputs": [
+        "ART-004",
+        "ART-006"
+      ],
+      "contract": "Use real observed session identity and operation key; no duplicate launch; unknown status blocks; enforce supported permissions. Connect the selected intervention notifier; record delivery failure truthfully."
+    },
+    {
+      "id": "IF-003",
+      "name": "Collect, inspect and verify",
+      "owner": "Controller",
+      "consumer": "Harness adapter and coordinator",
+      "inputs": [
+        "ART-001",
+        "ART-002",
+        "ART-004",
+        "ART-006"
+      ],
+      "outputs": [
+        "ART-002",
+        "ART-003",
+        "ART-005",
+        "ART-006"
+      ],
+      "contract": "Validate subject, role, provenance and candidate; inspect scope; execute configured checks; reject stale or invalid evidence."
+    },
+    {
+      "id": "IF-004",
+      "name": "Final gate, commit, recover and advance",
+      "owner": "Controller",
+      "consumer": "Coordinator",
+      "inputs": [
+        "ART-001",
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-005",
+        "ART-006",
+        "ART-007",
+        "ART-008"
+      ],
+      "outputs": [
+        "ART-002",
+        "ART-007"
+      ],
+      "contract": "Require current configured checks, independent review, approved scope, no blocking findings and no active operation. Persist gate approval and exact-path local commit intent; create/reconcile commit without owner work; then atomically publish completion/release. Unknown or unavailable commit blocks advancement; replay cannot duplicate commit. Refusals return reasons without stopping; unrecoverable outcomes persist intervention and request notification."
+    }
+  ],
+  "invariants": [
+    {
+      "id": "INV-001",
+      "statement": "Agent output cannot change authority or required stages.",
+      "applies_to": [
+        "ART-001",
+        "ART-002",
+        "IF-001",
+        "IF-003",
+        "IF-004"
+      ],
+      "verification": "Invalid requests leave authoritative state/version and workspace unchanged; optional append-only diagnostics are separate. Valid operational outcomes may change phase/evidence or publish intervention."
+    },
+    {
+      "id": "INV-002",
+      "statement": "Only one active operation; uncertain liveness blocks new work and acceptance.",
+      "applies_to": [
+        "ART-002",
+        "IF-001",
+        "IF-002",
+        "IF-004"
+      ],
+      "verification": "Duplicate launch and real interruption/reconciliation probes."
+    },
+    {
+      "id": "INV-003",
+      "statement": "Verification and review bind to the accepted candidate.",
+      "applies_to": [
+        "ART-003",
+        "ART-005",
+        "ART-006",
+        "IF-003",
+        "IF-004"
+      ],
+      "verification": "Edit tracked/untracked bytes after evidence; acceptance rejects stale evidence."
+    },
+    {
+      "id": "INV-004",
+      "statement": "Enabled review is fresh, independent and adapter-attributed.",
+      "applies_to": [
+        "ART-004",
+        "ART-006",
+        "IF-002",
+        "IF-003"
+      ],
+      "verification": "Same-thread and invented-session rejection; valid independent receipt admitted."
+    },
+    {
+      "id": "INV-005",
+      "statement": "Initial implementation uses cycle zero; every authorized correction consumes exactly one of three persistent task cycles; no fourth correction.",
+      "applies_to": [
+        "ART-001",
+        "ART-002",
+        "IF-001",
+        "IF-003"
+      ],
+      "verification": "Three-cycle task limit across failed-check/review routes; replay, crash and coordinator replacement cannot add or reset cycles; exhaustion requests intervention."
+    },
+    {
+      "id": "INV-006",
+      "statement": "Only final-gate approval plus a proven task-scoped local commit releases dependencies; all configured current evidence is required.",
+      "applies_to": [
+        "ART-002",
+        "ART-007",
+        "IF-004"
+      ],
+      "verification": "Pending/failed/inconclusive/stale evidence or missing/unknown commit blocks release; crash/replay cannot duplicate commit or release; unrelated staged/unstaged owner work preserved."
+    },
+    {
+      "id": "INV-007",
+      "statement": "Durable records allow recovery without chat history.",
+      "applies_to": [
+        "ART-002",
+        "ART-004",
+        "ART-007",
+        "FLOW-002"
+      ],
+      "verification": "Fresh coordinator reconstructs permitted next action after interruption."
+    },
+    {
+      "id": "INV-008",
+      "statement": "Omission, pass, failure, stale, blocked and not-run remain distinct.",
+      "applies_to": [
+        "ART-001",
+        "ART-005",
+        "ART-006",
+        "ART-007",
+        "IF-003",
+        "IF-004"
+      ],
+      "verification": "Enabled/disabled profile and report tests."
+    }
+  ],
+  "flows": [
+    {
+      "id": "FLOW-001",
+      "name": "Reviewed task and bounded correction",
+      "trigger": "Approved local manifest and policy",
+      "terminal_outcome": "Final-gated task-scoped local commit and released dependencies, or explicit intervention with durable reason",
+      "steps": [
+        {
+          "id": "FLOW-001-S01",
+          "actor": "Controller/coordinator",
+          "action": "Select ready task and reserve enabled preflight/implementation",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-007"
+          ],
+          "produces": [
+            "ART-002",
+            "ART-004"
+          ],
+          "interfaces": [
+            "IF-001"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002"
+          ],
+          "state_transition": "ready -> reserved"
+        },
+        {
+          "id": "FLOW-001-S02",
+          "actor": "Adapter and actor",
+          "action": "Execute authorized role and collect outcome",
+          "consumes": [
+            "ART-002",
+            "ART-004",
+            "ART-008"
+          ],
+          "produces": [
+            "ART-004"
+          ],
+          "interfaces": [
+            "IF-002"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-007"
+          ],
+          "state_transition": "reserved -> running -> terminal"
+        },
+        {
+          "id": "FLOW-001-S03",
+          "actor": "Controller",
+          "action": "Inspect candidate and execute configured checks",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-004"
+          ],
+          "produces": [
+            "ART-002",
+            "ART-003",
+            "ART-005"
+          ],
+          "interfaces": [
+            "IF-003"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-003",
+            "INV-008"
+          ],
+          "state_transition": "terminal -> review-ready or correction-required or recovery/intervention-required"
+        },
+        {
+          "id": "FLOW-001-S04",
+          "actor": "Fresh reviewer via adapter",
+          "action": "Review stable candidate and retain finding identities",
+          "consumes": [
+            "ART-001",
+            "ART-003",
+            "ART-004",
+            "ART-005",
+            "ART-006",
+            "ART-008"
+          ],
+          "produces": [
+            "ART-006"
+          ],
+          "interfaces": [
+            "IF-002",
+            "IF-003"
+          ],
+          "invariants": [
+            "INV-003",
+            "INV-004",
+            "INV-008"
+          ],
+          "state_transition": "review-ready -> acceptance-eligible or correction-required or recovery/intervention-required"
+        },
+        {
+          "id": "FLOW-001-S05",
+          "actor": "Controller/coordinator/implementer",
+          "action": "Authorize bounded correction; rerun inspection, verification and fresh review",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-004",
+            "ART-005",
+            "ART-006"
+          ],
+          "produces": [
+            "ART-002",
+            "ART-003",
+            "ART-004",
+            "ART-005",
+            "ART-006"
+          ],
+          "interfaces": [
+            "IF-001",
+            "IF-002",
+            "IF-003"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-003",
+            "INV-004",
+            "INV-005"
+          ],
+          "state_transition": "correction-required -> correction -> review-ready"
+        },
+        {
+          "id": "FLOW-001-S06",
+          "actor": "Controller",
+          "action": "Recheck final evidence gate; persist commit intent; create/reconcile task-scoped local commit; atomically complete/release and select next eligible task",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-003",
+            "ART-004",
+            "ART-005",
+            "ART-006",
+            "ART-008"
+          ],
+          "produces": [
+            "ART-002",
+            "ART-007"
+          ],
+          "interfaces": [
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-002",
+            "INV-003",
+            "INV-006",
+            "INV-008"
+          ],
+          "state_transition": "acceptance-eligible -> accepted/pending-commit -> committed/completed -> next ready task or completed run; unavailable/unknown commit -> blocked without release"
+        }
+      ]
+    },
+    {
+      "id": "FLOW-002",
+      "name": "Interruption and coordinator replacement",
+      "trigger": "Timeout, cancellation or coordinator loss",
+      "terminal_outcome": "Same valid next action reconstructed, or unknown ownership explicitly blocked",
+      "steps": [
+        {
+          "id": "FLOW-002-S01",
+          "actor": "Controller and adapter",
+          "action": "Reconcile active/reserved operation and any pending commit before relaunch or finalization retry",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-004",
+            "ART-008",
+            "ART-007"
+          ],
+          "produces": [
+            "ART-002",
+            "ART-004",
+            "ART-007"
+          ],
+          "interfaces": [
+            "IF-002",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-002",
+            "INV-007"
+          ],
+          "state_transition": "interrupted -> known terminal/live/unknown"
+        },
+        {
+          "id": "FLOW-002-S02",
+          "actor": "Replacement coordinator",
+          "action": "Read durable status and collect or resume only permitted operation",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-004",
+            "ART-007"
+          ],
+          "produces": [
+            "ART-002",
+            "ART-007"
+          ],
+          "interfaces": [
+            "IF-001",
+            "IF-003",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-005",
+            "INV-007"
+          ],
+          "state_transition": "known terminal -> next permitted phase; unknown -> blocked"
+        }
+      ]
+    },
+    {
+      "id": "FLOW-003",
+      "name": "Policy and evidence rejection",
+      "trigger": "Invalid request, scope drift, stale evidence, inconclusive outcome or exhausted corrections",
+      "terminal_outcome": "Structured refusal with unchanged authoritative state, recoverable operational outcome, or persisted intervention; no unauthorized launch/release",
+      "steps": [
+        {
+          "id": "FLOW-003-S01",
+          "actor": "Controller",
+          "action": "Refuse invalid requests without authoritative mutation; return reason/permitted alternatives; separate append-only diagnostics allowed",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-003",
+            "ART-004",
+            "ART-005",
+            "ART-006"
+          ],
+          "produces": [],
+          "interfaces": [
+            "IF-001",
+            "IF-003",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-003",
+            "INV-004",
+            "INV-005",
+            "INV-006",
+            "INV-008"
+          ],
+          "state_transition": "current -> current; phase/version/counter/policy/workspace unchanged"
+        },
+        {
+          "id": "FLOW-003-S02",
+          "actor": "Controller and coordinator via adapter",
+          "action": "Admit operational failure evidence; recover within authority and three cycles, or persist intervention and notify owner; successful/recoverable cases need no active notification",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-004",
+            "ART-005",
+            "ART-006",
+            "ART-008"
+          ],
+          "produces": [
+            "ART-002",
+            "ART-007"
+          ],
+          "interfaces": [
+            "IF-002",
+            "IF-003",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-002",
+            "INV-005",
+            "INV-006",
+            "INV-007",
+            "INV-008"
+          ],
+          "state_transition": "admitted outcome -> recovery/correction; unrecoverable or exhausted -> intervention-required without dependency release"
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Establish harness boundary",
+      "outcome": "Concrete supported adapter contract and capability evidence",
+      "depends_on": [],
+      "capabilities": [
+        "CAP-001",
+        "CAP-002"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-002"
+      ],
+      "consumes": [
+        "ART-001"
+      ],
+      "produces": [
+        "ART-008"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-002",
+        "IF-004"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-004",
+        "INV-007"
+      ],
+      "integration_boundary": "Selected transport documents launch identity, permissions, cancellation, collection and reconciliation; unsupported requirements explicitly block. Establish safe exact-path local commit/reconciliation and intervention notification support or expose the blocking capability.",
+      "task_planner_context": "Resolve Q-001/Q-002 before dependent implementation; inspect actual installed interfaces; no unapproved billable probes."
+    },
+    {
+      "id": "T-002",
+      "title": "Expose guarded operations",
+      "outcome": "Status and reservation preserve authority, prevent duplicate writers and enforce the persistent three-correction limit",
+      "depends_on": [
+        "T-001"
+      ],
+      "capabilities": [
+        "CAP-001",
+        "CAP-003"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-008"
+      ],
+      "produces": [
+        "ART-002",
+        "ART-004"
+      ],
+      "interfaces": [
+        "IF-001"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-005",
+        "INV-008"
+      ],
+      "integration_boundary": "Unauthorized, duplicate or stale requests are refused without launch or authoritative state/version change. Persist writer ownership and the three-cycle task counter; final evidence/stage completeness belongs to T-005.",
+      "task_planner_context": "Extend current ledger/cursor, fix state-version and reservation semantics; do not create second authority store."
+    },
+    {
+      "id": "T-003",
+      "title": "Connect actors and recovery",
+      "outcome": "Authorized local actors have durable provenance and safe recovery",
+      "depends_on": [
+        "T-002"
+      ],
+      "capabilities": [
+        "CAP-001",
+        "CAP-002"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002",
+        "ART-004",
+        "ART-008"
+      ],
+      "produces": [
+        "ART-002",
+        "ART-004",
+        "ART-006",
+        "ART-007"
+      ],
+      "interfaces": [
+        "IF-002",
+        "IF-004"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-004",
+        "INV-007"
+      ],
+      "integration_boundary": "Operation launch/collect/cancel/reconcile works; crash after launch cannot cause a duplicate writer. Connect intervention notification and truthful delivery-failure reporting.",
+      "task_planner_context": "Adapter owns receipts; reviewer content is supplied later by T-004; unknown launch remains blocked; apply actual role permissions."
+    },
+    {
+      "id": "T-004",
+      "title": "Complete evidence and correction loop",
+      "outcome": "Independent findings drive bounded verified corrections",
+      "depends_on": [
+        "T-003"
+      ],
+      "capabilities": [
+        "CAP-001",
+        "CAP-003"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-008"
+      ],
+      "produces": [
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-005",
+        "ART-006",
+        "ART-007"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-002",
+        "IF-003"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-003",
+        "INV-004",
+        "INV-005",
+        "INV-008"
+      ],
+      "integration_boundary": "Real fixture correction changes failing check to passing; fresh reviewer admits new candidate; stale result rejected.",
+      "task_planner_context": "Reuse verification/Git logic; preserve distinct required skill roles; share correction limit across test/review findings; conservative invalidation. Initial implementation is cycle zero; allow three corrections per task and refuse a fourth; counters survive replacement."
+    },
+    {
+      "id": "T-005",
+      "title": "Gate, commit and release dependencies",
+      "outcome": "Final-gated candidates are committed locally before dependent work is released",
+      "depends_on": [
+        "T-004"
+      ],
+      "capabilities": [
+        "CAP-001",
+        "CAP-002",
+        "CAP-003"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-005",
+        "ART-006",
+        "ART-007",
+        "ART-008"
+      ],
+      "produces": [
+        "ART-002",
+        "ART-007"
+      ],
+      "interfaces": [
+        "IF-004"
+      ],
+      "invariants": [
+        "INV-002",
+        "INV-003",
+        "INV-006",
+        "INV-007",
+        "INV-008"
+      ],
+      "integration_boundary": "Two-task fixture remains blocked until final-gate approval and proven task-scoped local commit; crash/retry cannot duplicate commits/release or absorb unrelated staged/unstaged owner changes. Unknown or unavailable commit blocks advancement.",
+      "task_planner_context": "Own final gate, commit intent/receipt and crash reconciliation before atomic completion/release; configured current evidence and final drift check required; no remote effects. Distinguish request refusal from intervention."
+    },
+    {
+      "id": "T-006",
+      "title": "Deliver coordinator skill and local proof",
+      "outcome": "Usable local workflow with truthful documentation and qualification",
+      "depends_on": [
+        "T-005"
+      ],
+      "capabilities": [
+        "CAP-001",
+        "CAP-002",
+        "CAP-003"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-005",
+        "ART-006",
+        "ART-007",
+        "ART-008"
+      ],
+      "produces": [
+        "ART-004",
+        "ART-007"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-002",
+        "IF-003",
+        "IF-004"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-003",
+        "INV-004",
+        "INV-005",
+        "INV-006",
+        "INV-007",
+        "INV-008"
+      ],
+      "integration_boundary": "Fresh coordinator completes or resumes the documented flow; deterministic evidence and separately authorized real harness pilot reported distinctly. Prove task-scoped commit before release, three-cycle persistence and intervention-only notification.",
+      "task_planner_context": "Update current skill/references/examples; inspect installer without auto-adding orchestrator; no active installation refresh; preserve review separation."
+    }
+  ],
+  "open_system_questions": [
+    {
+      "id": "Q-001",
+      "question": "Which installed local harness interface supports actor lifecycle, identity, permissions, safe local commit/reconciliation and intervention notification?",
+      "blocks": [
+        "T-003",
+        "T-004",
+        "T-005",
+        "T-006"
+      ],
+      "owner": "T-001 investigator; owner decides if no supported safe path exists"
+    },
+    {
+      "id": "Q-002",
+      "question": "Does the chosen interface require changes to frozen actor/context policy?",
+      "blocks": [
+        "T-003",
+        "T-004",
+        "T-005",
+        "T-006"
+      ],
+      "owner": "T-001 investigates; project owner approves material policy change"
+    }
+  ]
+}

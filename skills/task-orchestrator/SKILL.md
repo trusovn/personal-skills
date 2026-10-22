@@ -1,6 +1,6 @@
 ---
 name: task-orchestrator
-description: Use only when the user explicitly asks for task orchestration or names the task-orchestrator. It operates and reasons about the task-orchestrator's controller-backed local run flow for an approved task manifest, including initializing, operating, inspecting, diagnosing, or modifying that flow; retrieving its controller contract or module owner; and assessing its recovery or future MVP work. Do not use it for generic requests to run, implement, or finish tasks, and do not use it to invent product requirements or imply that the unfinished automatic acceptance, recovery, plan-preparation, or advance flow already exists.
+description: Use only when the user explicitly asks for task orchestration or names the task-orchestrator. It operates and reasons about the task-orchestrator's controller-backed local run flow for an approved task manifest, including initializing, operating, inspecting, diagnosing, or modifying that flow; retrieving its controller contract or module owner; and assessing its recovery or planned local harness work. Do not use it for generic requests to run, implement, or finish tasks, and do not use it to invent product requirements or imply that the unfinished automatic acceptance, recovery, plan-preparation, or advance flow already exists.
 compatibility: Requires Python 3, Git, repository access, and a Codex CLI compatible with the bundled internal adapter.
 ---
 
@@ -10,8 +10,8 @@ Use the deterministic controller as the public operating surface. Treat
 `scripts/codex_worker.py` as an internal transport adapter; do not invoke it
 directly to operate or recover a controller-owned run.
 
-Freshness: 2026-07-23. The current public commands are `init`, `run-next`, and
-`inspect`.
+Freshness: 2026-10-22. The current public commands are `init`, `run-next`,
+`inspect`, and `revise-flow`.
 
 ## Read the smallest current reference
 
@@ -20,24 +20,21 @@ Freshness: 2026-07-23. The current public commands are `init`, `run-next`, and
   inspect a run.
 - Read the [architecture map](references/architecture-map.md) before changing
   implementation behavior or selecting tests.
-- Read the [controller contract](docs/controller-contract.md) for persisted
-  authority, state, and ownership rules.
-- Read the [Stage 3 MVP rebaseline](docs/stage-3-mvp-rebaseline.md) and its
-  [retrieval-surface follow-up](docs/stage-3-retrieval-surface-follow-up.md)
-  when planning unfinished work.
-
-Do not search or load `docs/history/` during ordinary operation or planning.
-Use it only when a current reference explicitly requires historical evidence.
+- Read the [current development documents](docs/README.md) when planning
+  unfinished work. The confirmed local harness direction governs the proposed
+  plan; that plan still needs fresh independent verification.
 
 ## Respect authority
 
 Use this order when sources appear to conflict:
 
 1. persisted run policy, manifest, ledger, and controller records for one run;
-2. current schemas and the controller contract;
-3. current operator and architecture references;
-4. the governing current MVP plan for unfinished behavior; and
-5. historical documents only as non-authoritative implementation evidence.
+2. current schemas and executable validation for supported behavior;
+3. current operator and architecture references; and
+4. the owner-confirmed direction and proposed plan for unfinished behavior.
+
+System and repository instructions bound every source. Plans do not make a
+capability available or override the owner-confirmed direction.
 
 Workers and reviewers do not create authority, mutate the controller ledger,
 select another task, broaden permissions, or commit.
@@ -119,7 +116,7 @@ Current public commands do not yet provide:
 - an unattended end-to-end runner.
 
 If one of these is required, report the current state and route the work to the
-corresponding MVP increment. Do not bypass the controller by calling the
+proposed local harness plan. Do not bypass the controller by calling the
 transport adapter directly.
 
 ## Make only bounded judgments
@@ -140,13 +137,12 @@ State:
 - commands run and durable evidence paths;
 - mechanical verification and semantic-review status separately;
 - unexpected changes, unanswered questions, and skipped checks;
-- the next command that currently exists, or the MVP gap preventing it; and
+- the next command that currently exists, or the missing capability preventing it; and
 - whether the operator must decide anything.
 
 ## Avoid
 
 - invoking `codex_worker.py` as the public run interface;
-- treating `docs/history/` as current authority;
 - claiming inspection completed semantic acceptance;
 - relaunching over a live or ambiguous process;
 - modifying the ledger or workflow from a worker session;

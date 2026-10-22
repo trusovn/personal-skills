@@ -17,7 +17,7 @@ Build the smallest reliable body of evidence that the software behaves as intend
 ## Use the evidence workflow
 
 1. **Discover local authority.** Read the relevant code, nearby tests, test configuration, fixtures, public contracts, bug report or specification, and local instructions. Identify the narrowest relevant command before editing.
-2. **Define the contract and oracle.** State the observable behavior, preconditions, inputs, outputs or state transitions, failure behavior, and important invariants. Identify how the test will recognize correctness: an explicit expected result, invariant, trusted reference, metamorphic relation, safe-failure property, or stakeholder acceptance. Resolve a materially ambiguous oracle before implementation.
+2. **Define the contract and oracle.** State the observable behavior, preconditions, inputs, outputs or state transitions, failure behavior, and important invariants. Identify how the test will recognize correctness: an explicit expected result, invariant, trusted reference, metamorphic relation, safe-failure property, or stakeholder acceptance. Ground the oracle in the intended contract. Do not treat current implementation behavior as authoritative unless characterization is the stated goal. Resolve a materially ambiguous oracle before implementation.
 3. **Map risk.** Consider impact, likelihood, and how easily a failure would otherwise be detected. Include boundaries such as persistence, filesystem, network, queues, caches, processes, browser, time, randomness, concurrency, permissions, and third-party contracts. For high-assurance or regulated work, trace each material requirement or hazard to evidence or an explicit gap.
 4. **Select evidence.** Choose the lowest test level that exercises the real behavior without replacing the decisive logic with mocks. Add higher-level evidence only for wiring, contracts, or critical flows lower levels cannot prove.
 5. **Make the test capable of failing.** For a bug, reproduce the defect first when feasible. For new or changed behavior, prefer a test-first check when practical and demonstrate that the test rejects pre-change behavior, a focused mutation, or an equivalent controlled fault before relying on it. Confirm failure is due to the intended assertion, not a broken harness, and leave no temporary mutation behind. Explain when this demonstration is infeasible.
@@ -142,7 +142,7 @@ Check these questions before accepting a test change:
 2. Would the test fail if that behavior were broken in a plausible way, and is its oracle independent enough to notice?
 3. Is this the lowest reliable level, and is any decisive boundary mocked away?
 4. Are assertions observable and stable across valid refactors?
-5. Are setup, data, cleanup, and failure output understandable in isolation?
+5. Do the setup and data actually establish the claimed preconditions and reach the behavior under test? Are setup, data, cleanup, and failure output understandable in isolation?
 6. Can tests run independently, repeatedly, in parallel, and without hidden network or machine state?
 7. Do higher-level tests cover only wiring or journeys that lower-level tests cannot prove, and does selected-test scope include transitive impact?
 8. Are performance, security, accessibility, compatibility, or recovery risks relevant and either tested or explicitly deferred?

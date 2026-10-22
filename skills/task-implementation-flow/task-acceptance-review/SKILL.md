@@ -166,8 +166,8 @@ independent proof in either profile.
 8. Decide one verdict under the rules below, using exactly
    `ACCEPT`, `CHANGES_REQUESTED`, or `INCONCLUSIVE` when independent, or
    `SELF_CHECK_ONLY` when provenance requires it. State the broad-gate
-   admission record and one exact next route. Write a durable report only when
-   requested or required by high-assurance mode.
+   admission record and one exact next route. Write a durable report whenever
+   reviewing from a `brief.md`, when requested, or in high-assurance mode.
 9. Reconcile the final output before returning. Confirm that every finding has
    its stable ID and required fields, the continuation names every finding ID
    and reviewer regression separately, all admitted rows are present, and the
@@ -387,8 +387,12 @@ Review continuation:
 - Next: <exact route>
 ```
 
-Say `No findings.` when evidence is clean. Do not create a report file unless
-the user requested one. A continuation block is required for
+Say `No findings.` when evidence is clean. When reviewing from a `brief.md`,
+always write exactly one durable Markdown report, including for guided decisions
+and `SELF_CHECK_ONLY`; no separate user request is needed. Use the guided output
+above unless high-assurance mode applies. For a direct review without a
+`brief.md`, create a report only when requested or required by high-assurance mode.
+A continuation block is required for
 `CHANGES_REQUESTED`, `INCONCLUSIVE`, `SELF_CHECK_ONLY`, or any decision with
 blocked/unchecked rows; keep it compact and copyable. The continuation
 preserves every finding/scenario ID with its prior status, current
@@ -402,8 +406,9 @@ The report is the only intentional write during the verdict phase; the
 separately authorized post-verdict tests-only protocol is the sole later
 exception.
 
-Write that report to the next unused numbered acceptance path under the task
-package's `reviews/` directory. Record the exact reviewed status before the
+For reviews from a `brief.md` in either profile, write the report to the next
+unused `<brief-directory>/reviews/acceptance-NN.md`, starting at `01`; create
+`reviews/` if needed. Record the exact reviewed status before the
 write and the status afterward; only the new report entry may differ. Never
 overwrite an earlier review or redirect the durable report to an external
 runtime directory. Even `ACCEPT` records a decision/route without authorizing
@@ -443,15 +448,17 @@ state that scope was preserved.
 Do not implement fixes, edit reviewed files, update task briefs/plans/trackers,
 advance orchestration, commit, launch subagents, or run unauthorized slow,
 flaky, destructive, privileged, live, or networked probes. Do not routinely
-rerun discovery's public probes, broad searches, or aggregate suites. The sole
-repository write exception is the explicit post-verdict tests-only protocol
-above.
+rerun discovery's public probes, broad searches, or aggregate suites. Repository
+writes are limited to the required or requested acceptance report and the
+explicit post-verdict tests-only protocol above.
 
 ## Definition of done
 
 - Reviewer provenance is explicit; an authoring session cannot issue an
   independent verdict.
 - Scope is safely separated from user work.
+- A review from a `brief.md` has a new numbered acceptance report beside that
+  brief under `reviews/`, and the final response links to it.
 - Current discovery evidence is admitted; missing discovery routes to its
   owner rather than merging the roles.
 - Every required/material ledger row is `pass`, `fail`, `blocked`, or

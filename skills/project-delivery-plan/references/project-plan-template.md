@@ -3,14 +3,19 @@
 ## Product outcome
 
 <In plain language: who benefits and which concrete situation improves.
-Include the first useful proof or next owner decision when relevant. Cite the
+Use short sentences and concrete verbs. Explain unfamiliar terms when first
+needed. Include the first useful proof or next owner decision when relevant. Cite the
 authority below; keep detailed scope in section 2.>
 
 For a multi-task plan, use one readable task-outcome list or table. Reuse an
 existing one by linking to it, or place it here:
 
-- [<Task name>](#t-001--task-title): <what it gives the owner or enables next>.
+- [<Readable task name>](#t-001--task-title): <what this gives the owner, who
+  needs it next and what it lets them do within the approved sequence>.
 
+Use a title and task names the owner can understand without decoding plan IDs
+or workflow jargon. Keep exact IDs and technical detail in the scope, contracts
+and evidence below. Preserve required references and task boundaries.
 Move or rewrite existing explanations instead of adding another version.
 The detailed task map below adds technical placement without repeating outcomes.
 Do not create another requirements list or status table. For a small

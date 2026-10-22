@@ -304,7 +304,14 @@ sequence to a plan that already explains the same result.
 
 Lead with the existing product outcome in plain language: who benefits, which
 concrete situation improves, and the first useful proof or next owner decision
-when relevant. Link to the governing authority instead of copying its full
+when relevant. Write the title, product outcome and task contributions so the
+owner can understand what will be delivered, who uses it and why each task comes
+next without decoding plan IDs or workflow jargon. Use short sentences,
+concrete verbs and consistent terms, following ASD-STE100 principles without
+claiming formal compliance. Explain an unfamiliar technical term when first
+needed; keep exact IDs and technical detail in the scope, contracts and evidence
+where they are useful. Preserve required references and precise task boundaries.
+Link to the governing authority instead of copying its full
 direction. If purpose or direction is missing or conflicting, say what is
 unknown and who must resolve it; do not invent an approved purpose.
 

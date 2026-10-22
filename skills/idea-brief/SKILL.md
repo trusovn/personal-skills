@@ -79,7 +79,14 @@ If the source path is provided, read it before interviewing. If the output path 
 
 6. **Draft the document.**
    Read `references/vision-template.md` and follow its structure unless the user requested a different format.
-   - Keep the writing concrete and decision-oriented.
+   - Write the title and One-Paragraph Vision so the owner can understand what
+     the idea could provide, who would use it and why it matters without decoding
+     planning jargon. Use short sentences, concrete verbs and consistent terms,
+     following ASD-STE100 principles without claiming formal compliance.
+   - Explain an unfamiliar technical term when first needed. Keep exact names,
+     technical constraints and detailed risks in their owning sections.
+   - Reuse or rewrite existing explanations instead of adding a second owner
+     summary. Preserve the source wording and uncertainty about the idea.
    - Separate facts, assumptions, and open questions.
    - Prefer bullets and tables where they improve scanability.
    - Avoid implementation details unless the user supplied them as constraints.

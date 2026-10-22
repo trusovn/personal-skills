@@ -14,7 +14,14 @@
 
 ## One-Paragraph Vision
 
-<A neutral, concrete description of what this could become and why it might matter.>
+<A short, neutral paragraph: what the idea could provide, who would use it and
+which situation it could improve. Use short sentences and concrete verbs.
+Explain unfamiliar terms when first needed; keep detailed constraints and risks
+in their owning sections. Preserve uncertainty instead of promising results.>
+
+Use a title the owner can understand without planning jargon. Reuse or rewrite
+an existing vision instead of adding a separate owner summary. Preserve the raw
+idea above.
 
 ## Problem And Context
 

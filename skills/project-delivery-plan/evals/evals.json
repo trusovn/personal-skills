@@ -51,6 +51,7 @@
       },
       "expectations": [
         "The opening explains the supplied purpose or its absence, with planned work distinguished from actual evidence.",
+        "The title, product outcome and task contributions use short sentences and concrete verbs to explain what the owner receives, who uses each result next and why the task comes next. Unfamiliar terms are explained on first use. Plan IDs support the explanation without replacing it; dense wording is replaced without a second owner summary, and precise technical contracts and references remain intact.",
         "The current interruption and conflicting handover remain visible; historical acceptance does not certify this request.",
         "Task contributions reuse outcomes; technical contracts, preparation and independent review remain intact; no parallel status ledger."
       ]

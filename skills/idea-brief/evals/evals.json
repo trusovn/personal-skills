@@ -18,7 +18,7 @@
     {
       "id": 2,
       "prompt": "Before I plan this with any framework, help me work on this idea: an AI code-review assistant for small teams. Keep it short, write the brief inline, and tell me whether the next step should be SDD specify, research, or a prototype.",
-      "expected_output": "Returns an inline short idea brief with the template's core sections, avoids writing files because inline was requested, challenges assumptions, maps scenarios and risks, and recommends a specific next planning path.",
+      "expected_output": "Returns an inline short idea brief with the template's core sections, avoids writing files because inline was requested, challenges assumptions, maps scenarios and risks, and recommends a specific next planning path. The title and vision explain in short, concrete sentences what the tool could provide, who would use it and why it matters. Unfamiliar terms are explained on first use; the opening preserves uncertainty and replaces dense wording without adding a second owner summary or removing detailed risks.",
       "files": []
     }
   ]

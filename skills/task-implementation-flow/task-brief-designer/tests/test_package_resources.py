@@ -40,34 +40,22 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
 
     def test_guided_readiness_routes_distinguish_packaged_from_unpackaged(self):
         designer = (CANONICAL / "SKILL.md").read_text(encoding="utf-8")
-        guided_profile = designer.split("### Guided", 1)[1].split(
-            "### High assurance", 1
-        )[0]
-        route_step = designer.split(
-            "10. Give every durable brief one human-readable readiness route:", 1
-        )[1].split("11. Explicitly classify", 1)[0]
-
-        self.assertNotIn(
-            "routine readiness route is implementer self-preflight",
-            guided_profile,
+        preparation = " ".join(designer.split(
+            "## Preparation and permission to start", 1
+        )[1].split("## Load flow policy", 1)[0].split())
+        self.assertIn(
+            "A supplied executable task package always requires a derived "
+            "`verification.md`, then a ready `preflight.md`, before implementation",
+            preparation,
         )
         self.assertIn(
-            "readiness route is standalone guided preflight after derived",
-            guided_profile,
+            "For an executable package, use `standalone guided preflight`",
+            preparation,
         )
         self.assertIn(
-            "Reserve implementer self-preflight for unpackaged", guided_profile
-        )
-        self.assertNotIn(
-            "`implementer self-preflight` for routine guided work", route_step
-        )
-        self.assertIn(
-            "`standalone guided preflight` for an executable task package",
-            route_step,
-        )
-        self.assertIn(
-            "`implementer self-preflight` only for an unpackaged conversational",
-            route_step,
+            "Reserve `implementer self-preflight` for an unpackaged "
+            "conversational direct edit",
+            preparation,
         )
 
 

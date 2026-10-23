@@ -1,94 +1,140 @@
-# Task Brief: `<TASK-ID>` — `<imperative title>`
+# Task brief forms
 
-For an executable brief, place the existing Outcome and any supplied Direction
-trace immediately after the title, before status and execution metadata.
-Use a title and opening that explain the result, its user and its place in the
-approved sequence. Use short sentences and explain unfamiliar terms when first
-needed. Plan IDs can support this explanation; they must not replace it.
-When updating a brief, reuse or rewrite those sections and remove any displaced
-copy; add only missing information. Do not add a parallel owner summary. Composite and
-blocked-design outputs keep their separate forms below.
+Choose the applicable form below. Place explanations in the indicated sections;
+optional fields serve a concrete task need, not a checklist to fill. For an
+existing adequate brief, preserve equivalent sections and make a local delta.
+The skill owns routing and evidence rules; these forms own the reading order.
 
-Status: `ready | ready_for_preflight | decomposed | blocked_design`
+## Executable brief
 
-Task kind: `executable | composite`
-
-When the status is `decomposed`, do not use the executable template below.
-Emit a composite parent using this form:
+Use for `ready` or `ready_for_preflight` leaves. The opening explains the work;
+execution status and launch guidance come after its requirements and evidence.
 
 ```markdown
-# Task Brief: `<TASK-ID>` — `<imperative title>`
-
-Status: `decomposed`
-Task kind: `composite`
+# Task Brief: `<TASK-ID>` — `<concrete result to deliver>`
 
 ## Outcome
 
-`<The original testable outcome preserved across the child set.>`
+<What completion demonstrates, who uses the result, and what it enables next.
+Distinguish what this task defines, what it executes, and what later work owns.
+Link to project purpose rather than retelling it.>
+
+## Direction trace
+
+<Include only when governing direction was supplied. Use concise references to
+Outcome where fields concern the same fact rather than paraphrasing it.>
+
+- Direction contribution: <approved outcome, scenario, priority, or boundary advanced>
+- User-observable effect: <direct effect, or "No direct effect; enables <next demonstrable outcome>">
+- Why now: <approved sequence or real dependency>
+- Direction decisions used: <exact source sections or decision IDs>
+- New direction decisions required: None
 
 ## Authority and scope
 
-- Authority: `<user request, issue, plan/spec path and section, or other source>`
-- Parent plan task / stable refs: `<task ID plus relevant FLOW/ART/IF/INV refs>`
-- Original scope: `<bounded scope before splitting>`
-- Out of scope: `<unchanged adjacent work>`
+- Authority: <precise request, issue, or plan/spec sections; required baseline identity>
+- Repository: <repository identity; absolute checkout path only if needed>
+- Dependencies: <prerequisite IDs and required outputs/states, or none>
+- Allowed changes: <exact known paths, or bounded area for focused discovery>
+- Out of scope: <adjacent work whose exclusion affects execution>
+- Read-only context: <necessary authority, precedent, and owning tests>
+- Assumptions: <non-blocking UNKNOWN facts and discovery owner, if any>
 
-## Execution sizing
+<State governing operating rules here with exact source references. Retain
+history only where it establishes precedence, freshness, or an audit contract.>
 
-- Sizing policy: `<active-profile>@<config-version>`
-- Original estimated agent calls: `<integer>`
-- Original estimated implementation duration: `<integer minutes>`
-- Original required execution profile: `<agent_tier>/<reasoning>`
-- Estimate confidence: `<low | medium | high>`
-- Triggered decomposition rules: `<configured rule names>`
+<!-- contract-registry-flow:task-brief-template:begin -->
+### Expected contract impact
 
-## Decomposition
+- Plan refs: <stable ART/IF/INV refs — materialize | change | preserve>
+- Current contract dependencies: <available capability -> docs/contracts/<subsystem>.json>
+- Expected durable delta: <interface, artifact, ownership, state, or invariant the next task can use>
 
-| Child | Responsibility / owned output | Depends on | Brief |
-|---|---|---|---|
-| `<TASK-ID.1>` | `<coherent bounded outcome>` | `<IDs or none>` | `<path>` |
+<Use these fields when relevant; otherwise write `Expected contract impact: none`.
+For a task-local handoff, name its consumer and exact artifact here.>
+<!-- contract-registry-flow:task-brief-template:end -->
 
-## Coverage and closure
+## Work and acceptance criteria
 
-- Parent requirement / AC coverage: `<map every parent requirement or AC to one or more children>`
-- Shared artifacts/interfaces/invariants: `<owner child for each cross-child surface>`
-- Integration closure: `<final executable integration child, or why child-local proof is sufficient>`
-- Leaf sizing: `<all leaves fit active policy, or exact permitted override(s)>`
+- **AC-01:** <observable required behavior and completion result>
+- **AC-02:** <distinct credible failure, refusal, or unchanged-state behavior>
 
-## Handoff
+<Add criteria for distinct approved outcomes. When an AC contains several rules,
+use a short subordinate list under its stable ID. Keep work steps only when they
+add necessary ordering or ownership beyond the criteria. A brief concrete example
+can clarify an abstract rule without choosing an unapproved mechanism.>
 
-Implement dependency-ready executable leaves only. Never hand this composite
-parent to `bounded-task-implementer`. The parent is complete only when every
-mapped leaf has completed its own required implementation and review route,
-and the integration-closure child, when present, has completed its own route.
+### Finite-risk cases
+
+<Include only for finite, material cases identified by the skill. Repeat the
+following block per stable risk ID. A short-cell table is also suitable.>
+
+#### R-01 — <plain-language risk; related AC IDs>
+
+- Invariant: <property that must remain true>
+- Material cases: <exact finite values, dimensions, or state transitions>
+- Observable result and boundary: <decisive oracle at the real entry point>
+- Implementation evidence: <fail-first, targeted, or owning evidence>
+- Independent review probe: <distinct corroboration, or N/A with reason>
+- Gate owner and stage: <who runs the owning/broad gate and when>
+
+<Shared gate ownership may be stated once with explicit risk IDs.>
+
+## Verification
+
+Verification-design recommendation: <inline | separate — concrete reason>
+
+| Evidence | Scenario/result or case reference | Command and owner |
+|---|---|---|
+| Fail-first / regression | <fault the test rejects, or why infeasible> | <command or focused discovery owner> |
+| Targeted | <lowest reliable behavior/boundary, or R-ID> | <command or focused discovery owner> |
+| Owning suite | <nearby regression protection> | <command> |
+| Broader gate, if needed | <blast radius; gate stage or reference to shared ownership> | <command, owner, and any approval need> |
+
+<Include applicable rows. Refer to case IDs for detailed scenarios and shared
+gate ownership. Repeated flows need the first occurrence, its legitimate state
+change, and the next real occurrence at the boundary that carries the risk.>
+
+## Execution and handoff
+
+Status: `ready | ready_for_preflight`
+Task kind: `executable`
+
+<Explain the status in ordinary language: the brief is prepared; name pending
+execution prerequisites, or cite current evidence that they passed.>
+
+Readiness route: <standalone guided preflight [— material uncertainty] | high-assurance preflight>
+
+For an executable task package, derived `verification.md`, then ready
+`preflight.md`, are required before implementation.
+
+Launch guidance:
+
+<Insert the four-key YAML block shown below. These are intended settings, not
+claims about observed runtime configuration.>
+
+### Execution sizing
+
+- Sizing policy: <active-profile>@<config-version>
+- Estimate: <integer agent calls>; <integer implementation minutes>
+- Estimate confidence: <low | medium | high>
+- Policy result: <fits | override_cannot_split_safely>
+- Override, only when triggered and permitted: `decomposition_override: cannot_split_safely`
+  — <triggered limits; candidate boundary considered; concrete coupling or
+  coordination/rework reason; residual execution risk>
+
+### Stops and next action
+
+- Stops: <task-specific authority, ownership, scope, permission, or capability limits>
+- Next action: <first pending preparation stage, then implementation; cite passed prerequisites>
+- Required follow-on, when review is immediate: <ordered independent-review route from the skill>
+
+<The follow-on applies after implementation or correction and any applicable
+conditional stages. Do not use same-session self-review as that discovery or
+acceptance step.>
 ```
 
-A composite parent has no launch metadata and no readiness route. If governing
-direction applies, preserve the relevant approved decisions in the parent and
-each affected child; decomposition does not create authority to change them.
-
-When the status is `blocked_design`, do not use the implementation template
-below. Emit only this abbreviated design-block form and stop:
-
-```markdown
-# Design block: `<requested outcome as stated>`
-
-Status: `blocked_design`
-
-## Missing decisions or authority
-
-- `<decision or authority gap; why it materially changes the task>`
-
-## Owner and smallest next action
-
-- Owner: `<user or named decision owner>`
-- Next: `<smallest planning/approval action>`
-```
-
-Do not add launch metadata, a readiness route, proposed architecture,
-implementation scope or paths, work items, implementation acceptance criteria,
-finite-risk cases, verification obligations, or an implementation handoff.
-The remaining template applies only to `ready` and `ready_for_preflight`.
+Insert only this launch block at the indicated position:
 
 ```yaml
 agent_tier: mechanical | standard | strong
@@ -97,218 +143,107 @@ review: mechanical | milestone | immediate
 budget: <tool calls> / <time> / <context>
 ```
 
-These four scalar values are intended launch guidance for future automated or
-current manual routing. Use the profile approved by the authority; do not
-present `reasoning` or another value as observed runtime configuration unless
-it was supplied. Treat the budget as a soft checkpoint unless authority makes
-it hard.
+Sizing evaluates implementation-agent work using this launch pair. Policy
+thresholds stay in `task-sizing.yaml`; record triggered limits for a split or
+override. Do not present a trigger as automatically requiring decomposition.
 
-## Execution sizing
+### High-assurance addendum
 
-- Sizing policy: `<active-profile>@<config-version>`
-- Estimated agent calls: `<integer>`
-- Estimated implementation duration: `<integer minutes>`
-- Estimate confidence: `<low | medium | high>`
-- Policy result: `fits | override_cannot_split_safely`
-- Triggered limits: `none | <configured rule names>`
-- Decomposition override: `none | cannot_split_safely — <candidate boundary considered, concrete coupling or coordination/rework reason, and residual execution risk>`
+Include only for the high-assurance profile or a named need for durable evidence.
+Reference existing AC/risk IDs and authority entries instead of copying them.
 
-These estimates cover implementation-agent work only. When a trigger fires,
-apply the boundary decision: emit a `decomposed` composite parent plus
-independently estimated child briefs when the boundary quality favors a
-split, and keep this executable template with the recorded override only when
-the active policy permits the reasoned no-split decision. Do not present a
-trigger as automatically requiring decomposition.
+- Artifact identity: <task ID, producing stage `task-brief-designer`, timestamp with timezone,
+  exact primary authority, policy identity or UNKNOWN for preflight>
+- Knowledge ledger: <confirmed facts with sources, frozen decisions, provisional
+  assumptions and confirmation owners; unresolved blockers use the blocked form>
+- AC execution matrix: <for every AC, record or reference its production invariant,
+  positive and negative evidence, real entry point/boundary, first + state change
+  + next occurrence where relevant, and verification dependency/disposition>
+- Legacy-assumption checks: <entry points, guards, literals, identifiers, paths,
+  or baselines at risk; focused search/test and required follow-through>
+- Risk checks: <credible failure, consequence/escalation trigger, evidence,
+  and residual gap; reference finite-risk cases where they already supply this>
+- Verification-capability inventory: <each required fixture/helper/runner/oracle;
+  task-local | prerequisite task | believed existing | blocked;
+  owner/path and exact preflight confirmation question>
+- Stage handoffs: <preflight confirms exact paths, dependencies, ownership,
+  permissions, command syntax, oracles, and required freshness; implementation
+  stays within confirmed scope and records commands and the supplied structured
+  result; independent discovery reconstructs the scoped diff and corroborates
+  every AC at the required boundary before a separate fresh acceptance decision,
+  including after corrections>
 
-## Readiness route
+## Composite parent
 
-`<implementer self-preflight | standalone guided preflight — concrete material uncertainty | high-assurance preflight>`
-
-An executable task package requires ready standalone preflight after derived
-verification. An unpackaged direct edit may use implementer self-preflight.
-Use high-assurance preflight when that profile is required. This is
-human-readable guidance, not a fifth metadata key; current execution facts may
-still require escalation.
-
-## Verification-design recommendation
-
-`<inline | separate — concrete reason>`
-
-For an executable task package, derived `verification.md`, then ready
-`preflight.md`, are required before implementation. State why the verification
-design needs its scenarios; it must not add requirements or waive omitted ACs.
-A small conversational direct edit may use inline checks only when no package
-has been supplied.
+```markdown
+# Task Brief: `<TASK-ID>` — `<concrete result delivered by the child set>`
 
 ## Outcome
 
-`<A short paragraph in plain language: what this task gives the owner or next
-implementer, and which useful result it enables. Make the result testable.>`
+<Original testable outcome, its user or next consumer, and why it is needed.>
 
-Link to the project purpose rather than repeating it. Keep detailed scope and
-acceptance criteria in their owning sections. Preserve an unknown purpose as
-unknown; a material authority gap follows the existing blocked/delta route.
+## Child outcomes and sequence
 
-## Direction trace
+<Explain how the pieces build on each other in ordinary language. State the
+substantive boundary reason once; keep exact ownership and dependencies below.>
 
-Include this section when governing direction was supplied. Omit it otherwise.
-
-- Direction contribution: `<what this task helps the owner do, within the
-  approved outcome, scenario, priority or boundary>`
-- User-observable effect: `<direct effect, or "No direct effect; enables
-  <next demonstrable outcome>">`
-- Why now: `<who needs this result next and what it lets them do, based on the
-  approved sequence or a real dependency>`
-- Direction decisions used: `<exact paths, sections, or decision IDs>`
-- New direction decisions required: `None`
-
-If `New direction decisions required` cannot truthfully be `None`, do not use
-this template or produce an implementation-ready brief. Return the
-plain-language direction-delta-needed response and stop. Do not use "Why now"
-to invent priority or ordering that the supplied authority does not establish.
+| Child | Outcome / owned output | Depends on | Brief |
+|---|---|---|---|
+| <TASK-ID.1> | <independently verifiable result and its consumer> | <IDs or none> | <path> |
 
 ## Authority and scope
 
-| Item | Contract |
-|---|---|
-| Authority | `<user request, issue, plan/spec path and section, or other source>` |
-| Repository root | `<absolute path or working repository>` |
-| Dependencies | `<IDs/states or none>` |
-| Allowed changes | `<exact paths when known, otherwise bounded area for focused discovery>` |
-| Read-only context | `<closest authority, precedent, or owning tests>` |
-| Out of scope | `<adjacent work, permissions, or prohibited actions>` |
-| Assumptions / unresolved decisions | `<none, UNKNOWN facts for discovery, or blocking decision and owner>` |
+- Authority: <exact approved sources and necessary baseline identity>
+- Parent plan task / stable refs: <task, FLOW/ART/IF/INV refs>
+- Original scope: <bounded work preserved across children>
+- Out of scope: <exclusions that affect execution>
+- Governing decisions: <applicable direction decisions and exact references>
 
-For an existing adequate brief, preserve its equivalent sections instead of
-rewriting them into this table.
+## Coverage and closure
 
-## Work and acceptance criteria
+- Parent requirement / AC coverage: <every parent requirement or AC -> owning children>
+- Shared artifacts/interfaces/invariants: <one owning child for each shared surface>
+- Integration closure: <final executable integration child, or why child-local proof suffices>
+- Leaf sizing: <all leaves fit the policy, or references to exact permitted overrides>
 
-Required work:
+## Execution and handoff
 
-1. `<Small implementation outcome.>`
-2. `<Small implementation outcome.>`
+Status: `decomposed`
+Task kind: `composite`
 
-- **AC-01:** `<Observable positive behavior or invariant.>`
-- **AC-02:** `<Most credible negative, failure, or unchanged-state behavior.>`
-- **AC-03:** `<Lifecycle, compatibility, or boundary behavior when relevant.>`
+This parent coordinates the work. Implement dependency-ready executable leaves;
+the parent itself is not an implementation target. Completion requires every
+mapped leaf, including integration closure, to finish its implementation and
+required review route.
 
-Omit AC-03 when it adds no distinct protection. Add more ACs only for distinct
-approved outcomes.
+### Execution sizing
 
-### Finite-risk coverage contract (optional)
+- Sizing policy: <active-profile>@<config-version>
+- Original estimate: <integer agent calls>; <integer implementation minutes>
+- Original required execution profile: <agent_tier>/<reasoning>
+- Estimate confidence: <low | medium | high>
+- Triggered decomposition rules: <configured rule names>
+```
 
-Include this subsection only when authority contains a universal or lifecycle
-claim with finite, material cases whose omission could permit false success.
-Omit it for tasks without such dimensions; do not fill it with generic test
-categories or speculative cases.
+A composite has no launch metadata or readiness route. Preserve approved
+direction in the parent and each affected child.
 
-| Invariant | Material dimensions/cases | Decisive oracle/boundary | Implementation evidence | Independent review probe | Gate owner |
-|---|---|---|---|---|---|
-| `<property that remains true>` | `<exact finite values or state transitions>` | `<observable outcome at the real boundary>` | `<fail-first, targeted, or owning evidence>` | `<distinct corroboration/adversarial probe, or N/A with reason>` | `<owner and stage for owning/broad gate>` |
+## Blocked design
 
-Combine cases only when they share one invariant and oracle; this table does
-not require a Cartesian product. Keep implementation evidence distinct from
-independent review. For immediate-review correction, assign the broader or
-aggregate gate to either the correction implementer or the final fresh
-reviewer, and keep targeted evidence first while it remains red. Keep row
-identity stable so later reviews can record `pass`, `fail`, `blocked`, or
-`unchecked`; a prior result does not prove corrected bytes. Use exactly these
-six semantic columns; do not replace them with a smaller requirements table and
-move evidence roles or gate ownership elsewhere.
+Use only the abbreviated form below; direction gaps use the skill's
+conversation-only direction-delta response instead.
 
-## Verification
+```markdown
+# Design block: <requested outcome as stated>
 
-| Evidence | Scenario and oracle | Command |
-|---|---|---|
-| Fail-first / regression | `<how the test rejects missing or faulty behavior, or why infeasible>` | `<exact command or focused discovery owner>` |
-| Targeted | `<lowest reliable behavior and boundary>` | `<exact command or focused discovery owner>` |
-| Owning suite | `<nearby regression coverage>` | `<command or N/A with reason>` |
-| Broader gate | `<blast radius covered, owner, and execution stage>` | `<command, approval required, or N/A with reason>` |
+Status: `blocked_design`
 
-For repeated, resumed, retried, recovered, paginated, or migrated behavior,
-include the first occurrence, its legitimate state change, and the next real
-occurrence. Pure state simulation is insufficient when public wiring is the
-risk.
+## Missing decisions or authority
 
-## Stops and handoff
+- <decision or authority gap; why it materially changes the task>
 
-- Stop for ambiguous authority, user-work overlap, unsafe permission needs,
-  material scope expansion, or a missing decisive verification capability.
-- Treat the metadata budget as a checkpoint unless explicitly declared hard.
-- Preserve pre-existing user work.
-- Next action: `<guided implementation | standalone guided preflight and reason | high-assurance preflight | decision owner>`.
-- When `review: immediate`, preserve implementation as the next action and add:
-  `Required follow-on: immediately after implementation or correction and any
-  applicable conditional stages, hand the completed bytes to a fresh
-  independent `task-review-discovery` call, and hand its report to a separate
-  `task-acceptance-review` decision.` Do not use
-  same-session self-review as that discovery or acceptance step.
+## Owner and smallest next action
 
----
-
-## High-assurance addendum
-
-Include this addendum only when status is `ready_for_preflight` or when a
-specific risk requires durable evidence. Do not add it to routine guided tasks.
-
-### Artifact identity
-
-| Field | Value |
-|---|---|
-| Task ID | `<stable ID>` |
-| Producing stage | `task-brief-designer` |
-| Created at | `<ISO-8601 timestamp with timezone>` |
-| Primary authority | `<path>#<exact section>` |
-| Known policy | `<identifier/path or UNKNOWN for preflight>` |
-
-### Knowledge ledger
-
-| Kind | Path or statement | Relevance / owner |
-|---|---|---|
-| Confirmed fact | `<fact and source>` | `<effect on task>` |
-| Frozen decision | `<authority-entitled decision>` | `<source>` |
-| Assumption | `<provisional fact>` | `<how preflight confirms it>` |
-| Unresolved item | `<none or blocker>` | `<owner and smallest next action>` |
-
-### AC execution matrix
-
-| AC | Production invariant | Positive evidence | Negative evidence | Real entry point / boundary | Repeated or recovery path | Verification dependency |
-|---|---|---|---|---|---|---|
-| AC-01 | `<invariant>` | `<scenario/oracle>` | `<scenario/oracle>` | `<public workflow and boundary>` | `<first + state change + next, or N/A with reason>` | `<existing, task-local, prerequisite, or gap>` |
-
-### Legacy-assumption and risk checks
-
-| Area / search | Risk | Required evidence or follow-through |
-|---|---|---|
-| `<entry point, guard, literal, identifier, path, or baseline assumption>` | `<credible stale assumption>` | `<focused search/test>` |
-
-| Risk | Impact / escalation trigger | Evidence and residual gap |
-|---|---|---|
-| `<credible failure>` | `<consequence>` | `<test level, real boundary, gap or none>` |
-
-### Verification-capability inventory
-
-| Needed capability | Disposition | Owner / path | Preflight confirmation |
-|---|---|---|---|
-| `<fixture/helper/runner/oracle>` | `task-local | prerequisite task | believed existing | blocked` | `<path or task>` | `<exact existence/interface question>` |
-
-### High-assurance handoffs
-
-- Preflight must confirm exact paths, dependencies, ownership, permission
-  envelope, command syntax, decisive oracles, and required freshness evidence.
-- Implementation may change only confirmed scope, must record every required
-  command truthfully, and must produce the supplied structured result.
-- Independent review must reconstruct the scoped diff, corroborate every AC at
-  the required boundary, and issue a fresh verdict after every correction.
-
-
-<!-- contract-registry-flow:task-brief-template:begin -->
-## Expected contract impact
-
-Use only when relevant; otherwise write `Expected contract impact: none`.
-
-- Plan refs: `<ART-... / IF-... / INV-... — materialize | change | preserve>`
-- Current contract dependencies: `<plan ref or capability -> docs/contracts/<subsystem>.json>`
-- Expected durable delta: `<new/changed/removed reusable interface, artifact, ownership, state, invariant, integration, or infrastructure capability>`
-<!-- contract-registry-flow:task-brief-template:end -->
+- Owner: <user or decision owner>
+- Next: <smallest planning/approval action; proof-task dependency if required>
+```

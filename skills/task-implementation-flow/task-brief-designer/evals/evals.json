@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Use the high-assurance profile to turn approved plan item `docs/stage-3-plan.md#S3-04` into an executable `ready_for_preflight` brief at `docs/stage-3-tasks/S3-04.md`. The approved behavior adds `run-next`: the command selects the next ready task, records it as running, and later invocations continue selecting remaining ready tasks. Existing unit ACs mention only selecting one task from a static queue. The public entry point is `runner run-next`; state is persisted in `.runner/state.json`. Do brief design only—do not certify the current tree or edit implementation files.",
+      "prompt": "Use the high-assurance profile to turn approved plan item `docs/stage-3-plan.md#S3-04` into an executable `ready_for_preflight` brief at `docs/stage-3-tasks/S3-04.md`. The approved behavior adds `run-next`: the command selects the next ready task, records it as running, and later invocations continue selecting remaining ready tasks. Existing unit ACs mention only selecting one task from a static queue. The public entry point is `runner run-next`; state is persisted in `.runner/state.json`. Do brief design only\u2014do not certify the current tree or edit implementation files.",
       "expected_output": "A ready-for-preflight task brief that preserves the approved lifecycle behavior and adds real public-entry evidence covering the first invocation, its persisted state change, and a second invocation, with negative/unchanged-state evidence and provisional preflight checks.",
       "files": [
         "evals/files/setup_fixture.py"
@@ -76,7 +76,7 @@
     {
       "id": 4,
       "prompt": "Gap-check the existing task at `docs/tasks/API-31/brief.md` for ordinary guided implementation. It already has an outcome, scope, positive and negative ACs, targeted and broader commands, stops, and a next action. Its authority explicitly calls for an economical standard-agent, medium-reasoning launch profile and immediate fresh acceptance review. Estimate it at 6 implementation-agent calls and 20 minutes under the active sizing policy. Add the standard `agent_tier`, `reasoning`, `review`, and `budget` metadata block, the execution-sizing evidence, and the proportionate readiness route, but do not rewrite adequate prose or add high-assurance ledgers, matrices, digests, packet requirements, or prerequisite tasks.",
-      "expected_output": "A surgical update that adds truthful intended launch guidance, fitting execution-sizing evidence, and the implementer self-preflight route; preserves guided implementation as the next action; and explicitly requires fresh independent `task-review-discovery` evidence and the separate `task-acceptance-review` decision immediately after implementation or correction without replacing the brief with the full template.",
+      "expected_output": "A surgical update that adds truthful intended launch guidance, fitting execution-sizing evidence, and the standalone guided preflight route after derived verification; preserves implementation after those prerequisites; and explicitly requires fresh independent `task-review-discovery` evidence and the separate `task-acceptance-review` decision immediately after implementation or correction without replacing the brief with the full template.",
       "files": [
         "evals/files/setup_fixture.py"
       ],
@@ -98,9 +98,9 @@
         "The existing outcome, scope, ACs, commands, stops, and next action remain substantively unchanged.",
         "The brief gains exactly the four standard metadata keys with `agent_tier: standard`, `reasoning: medium`, `review: immediate`, and a soft, proportionate budget; it does not default to generic `reasoning: high` guidance or claim to observe hidden runtime configuration.",
         "The brief adds execution-sizing evidence for the supplied 6-call / 20-minute estimate, identifies the active policy result as fitting, and does not treat the surgical gap-check as exempt from sizing.",
-        "The result keeps guided status `ready`, recommends `implementer self-preflight`, adds no route metadata key, and does not force standalone preflight.",
+        "The result keeps guided status `ready` and names derived verification then standalone guided preflight before implementation; it adds no route metadata key or high-assurance freshness ceremony.",
         "The verification-design recommendation is `inline` because the existing brief already supplies obvious positive and negative scenarios and decisive commands/oracles.",
-        "The handoff preserves guided implementation as the next action and explicitly requires fresh independent `task-review-discovery` evidence and the separate `task-acceptance-review` decision immediately after implementation or correction; a generic implementation next action alone, same-session self-review semantics, or a route that sends implementation straight to acceptance without discovery fails this expectation.",
+        "The handoff keeps implementation after required preparation and explicitly requires fresh independent `task-review-discovery` evidence and the separate `task-acceptance-review` decision immediately after implementation or correction; a generic implementation next action alone, same-session self-review semantics, or a route that sends implementation straight to acceptance without discovery fails this expectation.",
         "No knowledge ledger, AC execution matrix, digest inventory, durable packet contract, or prerequisite task is added.",
         "Only `docs/tasks/API-31/brief.md` is modified."
       ]
@@ -108,7 +108,7 @@
     {
       "id": 5,
       "prompt": "Create the guided implementation brief `docs/tasks/EVD-12/brief.md` from `docs/evidence-plan.md#EVD-12`. The existing test covers only one complete happy path. Preserve the approved scope and do task design only.",
-      "expected_output": "A compact guided brief whose optional finite-risk table enumerates all approved persisted evidence families, publication stages and legal prefixes, and contradictory orphan states; uses the public resume boundary and pre-side-effect rejection/reuse oracle; separates implementation from independent-review evidence; assigns the final fresh reviewer as aggregate-gate owner; and recommends standalone guided preflight with the named observer-capability uncertainty.",
+      "expected_output": "A compact guided brief whose readable finite-risk cases enumerates all approved persisted evidence families, publication stages and legal prefixes, and contradictory orphan states; uses the public resume boundary and pre-side-effect rejection/reuse oracle; separates implementation from independent-review evidence; assigns the final fresh reviewer as aggregate-gate owner; and recommends standalone guided preflight with the named observer-capability uncertainty.",
       "files": [
         "evals/files/setup_fixture.py"
       ],
@@ -127,12 +127,13 @@
         "workspace": "{run_root}/work/evidence-flow"
       },
       "expectations": [
-        "One finite-risk coverage table uses exactly the six semantic columns `Invariant`, `Material dimensions/cases`, `Decisive oracle/boundary`, `Implementation evidence`, `Independent review probe`, and `Gate owner`; it does not substitute a smaller requirements table or move any of those fields exclusively into prose or the verification section.",
-        "Within that six-field table, the material-dimensions cells explicitly include policy, manifest, attempt record, structured result, and closure rather than collapsing them into `each persisted artifact`.",
-        "Within that six-field table, the material-dimensions cells explicitly include execution, verification, decision, and ledger; all five legal publication prefixes; and every named contradictory orphan state rather than collapsing them into `every publication boundary` or generic recovery prose.",
-        "Within each applicable table row, the decisive-oracle cell exercises `evidence-runner resume --state <path>` and distinguishes pre-side-effect rejection of tampered or contradictory state from byte reuse plus only-next-stage publication for legal prefixes.",
-        "Within each table row, implementation evidence is separate from a distinct fresh independent-review probe and does not treat implementer self-checks as acceptance.",
-        "Within each table row, gate ownership names the responsible stage; the final fresh reviewer owns the aggregate suite after targeted correction evidence is green, and the brief does not require that aggregate gate while targeted evidence remains red.",
+        "Finite-risk coverage prefers labelled case blocks with stable risk IDs; a table is acceptable only with short readable cells. Each case retains invariant, material cases, observable result/boundary, implementation evidence, independent review probe, and gate owner/stage. Shared gate ownership names its applicable risk IDs.",
+        "The opening explains in ordinary language what resume preserves or rejects before introducing artifact IDs, metadata, or evidence roles. Detailed cases remain in their owning section rather than being repeated in scope, ACs, and verification.",
+        "The material cases explicitly include policy, manifest, attempt record, structured result, and closure rather than collapsing them into `each persisted artifact`.",
+        "The material cases explicitly include execution, verification, decision, and ledger; all five legal publication prefixes; and every named contradictory orphan state rather than generic recovery prose.",
+        "Each applicable case exercises `evidence-runner resume --state <path>` and distinguishes pre-side-effect rejection of tampered or contradictory state from byte reuse plus only-next-stage publication for legal prefixes.",
+        "Each case separates implementation evidence from a distinct fresh independent-review probe and does not treat implementer self-checks as acceptance.",
+        "Gate ownership resolves for every case, either locally or by an explicit shared reference; the final fresh reviewer owns the aggregate suite after targeted correction evidence is green, and that suite is not required while targeted evidence is red.",
         "The readiness route is `standalone guided preflight` with the concrete missing deterministic observer for pre-write and pre-process rejection; it is human-readable guidance and not a new metadata key.",
         "The verification-design recommendation is `separate` with a concrete reason tied to the finite artifact families, publication lifecycle, contradictory states, and real-boundary semantics.",
         "The brief does not invent unrelated generic corruption, fuzz, platform, performance, Cartesian-product, high-assurance ledger, or shared-harness requirements.",
@@ -172,7 +173,7 @@
     {
       "id": 7,
       "prompt": "Create the ordinary guided implementation brief `docs/tasks/EXPORT-2/brief.md` from `docs/requests/EXPORT-2.md`. Use the approved governing direction at `docs/project-direction.md`, keep the technical task detailed, and do task design only.",
-      "expected_output": "Creates a ready guided brief with a compact Direction trace that connects the technical export task to the approved portable-backup outcome, states its direct user effect, explains why it is the next demonstrable proof without inventing priority, cites exact governing decisions, records that no new direction decisions are required, and treats the supplied helper reuse as a consequence-neutral technical refinement.",
+      "expected_output": "Creates a ready guided brief with a compact Direction trace that connects the technical export task to the approved portable-backup outcome, states its direct user effect, explains why it is the next demonstrable proof without inventing priority, cites exact governing decisions, records that no new direction decisions are required, and treats the supplied helper reuse as a consequence-neutral technical refinement. The brief leads with behavior and scope, places execution details later, and preserves the exact no-overwrite rule with its decision reference while omitting redundant approval history.",
       "files": [
         "evals/files/setup_fixture.py"
       ],
@@ -191,14 +192,18 @@
         "workspace": "{run_root}/work/note-export"
       },
       "expectations": [
-        "The output creates only `docs/tasks/EXPORT-2/brief.md` and keeps status `ready` with proportionate guided metadata and implementer self-preflight.",
+        "The output creates only `docs/tasks/EXPORT-2/brief.md` and keeps status `ready` with proportionate guided metadata and standalone guided preflight after derived verification.",
         "A `Direction trace` contains all five fields: Direction contribution, User-observable effect, Why now, Direction decisions used, and New direction decisions required.",
         "The title, Outcome and Direction trace explain in short, concrete sentences what the owner can do and why export comes next. The reader does not need to decode plan IDs or unexplained technical terms; any necessary unfamiliar term is explained on first use. This replaces dense opening wording rather than adding a second owner summary, and preserves the detailed technical scope below.",
         "Direction contribution traces to the approved portable-backup outcome, and User-observable effect says the owner can create a restorable local export.",
         "Why now cites the approved first useful proof or the export-before-restore dependency without inventing a new priority.",
         "Direction decisions used cites exact sections of `docs/project-direction.md`, and New direction decisions required is exactly `None`.",
         "Reusing the existing `LocalArchiveWriter` is treated as a permitted consequence-neutral technical refinement rather than a reason to request direction.",
-        "The technical work remains bounded to the approved local export behavior and does not add hosted storage, automatic upload, new product behavior, implementation, tests, dependencies, or orchestrator state."
+        "The technical work remains bounded to the approved local export behavior and does not add hosted storage, automatic upload, new product behavior, implementation, tests, dependencies, or orchestrator state.",
+        "Outcome and scope precede execution metadata and sizing. The opening makes clear that export creates an archive now and enables a later restore task; it does not claim that restore is implemented or proven.",
+        "DEC-EXPORT-1 retains mandatory refusal of an existing destination before modification, unchanged destination bytes, and no overwrite option, with the exact approved-rule source reference. The brief does not retell the quoted owner answer, review-resolution chronology, or document-maintenance explanation.",
+        "The brief gives operating rules and launch settings one authoritative home. Direction trace, ACs, and evidence may refer to the outcome, approved rule, or case IDs for their distinct purpose rather than restating scope and policy paragraphs.",
+        "The execution section explains that `ready` means the brief is prepared, identifies derived verification and ready preflight as pending prerequisites, and does not claim that checks passed or implementation may start now."
       ]
     },
     {
@@ -258,7 +263,9 @@
         "Every executable leaf is independently re-estimated and either fits the active sizing envelope or records the allowed `cannot_split_safely` override with the candidate boundary considered, a concrete reason, and residual execution risk; merely renaming the original work into children is insufficient.",
         "Parent outcome/AC coverage is mapped to children, and any end-to-end proof that requires sibling composition is owned by an executable integration child rather than a special composite-parent review stage.",
         "`docs/tasks/index.json` is created as a structural discovery/decomposition index and does not contain runtime attempt/controller/review status.",
-        "`docs/project-plan.md`, `docs/task-map.json`, implementation, tests, and orchestration state are unchanged."
+        "`docs/project-plan.md`, `docs/task-map.json`, implementation, tests, and orchestration state are unchanged.",
+        "The composite opens with the user result, then explains the child outcomes and sequence before sizing or execution status. A reader can explain why parsing, transactional saving, and command integration are separate outcomes and which child proves their composition; IDs accompany rather than replace those explanations.",
+        "Sizing retains the policy identity, original estimate and profile, triggered rules, and substantive boundary decision without copying configured thresholds or repeating the same rationale in several sections. Every child remains independently understandable."
       ]
     },
     {

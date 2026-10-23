@@ -8,6 +8,32 @@ description: Create, tighten, or gap-check one bounded implementation task from 
 Turn one bounded task into a clear, testable contract. Preserve useful existing
 material and add only what the implementer or reviewer needs.
 
+## Write for the person who will approve the work
+
+Use the brief itself to explain the work. Follow this reading order: outcome,
+scope and governing rules, acceptance and evidence, then execution details.
+The template uses this order for both executable and composite briefs.
+
+- Open with what completion demonstrates, who uses the result, and what it
+  enables next. Distinguish rules or interfaces this task defines from behavior
+  it executes and work a later task owns.
+- Use concrete verbs and short sentences. Explain necessary technical terms
+  on first use; pair stable IDs with their meaning, such as “approved task
+  inputs (`ART-001`)”. When an abstract requirement hides important behavior,
+  add one brief success or failure example drawn from approved requirements.
+- Give each fact one home. Put operating rules beside their precise authority
+  references; keep decision history in the source. Include dates, hashes, and
+  provenance where precedence, freshness, audit, or a consumer requires them.
+  A mutable link alone cannot replace a required exact baseline.
+- Keep rationale that prevents a plausible wrong interpretation. Retain a
+  sentence when it changes what someone builds, verifies, is allowed to do,
+  or hands over. Use concise references for repeated facts and governing
+  repository rules, while keeping every child independently understandable.
+
+Revise existing explanations in place. An extra summary, glossary, or checklist
+usually adds another account to maintain. Preserve required fields, distinct
+cases, exact obligations, and machine-consumed values when compressing prose.
+
 Repository and user instructions outrank this skill. Preserve existing user
 work and never claim ownership of it.
 
@@ -35,11 +61,8 @@ concurrency, multi-writer, or similar risk.
 - If an existing task already has a clear outcome, bounded scope, acceptance
   criteria, and useful verification, do not rewrite it. Return a concise gap
   check or make only the requested/local missing additions.
-- Produce a compact `ready` brief when a durable artifact is useful. Its
-  readiness route is standalone guided preflight after derived verification.
-  Reserve implementer self-preflight for unpackaged conversational direct
-  edits, with standalone preflight there only for a named material
-  readiness uncertainty.
+- Produce a compact `ready` brief when a durable artifact is useful; use the
+  preparation route below.
 
 ### High assurance
 
@@ -52,7 +75,7 @@ Do not upgrade a routine task merely because a fuller template exists. If a
 guided task discovers a genuine high-assurance need, name the reason and the
 smallest additional artifact or decision required.
 
-## Binding packaged preparation
+## Preparation and permission to start
 
 A supplied executable task package always requires a derived `verification.md`,
 then a ready `preflight.md`, before implementation. This applies to compact
@@ -60,6 +83,18 @@ documentation work as well as code changes. A small clear conversational direct
 edit may retain inline verification and a safety check only while no task package
 has been supplied; it cannot use the conversational direct-edit exception to
 bypass packaged preparation.
+
+For an executable package, use `standalone guided preflight` after derived
+verification, or `high-assurance preflight` for that profile. Reserve
+`implementer self-preflight` for an unpackaged conversational direct edit;
+standalone preflight there is useful for a named material readiness uncertainty.
+These are human-readable routes, not extra launch metadata keys.
+
+Explain `ready` as “brief prepared; execution prerequisites still required”.
+Report preparation as passed only when supplied current evidence establishes
+it; otherwise name the pending prerequisite. A designed brief is not evidence
+that implementation may start. Put this distinction and the next action
+together in the brief's execution section.
 
 Composite/decomposed work, blocked design, and direct legacy briefs are not
 prepared as executable packages. Route them to the dependency-ready leaf, the
@@ -71,10 +106,6 @@ Before estimating a task that could become implementation-ready, read
 `references/task-sizing.yaml` and use its active profile. The numeric thresholds
 live there intentionally; do not copy them into this skill or silently replace
 them with personal defaults.
-
-Each configured maximum is exclusive: a maximum triggers the boundary
-decision below only when the corresponding estimate is greater than it. An
-estimate equal to a maximum fits.
 
 When creating or updating durable task artifacts, read
 `references/task-artifact-layout.md`. Repository or user authority may choose a
@@ -98,10 +129,8 @@ Use `UNKNOWN` for non-blocking facts that later repository inspection can
 resolve. Stop with `blocked_design` only when a missing product, architecture,
 compatibility, permission, or scope decision could materially change the task.
 Do not block merely because paths, command syntax, or current Git state still
-need focused discovery. Once `blocked_design` applies, use the abbreviated
-blocked-design output and stop drafting: do not infer architecture,
-implementation scope, acceptance criteria, finite cases, or verification from
-an unapproved premise.
+need focused discovery. Use the abbreviated blocked-design output for a
+material decision gap.
 
 ## Workflow
 
@@ -117,17 +146,6 @@ an unapproved premise.
    outcome it enables. Ground "why now" in approved sequencing or a real
    dependency rather than inventing priority. Separate confirmed requirements
    from implementation choices and unresolved decisions.
-   Reuse clear existing explanations; move or rewrite them instead of adding
-   another version. Put the outcome and, when supplied, direction trace before dense
-   execution metadata. Write the title, outcome and direction trace so the owner
-   can understand what the task delivers, who uses it and why it comes next
-   without decoding plan IDs or workflow jargon. Use short sentences, concrete
-   verbs and consistent terms, following ASD-STE100 principles without claiming
-   formal compliance. Explain an unfamiliar technical term when first needed;
-   keep exact IDs and technical detail in the scope, criteria and evidence where
-   they are useful. Preserve required trace fields and precise task boundaries.
-   Link to project purpose and prerequisite outcomes instead of restating them.
-   Do not add a separate owner summary or another requirements/status list.
    If purpose is unknown, retain that uncertainty and use the existing
    authority-gap route when it prevents a ready brief. Mention unchanged areas
    only when they affect interpretation, scope, or the next action.
@@ -162,12 +180,9 @@ an unapproved premise.
      established, return the direction-delta-needed form below in the
      conversation and stop without creating or modifying the requested task
      artifact.
-   Preserve adequate sections verbatim or by reference. Do not expand them for
-   template completeness. If the task would need to introduce or change product
-   behavior, priority, assurance, trust, intervention, or scope beyond supplied
-   governing direction, return the plain-language direction-delta-needed form
-   below and stop. For other material product or architecture gaps, switch to
-   `blocked_design` and stop before the remaining drafting steps.
+   Preserve adequate sections verbatim or by reference. For other material
+   product or architecture gaps, switch to `blocked_design` and stop before
+   the remaining drafting steps.
 4. Classify verification-capability uncertainty before choosing preflight or a
    split:
    - Use implementer self-preflight or standalone guided preflight when an
@@ -201,62 +216,27 @@ an unapproved premise.
    most credible negative, unchanged-state, or failure behavior. For lifecycle
    work—retry, resume, recovery, pagination, migration, repeated selection—name
    the first legitimate state change and the next real occurrence.
-7. Map each material risk to the lowest reliable evidence. Use a public entry
-   point or real boundary when pure/unit evidence cannot prove wiring,
-   persistence, processes, filesystem behavior, database behavior,
-   concurrency, permissions, or compatibility.
-8. Name targeted and broader verification commands when authority or local
-   precedent supplies them. In guided mode, focused command discovery may stay
-   with the implementer. In high-assurance mode, unresolved required commands
-   go to preflight and must not be presented as passing.
-9. Add the task metadata block:
+7. Design evidence using the finite-risk contract and verification defaults
+   below. Classify verification reasoning as `inline` for obvious tests and
+   oracles, or `separate — <reason>` for non-obvious negative/lifecycle semantics,
+   finite cases, boundary behavior, or multiple plausible-wrong implementations.
+   This recommendation is for `task-verification-designer`; either value keeps
+   the required packaged preparation. Resolve ambiguous requirements with their
+   owner before verification design.
+8. Apply sizing, then read `references/task-brief-template.md` and assemble the
+   applicable form. Keep the four scalar launch keys `agent_tier`, `reasoning`,
+   `review`, and `budget` for executable leaves only. Use authority-approved
+   values as intended launch guidance, not observed runtime configuration.
+   Treat the budget as a soft checkpoint unless authority makes it hard.
+   Add only the high-assurance fields needed for that profile.
 
-   ```yaml
-   agent_tier: mechanical | standard | strong
-   reasoning: low | medium | high
-   review: mechanical | milestone | immediate
-   budget: <tool calls> / <time> / <context>
-   ```
-
-   For executable leaves, choose this block after sizing. A composite parent
-   uses status `decomposed` and does not carry launch metadata or a readiness
-   route. Treat `agent_tier`, `reasoning`, and `review` as intended launch guidance
-   for future automated or current manual routing, and use the values the task
-   authority actually calls for. They are not claims about the eventual
-   runtime configuration; do not claim to have observed a runtime reasoning
-   setting unless it was supplied. Keep these four scalar keys and treat the
-   budget as a soft checkpoint unless higher-priority instructions explicitly
-   make it hard. When `review: immediate`, preserve implementation as the next
-   action and add the ordered follow-on: immediately after implementation or
-   correction and any applicable conditional stages, hand the completed bytes
-   to a fresh independent `task-review-discovery` call, and hand its report to
-   a separate `task-acceptance-review` decision. Apply this to surgical
-   gap-checks as well as newly drafted briefs;
-   a generic implementation next action or a review workflow loaded in the
-   authoring or implementation session does not state independent acceptance.
-10. Give every durable brief one human-readable readiness route:
-    - `standalone guided preflight` for an executable task package, after its
-      derived verification; `— <material uncertainty>` may name the concrete
-      focus of that required check;
-    - `implementer self-preflight` only for an unpackaged conversational
-      direct edit while no task package has been supplied; or
-    - `high-assurance preflight` when the selected profile requires it.
-    Do not add a route metadata key. Current repository facts may require the
-    implementer or orchestrator to escalate the recommendation at execution
-    time. A prerequisite feasibility/proof task from step 4 is a design
-    dependency, not a readiness route.
-11. Explicitly classify the verification reasoning before implementation:
-    - `inline` when the task is small and its decisive tests/oracles are
-      obvious from the brief;
-    - `separate — <reason>` when non-obvious negative/lifecycle semantics,
-      finite material cases, boundary behavior, or multiple plausible-wrong
-      implementations make a focused verification-design pass useful.
-    For a supplied executable task package, either classification still requires
-    binding preparation: write the derived `verification.md`, then obtain ready
-    `preflight.md`. Do not use it to compensate for ambiguous requirements that
-    should block or return to the decision owner.
-12. Read `references/task-brief-template.md`. Use only the core sections for a
-    guided brief; add the high-assurance sections only for that profile.
+When `review: immediate`, include the ordered follow-on in new briefs and
+surgical gap-checks: immediately after implementation or correction and any
+applicable conditional stages, hand the completed bytes to a fresh independent
+`task-review-discovery` call, and hand its report to a separate
+`task-acceptance-review` decision. Following a review skill in the authoring or
+implementation session does not state independent acceptance. This follow-on
+comes after the preparation and implementation sequence, not in place of it.
 
 ## Sizing and decomposition contract
 
@@ -271,8 +251,9 @@ command.
    preflight, maintainability review, contract-registry synchronization,
    acceptance review, and orchestrator/controller work.
 2. Record a numeric estimated agent-call count, numeric implementation duration
-   in minutes, estimate confidence, and the intended `agent_tier` /
-   `reasoning` pair. Then evaluate the active profile from
+   in minutes, and estimate confidence. Use the intended `agent_tier` /
+   `reasoning` pair from launch metadata for a leaf; record the original pair
+   in sizing for a composite. Then evaluate the active profile from
    `references/task-sizing.yaml`. A configured execution-profile trigger
    applies to the complete pair; for example, a `strong` + `high` rule means
    both values together, not either value independently. Numeric maxima trigger
@@ -350,9 +331,10 @@ merely to silence the trigger.
 
 ## Finite-risk coverage contract
 
-Use the optional finite-risk table only when step 5 finds at least one finite,
-material dimension. Use exactly these six columns, in this table rather than
-scattering their semantics across other sections:
+Use finite-risk cases only when workflow step 5 finds a finite, material
+dimension. Prefer one labelled block per risk ID, as shown in the template;
+a table is suitable when its cells remain short. Preserve these six meanings
+with each case:
 
 - the invariant;
 - the exact material dimensions or state transitions;
@@ -361,14 +343,15 @@ scattering their semantics across other sections:
 - a distinct independent-review probe, or `N/A` with a reason; and
 - the gate owner and stage.
 
-Rows may combine cases only when they share one invariant and oracle. The table
-is a coverage contract, not a Cartesian-product requirement. Keep
+Cases may combine dimensions only when they share one invariant and oracle.
+This is a coverage contract, not a Cartesian-product requirement. Keep
 implementation evidence separate from review corroboration; an implementer
 self-check is not acceptance. For an immediate-review correction flow, state
 whether the correction implementer or final fresh reviewer owns the broader or
 aggregate gate. Keep targeted evidence first while it is red instead of
-requiring the same broad gate after every failed review. Keep row identity
-stable across corrections so later reviews can carry each row forward as
+requiring the same broad gate after every failed review. Shared gate ownership
+may be stated once with explicit case IDs. Keep risk IDs stable across
+corrections so later reviews can carry each case forward as
 `pass`, `fail`, `blocked`, or `unchecked`; prior status is not proof for
 corrected bytes.
 
@@ -381,7 +364,11 @@ The user should not need to repeat these instructions for every task:
 - For changed behavior, prefer a focused test capable of rejecting the old or
   faulty behavior.
 - Use the lowest reliable test level, adding a real-boundary check only when it
-  proves something lower-level evidence cannot.
+  proves wiring, persistence, filesystem/database/process behavior, concurrency,
+  permissions, or compatibility that lower-level evidence cannot establish.
+- Name commands supplied by authority or local precedent. Guided command
+  discovery may stay with the implementer; unresolved high-assurance commands
+  belong to preflight.
 - Run the targeted check first, then the nearest owning suite, then only the
   broader gate justified by blast radius and authorization.
 - Assign each broader or aggregate gate to an owner and stage; do not silently
@@ -395,16 +382,12 @@ For a gap check, report only:
 
 - whether the existing task is usable;
 - concrete missing or contradictory items;
-- the smallest proposed edits; and
-- whether guided implementation may begin or high-assurance preflight is
-  warranted;
+- the smallest proposed edits;
+- which execution prerequisite remains and whether high-assurance preflight
+  is warranted;
 - whether verification design should stay inline or use a separate
   `task-verification-designer` pass, with the concrete reason when separate;
-  and
-- when `review: immediate`, the ordered handoff from implementation or
-  correction through applicable conditional stages and fresh independent
-  `task-review-discovery` evidence to the separate `task-acceptance-review`
-  decision immediately afterward.
+  and the immediate-review follow-on above when applicable.
 
 When supplied direction does not authorize a needed product, priority,
 assurance, trust, intervention, or scope choice, return only:
@@ -426,17 +409,13 @@ leave the requested task path absent or unchanged. Write a durable delta only
 when the user explicitly requests a separate direction-delta artifact path;
 never store it at the requested implementation-task path.
 
-Do not continue into task scope, acceptance criteria, launch metadata,
-verification, or implementation handoff until the owner supplies the missing
-direction. A technical recommendation is not governing authority.
-
 For a durable brief, use `references/task-brief-template.md`. When governing
 direction was supplied, include its `Direction trace` section and require
 `New direction decisions required: None`; any other value requires the
 direction-delta-needed response instead of a ready brief. Use one status:
 
-- `ready`: an executable guided leaf may begin after its recommended readiness
-  route is satisfied;
+- `ready`: an executable guided brief is prepared; execution still requires
+  the preparation route above;
 - `ready_for_preflight`: an executable high-assurance leaf is designed but
   current executability still requires preflight;
 - `decomposed`: the original task is a non-executable composite parent whose
@@ -457,42 +436,18 @@ would turn an unapproved premise into apparent authority.
 Never update an official master plan merely to record completion of this
 design task.
 
-## Boundaries and routing
+## Final read and ownership
 
-- Route current Git state, command resolution, dirty ownership, and current
-  dependency checks to a compact implementer self-preflight or standalone
-  `task-preflight`.
-- Route unresolved feasibility that determines the implementation mechanism,
-  scope, cross-platform enforcement, or shared verification infrastructure to
-  a separate prerequisite evaluation/proof task and block the primary task on
-  its result.
-- Route missing product or architecture authority to its owner or the user.
-- Route gaps in supplied product direction through the plain-language
-  direction-delta-needed form rather than silently resolving them in a
-  technical brief.
-- Route wider scope or new shared infrastructure back through brief design.
-- Do not implement, accept the result, launch subagents, or modify runtime
-  orchestration state. The structural task index defined by the artifact layout
-  is the only task-index write owned here when creating or decomposing durable
-  briefs.
+Read the brief as a person unfamiliar with the design. They should be able to
+explain the result, what completion proves versus enables, the governing rules,
+and the pending execution prerequisite. Then check that compression preserved
+each approved obligation, exception, stable ID, evidence role, and handoff.
+Apply the same check to child coverage and dependencies after decomposition.
 
-## Definition of done
-
-- The task is independently understandable without this conversation.
-- Every changed or added line in an existing brief closes a concrete gap.
-- Outcome, scope, ACs, evidence, metadata, stops, readiness route, verification-
-  design recommendation, and next action are clear.
-- When direction is supplied, the contribution, user-observable effect or
-  enabled outcome, sequencing reason, and approved decisions are traceable.
-- Every ready brief with supplied governing direction says
-  `New direction decisions required: None`; otherwise brief design stopped
-  with a direction delta.
-- Guided briefs avoid high-assurance artifact ceremony unless risk justifies it.
-- Every executable leaf records sizing evidence and fits the active sizing
-  profile or carries the allowed explicit reasoned no-split override.
-- Every composite parent has complete child coverage, explicit dependencies,
-  and no implementation handoff of its own.
-- High-assurance briefs preserve exact stage and evidence contracts.
+This skill owns brief design and the structural task-index entries it creates.
+Current repository readiness belongs to preflight; expanded scope returns to
+design. Implementation, acceptance, subagent launches, and runtime orchestration
+state are outside this skill's work.
 
 
 <!-- contract-registry-flow:task-brief-designer:begin -->

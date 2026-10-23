@@ -349,6 +349,30 @@ def direction_trace() -> None:
         Allowed implementation paths: `src/export.py`, `src/cli.py`, and
         `tests/test_export.py`. Do not add hosted storage, automatic upload,
         provider accounts, dependencies, or restore implementation.
+
+        Apply the approved existing-destination rule DEC-EXPORT-1 from
+        `docs/decisions/export.md#approved-rule`.
+        """,
+    )
+    write(
+        root,
+        "docs/decisions/export.md",
+        """
+        # Export decisions
+
+        ## Approved rule
+
+        DEC-EXPORT-1: If the destination already exists, refuse export before
+        changing it. Leave all existing destination bytes unchanged. The owner
+        must choose another destination; export does not offer overwrite.
+
+        ## Decision history
+
+        On 2026-10-22 the owner answered "yes" to the no-overwrite proposal.
+        This resolved review F-EXPORT-1. The decision was recorded here beside
+        the direction without rewriting the reviewed direction document.
+        The source request now cites this record. Export must refuse an existing
+        destination and leave its bytes unchanged, as the approved rule states.
         """,
     )
     commit(root)

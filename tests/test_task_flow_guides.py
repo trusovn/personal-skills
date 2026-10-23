@@ -391,16 +391,10 @@ class ComposedReviewFlowGuideTests(unittest.TestCase):
         designer = normalized(DESIGNER_SKILL)
         self.assertIn("any applicable conditional stages", designer)
         self.assertIn(follow_on, designer)
-        self.assertIn(
-            "through applicable conditional stages and fresh independent "
-            "`task-review-discovery` evidence to the separate "
-            "`task-acceptance-review` decision",
-            designer,
-        )
         self.assertIn("does not state independent acceptance", designer)
         template = normalized(DESIGNER_TEMPLATE)
         self.assertIn("any applicable conditional stages", template)
-        self.assertIn(follow_on, template)
+        self.assertIn("ordered independent-review route from the skill", template)
         self.assertIn(
             "Do not use same-session self-review as that discovery or acceptance step",
             template,

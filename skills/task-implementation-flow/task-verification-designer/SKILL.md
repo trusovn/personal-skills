@@ -5,8 +5,10 @@ description: Design a compact, implementation-neutral verification specification
 
 # Task Verification Designer
 
-Turn one implementation-ready task contract into a compact set of falsifiable
-verification scenarios. The goal is to answer:
+Turn one implementation-ready task contract into clear, falsifiable verification
+cases. Help the implementation agent identify each required case and expected
+result, and help a human understand the promises covered, the planned proof,
+and its limits. The goal is to answer:
 
 > What observations would convincingly show that this task was implemented
 > according to its specification?
@@ -25,9 +27,9 @@ authority to state expected behavior without guessing.
 
 Before proceeding:
 
-- reject a brief with `Task kind: composite` and `Status: decomposed`; use an
-  executable leaf instead;
-- reject `blocked_design` work;
+- use an executable leaf when a supplied brief has `Task kind: composite` and
+  `Status: decomposed`;
+- return `blocked_design` work to its decision owner;
 - treat the task brief and its cited authority as normative;
 - treat this verification artifact as derived guidance, not as authority that
   may add or change requirements.
@@ -88,9 +90,14 @@ report the artifact conflict.
 ## Authority, coverage, and revision
 
 Identify the source brief and a revision in every `verification.md`. Map every
-material AC and finite-risk row to stable scenario IDs with setup, action, and a
-decisive oracle. A scenario cannot add a requirement, and green evidence for
-other scenarios cannot waive an omitted AC.
+material AC and finite-risk row to identifiable cases with setup, action, and a
+decisive expected result (the oracle). Derive each expectation from the brief or
+its cited authority. Coverage is complete only when every required obligation
+is represented, regardless of green evidence for other cases.
+
+Keep stable scenario IDs such as `V-01`. Where a scenario groups related cases,
+give them stable child IDs such as `V-01a` and `V-01b`, and reference those cases
+in the coverage map. Preserve existing scenario IDs when making cases explicit.
 
 When unchanged authority exposes a coverage gap, record the reason for the
 revision, retain existing scenario IDs, add only the needed justified scenario,
@@ -100,119 +107,114 @@ owner; scenario editing cannot settle it.
 
 ## Workflow
 
-1. Read the executable brief, its cited normative authority, and only the
-   repository context needed to understand public boundaries or existing test
-   conventions. Do not perform broad implementation discovery.
-2. Build an AC coverage map. Every material AC must have at least one scenario
-   or a clearly stated reason that verification cannot yet be designed.
-3. For each AC, identify the smallest set of scenarios that can distinguish the
-   intended behavior from credible wrong behavior:
+1. Read the executable brief, its cited normative authority, and the repository
+   context needed to understand public boundaries and existing test conventions.
+   Keep discovery focused on verification design.
+2. Name the promises from the brief in plain language. Map every material AC and
+   finite-risk row to cases, with links to the relevant brief sections. Identify
+   any authority gap before writing a ready artifact.
+3. Select the smallest set of cases that distinguishes the intended behavior
+   from credible wrong behavior:
    - the positive behavior;
    - the most credible negative, failure, or unchanged-state behavior;
    - a boundary case when the specification contains a meaningful boundary;
    - the next real occurrence for retry/resume/recovery/repeated-state behavior;
    - every finite material case already required by the brief.
-4. Prefer scenarios that would reject a plausible shortcut, stale behavior, or
-   partial implementation. Avoid scenarios that merely restate the happy path
-   in different words.
-5. Choose the lowest reliable observation boundary. A unit/module-level oracle
-   is enough when it proves the contract. Name a public or real boundary when
-   lower-level evidence cannot prove wiring, persistence, filesystem/database/
-   process behavior, authorization, recovery, or another task-local material
-   property.
-6. Express each scenario in a BDD-shaped, implementation-neutral form. Use
-   `Given / When / Then` when state and transitions benefit from it; otherwise
-   concise preconditions, stimulus, and oracle are sufficient.
-7. Keep test implementation choices with `bounded-task-implementer`. Do not
-   prescribe test class/function names, exact file placement, mocking strategy,
-   helper architecture, production design, or framework-specific structure
-   unless the task authority already fixes them.
-8. Run the completion checks below, then write the standalone
-   `verification.md`.
+4. Choose the lowest reliable test level and observation boundary. Explain its
+   scope, the real behavior exercised, and why it catches the intended failure.
+   Unit/component checks can prove pure policy decisions. Persistence and reload
+   need real storage behavior; contention needs concurrent execution at the actual
+   locking boundary; publication safety needs controlled interruption at meaningful
+   durable boundaries. Add higher-level evidence for distinct wiring or interaction
+   risks. Keep interface/document review and schema checks visibly separate from
+   behavioral tests.
+5. Write the artifact using the structure below. Establish the feature and
+   testing approach first, then the promises and cases. Share common setup and
+   test-level reasoning; keep each case's decisive inputs and results easy to find.
+6. Apply the completion checks and write only the standalone `verification.md`.
+   Leave test names, file placement, framework usage, doubles, helpers, and
+   production design to `bounded-task-implementer` within repository authority.
 
-## Scenario contract
+## Make cases easy to implement and review
 
-Use stable scenario IDs such as `V-01`, `V-02`, and `V-03`.
+**One behavioral question per case.** Separate independently different starting
+conditions, actions, expected decisions, or decisive boundaries. Several assertions
+can describe one outcome, such as a refusal reason plus unchanged version, count,
+and files. Share setup across related cases while keeping each obligation visible.
+Named cases describe coverage; parameterization and test-function count remain
+implementation choices.
 
-Each scenario must contain:
+**Concrete expected results.** State the correct decision, state transition, and
+important unchanged state separately from how they will be checked. Cite the
+specific authority locally when the coverage link alone leaves a rule unclear.
+Give explicit outcomes for meaningful boundary values, including equality. For
+refusals, establish the other prerequisites so the intended guard is reached and
+distinguish the required refusal from an unrelated exception or harness failure.
+Include a success control wherever an always-refusing implementation could pass.
+For permitted alternative outcomes, state their conditions and required safe
+postconditions, including the useful blocked state after a conservative stop.
 
-- **Covers:** one or more task AC IDs or finite-risk rows;
-- **Intent:** the semantic mistake or obligation the scenario distinguishes;
-- **Given:** relevant preconditions or starting state;
-- **When:** the observable action/stimulus;
-- **Then:** the externally meaningful result or invariant;
-- **Oracle / boundary:** what must be observed and at what reliable boundary;
-- **Variants:** only material variants already implied by the task, or `none`.
+**Visible variants and history.** Use a small case table when related inputs have
+different expected decisions: include case ID, relevant input/starting state,
+action, and exact expected result. Put shared observations beside the table and
+record row-specific differences in the row. Give material lifecycle variants
+their own identities. Select combinations based on required coverage and credible
+interaction risk, explaining any reduction whose sufficiency is not obvious.
+Keep history-dependent proofs as sequences with numbered actions and expected
+checkpoints; separate independent guards and alternative histories. A composed
+journey should protect its required interaction and reference focused cases for
+the remaining matrix.
 
-Do not use scenario count as a quality metric. Combine cases when they exercise
-the same invariant and oracle; split them when materially different behavior
-could pass or fail independently.
+**Each explanation has one home.** Use behavior-focused titles and explain the
+practical consequence of failure in the rationale. Let `Then` state correctness
+and `Check` describe observation. Put common level-selection reasoning and shared
+setup once, with local additions where a case differs. Use short sentences,
+concrete verbs and consistent terms, following ASD-STE100 principles without
+claiming formal compliance. Define necessary terms near first use and retain
+exact contract names where useful.
+Fill the parts that aid understanding; omit empty optional fields and repeated
+process reminders.
 
-### Example shape
-
-```markdown
-### V-02 — Repeating the operation does not duplicate persisted state
-
-Covers: AC-03
-
-Intent: Reject an implementation that handles the first call correctly but
-creates duplicate state on the next legitimate occurrence.
-
-Given:
-- the first operation completed successfully and its state is persisted
-
-When:
-- the same permitted operation occurs again under the task-defined conditions
-
-Then:
-- the externally visible result follows AC-03
-- no duplicate persisted entity/state is created
-
-Oracle / boundary:
-- observe the public operation result and persisted state at the task-defined
-  real boundary
-
-Variants:
-- none
-```
-
-The example is structural only. Never copy its semantics into an unrelated
-task.
+Keep limitations beside the affected evidence claim. Label seeded states and
+identify what creates them in production: setup may provide an upstream state,
+while the behavior claimed by the case must still be exercised. Describe what
+the evidence leaves unproved, such as real actor execution or model provenance.
 
 ## Cross-task integration boundary
 
-This skill does **not** own verification design across sibling tasks,
-decomposed-child composition, or parent-level integration closure.
+Design verification within one executable leaf's acceptance scope. When its
+own ACs require composing supplied producer outputs at stated consumer
+boundaries, derive cases for exactly those composition ACs. The leaf's brief
+and supplied inputs remain the authority.
 
-An executable integration leaf is different: when its own explicit ACs
-require composing supplied producer outputs at stated consumer boundaries,
-derive task-local scenarios for exactly those composition ACs. The leaf's
-brief and supplied inputs remain the authority; the composition stays inside
-the leaf's own acceptance scope. Task-local use of a real boundary is still
-allowed when needed to prove that single task's own ACs.
-
-Still refuse the boundary crossings this skill does not own:
-
-- a non-executable composite parent (`Task kind: composite` with
-  `Status: decomposed`): route the request to its dependency-ready
-  executable leaf instead of designing parent-level closure;
-- invented sibling requirements, system-wide integration strategy, or
-  parent-level composition closure: do not invent or own a sibling task's
-  requirements, system-wide integration strategy, or parent-level closure;
-- unavailable inputs or an unresolvable oracle: report the unavailable input
-  or capability to its owner or preflight, route an expected result the
-  authority cannot settle to task design or the decision owner, and never
-  fabricate a report or claim readiness to bypass the gap.
+Route a decomposed composite parent to its dependency-ready executable leaf.
+Leave sibling requirements, system-wide integration strategy, and parent-level
+composition closure with their owners. For unavailable inputs or an unresolvable
+oracle, use the routing below and report the gap truthfully before readiness.
 
 Packaged preparation remains mandatory for that leaf: derived
 `verification.md` and a ready `preflight.md` still precede implementation.
 
 ## Output contract
 
-Write one standalone artifact:
+Use this single starting structure. Adapt labels and combine short sections when
+that improves readability while preserving the required information. The shared
+setup section is optional. Case tables and checkpoint sequences may replace the
+individual case shape below.
 
 ```markdown
 # Verification Design: <TASK-ID> — <title>
+
+<Briefly explain the behavior protected and its main failure risks in plain
+language.>
+
+## Testing approach
+
+| Checks | Level and real boundary | Why this evidence is sufficient |
+|---|---|---|
+| <named group; case IDs as needed> | <scope and real behavior exercised> | <distinct risk proved and important limits> |
+
+## Source and revision
 
 Source brief: <path>
 Source brief revision: <identified brief revision or supplied revision>
@@ -220,49 +222,50 @@ Verification revision: <integer>
 Authority: derived from the task brief and its cited normative sources
 Status: ready
 
+Ready means the verification design is complete; execution and implementation
+readiness are established by later stages.
+
 ## Coverage summary
 
-| AC / risk row | Scenarios | Notes |
+| Promise from the brief | AC / risk row | Required cases |
 |---|---|---|
-| AC-01 | V-01, V-02 | <why these are sufficient or key residual limitation> |
+| <short promise with link to the relevant brief section> | AC-01 | V-01 |
+
+## Shared setup
+
+<Common starting state, inputs, and assumptions referenced by related cases.>
 
 ## Verification scenarios
 
-### V-01 — <short discriminating title>
+### V-01 — <observable behavior and expected outcome>
 
 Covers: AC-01
 
-Intent: <what wrong behavior this catches>
+Why: <practical consequence this check protects against>
 
 Given:
-- <precondition>
+- <starting state and decisive inputs, including relevant shared setup>
 
 When:
-- <stimulus>
+- <observable action>
 
 Then:
-- <observable result>
+- <exact decision or result, state transition, and important unchanged state>
 
-Oracle / boundary:
-- <decisive observation and boundary>
-
-Variants:
-- <material variants or none>
+Check:
+- <how to observe the result at the selected boundary; refer to shared reasoning>
 
 ## Implementation handoff
 
-- Treat this file as derived verification guidance, not a replacement for the
-  task brief.
-- Preserve stable scenario IDs across a reasoned coverage revision. A revised
-  artifact supersedes affected readiness and evidence until focused preflight
-  produces a ready result for the new revision.
-- Implement the smallest production and test changes that satisfy the brief and
-  exercise these scenarios.
-- Concrete test structure, framework usage, helpers, and file placement remain
-  implementation choices unless already fixed by repository authority.
-- If implementation discovery shows that a scenario cannot be exercised at its
-  stated boundary, route the conflict back to task design/preflight rather than
-  silently weakening the oracle.
+- Implement these cases under the brief's authority, reusing relevant existing
+  tests and fixtures. Choose concrete test structure within repository rules.
+- Use current preflight for implementation readiness. A reasoned verification
+  revision preserves IDs and supersedes affected readiness and evidence until
+  focused preflight is ready for that revision.
+- Route an unresolved expected result to task design/the decision owner, and an
+  unavailable boundary or capability to preflight/its owner, preserving the
+  required coverage and expected results.
+- <task-specific handoff needs, exclusions, or remaining evidence limits>
 ```
 
 If the brief is materially insufficient, do not create or overwrite
@@ -271,18 +274,22 @@ AC/authority gap and smallest next action.
 
 ## Completion checks
 
-Before writing the artifact, verify:
+Read the artifact as both its next implementer and a human reviewer:
 
-- every material task AC is mapped;
-- every finite-risk row in the brief is mapped when present;
-- scenarios have decisive observable oracles rather than implementation-detail
-  assertions;
-- important negative/lifecycle behavior from the brief is represented;
-- at least one scenario rejects the most credible plausible-wrong behavior for
-  each non-trivial semantic obligation when such a distinction exists;
-- no scenario adds a requirement absent from the brief/authority;
-- no test implementation architecture has been prescribed unnecessarily; and
-- no cross-task integration verification has been invented.
+- Can each material AC and finite-risk row be followed from a named promise to
+  its required cases, including negative, boundary, and lifecycle obligations?
+- Can the implementer enumerate those cases and exact expected results without
+  unpacking variants or interpreting the policy again?
+- Does each case reach its intended behavior and reject a credible wrong result
+  at a reliable boundary, with observable checkpoints where history matters?
+- Can the human explain what is checked, why it matters, why the selected levels
+  are sufficient, and what remains unproved after one reading?
+- Is the information stated once where practical, with all required behavior
+  grounded in task authority and test-code choices left to implementation?
+
+Resolve coverage or explanation gaps before marking the design ready. A source
+ambiguity uses the routing below; formatting checks alone establish neither
+coverage nor usefulness.
 
 ## Boundaries and routing
 
@@ -292,16 +299,8 @@ Before writing the artifact, verify:
   helpers, fixtures, and capability uncertainty to `task-preflight` when a
   separate readiness pass is useful.
 - Route production/test implementation to `bounded-task-implementer`.
-- Do not edit production code, tests, dependencies, task briefs, project plans,
-  contract registries, reviews, or runtime orchestration state.
-- Do not approve implementation correctness; this is design guidance, not
-  acceptance review.
-
-## Definition of done
-
-- The verification design is compact, task-local, and independently readable.
-- Every material AC maps to falsifiable evidence.
-- Scenarios emphasize semantic discrimination rather than test quantity.
-- Requirements remain owned by the brief and its authority.
-- The implementer retains freedom over concrete test implementation.
-- The artifact lives separately inside the executable task package.
+- Keep edits confined to the verification artifact; preserve production code,
+  tests, dependencies, task briefs, project plans, contract registries, reviews,
+  and runtime orchestration state.
+- Report design readiness; implementation correctness belongs to acceptance
+  review.

@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "Create the separate verification design recommended by `docs/tasks/IMP-21/brief.md`. Use the task brief and its cited authority, write only `docs/tasks/IMP-21/verification.md`, and do not implement tests or production code.",
-      "expected_output": "A compact implementation-neutral verification design that maps every AC and finite-risk row, distinguishes first import from retry/resume behavior, proves invalid input has no durable side effect at the public filesystem boundary, and does not invent cases outside the approved task.",
+      "expected_output": "A readable implementation-neutral design with visible required cases and exact expected results for first import, interruption/resume, each invalid-input condition, and the inclusive item limit. It explains the selected evidence and limits without repeating shared setup or adding requirements.",
       "files": [
         "evals/files/setup_fixture.py"
       ],
@@ -24,9 +24,12 @@
       },
       "expectations": [
         "The output creates only `docs/tasks/IMP-21/verification.md` and leaves the brief, authority, production code, tests, dependencies, and orchestration state unchanged.",
-        "The coverage summary maps AC-01, AC-02, AC-03, and both named finite-risk rows to stable scenario IDs without adding requirements.",
-        "The scenarios distinguish the first successful import, the next legitimate retry or resume occurrence, and invalid-input unchanged state rather than repeating one happy path.",
-        "Each scenario states a falsifiable intent, Given/When/Then behavior, and a decisive oracle at the public command plus persisted-filesystem boundary.",
+        "The coverage summary connects named promises and brief links to AC-01 through AC-04, ROW-RESUME, ROW-INVALID, and ROW-LIMIT, with stable references that identify the required cases rather than only broad group headings.",
+        "First import and interruption/resume have distinct proofs. The resume sequence retains visible checkpoints after the first committed item and after the next invocation, with exact final item names, bytes, and absence of duplicates.",
+        "Malformed-header and missing-manifest refusals are individually identifiable, reach the intended guard with other prerequisites satisfied, and expect invalid_header and missing_manifest respectively plus unchanged destination bytes. They cannot pass through unrelated exceptions.",
+        "The two-, three-, and four-item cases are individually identifiable and state success, success, and too_many_items respectively, with concrete persisted or unchanged-state outcomes. The successful controls reject an implementation that always refuses.",
+        "A human can understand the behavior protected, practical failure consequences, test-level choices, real boundaries, and evidence limits without decoding identifiers. Filesystem claims exercise the public command and actual persisted files; setup and observation methods are distinct from expected results.",
+        "Shared setup and test-level reasoning are stated once where applicable. Case-specific inputs and results remain explicit, and neither empty optional sections nor duplicate explanations are added to fill a template.",
         "The artifact remains implementation-neutral: it does not prescribe test names, file placement, mocking, helpers, framework structure, or production architecture."
       ]
     },
@@ -83,6 +86,7 @@
         "The output honors the explicit request and writes `docs/tasks/API-5/verification.md` beside the executable brief.",
         "The artifact covers both supplied ACs with stable scenario IDs and observable public-result oracles.",
         "It stays compact and does not add performance, concurrency, security, migration, recovery, or cross-task scenarios absent from the brief.",
+        "The human-readable explanation and test-level reasoning are proportionate to two simple behaviors, with a clear success result and validation refusal plus unchanged stored name; the document does not grow into a repeated field checklist.",
         "It leaves concrete test structure and implementation choices to `bounded-task-implementer`."
       ]
     },

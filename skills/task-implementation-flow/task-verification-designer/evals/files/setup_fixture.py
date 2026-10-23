@@ -61,10 +61,23 @@ def lifecycle() -> None:
         """
         # Import policy
 
-        A valid bundle is committed atomically through `bundle import`. A retry
-        after interruption resumes from the last complete item without
-        duplicating committed items. Invalid bundles are rejected before any
-        durable file is created or changed.
+        `bundle import` commits approved items atomically one at a time. Success
+        persists one destination file per item with the name and bytes specified
+        by the bundle. A retry after interruption resumes from the last complete
+        item without duplicating committed items.
+
+        A bundle may contain at most three items, inclusive. Otherwise-valid
+        bundles with two or three items succeed; four items returns `too_many_items`.
+        A malformed header returns `invalid_header`; a missing manifest returns
+        `missing_manifest`. These refusals occur before any durable destination
+        file is created or changed. Header and manifest refusals must be checked
+        with the other validation conditions satisfied; size refusal uses a valid
+        header and manifest. The limit applies to items in the submitted bundle.
+
+        Representative approved items are A.txt with bytes `alpha`, B.txt with
+        bytes `beta`, and C.txt with bytes `gamma`. An over-limit bundle adds
+        D.txt with bytes `delta`. Destination setup may include an unrelated
+        sentinel.txt whose bytes must be preserved by every operation.
         """,
     )
     write(
@@ -84,11 +97,15 @@ def lifecycle() -> None:
         invocation resumes with the next item and does not duplicate the first.
         AC-03: invalid input returns an error and leaves the destination bytes
         unchanged.
+        AC-04: accept bundles at or below the three-item limit and refuse larger
+        bundles according to the import policy. Size refusal preserves destination
+        bytes.
 
         Finite-risk rows:
         - ROW-RESUME — first commit, interruption, and next invocation.
         - ROW-INVALID — malformed header and missing manifest share the same
           pre-write rejection invariant.
+        - ROW-LIMIT — otherwise-valid bundles containing two, three, and four items.
         """,
     )
     write(root, "src/importer.py", "# production placeholder")
@@ -129,7 +146,9 @@ def small_explicit() -> None:
         Task kind: executable
         AC-01: submitting a non-blank display name succeeds and returns it.
         AC-02: submitting a blank display name returns the existing validation
-        error and does not update the stored name.
+        error `blank_display_name` and does not update the stored name.
+
+        Blank means empty or whitespace-only text.
         """,
     )
     commit(root)

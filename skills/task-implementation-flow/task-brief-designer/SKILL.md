@@ -17,9 +17,10 @@ The template uses this order for both executable and composite briefs.
 - Open with what completion demonstrates, who uses the result, and what it
   enables next. Distinguish rules or interfaces this task defines from behavior
   it executes and work a later task owns.
-- Use concrete verbs and short sentences. Explain necessary technical terms
-  on first use; pair stable IDs with their meaning, such as “approved task
-  inputs (`ART-001`)”. When an abstract requirement hides important behavior,
+- Use short sentences, concrete verbs and consistent terms, following
+  ASD-STE100 principles without claiming formal compliance. Explain necessary
+  technical terms on first use; pair stable IDs with their meaning, such as
+  “approved task inputs (`ART-001`)”. When an abstract requirement hides important behavior,
   add one brief success or failure example drawn from approved requirements.
 - Give each fact one home. Put operating rules beside their precise authority
   references; keep decision history in the source. Include dates, hashes, and

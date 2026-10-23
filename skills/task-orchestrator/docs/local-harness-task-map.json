@@ -39,7 +39,7 @@
       "consumers": [
         "All actors via bounded projections"
       ],
-      "lifecycle": "Freeze task-input identity, scope, required stages, gpt-6.1-sol low/medium/high, sbx/YOLO authority and three-correction limit. Authorized safe-boundary revisions invalidate affected evidence; preserve old frozen runs."
+      "lifecycle": "Freeze task-input identity, scope, required stages, gpt-6.1-sol low/medium/high, sbx/YOLO authority and three-correction limit. Authorized safe-boundary revisions invalidate affected evidence; preserve old frozen runs. T-002 owns safe-boundary authorized revision through IF-001: atomically update input/policy identity and state version, invalidate readiness/affected evidence, retain history/correction count; refuse unauthorized or unsafe revision."
     },
     {
       "id": "ART-002",
@@ -51,7 +51,7 @@
         "Coordinator",
         "Harness adapter"
       ],
-      "lifecycle": "Atomic state/version and reservations; persist run/task/input/flow identity, stage, correction count, candidate, evidence locations, outstanding findings, required evidence, operation, next action and blocker. Unknown liveness stops retry; history retained; invalid requests do not change authority."
+      "lifecycle": "Atomic state/version and reservations; persist run/task/input/flow identity, stage, correction count, candidate, evidence locations, outstanding findings, required evidence, operation, next action and blocker. Unknown liveness stops retry; history retained; invalid requests do not change authority. Readiness references admitted terminal preflight ART-004 and current ART-001 identity."
     },
     {
       "id": "ART-003",
@@ -96,7 +96,7 @@
       "name": "Independent collection report and findings",
       "kind": "persisted",
       "source_of_truth": "Fresh collector evidence admitted by controller",
-      "producer": "Independent collector via adapter",
+      "producer": "Independent collector via adapter; T-003 captures raw transport, T-004 owns semantic admission",
       "consumers": [
         "Acceptance reviewer",
         "Coordinator",
@@ -134,7 +134,7 @@
       "name": "Separate acceptance decision",
       "kind": "persisted",
       "source_of_truth": "Fresh separate acceptance reviewer decision admitted by controller",
-      "producer": "Acceptance reviewer via adapter",
+      "producer": "Acceptance reviewer via adapter; T-003 captures raw transport, T-005 owns semantic admission",
       "consumers": [
         "Coordinator",
         "Completion gate"
@@ -158,7 +158,7 @@
   "interfaces": [
     {
       "id": "IF-001",
-      "name": "Status and reserve single-task operation",
+      "name": "Status, reserve and revise approved inputs",
       "owner": "Controller",
       "consumer": "Coordinator",
       "inputs": [
@@ -167,10 +167,11 @@
         "ART-007"
       ],
       "outputs": [
+        "ART-001",
         "ART-002",
         "ART-004"
       ],
-      "contract": "Expose stage/evidence/next action; reserve against expected version, authority, one active operation and persistent three-correction limit. Required preflight/collection/acceptance cannot be omitted. Invalid requests preserve state/version/files; diagnostics separate."
+      "contract": "Expose stage/evidence/next action; reserve against expected version, authority, one active operation and persistent three-correction limit. Required preflight/collection/acceptance cannot be omitted. Invalid requests preserve state/version/files; diagnostics separate. T-002 owns authorized ART-001 revision: no reserved/running/unknown operation and task not completed; check authority/expected version, atomically bump input identity and state version, invalidate readiness/affected evidence, retain history/correction count. Refuse otherwise unchanged."
     },
     {
       "id": "IF-002",
@@ -206,7 +207,7 @@
         "ART-006",
         "ART-009"
       ],
-      "contract": "Inspect scope/candidate/input identity; run real configured checks and collector reruns. Admit independent collection separately from fresh acceptance; validate role/subject/provenance/current coverage. Missing, malformed or stale evidence cannot advance."
+      "contract": "Inspect scope/candidate/input identity; run real configured checks and collector reruns. Admit independent collection separately from fresh acceptance; validate role/subject/provenance/current coverage. Missing, malformed or stale evidence cannot advance. T-003 owns terminal preflight admission into ART-002 readiness; T-004 owns ART-006 semantic admission; T-005 owns ART-009 semantic admission, extending the same controller path."
     },
     {
       "id": "IF-004",
@@ -229,7 +230,7 @@
         "ART-002",
         "ART-007"
       ],
-      "contract": "Require terminality, approved scope, current required checks/independent collection, separate acceptance, no unresolved blocker and any approved deferral recorded. Publish single-task completion once; no commit/dependency gate. Otherwise route recovery or persist precise blocker for active-chat relay; acknowledgement grants only explicit authority."
+      "contract": "Require terminality, approved scope, current required checks/independent collection, separate acceptance, no unresolved blocker and any approved deferral recorded. Publish single-task completion once; no commit/dependency gate. Otherwise route recovery or persist precise blocker for active-chat relay; acknowledgement grants only explicit authority. T-003 owns stop/intervene/blocker persistence only; T-005 owns completion gate/publication."
     }
   ],
   "invariants": [
@@ -341,8 +342,8 @@
       "steps": [
         {
           "id": "FLOW-001-S01",
-          "actor": "Controller/coordinator and preflight actor",
-          "action": "Freeze task inputs/policy; check readiness in actual sbx including tools/dependencies/required installed skills",
+          "actor": "Preflight actor via adapter; controller admits readiness (T-003)",
+          "action": "Freeze approved inputs/policy; reserve through IF-001 and launch named preflight role through IF-002. Check actual sbx tools/dependencies/required installed skills; IF-003 admits terminal ART-004 and readiness into ART-002 bound to current ART-001. Missing prerequisites block implementation. Preflight/retry consumes no correction cycle and does not replace INV-004 roles.",
           "consumes": [
             "ART-001",
             "ART-008"
@@ -412,7 +413,7 @@
             "INV-003",
             "INV-008"
           ],
-          "state_transition": "terminal -> collection-ready or correction/infrastructure recovery"
+          "state_transition": "terminal -> checks -> collection-ready or correction/infrastructure recovery"
         },
         {
           "id": "FLOW-001-S04",
@@ -642,7 +643,7 @@
         {
           "id": "FLOW-003-S02",
           "actor": "Controller and coordinator",
-          "action": "Admit operational outcomes; route product correction, missing evidence or infrastructure repair within authority; persist unresolved blocker and chat response history",
+          "action": "Admit operational outcomes; route product correction, missing evidence or infrastructure repair within authority; persist unresolved blocker and chat response history. Owner-authorized task/policy revisions go through T-002 IF-001 safe-boundary revision, state-version bump and readiness/affected-evidence invalidation; acknowledgement alone cannot change policy.",
           "consumes": [
             "ART-001",
             "ART-002",
@@ -653,7 +654,8 @@
           ],
           "produces": [
             "ART-002",
-            "ART-007"
+            "ART-007",
+            "ART-001"
           ],
           "interfaces": [
             "IF-001",
@@ -666,7 +668,8 @@
             "INV-005",
             "INV-006",
             "INV-007",
-            "INV-008"
+            "INV-008",
+            "INV-003"
           ],
           "state_transition": "outcome -> authorized recovery or intervention; silence/acknowledgement is not recovery authority"
         }
@@ -738,10 +741,11 @@
         "INV-001",
         "INV-002",
         "INV-005",
-        "INV-008"
+        "INV-008",
+        "INV-003"
       ],
-      "integration_boundary": "Locally prove state/version and reservation guards, required stage roles and three-correction accounting without model launches. Freeze approved model/context/sbx policy; invalid requests preserve authority/files.",
-      "task_planner_context": "Historical T-001 dependency supplies evidence, not old isolation/commit qualification gates. Synchronize constants/schema/focused tests for gpt-6.1-sol low/medium/high, fresh correction on unknown occupancy and explicit sbx/YOLO authority. Preserve old frozen runs; no silent migration. Prepare bounded brief/verification/readiness before execution."
+      "integration_boundary": "Locally prove state/version and reservation guards, required stage roles and three-correction accounting without model launches. Freeze approved model/context/sbx policy; invalid requests preserve authority/files. Own authorized ART-001 revision at a safe boundary: atomically increment state version/input identity, clear readiness and invalidate affected evidence; retain history/correction count and refuse unauthorized, stale-version or unsafe revisions unchanged.",
+      "task_planner_context": "Historical T-001 dependency supplies evidence, not old isolation/commit qualification gates. Synchronize constants/schema/focused tests for gpt-6.1-sol low/medium/high, fresh correction on unknown occupancy and explicit sbx/YOLO authority. Preserve old frozen runs; no silent migration. Prepare bounded brief/verification/readiness before execution. Safe revision means no reserved/running/unknown operation and task not completed. Fresh preflight is required after revision; no silent policy update from chat acknowledgement."
     },
     {
       "id": "T-003",
@@ -775,16 +779,19 @@
       ],
       "interfaces": [
         "IF-002",
-        "IF-004"
+        "IF-004",
+        "IF-001",
+        "IF-003"
       ],
       "invariants": [
         "INV-001",
         "INV-002",
         "INV-004",
-        "INV-007"
+        "INV-007",
+        "INV-008"
       ],
-      "integration_boundary": "Selected CLI adapter applies approved policy, observes real operation/session identity and terminality; duplicate operation cannot relaunch and unknown liveness stops retry. Publish sbx runtime supplement and active-chat blocker routing.",
-      "task_planner_context": "Adapt full-access refusal only for persisted authorized sbx/YOLO policy; apply T-002 approved model/context mapping. Distinct collection/acceptance transports are available for T-004/005. No tool-exclusion qualification, parallel scheduler or automatic recovery service. Actual runtime proof is distinct from fake tests."
+      "integration_boundary": "Selected CLI adapter applies approved policy, observes real operation/session identity and terminality; duplicate operation cannot relaunch and unknown liveness stops retry. Publish sbx runtime supplement and active-chat blocker routing. Own named adapter-launched preflight: reserve operation, record observed terminal ART-004, admit current-input readiness in ART-002 or precise prerequisite blocker, and prove no correction charge. IF-004 slice is stop/intervene/blocker persistence; ART-006/009 production is raw transport capture only.",
+      "task_planner_context": "Adapt full-access refusal only for persisted authorized sbx/YOLO policy; apply T-002 approved model/context mapping. Distinct collection/acceptance transports are available for T-004/005. No tool-exclusion qualification, parallel scheduler or automatic recovery service. Actual runtime proof is distinct from fake tests. Preflight is required before implementation and again after authorized input/policy revision; it does not replace implementation/collection/acceptance independence. T-004 owns ART-006 semantics, T-005 owns ART-009 admission and IF-004 completion; extend one controller admission/persistence path, not competing paths."
     },
     {
       "id": "T-004",
@@ -885,8 +892,8 @@
         "INV-007",
         "INV-008"
       ],
-      "integration_boundary": "Reject same-session acceptance, missing/stale/inconclusive evidence and unrecorded approved deferrals. Route correction/missing evidence/blockers; valid current acceptance completes once without commit or dependent task.",
-      "task_planner_context": "Keep collector and acceptance sessions separate. Coordinator records approved bounded issues in declared/default tracker with stable provenance/history; failed recording blocks completion and task drift invalidates evidence. JSON migration/classifier/new stop rule deferred. Integrated T-004/005 loop closes both routing contracts."
+      "integration_boundary": "Reject same-session acceptance, missing/stale/inconclusive evidence and unrecorded approved deferrals. Route correction/missing evidence/blockers; valid current acceptance completes once without commit or dependent task. Own ART-009 semantic admission and IF-004 completion gate/publication; T-003 supplies only transport capture and stop/intervene/blocker persistence.",
+      "task_planner_context": "Keep collector and acceptance sessions separate. Coordinator records approved bounded issues in declared/default tracker with stable provenance/history; failed recording blocks completion and task drift invalidates evidence. JSON migration/classifier/new stop rule deferred. Integrated T-004/005 loop closes both routing contracts. Reuse T-003 transport and the shared controller persistence/admission path; do not duplicate record validators or persistence."
     },
     {
       "id": "T-006",

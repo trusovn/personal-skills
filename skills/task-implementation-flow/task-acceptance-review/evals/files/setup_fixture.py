@@ -1364,7 +1364,7 @@ def contextual_risk_blockers() -> None:
     write(
         root,
         "AGENTS.md",
-        "# Fixture rules\n\nAcceptance is read-only except for the next numbered report under `reviews/`. The human coordinator alone records approved deferrals in `docs/known-issues.md`; discovery and acceptance never write it.",
+        "# Fixture rules\n\nAcceptance is read-only except for the next numbered report under `reviews/`. The AI coordinator is authorized to record acceptance-approved bounded deferrals in `docs/known-issues.md` without another human confirmation; discovery and acceptance never write it. Requirement/proof waivers and unresolved material-risk decisions remain with the owner.",
     )
     write(
         root,
@@ -1584,7 +1584,7 @@ def contextual_risk_mitigated() -> None:
     write(
         root,
         "AGENTS.md",
-        "# Fixture rules\n\nAcceptance is read-only except for the next numbered report under `reviews/`. The human coordinator alone records approved deferrals in `docs/known-issues.md`; discovery and acceptance never write it.",
+        "# Fixture rules\n\nAcceptance is read-only except for the next numbered report under `reviews/`. The AI coordinator is authorized to record acceptance-approved bounded deferrals in `docs/known-issues.md` without another human confirmation; discovery and acceptance never write it. Requirement/proof waivers and unresolved material-risk decisions remain with the owner.",
     )
     write(
         root,

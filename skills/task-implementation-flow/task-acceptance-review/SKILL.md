@@ -242,9 +242,16 @@ A bounded non-material confirmed defect may receive `ACCEPT` plus an
 approved known issue only when all required evidence passes, the effect is
 bounded, consumers are compatible, and the deferral waives no required AC,
 proof, or demonstrated material risk and imposes no hidden consumer
-workaround. Acceptance decides and proposes the deferral; the human
-coordinator alone records it, before authorized advancement, using
-`docs/known-issues.md` by default or the repository's declared path. No
+workaround. Acceptance decides and proposes the deferral; the coordinator
+(human or AI acting within the approved task authority) alone records it,
+before authorized advancement, using `docs/known-issues.md` by default or
+the repository's declared tracker and format. An AI coordinator may record
+an acceptance-approved bounded deferral without another human confirmation;
+it may not invent or broaden the deferral, waive requirements or required
+proof, or accept unresolved material risk. Those authority changes remain
+with the owner. Reuse the stable issue ID when recording the same approved
+deferral again; retain its acceptance provenance and prior history. A failed
+recording blocks advancement, not the acceptance judgment. No
 known-issues file is required before a deferral exists, and this review,
 acceptance, and discovery never write the tracker or acquire backlog or
 portfolio scheduling authority.
@@ -334,7 +341,7 @@ Route contract defects to the user or `task-brief-designer`; current-state or
 high-assurance freshness failures to `task-preflight`; and wider scope/shared
 infrastructure back through brief design. Neither `CHANGES_REQUESTED` nor
 `INCONCLUSIVE` may advance work. Only an independent `ACCEPT` may advance, and
-only after the human coordinator records any acceptance-approved deferral
+only after the coordinator records any acceptance-approved deferral
 (known issues) before authorized advancement.
 
 ## Output contract

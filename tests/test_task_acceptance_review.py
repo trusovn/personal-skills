@@ -330,7 +330,7 @@ class ContextualDispositionContractTests(unittest.TestCase):
         text = normalized(ACCEPTANCE_SKILL)
 
         self.assertIn(
-            "the human coordinator alone records it, before authorized advancement, using `docs/known-issues.md` by default",
+            "the coordinator (human or AI acting within the approved task authority) alone records it, before authorized advancement, using `docs/known-issues.md` by default",
             text,
         )
         self.assertIn("No known-issues file is required before a deferral exists", text)
@@ -345,6 +345,12 @@ class ContextualDispositionContractTests(unittest.TestCase):
         self.assertIn("Missing links mean unknown relationships, not their absence", text)
         self.assertIn("Planned work alone is not existing mitigation", text)
         self.assertIn("imposes no hidden consumer workaround", text)
+        self.assertIn("without another human confirmation", text)
+        self.assertIn("it may not invent or broaden the deferral", text)
+        self.assertIn("Those authority changes remain with the owner", text)
+        self.assertIn("Reuse the stable issue ID", text)
+        self.assertIn("A failed recording blocks advancement, not the acceptance judgment", text)
+        self.assertIn("repository's declared tracker and format", text)
 
 
     def test_portfolio_priority_change_alone_cannot_reopen_acceptance(self):
@@ -404,10 +410,12 @@ class ContextualDispositionContractTests(unittest.TestCase):
 
         self.assertIn("### Accepted deferrals and coordinator recording", text)
         self.assertIn(
-            "the human coordinator alone records it, before authorized advancement, in `docs/known-issues.md`",
+            "the coordinator (human or AI acting within the approved task authority) alone records it, before authorized advancement, in `docs/known-issues.md`",
             text,
         )
         self.assertIn("no known-issues file is required before a deferral exists", text)
+        self.assertIn("needs no extra human confirmation", text)
+        self.assertIn("Requirement/proof waivers and unresolved material-risk decisions stay with the owner", text)
         self.assertIn("Impact (assessed separately from likelihood)", text)
         self.assertIn("Likelihood / exposure", text)
         self.assertIn("Existing mitigation", text)
@@ -539,7 +547,7 @@ class ContextualDispositionEvalTests(unittest.TestCase):
         )
         self.assertIn("stable issue ID", blob12)
         self.assertIn(
-            "human coordinator recording the approved deferral before authorized advancement",
+            "authorized AI coordinator recording the approved deferral before authorized advancement",
             blob12,
         )
 

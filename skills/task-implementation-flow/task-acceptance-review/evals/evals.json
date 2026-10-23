@@ -242,7 +242,7 @@
     {
       "id": 12,
       "prompt": "The fixture is already staged in the current workspace. Decide task acceptance for `INV-07` using `docs/tasks/INV-07/brief.md`, `docs/tasks/INV-07/preflight.md`, `../task-runs/INV-07/worker-result.json`, and the independent discovery report at `../task-runs/INV-07/discovery-01.md`. All required evidence passes; the discovery report confirms the bounded footer finding, its probes, and two observation suggestions. Apply the contextual disposition contract, resolve the footer-tolerance question from the declared consumer contract, and route any approved deferral to its recorder. Do not re-execute probes or any suite, do not rerun fixture setup, do not create or edit `docs/known-issues.md`, and write only `docs/tasks/INV-07/reviews/acceptance-01.md`.",
-      "expected_output": "An `ACCEPT` decision that defers the bounded non-material footer defect as an approved known issue handed to the human coordinator with complete record content, keeps the preference and the unproved concern as observations, resolves the footer-tolerance question from the declared consumer contract, and records the timezone assumption without a user prompt.",
+      "expected_output": "An `ACCEPT` decision that defers the bounded non-material footer defect as an approved known issue handed to the authorized AI coordinator with complete record content and no extra human confirmation, keeps the preference and the unproved concern as observations, resolves the footer-tolerance question from the declared consumer contract, and records the timezone assumption without a user prompt.",
       "files": ["evals/files/setup_fixture.py"],
       "execution": {
         "setup": {
@@ -259,7 +259,7 @@
         "Optional context links may be omitted without failing qualification. If included, they identify the invoices/export subsystem, the suspected related reporting-v2 migration as proposed-not-committed, and the safeguard/assumption with its reassessment trigger; missing links are not treated as absence of relationships.",
         "The preference and the unproved currency-validation concern stay observations; neither becomes a mandatory fix or a known issue.",
         "The decision resolves whether the consumer tolerates the footer from the declared consumer contract within current authority, and continues the timezone unknown under a stated reasonable assumption, without a user prompt.",
-        "The decision itself never writes `docs/known-issues.md` or any tracker; the exact route is the human coordinator recording the approved deferral before authorized advancement."
+        "The decision itself never writes `docs/known-issues.md` or any tracker; the exact route is the authorized AI coordinator recording the approved deferral before authorized advancement. It requests no extra human confirmation for recording, while requirement/proof waivers and unresolved material-risk decisions remain with the owner."
       ]
     },
     {

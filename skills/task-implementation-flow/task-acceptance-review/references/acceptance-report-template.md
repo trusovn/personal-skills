@@ -75,9 +75,14 @@ A bounded non-material confirmed finding may be accepted with a proposed
 known issue only when all required evidence passes, the effect is bounded,
 consumers are compatible, and the deferral waives no required AC, proof, or
 demonstrated material risk and imposes no hidden consumer workaround. This
-report proposes the deferral; the human coordinator alone records it, before
-authorized advancement, in `docs/known-issues.md` or the repository's
-declared path. The acceptance review never creates or edits that file, and no
+report proposes the deferral; the coordinator (human or AI acting within the
+approved task authority) alone records it, before authorized advancement, in
+`docs/known-issues.md` or the repository's declared tracker and format. The AI
+coordinator needs no extra human confirmation for an acceptance-approved bounded
+deferral. Requirement/proof waivers and unresolved material-risk decisions stay
+with the owner. Reuse the stable issue ID and preserve acceptance provenance and
+history on repeat recording. Recording failure blocks advancement, not the
+acceptance judgment. The acceptance review never creates or edits the tracker, and no
 known-issues file is required before a deferral exists.
 
 The proposed record carries: a stable project issue ID; task/review/finding

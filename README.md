@@ -389,9 +389,13 @@ applicable stage and the complete ordered remainder; a conditional stage
 counts only with evidence current for the submitted bytes, and an implementation
 correction, including a tests-only correction, re-enters the stages it affected
 before fresh discovery and acceptance. When acceptance approves a bounded non-material
-deferral, the human coordinator alone records it, before authorized
-advancement, in `docs/known-issues.md` (or the repository's declared path);
-discovery and acceptance never write the tracker. A relevant later preflight
+deferral, the coordinator (human or AI acting within the approved task authority)
+alone records it before authorized advancement, in `docs/known-issues.md` (or
+the repository's declared tracker and format). The AI coordinator needs no new
+human confirmation for that recording; requirement/proof waivers and unresolved
+material-risk decisions remain with the owner. Repeated recording preserves the
+stable issue ID, acceptance provenance and history; recording failure blocks
+advancement. Discovery and acceptance never write the tracker. A relevant later preflight
 or acceptance reassesses recorded known issues against its own task's
 exposure and obligations — unchanged compatible exposure preserves the
 deferral, changed exposure routes through the record's follow-up owner, and

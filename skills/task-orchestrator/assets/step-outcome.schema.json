@@ -12,10 +12,13 @@
     "payload"
   ],
   "properties": {
-    "version": {"const": 1},
-    "subject": {"$ref": "handoff.schema.json#/$defs/subject"},
+    "version": {
+      "const": 1
+    },
+    "subject": {
+      "$ref": "handoff.schema.json#/$defs/subject"
+    },
     "result": {
-      "type": ["string", "null"],
       "enum": [
         "ready",
         "blocked",
@@ -24,32 +27,153 @@
         "failed",
         "mechanically_eligible",
         "findings",
+        "collected",
         "ACCEPT",
         "CHANGES_REQUESTED",
-        "INCONCLUSIVE",
-        "task_accepted",
-        null
+        "INCONCLUSIVE"
       ]
     },
-    "evidence_status": {"enum": ["reported", "omitted_by_policy"]},
+    "evidence_status": {
+      "const": "reported"
+    },
     "artifact_refs": {
       "type": "array",
-      "items": {"$ref": "handoff.schema.json#/$defs/reference"}
+      "items": {
+        "$ref": "handoff.schema.json#/$defs/reference"
+      }
     },
     "payload": {
       "type": "object",
-      "required": ["version", "reference"],
+      "required": [
+        "version",
+        "reference"
+      ],
       "properties": {
-        "version": {"const": 1},
+        "version": {
+          "const": 1
+        },
         "reference": {
           "oneOf": [
-            {"$ref": "handoff.schema.json#/$defs/reference"},
-            {"type": "null"}
+            {
+              "$ref": "handoff.schema.json#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       },
       "additionalProperties": false
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "oneOf": [
+    {
+      "properties": {
+        "subject": {
+          "properties": {
+            "step": {
+              "const": "preflight"
+            }
+          }
+        },
+        "result": {
+          "enum": [
+            "ready",
+            "blocked",
+            "needs_input"
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "subject": {
+          "properties": {
+            "step": {
+              "const": "implement"
+            }
+          }
+        },
+        "result": {
+          "enum": [
+            "complete",
+            "needs_input",
+            "failed"
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "subject": {
+          "properties": {
+            "step": {
+              "const": "correction"
+            }
+          }
+        },
+        "result": {
+          "enum": [
+            "complete",
+            "needs_input",
+            "failed"
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "subject": {
+          "properties": {
+            "step": {
+              "const": "verify"
+            }
+          }
+        },
+        "result": {
+          "enum": [
+            "mechanically_eligible",
+            "findings"
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "subject": {
+          "properties": {
+            "step": {
+              "const": "semantic_review"
+            }
+          }
+        },
+        "result": {
+          "enum": [
+            "collected",
+            "findings",
+            "INCONCLUSIVE"
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "subject": {
+          "properties": {
+            "step": {
+              "const": "acceptance"
+            }
+          }
+        },
+        "result": {
+          "enum": [
+            "ACCEPT",
+            "CHANGES_REQUESTED",
+            "INCONCLUSIVE"
+          ]
+        }
+      }
+    }
+  ]
 }

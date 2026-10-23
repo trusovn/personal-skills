@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from datetime import datetime
 from pathlib import Path
@@ -17,22 +18,29 @@ ATTEMPT_REQUIRED_FIELDS = (
 )
 
 ACTOR_LEVELS = {
-    "light": {"model": "gpt-5.6-sol", "reasoning": "low"},
-    "standard": {"model": "gpt-5.6-sol", "reasoning": "medium"},
-    "strong": {"model": "gpt-5.6-sol", "reasoning": "high"},
+    "light": {"model": "gpt-6.1-sol", "reasoning": "low"},
+    "standard": {"model": "gpt-6.1-sol", "reasoning": "medium"},
+    "strong": {"model": "gpt-6.1-sol", "reasoning": "high"},
 }
 IMPLEMENTATION_SESSION_REUSE_THRESHOLD = 0.5
 FLOW_STEP_ORDER = (
-    "preflight", "implement", "verify", "semantic_review", "accept",
+    "ready", "preflight", "implement", "verify", "semantic_review",
+    "acceptance", "accept", "completed",
 )
 FLOW_STEP_ROLES = {
+    "ready": "controller",
+    "acceptance": "acceptance_reviewer",
+    "completed": "controller",
     "preflight": "preflight",
     "implement": "implementer",
     "verify": "verifier",
-    "semantic_review": "semantic_reviewer",
+    "semantic_review": "review_collector",
     "accept": "controller",
 }
 FLOW_STEP_MODES = {
+    "ready": {"off"},
+    "acceptance": {"standard", "strong"},
+    "completed": {"off"},
     "preflight": {"light", "standard", "strong"},
     "implement": {"light", "standard", "strong"},
     "verify": {"targeted", "targeted_plus_repository_gate"},
@@ -74,46 +82,13 @@ def sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
 
 
-def _default_reviewed_flow() -> dict[str, Any]:
-    return {
-        "version": 1,
-        "profile": "reviewed",
-        "steps": [
-            {"kind": "preflight", "role": "preflight", "mode": "light"},
-            {"kind": "implement", "role": "implementer", "mode": "standard"},
-            {"kind": "verify", "role": "verifier", "mode": "targeted"},
-            {
-                "kind": "semantic_review",
-                "role": "semantic_reviewer",
-                "mode": "standard",
-            },
-            {"kind": "accept", "role": "controller", "mode": "off"},
-        ],
-        "actor_levels": json.loads(json.dumps(ACTOR_LEVELS)),
-        "implementation_session_reuse_threshold": (
-            IMPLEMENTATION_SESSION_REUSE_THRESHOLD
-        ),
-        "correction": {"enabled": True, "limit": 2},
-        "routes": {
-            "blocked": "stop",
-            "failed": "stop",
-            "needs_input": "escalate",
-            "unexpected_changes": "stop",
-            "inconclusive": "escalate",
-            "corrections_exhausted": "escalate",
-            "permission_expansion": "stop",
-            "plan_or_architecture_question": "escalate",
-        },
-    }
-
-
 def validate_flow_profile(flow: dict[str, Any]) -> None:
     required = (
         "version", "profile", "steps", "actor_levels",
         "implementation_session_reuse_threshold", "correction", "routes",
     )
     _validate_exact_object(flow, required, "flow")
-    if type(flow["version"]) is not int or flow["version"] != 1:
+    if type(flow["version"]) is not int or flow["version"] != 2:
         raise ValueError("Unsupported flow version")
     _validate_str(flow["profile"], "flow.profile")
     if flow["actor_levels"] != ACTOR_LEVELS:
@@ -143,21 +118,16 @@ def validate_flow_profile(flow: dict[str, Any]) -> None:
         kinds.append(kind)
     if len(kinds) != len(set(kinds)):
         raise ValueError("flow steps must not be duplicated")
-    for required_kind in ("implement", "accept"):
-        if kinds.count(required_kind) != 1:
-            raise ValueError(f"flow requires exactly one {required_kind} step")
-    if not kinds or kinds[-1] != "accept":
-        raise ValueError("accept must be the terminal flow step")
-    if kinds != sorted(kinds, key=FLOW_STEP_ORDER.index):
-        raise ValueError("flow steps are outside the closed MVP phase order")
+    if kinds != list(FLOW_STEP_ORDER):
+        raise ValueError("flow requires every mandatory stage in order")
 
     correction = flow["correction"]
-    _validate_exact_object(correction, ("enabled", "limit"), "flow.correction")
-    _validate_bool(correction["enabled"], "flow.correction.enabled")
-    if type(correction["limit"]) is not int or correction["limit"] < 0:
-        raise ValueError("flow.correction.limit must be a finite non-negative integer")
-    if correction["enabled"] and "semantic_review" not in kinds:
-        raise ValueError("flow correction requires semantic_review")
+    if correction != {"enabled": True, "limit": 3, "includes_environment_repair": True} or (
+        type(correction.get("limit")) is not int
+        or correction.get("enabled") is not True
+        or correction.get("includes_environment_repair") is not True
+    ):
+        raise ValueError("flow.correction requires three shared corrections including environment repair")
 
     routes = flow["routes"]
     _validate_exact_object(routes, FLOW_ROUTE_FIELDS, "flow.routes")
@@ -167,9 +137,23 @@ def validate_flow_profile(flow: dict[str, Any]) -> None:
 
 
 def resolve_flow_profile(policy: dict[str, Any]) -> dict[str, Any]:
-    flow = json.loads(json.dumps(policy.get("flow", _default_reviewed_flow())))
+    if "flow" not in policy:
+        raise ValueError("Run policy requires an explicit flow")
+    flow = json.loads(json.dumps(policy["flow"]))
     validate_flow_profile(flow)
     return flow
+
+
+def correction_session_policy(*, occupancy: float | None, reliable: bool) -> str:
+    """Terminal token totals are deliberately not an occupancy input."""
+    if (
+        reliable is True
+        and type(occupancy) in {int, float}
+        and math.isfinite(occupancy)
+        and 0 <= occupancy < IMPLEMENTATION_SESSION_REUSE_THRESHOLD
+    ):
+        return "reuse"
+    return "fresh"
 
 
 def flow_step(flow: dict[str, Any], kind: str) -> dict[str, Any] | None:
@@ -204,7 +188,7 @@ def validate_flow_cursor(
     if current == "correction":
         if cycle == 0 or not correction["enabled"]:
             raise ValueError("correction step requires an active correction cycle")
-    elif current in {"preflight", "implement", "verify"} and cycle != 0:
+    elif current in {"ready", "preflight", "implement"} and cycle != 0:
         raise ValueError(
             f"{current} step requires correction cycle zero"
         )
@@ -227,7 +211,7 @@ def transition_flow_cursor(
             raise ValueError("task selection requires a null cursor at cycle zero")
         return {"current_step": kinds[0], "correction_cycle": 0}
     if action == "advance":
-        if current not in kinds or current == "accept":
+        if current not in kinds or current in {"accept", "completed"}:
             raise ValueError("cursor cannot advance from the current step")
         return {
             "current_step": kinds[kinds.index(current) + 1],
@@ -244,12 +228,12 @@ def transition_flow_cursor(
             "correction_cycle": cycle,
         }
     if action == "begin_correction":
-        if current != "semantic_review" or result != "CHANGES_REQUESTED":
-            raise ValueError("correction requires CHANGES_REQUESTED at semantic_review")
+        if current not in {"verify", "semantic_review", "acceptance"} or result not in {"CHANGES_REQUESTED", "findings", "environment_repair"}:
+            raise ValueError("correction requires findings, CHANGES_REQUESTED or environment repair at checks, collection or acceptance")
         correction = flow["correction"]
         if not correction["enabled"] or cycle >= correction["limit"]:
             return {
-                "current_step": "semantic_review",
+                "current_step": current,
                 "correction_cycle": cycle,
                 "stop_action": flow["routes"]["corrections_exhausted"],
             }
@@ -257,7 +241,7 @@ def transition_flow_cursor(
     if action == "complete_correction":
         if current != "correction" or cycle < 1:
             raise ValueError("fresh review requires an active correction cycle")
-        return {"current_step": "semantic_review", "correction_cycle": cycle}
+        return {"current_step": "verify", "correction_cycle": cycle}
     raise ValueError(f"Unsupported flow cursor action: {action}")
 
 
@@ -332,18 +316,11 @@ def validate_step_outcome(
         "implement": {"complete", "needs_input", "failed"},
         "correction": {"complete", "needs_input", "failed"},
         "verify": {"mechanically_eligible", "findings"},
-        "semantic_review": {"ACCEPT", "CHANGES_REQUESTED", "INCONCLUSIVE"},
-        "accept": {"task_accepted"},
+        "semantic_review": {"collected", "findings", "INCONCLUSIVE"},
+        "acceptance": {"ACCEPT", "CHANGES_REQUESTED", "INCONCLUSIVE"},
     }
-    evidence_status = envelope["evidence_status"]
-    if evidence_status == "omitted_by_policy":
-        if step != "verify" or envelope["result"] is not None:
-            raise ValueError("only verify may be omitted by policy with a null result")
-    elif evidence_status == "reported":
-        if envelope["result"] not in result_families[step]:
-            raise ValueError("step outcome result is invalid for its step")
-    else:
-        raise ValueError("step outcome evidence_status is invalid")
+    if envelope["evidence_status"] != "reported" or envelope["result"] not in result_families.get(step, set()):
+        raise ValueError("actor result cannot omit a required stage or grant completion")
     _validate_str_array(
         envelope["artifact_refs"], "step outcome.artifact_refs", allow_empty=True
     )
@@ -931,16 +908,22 @@ def validate_run_policy(policy: dict[str, Any]) -> None:
         raise ValueError("Run policy must be an object")
     required = (
         "version", "run_id", "repository", "task_ids", "verification", "permissions",
-        "commit_policy", "stop_policy",
+        "commit_policy", "stop_policy", "flow", "execution_authorization",
     )
     missing = [field for field in required if field not in policy]
     if missing:
         raise ValueError(f"Run policy is missing: {', '.join(missing)}")
-    if type(policy["version"]) is not int or policy["version"] != 1:
+    if type(policy["version"]) is not int or policy["version"] != 2:
         raise ValueError("Unsupported run policy version")
     _validate_str(policy["run_id"], "run_id")
     _validate_str(policy["repository"], "repository")
     _validate_str_array(policy["task_ids"], "task_ids")
+    if len(policy["task_ids"]) != 1:
+        raise ValueError("Run policy must authorize exactly one prepared task")
+    if policy["execution_authorization"] != {
+        "transport": "sbx", "yolo": True, "intervention": "active_chat",
+    } or policy["execution_authorization"].get("yolo") is not True:
+        raise ValueError("Explicit sbx/YOLO authorization and active-chat intervention are required")
     _validate_verification(policy["verification"])
     _validate_permissions(policy["permissions"])
     _validate_commit_policy(policy["commit_policy"])
@@ -1336,14 +1319,14 @@ def apply_ledger_update(
     immutable_top_level = (
         "version", "run_id", "repository", "created_at", "policy_path", "policy_sha256",
         "manifest_path", "manifest_sha256", "initial_baseline_path",
-        "initial_baseline_digest", "completed_task_ids", "flow_revision",
+        "initial_baseline_digest", "inputs_sha256", "completed_task_ids", "flow_revision",
         "flow_path", "flow_sha256",
     )
     next_ledger.update(updater)
     next_ledger["updated_at"] = updated_at
     next_ledger["revision"] = ledger["revision"] + 1
     validate_ledger(next_ledger)
-    if any(next_ledger[field] != ledger[field] for field in immutable_top_level):
+    if any(next_ledger.get(field) != ledger.get(field) for field in immutable_top_level):
         raise ValueError("Ledger authority is immutable")
     next_cursor = {
         "current_step": next_ledger["current_step"],

@@ -111,9 +111,31 @@ def _write_durable_exclusive(path: Path, content: bytes) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def load_frozen_inputs(run_dir: Path, ledger: dict[str, Any]) -> dict[str, Any]:
+    """Read approved bytes only; mutable repository sources are not authority."""
+    action = "Initialize a new run using reviewed current inputs."
+    policy = json.loads((run_dir / "run-policy.json").read_text())
+    try:
+        validate_run_policy(policy)
+        if "inputs_sha256" not in ledger:
+            raise ValueError("missing frozen task inputs")
+    except ValueError as error:
+        raise ValueError(f"Incompatible frozen run: {error}. {action}") from error
+    if sha256_text(canonical_json(policy)) != ledger["policy_sha256"]:
+        raise ValueError("Persisted policy digest mismatch")
+    raw = (run_dir / "inputs.json").read_bytes()
+    if _sha256_bytes(raw) != ledger["inputs_sha256"]:
+        raise ValueError("Persisted task input digest mismatch")
+    inputs = json.loads(raw)
+    if inputs["task_id"] != policy["task_ids"][0]:
+        raise ValueError("Frozen task inputs contradict policy")
+    return inputs
+
+
 def _load_flow_authority_state(
     run_dir: Path, ledger: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any] | None]:
+    load_frozen_inputs(run_dir, ledger)
     revision = ledger["flow_revision"]
     expected_path = f"flows/flow-{revision:03d}.json"
     if ledger["flow_path"] != expected_path:
@@ -138,7 +160,13 @@ def _load_flow_authority_state(
         flow_relative = f"flows/flow-{history_revision:03d}.json"
         flow_raw = (run_dir / flow_relative).read_bytes()
         revision_flow = json.loads(flow_raw)
-        validate_flow_profile(revision_flow)
+        try:
+            validate_flow_profile(revision_flow)
+        except ValueError as error:
+            raise ValueError(
+                f"Incompatible frozen flow: {error}. "
+                "Initialize a new run using reviewed current inputs."
+            ) from error
         if flow_raw != _canonical_flow_bytes(revision_flow):
             raise ValueError("Persisted flow bytes are not canonical")
         flow_digest = _sha256_bytes(flow_raw)
@@ -376,6 +404,22 @@ def init_run(
     # Validate manifest cross-policy
     validated = validate_task_manifest(policy, manifest, resolved_repo)
 
+    selected = next(task for task in manifest["tasks"] if task["id"] == policy["task_ids"][0])
+    brief = resolved_repo / selected["brief_path"]
+    verification = brief.with_name("verification.md")
+    if not verification.resolve().is_relative_to(resolved_repo) or not verification.is_file():
+        raise ValueError("Prepared task requires verification.md beside its brief")
+    inputs = {"version": 1, "task_id": selected["id"], "documents": {}}
+    for name, path in (("brief", brief), ("verification", verification)):
+        raw = path.read_bytes()
+        inputs["documents"][name] = {
+            "source_path": str(path.relative_to(resolved_repo)),
+            "content": raw.decode("utf-8"), "sha256": _sha256_bytes(raw),
+        }
+    inputs["allowed_paths"] = selected["allowed_paths"]
+    inputs["required_checks"] = selected.get("required_checks", [])
+    inputs_bytes = _canonical_record_bytes(inputs)
+
     # Enforce run directory is outside the repository
     if run_dir.resolve().is_relative_to(resolved_repo):
         raise ValueError(
@@ -392,6 +436,7 @@ def init_run(
     try:
         # Copy canonical policy and manifest
         policy_digest = persist_run_policy(temp_dir / "run-policy.json", policy)
+        _write_durable_exclusive(temp_dir / "inputs.json", inputs_bytes)
         flow_relative = "flows/flow-001.json"
         flow_bytes = _canonical_flow_bytes(flow)
         flow_path = temp_dir / flow_relative
@@ -428,6 +473,7 @@ def init_run(
             "flow_revision": 1,
             "flow_path": flow_relative,
             "flow_sha256": flow_digest,
+            "inputs_sha256": _sha256_bytes(inputs_bytes),
             "policy_path": "run-policy.json",
             "policy_sha256": policy_digest,
             "manifest_path": "task-manifest.json",
@@ -529,6 +575,7 @@ def _update_ledger_locked(
 ) -> dict[str, Any]:
     ledger_path = run_dir / "ledger.json"
     ledger = json.loads(ledger_path.read_text())
+    _load_flow_authority(run_dir, ledger)
     ledger = _state_module.apply_ledger_update(
         ledger, updater, _now_iso(), expected_revision=expected_revision,
         closure_decision=closure_decision,
@@ -545,6 +592,8 @@ def update_ledger(
     cursor_result: str | None = None,
 ) -> dict[str, Any]:
     """Lock, validate the expected revision, and atomically update the ledger."""
+    ledger = json.loads((run_dir / "ledger.json").read_text())
+    _load_flow_authority(run_dir, ledger)
     with RunCommandLock(run_dir):
         return _update_ledger_locked(
             run_dir, updater, expected_revision=expected_revision,
@@ -580,6 +629,8 @@ def revise_flow(run_dir: Path, flow_path: Path) -> dict[str, Any]:
     validate_flow_profile(requested)
     requested_bytes = _canonical_flow_bytes(requested)
     requested_digest = _sha256_bytes(requested_bytes)
+    preliminary_ledger = json.loads((run_dir / "ledger.json").read_text())
+    _load_flow_authority(run_dir, preliminary_ledger)
     with RunCommandLock(run_dir):
         ledger = json.loads((run_dir / "ledger.json").read_text())
         _validate_ledger(ledger)
@@ -1174,6 +1225,7 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
     if preliminary_ledger["state"] != "awaiting_inspection":
         raise ValueError("inspect requires run state 'awaiting_inspection'")
     _validate_ledger(preliminary_ledger)
+    _load_flow_authority(run_dir, preliminary_ledger)
     with RunCommandLock(run_dir):
         (
             ledger, policy, selected, baseline, attempt, adapter_state,
@@ -1611,14 +1663,18 @@ def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defin
     task_baseline_digest = sha256_text(canonical_json(task_baseline_data))
     atomic_write_json(run_dir / "baselines" / task_baseline_ref, task_baseline_data)
 
-    # Build prompt
+    # Use the approved snapshot, never reload mutable task documents.
+    inputs = load_frozen_inputs(run_dir, ledger)
     prompt = render_worker_prompt(
         task_id=task["id"],
         brief_path=task["brief_path"],
         task_instructions=f"Implement task {task['id']}: {task['title']}.\n"
                          f"Allowed paths: {task['allowed_paths']}\n"
                          f"Required checks: {task['required_checks']}\n"
-                         f"Dependencies satisfied: {task['dependencies']}",
+                         f"Dependencies satisfied: {task['dependencies']}\n\n"
+                         "Use the frozen authority below; source paths are provenance only.\n"
+                         f"Frozen brief:\n{inputs['documents']['brief']['content']}\n"
+                         f"Frozen verification:\n{inputs['documents']['verification']['content']}",
         policy=policy,
     )
 

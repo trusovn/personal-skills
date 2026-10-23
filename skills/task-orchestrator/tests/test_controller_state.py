@@ -43,7 +43,8 @@ class ControllerStateContractTest(unittest.TestCase):
 
     def policy(self):
         return {
-            "version": 1,
+            "version": 2,
+            "execution_authorization": {"transport": "sbx", "yolo": True, "intervention": "active_chat"},
             "run_id": "run-1",
             "repository": str(self.repository),
             "task_ids": ["T1"],
@@ -71,62 +72,8 @@ class ControllerStateContractTest(unittest.TestCase):
         }
 
     def flow(self, profile="reviewed"):
-        levels = {
-            "light": {"model": "gpt-5.6-sol", "reasoning": "low"},
-            "standard": {"model": "gpt-5.6-sol", "reasoning": "medium"},
-            "strong": {"model": "gpt-5.6-sol", "reasoning": "high"},
-        }
-        steps = {
-            "fast-local": [
-                {"kind": "implement", "role": "implementer", "mode": "standard"},
-                {"kind": "verify", "role": "verifier", "mode": "targeted"},
-                {"kind": "accept", "role": "controller", "mode": "off"},
-            ],
-            "reviewed": [
-                {"kind": "preflight", "role": "preflight", "mode": "light"},
-                {"kind": "implement", "role": "implementer", "mode": "standard"},
-                {"kind": "verify", "role": "verifier", "mode": "targeted"},
-                {
-                    "kind": "semantic_review",
-                    "role": "semantic_reviewer",
-                    "mode": "standard",
-                },
-                {"kind": "accept", "role": "controller", "mode": "off"},
-            ],
-            "strong-local": [
-                {"kind": "preflight", "role": "preflight", "mode": "strong"},
-                {"kind": "implement", "role": "implementer", "mode": "strong"},
-                {
-                    "kind": "verify",
-                    "role": "verifier",
-                    "mode": "targeted_plus_repository_gate",
-                },
-                {
-                    "kind": "semantic_review",
-                    "role": "semantic_reviewer",
-                    "mode": "strong",
-                },
-                {"kind": "accept", "role": "controller", "mode": "off"},
-            ],
-        }[profile]
-        return {
-            "version": 1,
-            "profile": profile,
-            "steps": steps,
-            "actor_levels": levels,
-            "implementation_session_reuse_threshold": 0.5,
-            "correction": {"enabled": profile != "fast-local", "limit": 2},
-            "routes": {
-                "blocked": "stop",
-                "failed": "stop",
-                "needs_input": "escalate",
-                "unexpected_changes": "stop",
-                "inconclusive": "escalate",
-                "corrections_exhausted": "escalate",
-                "permission_expansion": "stop",
-                "plan_or_architecture_question": "escalate",
-            },
-        }
+        path = Path(__file__).parents[1] / "assets" / "examples" / f"{profile}-flow.json"
+        return json.loads(path.read_text())
 
     def manifest(self):
         return {
@@ -253,7 +200,7 @@ class ControllerStateContractTest(unittest.TestCase):
                 state.canonical_json(policy["flow"]) + "\n"
             ),
             "transport": "codex-cli",
-            "model": "gpt-5.6-sol",
+            "model": "gpt-6.1-sol",
             "effort": "medium",
             "sandbox": "workspace-write",
             "approval_policy": "never",
@@ -275,18 +222,16 @@ class ControllerStateContractTest(unittest.TestCase):
 
         custom = self.flow("reviewed")
         custom["profile"] = "custom"
-        custom["steps"] = [
-            step for step in custom["steps"] if step["kind"] != "preflight"
-        ]
-        custom["steps"][1]["mode"] = "targeted_plus_repository_gate"
+        custom["steps"][3]["mode"] = "targeted_plus_repository_gate"
         state.validate_flow_profile(custom)
 
         cursor = state.transition_flow_cursor(
             custom, {"current_step": None, "correction_cycle": 0}, "select"
         )
-        self.assertEqual(
-            {"current_step": "implement", "correction_cycle": 0}, cursor
-        )
+        self.assertEqual({"current_step": "ready", "correction_cycle": 0}, cursor)
+        for expected in ("preflight", "implement"):
+            cursor = state.transition_flow_cursor(custom, cursor, "advance")
+            self.assertEqual(expected, cursor["current_step"])
         cursor = state.transition_flow_cursor(custom, cursor, "advance")
         self.assertEqual("verify", cursor["current_step"])
         cursor = state.transition_flow_cursor(custom, cursor, "advance")
@@ -300,7 +245,7 @@ class ControllerStateContractTest(unittest.TestCase):
         )
         cursor = state.transition_flow_cursor(custom, cursor, "complete_correction")
         self.assertEqual(
-            {"current_step": "semantic_review", "correction_cycle": 1}, cursor
+            {"current_step": "verify", "correction_cycle": 1}, cursor
         )
 
     def test_flow_validation_rejects_closed_contract_violations(self):
@@ -334,8 +279,7 @@ class ControllerStateContractTest(unittest.TestCase):
     def test_correction_limit_and_structured_envelopes_are_authority_safe(self):
         state = load_controller_state()
         flow = self.flow("reviewed")
-        flow["correction"]["limit"] = 1
-        cursor = {"current_step": "semantic_review", "correction_cycle": 0}
+        cursor = {"current_step": "acceptance", "correction_cycle": 2}
         correction = state.transition_flow_cursor(
             flow, cursor, "begin_correction", result="CHANGES_REQUESTED"
         )
@@ -343,12 +287,12 @@ class ControllerStateContractTest(unittest.TestCase):
             flow, correction, "complete_correction"
         )
         exhausted = state.transition_flow_cursor(
-            flow, review, "begin_correction", result="CHANGES_REQUESTED"
+            flow, review, "begin_correction", result="findings"
         )
         self.assertEqual(
             {
-                "current_step": "semantic_review",
-                "correction_cycle": 1,
+                "current_step": "verify",
+                "correction_cycle": 3,
                 "stop_action": "escalate",
             },
             exhausted,
@@ -359,9 +303,9 @@ class ControllerStateContractTest(unittest.TestCase):
             "task_id": "T1",
             "flow_revision": 1,
             "flow_sha256": "a" * 64,
-            "step": "semantic_review",
+            "step": "acceptance",
             "correction_cycle": 1,
-            "actor_role": "semantic_reviewer",
+            "actor_role": "acceptance_reviewer",
         }
         handoff = {
             "version": 1,
@@ -399,9 +343,9 @@ class ControllerStateContractTest(unittest.TestCase):
         invalid_cursors = (
             {"current_step": "implement", "correction_cycle": 1},
             {"current_step": "correction", "correction_cycle": 0},
-            {"current_step": "correction", "correction_cycle": 3},
-            {"current_step": "semantic_review", "correction_cycle": 3},
-            {"current_step": "accept", "correction_cycle": 3},
+            {"current_step": "correction", "correction_cycle": 4},
+            {"current_step": "semantic_review", "correction_cycle": 4},
+            {"current_step": "accept", "correction_cycle": 4},
         )
         for cursor in invalid_cursors:
             with self.subTest(cursor=cursor):
@@ -417,13 +361,90 @@ class ControllerStateContractTest(unittest.TestCase):
             with self.subTest(cursor=cursor):
                 state.validate_flow_cursor(flow, cursor)
 
-        flow["correction"]["limit"] = 1
-        impossible = {"current_step": "semantic_review", "correction_cycle": 2}
+        impossible = {"current_step": "semantic_review", "correction_cycle": 4}
         with self.assertRaisesRegex(ValueError, "correction cycle"):
             state.transition_flow_cursor(
                 flow, impossible, "begin_correction",
                 result="CHANGES_REQUESTED",
             )
+
+    def test_required_stages_roles_policy_and_context_boundaries(self):
+        state = load_controller_state()
+        for kind in ("ready", "preflight", "implement", "verify", "semantic_review", "acceptance", "accept", "completed"):
+            flow = self.flow()
+            flow["steps"] = [step for step in flow["steps"] if step["kind"] != kind]
+            with self.subTest(omitted=kind), self.assertRaises(ValueError):
+                state.validate_flow_profile(flow)
+        for mutator in (
+            lambda f: f["steps"][4].update(role="acceptance_reviewer"),
+            lambda f: f["steps"].reverse(),
+            lambda f: f["actor_levels"]["light"].update(model="gpt-5.6-sol"),
+            lambda f: f["actor_levels"]["strong"].update(reasoning="xhigh"),
+            lambda f: f["correction"].update(limit=2),
+        ):
+            flow = self.flow()
+            mutator(flow)
+            with self.assertRaises(ValueError):
+                state.validate_flow_profile(flow)
+        for occupancy, reliable, expected in ((0.49, True, "reuse"), (0.5, True, "fresh"), (0.51, True, "fresh"), (None, True, "fresh"), (0.1, False, "fresh")):
+            self.assertEqual(expected, state.correction_session_policy(occupancy=occupancy, reliable=reliable))
+        self.assertEqual({
+            "light": {"model": "gpt-6.1-sol", "reasoning": "low"},
+            "standard": {"model": "gpt-6.1-sol", "reasoning": "medium"},
+            "strong": {"model": "gpt-6.1-sol", "reasoning": "high"},
+        }, self.flow()["actor_levels"])
+        for kind, role, result in (
+            ("semantic_review", "review_collector", "ACCEPT"),
+            ("semantic_review", "review_collector", "task_accepted"),
+            ("ready", "controller", "ready"),
+            ("accept", "controller", "task_accepted"),
+            ("completed", "controller", "complete"),
+        ):
+            envelope = {
+                "version": 1,
+                "subject": {"run_id": "run-1", "task_id": "T1", "flow_revision": 1, "flow_sha256": "a" * 64, "step": kind, "correction_cycle": 0, "actor_role": role},
+                "result": result, "evidence_status": "reported", "artifact_refs": [], "payload": {"version": 1, "reference": None},
+            }
+            with self.assertRaises(ValueError):
+                state.validate_step_outcome(envelope)
+        for field in ("execution_authorization", "flow"):
+            policy = self.policy()
+            del policy[field]
+            with self.assertRaises(ValueError):
+                state.validate_run_policy(policy)
+        policy = self.policy()
+        policy["task_ids"].append("T2")
+        with self.assertRaisesRegex(ValueError, "exactly one"):
+            state.validate_run_policy(policy)
+
+    def test_corrections_share_budget_including_environment_repair(self):
+        state = load_controller_state()
+        flow = self.flow()
+        cursor = {"current_step": "verify", "correction_cycle": 0}
+        for stage, cause in (("verify", "findings"), ("semantic_review", "environment_repair"), ("acceptance", "CHANGES_REQUESTED")):
+            cursor["current_step"] = stage
+            before = cursor["correction_cycle"]
+            cursor = state.transition_flow_cursor(flow, cursor, "begin_correction", result=cause)
+            self.assertEqual({"current_step": "correction", "correction_cycle": before + 1}, cursor)
+            cursor = state.transition_flow_cursor(flow, cursor, "complete_correction")
+            self.assertEqual("verify", cursor["current_step"])
+        exhausted = state.transition_flow_cursor(flow, cursor, "begin_correction", result="environment_repair")
+        self.assertEqual({"current_step": "verify", "correction_cycle": 3, "stop_action": "escalate"}, exhausted)
+
+    def test_policy_never_defaults_missing_or_malformed_authorization(self):
+        state = load_controller_state()
+        for authorization in (None, {}, {"transport": "codex-cli", "yolo": True, "intervention": "active_chat"}, {"transport": "sbx", "yolo": 1, "intervention": "active_chat"}, {"transport": "sbx", "yolo": False, "intervention": "active_chat"}, {"transport": "sbx", "yolo": True, "intervention": "none"}):
+            with self.subTest(authorization=authorization):
+                policy = self.policy()
+                policy["execution_authorization"] = authorization
+                with self.assertRaises(ValueError):
+                    state.validate_run_policy(policy)
+        with self.assertRaisesRegex(ValueError, "explicit flow"):
+            state.resolve_flow_profile({})
+        totals_only = {"input_tokens": 100, "output_tokens": 10}
+        self.assertEqual("fresh", state.correction_session_policy(occupancy=totals_only, reliable=True))
+        for value in (None, -0.1, float("nan"), float("inf"), True):
+            self.assertEqual("fresh", state.correction_session_policy(occupancy=value, reliable=True))
 
     def test_valid_manifest_keeps_exact_ledger_entries(self):
         state = load_controller_state()
@@ -612,6 +633,32 @@ class ControllerStateContractTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             state.validate_attempt_record(attempt)
 
+    def persist_ledger_fixture(self, run_dir, ledger):
+        """Persist current authority so state-update probes reach their invariant."""
+        controller = load_controller()
+        policy = self.policy()
+        policy_bytes = (controller.canonical_json(policy) + "\n").encode()
+        (run_dir / "run-policy.json").write_bytes(policy_bytes)
+        flow_bytes = (controller.canonical_json(policy["flow"]) + "\n").encode()
+        (run_dir / "flows").mkdir()
+        (run_dir / "flows/flow-001.json").write_bytes(flow_bytes)
+        inputs = {
+            "version": 1, "task_id": "T1", "documents": {
+                "brief": {"source_path": "tasks/T1.md", "content": "# T1\n", "sha256": hashlib.sha256(b"# T1\n").hexdigest()},
+                "verification": {"source_path": "tasks/verification.md", "content": "Check T1\n", "sha256": hashlib.sha256(b"Check T1\n").hexdigest()},
+            }, "allowed_paths": ["allowed.txt"], "required_checks": [],
+        }
+        inputs_bytes = controller._canonical_record_bytes(inputs)
+        (run_dir / "inputs.json").write_bytes(inputs_bytes)
+        ledger.update(
+            policy_sha256=controller.sha256_text(controller.canonical_json(policy)),
+            inputs_sha256=hashlib.sha256(inputs_bytes).hexdigest(),
+            flow_sha256=hashlib.sha256(flow_bytes).hexdigest(),
+        )
+        path = run_dir / "ledger.json"
+        path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
+        return path
+
     def test_invalid_ledger_update_leaves_input_unchanged(self):
         state = load_controller_state()
         ledger = self.ledger()
@@ -629,9 +676,14 @@ class ControllerStateContractTest(unittest.TestCase):
         controller = load_controller()
         run_dir = Path(self.temp_dir.name) / "run"
         run_dir.mkdir()
-        ledger_path = run_dir / "ledger.json"
-        ledger_path.write_text(json.dumps(self.ledger(), indent=2, sort_keys=True) + "\n")
+        ledger_path = self.persist_ledger_fixture(run_dir, self.ledger())
         original = ledger_path.read_bytes()
+        inputs_bytes = (run_dir / "inputs.json").read_bytes()
+        self.assertFalse(inputs_bytes.endswith(b"\n"))
+        self.assertEqual(
+            hashlib.sha256(inputs_bytes).hexdigest(),
+            json.loads(original)["inputs_sha256"],
+        )
 
         with self.assertRaisesRegex(ValueError, "^Ledger task IDs are immutable$"):
             controller.update_ledger(run_dir, {"tasks": []}, expected_revision=1)
@@ -785,8 +837,7 @@ class ControllerStateContractTest(unittest.TestCase):
 
         run_dir = Path(self.temp_dir.name) / "acceptance-history"
         run_dir.mkdir()
-        ledger_path = run_dir / "ledger.json"
-        ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
+        ledger_path = self.persist_ledger_fixture(run_dir, ledger)
         original_bytes = ledger_path.read_bytes()
         with self.assertRaisesRegex(
             ValueError, "acceptance cannot append or replace attempt history"
@@ -1187,10 +1238,7 @@ class ControllerStateContractTest(unittest.TestCase):
             with self.subTest(name=name, boundary="persisted"):
                 run_dir = Path(self.temp_dir.name) / name
                 run_dir.mkdir()
-                ledger_path = run_dir / "ledger.json"
-                ledger_path.write_text(
-                    json.dumps(ledger, indent=2, sort_keys=True) + "\n"
-                )
+                ledger_path = self.persist_ledger_fixture(run_dir, ledger)
                 original_bytes = ledger_path.read_bytes()
                 original_updater = json.dumps(updater, sort_keys=True)
                 with self.assertRaisesRegex(ValueError, error):

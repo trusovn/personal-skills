@@ -12,12 +12,31 @@
     "transcript_ref"
   ],
   "properties": {
-    "version": {"const": 1},
-    "subject": {"$ref": "#/$defs/subject"},
-    "summary": {"type": "string", "minLength": 1},
-    "changed_paths": {"type": "array", "items": {"$ref": "#/$defs/reference"}},
-    "evidence_refs": {"type": "array", "items": {"$ref": "#/$defs/reference"}},
-    "transcript_ref": {"$ref": "#/$defs/reference"}
+    "version": {
+      "const": 1
+    },
+    "subject": {
+      "$ref": "#/$defs/subject"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed_paths": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reference"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reference"
+      }
+    },
+    "transcript_ref": {
+      "$ref": "#/$defs/reference"
+    }
   },
   "additionalProperties": false,
   "$defs": {
@@ -38,32 +57,143 @@
         "actor_role"
       ],
       "properties": {
-        "run_id": {"type": "string", "minLength": 1},
-        "task_id": {"type": "string", "minLength": 1},
-        "flow_revision": {"type": "integer", "minimum": 1},
-        "flow_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "flow_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "flow_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
         "step": {
           "enum": [
+            "ready",
             "preflight",
             "implement",
             "verify",
             "semantic_review",
-            "correction",
-            "accept"
+            "acceptance",
+            "accept",
+            "completed",
+            "correction"
           ]
         },
-        "correction_cycle": {"type": "integer", "minimum": 0},
+        "correction_cycle": {
+          "type": "integer",
+          "minimum": 0
+        },
         "actor_role": {
           "enum": [
-            "preflight",
+            "acceptance_reviewer",
+            "controller",
             "implementer",
-            "verifier",
-            "semantic_reviewer",
-            "controller"
+            "preflight",
+            "review_collector",
+            "verifier"
           ]
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "step": {
+              "const": "ready"
+            },
+            "actor_role": {
+              "const": "controller"
+            }
+          }
+        },
+        {
+          "properties": {
+            "step": {
+              "const": "preflight"
+            },
+            "actor_role": {
+              "const": "preflight"
+            }
+          }
+        },
+        {
+          "properties": {
+            "step": {
+              "const": "implement"
+            },
+            "actor_role": {
+              "const": "implementer"
+            }
+          }
+        },
+        {
+          "properties": {
+            "step": {
+              "const": "verify"
+            },
+            "actor_role": {
+              "const": "verifier"
+            }
+          }
+        },
+        {
+          "properties": {
+            "step": {
+              "const": "semantic_review"
+            },
+            "actor_role": {
+              "const": "review_collector"
+            }
+          }
+        },
+        {
+          "properties": {
+            "step": {
+              "const": "acceptance"
+            },
+            "actor_role": {
+              "const": "acceptance_reviewer"
+            }
+          }
+        },
+        {
+          "properties": {
+            "step": {
+              "const": "accept"
+            },
+            "actor_role": {
+              "const": "controller"
+            }
+          }
+        },
+        {
+          "properties": {
+            "step": {
+              "const": "completed"
+            },
+            "actor_role": {
+              "const": "controller"
+            }
+          }
+        },
+        {
+          "properties": {
+            "step": {
+              "const": "correction"
+            },
+            "actor_role": {
+              "const": "implementer"
+            }
+          }
+        }
+      ]
     }
   }
 }

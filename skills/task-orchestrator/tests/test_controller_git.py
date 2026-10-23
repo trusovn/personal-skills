@@ -628,11 +628,13 @@ class ControllerGitWiringTest(unittest.TestCase):
             (repo / "allowed.txt").write_text("baseline\n")
             (repo / "tasks").mkdir()
             (repo / "tasks" / "T1.md").write_text("# T1\n")
+            (repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
             run_git(repo, "add", ".")
             run_git(repo, "commit", "-qm", "baseline")
             controller = load_module(CONTROLLER_PATH, "task_orchestrator_controller_wiring")
             policy = {
-                "version": 1,
+                "version": 2,
+                "execution_authorization": {"transport": "sbx", "yolo": True, "intervention": "active_chat"},
                 "run_id": "run-1",
                 "repository": str(repo),
                 "task_ids": ["T1"],
@@ -682,6 +684,11 @@ class ControllerGitWiringTest(unittest.TestCase):
             manifest_path.write_text(json.dumps(manifest))
             run_dir = root / "run"
             controller.init_run(run_dir, policy_path, manifest_path, repo)
+            # Seed the transport boundary; ready/preflight admission is T-002.2.
+            ledger_path = run_dir / "ledger.json"
+            ledger = json.loads(ledger_path.read_text())
+            ledger.update(selected_task_id="T1", current_step="implement")
+            ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
             fake_codex = root / "fake-codex"
             fake_codex.write_text(
                 """#!/usr/bin/env python3

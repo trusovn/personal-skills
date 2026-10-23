@@ -32,46 +32,21 @@ def sha256_bytes(value):
 
 
 def flow_profile(profile="fast-local"):
-    steps = {
-        "fast-local": [
-            {"kind": "implement", "role": "implementer", "mode": "standard"},
-            {"kind": "verify", "role": "verifier", "mode": "targeted"},
-            {"kind": "accept", "role": "controller", "mode": "off"},
-        ],
-        "reviewed": [
-            {"kind": "preflight", "role": "preflight", "mode": "light"},
-            {"kind": "implement", "role": "implementer", "mode": "standard"},
-            {"kind": "verify", "role": "verifier", "mode": "targeted"},
-            {
-                "kind": "semantic_review",
-                "role": "semantic_reviewer",
-                "mode": "standard",
-            },
-            {"kind": "accept", "role": "controller", "mode": "off"},
-        ],
-    }[profile]
-    return {
-        "version": 1,
-        "profile": profile,
-        "steps": steps,
-        "actor_levels": {
-            "light": {"model": "gpt-5.6-sol", "reasoning": "low"},
-            "standard": {"model": "gpt-5.6-sol", "reasoning": "medium"},
-            "strong": {"model": "gpt-5.6-sol", "reasoning": "high"},
-        },
-        "implementation_session_reuse_threshold": 0.5,
-        "correction": {"enabled": profile == "reviewed", "limit": 2},
-        "routes": {
-            "blocked": "stop",
-            "failed": "stop",
-            "needs_input": "escalate",
-            "unexpected_changes": "stop",
-            "inconclusive": "escalate",
-            "corrections_exhausted": "escalate",
-            "permission_expansion": "stop",
-            "plan_or_architecture_question": "escalate",
-        },
-    }
+    path = Path(__file__).parents[1] / "assets" / "examples" / f"{profile}-flow.json"
+    return json.loads(path.read_text())
+
+
+def stage_transport_fixture(run_dir):
+    """Seed the transport boundary; this does not prove readiness admission.
+
+    T-002.1 has no ready/preflight admission adapter. Transport/inspection
+    regressions start from this explicit fixture, while the pending-stage test
+    exercises the real initial boundary without this setup.
+    """
+    path = run_dir / "ledger.json"
+    ledger = json.loads(path.read_text())
+    ledger.update(selected_task_id="T1", current_step="implement")
+    path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
 
 
 class ControllerContractTest(unittest.TestCase):
@@ -95,7 +70,8 @@ class ControllerContractTest(unittest.TestCase):
 
     def policy(self, *, commit_mode="off"):
         return {
-            "version": 1,
+            "version": 2,
+            "execution_authorization": {"transport": "sbx", "yolo": True, "intervention": "active_chat"},
             "run_id": "run-1",
             "repository": str(self.repo),
             "task_ids": ["T1"],
@@ -488,6 +464,7 @@ class ControllerContractTest(unittest.TestCase):
         controller = load_controller()
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         base = {
             "version": 1,
             "manifest_id": "test-feature",
@@ -551,6 +528,7 @@ class ControllerContractTest(unittest.TestCase):
         }
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
         result = controller.init_run(
@@ -610,6 +588,7 @@ class ControllerContractTest(unittest.TestCase):
         }
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
         with self.assertRaises(ValueError) as ctx:
@@ -621,15 +600,15 @@ class ControllerContractTest(unittest.TestCase):
             )
         self.assertIn("depends on T99", ctx.exception.args[0])
 
-    def test_select_task_returns_first_ready_in_policy_order(self):
-        """select_task must return the first ready task in policy.task_ids order."""
+    def test_select_task_returns_only_authorized_task(self):
+        """Other manifest tasks do not become authorized by being ready."""
         controller = load_controller()
         run_dir = self.root / "runs" / "run-003"
         policy_path = self.root / "run-policy.json"
         manifest_path = self.root / "task-manifest.json"
 
         policy = self.policy()
-        policy["task_ids"] = ["T2", "T1", "T3"]
+        policy["task_ids"] = ["T2"]
         controller.persist_run_policy(policy_path, policy)
 
         manifest = {
@@ -647,6 +626,7 @@ class ControllerContractTest(unittest.TestCase):
         }
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         (self.repo / "tasks" / "T2.md").write_text("# T2\n")
         (self.repo / "tasks" / "T3.md").write_text("# T3\n")
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
@@ -660,7 +640,7 @@ class ControllerContractTest(unittest.TestCase):
 
         ledger = json.loads((run_dir / "ledger.json").read_text())
         selected = controller.select_task(ledger, policy)
-        # T2 comes before T1 in policy order, so T2 is selected
+        # Only T2 is authorized even though T1 is also ready
         self.assertEqual("T2", selected["id"])
 
     def test_select_task_blocks_on_incomplete_deps(self):
@@ -734,6 +714,7 @@ class ControllerContractTest(unittest.TestCase):
         }
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
         # First init succeeds
@@ -778,6 +759,7 @@ class ControllerContractTest(unittest.TestCase):
         }
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
         with self.assertRaises(ValueError):
@@ -849,6 +831,7 @@ class ControllerContractTest(unittest.TestCase):
         }
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
         for invalid_path in ("/absolute/path", "dir//file.py", "dir/", "dir/./file.py"):
@@ -888,6 +871,7 @@ class ControllerContractTest(unittest.TestCase):
         }
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
         with self.assertRaises(ValueError) as ctx:
@@ -924,6 +908,7 @@ class ControllerContractTest(unittest.TestCase):
         }
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
         with self.assertRaises(ValueError) as ctx:
@@ -943,13 +928,13 @@ class ControllerContractTest(unittest.TestCase):
         manifest_path = self.root / "task-manifest.json"
 
         policy = self.policy()
-        policy["task_ids"] = ["T1", "T2"]
+        policy["task_ids"] = ["T1"]
         controller.persist_run_policy(policy_path, policy)
 
         manifest = {
             "version": 1,
             "manifest_id": "test-feature",
-            "completed_task_ids": [],
+            "completed_task_ids": ["T2"],
             "tasks": [
                 {
                     "id": "T1",
@@ -969,6 +954,7 @@ class ControllerContractTest(unittest.TestCase):
         }
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         (self.repo / "tasks" / "T2.md").write_text("# T2\n")
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
@@ -1007,6 +993,7 @@ class ControllerContractTest(unittest.TestCase):
         }
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
         with self.assertRaises(ValueError) as ctx:
@@ -1044,6 +1031,7 @@ class ControllerContractTest(unittest.TestCase):
         }
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
         # Init succeeds
@@ -1059,6 +1047,7 @@ class ControllerContractTest(unittest.TestCase):
             capture_output=True,
         )
         self.assertEqual(0, init_result.returncode, init_result.stderr)
+        stage_transport_fixture(run_dir)
         ledger_path = run_dir / "ledger.json"
         ledger_before = ledger_path.read_bytes()
         baseline_paths_before = sorted(
@@ -1121,11 +1110,8 @@ class ControllerContractTest(unittest.TestCase):
         self.assertFalse((run_dir / "attempts").exists())
 
     def test_direct_update_ledger_obeys_run_lock(self):
-        controller = load_controller()
-        run_dir = self.root / "locked-run"
-        run_dir.mkdir()
+        controller, run_dir = ControllerIntegrationTest.create_initialized_run(self, name="locked-run")
         ledger_path = run_dir / "ledger.json"
-        ledger_path.write_text("{}\n")
         lock_path = run_dir / "controller.lock"
         holder_code = (
             "import fcntl, pathlib, sys; "
@@ -1303,7 +1289,8 @@ class ControllerIntegrationTest(unittest.TestCase):
 
     def policy(self):
         return {
-            "version": 1,
+            "version": 2,
+            "execution_authorization": {"transport": "sbx", "yolo": True, "intervention": "active_chat"},
             "run_id": "run-1",
             "repository": str(self.repo),
             "task_ids": ["T1"],
@@ -1414,6 +1401,7 @@ raise SystemExit(0)
         controller.persist_run_policy(policy_path, policy)
         (self.repo / "tasks").mkdir(exist_ok=True)
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps({
             "version": 1,
             "manifest_id": "flow-boundary",
@@ -1430,7 +1418,129 @@ raise SystemExit(0)
         controller.init_run(run_dir, policy_path, manifest_path, self.repo)
         return controller, run_dir
 
-    def test_pending_preflight_persists_cursor_without_launching_worker(self):
+    def test_frozen_authority_survives_source_edits(self):
+        controller, run_dir = self.create_initialized_run()
+        ledger = json.loads((run_dir / "ledger.json").read_text())
+        before = {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()}
+        frozen = controller.load_frozen_inputs(run_dir, ledger)
+        inputs_bytes = (run_dir / "inputs.json").read_bytes()
+        self.assertFalse(inputs_bytes.endswith(b"\n"))
+        self.assertEqual(sha256_bytes(inputs_bytes), ledger["inputs_sha256"])
+        self.assertEqual("# T1\n", frozen["documents"]["brief"]["content"])
+        self.assertEqual("Source brief: T1.md\n", frozen["documents"]["verification"]["content"])
+        self.assertEqual(["allowed.txt"], frozen["allowed_paths"])
+        self.assertEqual(["python3 -m unittest test_targeted"], frozen["required_checks"])
+        self.assertEqual(self.policy(), json.loads((run_dir / "run-policy.json").read_text()))
+        for path in (self.repo / "tasks/T1.md", self.repo / "tasks/verification.md", self.root / "run-flow-policy.json", self.root / "run-flow-manifest.json"):
+            with self.subTest(source=path):
+                path.write_text("unapproved replacement\n")
+                self.assertEqual(frozen, controller.load_frozen_inputs(run_dir, ledger))
+                controller._load_flow_authority(run_dir, ledger)
+                self.assertEqual(before, {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()})
+
+    def test_old_run_continuation_refuses_without_mutation(self):
+        for family in ("version", "model", "optional_profile", "missing_snapshot"):
+            with self.subTest(family=family):
+                controller, run_dir = self.create_initialized_run(name=f"old-{family}")
+                policy_path = run_dir / "run-policy.json"
+                policy = json.loads(policy_path.read_text())
+                if family == "version":
+                    policy["version"] = 1
+                elif family == "model":
+                    policy["flow"]["actor_levels"]["light"]["model"] = "gpt-5.6-sol"
+                elif family == "optional_profile":
+                    policy["flow"]["steps"] = [step for step in policy["flow"]["steps"] if step["kind"] != "preflight"]
+                else:
+                    ledger_path = run_dir / "ledger.json"
+                    ledger = json.loads(ledger_path.read_text())
+                    del ledger["inputs_sha256"]
+                    ledger_path.write_bytes(canonical_bytes(ledger))
+                policy_path.write_bytes(canonical_bytes(policy))
+                before = {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()}
+                result = subprocess.run([sys.executable, str(CONTROLLER_PATH), "run-next", "--run-dir", str(run_dir), "--timeout-seconds", "10", "--codex-bin", str(self.root / "must-not-launch")], text=True, capture_output=True)
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("Initialize a new run using reviewed current inputs", result.stderr)
+                self.assertEqual(before, {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()})
+
+    def test_init_refuses_weakened_authority_without_partial_publication(self):
+        controller, seed = self.create_initialized_run()
+        base_policy = json.loads((seed / "run-policy.json").read_text())
+        manifest_path = self.root / "run-flow-manifest.json"
+        source_bytes = {p.relative_to(self.repo): p.read_bytes() for p in self.repo.rglob("*") if p.is_file() and ".git" not in p.parts}
+        variants = {}
+        for kind in ("ready", "preflight", "implement", "verify", "semantic_review", "acceptance", "accept", "completed"):
+            policy = json.loads(json.dumps(base_policy))
+            policy["flow"]["steps"] = [step for step in policy["flow"]["steps"] if step["kind"] != kind]
+            variants[f"omit-{kind}"] = policy
+        for name, change in (
+            ("merged-role", lambda p: p["flow"]["steps"][4].update(role="acceptance_reviewer")),
+            ("reordered", lambda p: p["flow"]["steps"].reverse()),
+            ("optional", lambda p: p["flow"]["steps"][1].update(mode="off")),
+            ("multiple-tasks", lambda p: p["task_ids"].append("T2")),
+        ):
+            policy = json.loads(json.dumps(base_policy))
+            change(policy)
+            variants[name] = policy
+        for name, policy in variants.items():
+            with self.subTest(variant=name):
+                policy_path = self.root / "invalid-policy.json"
+                policy_path.write_bytes(canonical_bytes(policy))
+                run_dir = self.root / "runs" / name
+                before = {p.relative_to(self.root): p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
+                result = subprocess.run([
+                    sys.executable, str(CONTROLLER_PATH), "init",
+                    "--run-dir", str(run_dir), "--policy", str(policy_path),
+                    "--manifest", str(manifest_path), "--repository", str(self.repo),
+                ], text=True, capture_output=True)
+                self.assertNotEqual(0, result.returncode)
+                self.assertFalse(run_dir.exists())
+                self.assertEqual(before, {p.relative_to(self.root): p.read_bytes() for p in self.root.rglob("*") if p.is_file()})
+        self.assertEqual(source_bytes, {p.relative_to(self.repo): p.read_bytes() for p in self.repo.rglob("*") if p.is_file() and ".git" not in p.parts})
+
+    def test_old_flow_refuses_all_mutation_entries_without_touching_run(self):
+        controller, run_dir = self.create_initialized_run()
+        ready_ledger = json.loads((run_dir / "ledger.json").read_text())
+        stage_transport_fixture(run_dir)
+        fake = self.write_fake_codex(created_paths=(), clean_mutation=True)
+        launch = subprocess.run([
+            sys.executable, str(CONTROLLER_PATH), "run-next",
+            "--run-dir", str(run_dir), "--timeout-seconds", "10",
+            "--codex-bin", str(fake),
+        ], text=True, capture_output=True)
+        self.assertEqual(0, launch.returncode, launch.stderr)
+        inspection_ledger = json.loads((run_dir / "ledger.json").read_text())
+        flow_path = run_dir / "flows/flow-001.json"
+        flow = json.loads(flow_path.read_text())
+        flow["version"] = 1
+        flow_path.write_bytes(canonical_bytes(flow))
+        ledger_path = run_dir / "ledger.json"
+        revision_path = self.root / "new-flow.json"
+        revision_path.write_bytes(canonical_bytes(flow_profile()))
+        for entry in ("run-next", "inspect", "revise-flow", "update-ledger"):
+            with self.subTest(entry=entry):
+                ledger = dict(inspection_ledger if entry == "inspect" else ready_ledger)
+                ledger["flow_sha256"] = sha256_bytes(flow_path.read_bytes())
+                ledger_path.write_bytes(canonical_bytes(ledger))
+                before = {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()}
+                if entry == "run-next":
+                    result = subprocess.run([
+                        sys.executable, str(CONTROLLER_PATH), "run-next",
+                        "--run-dir", str(run_dir), "--timeout-seconds", "10",
+                        "--codex-bin", str(self.root / "must-not-launch"),
+                    ], text=True, capture_output=True)
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertIn("Initialize a new run using reviewed current inputs", result.stderr)
+                else:
+                    with self.assertRaisesRegex(ValueError, "Initialize a new run using reviewed current inputs"):
+                        if entry == "update-ledger":
+                            controller.update_ledger(run_dir, {}, expected_revision=ledger["revision"])
+                        elif entry == "revise-flow":
+                            controller.revise_flow(run_dir, revision_path)
+                        elif entry == "inspect":
+                            controller.inspect_run(run_dir, 10)
+                self.assertEqual(before, {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()})
+
+    def test_pending_ready_persists_cursor_without_launching_worker(self):
         reviewed = flow_profile("reviewed")
         controller, run_dir = self.create_initialized_run(flow=reviewed)
         repository_before = controller.capture_git_status(self.repo)
@@ -1446,13 +1556,13 @@ raise SystemExit(0)
         self.assertEqual({
             "status": "pending",
             "task_id": "T1",
-            "current_step": "preflight",
+            "current_step": "ready",
             "reason": "no MVP adapter owns the current flow step",
         }, json.loads(result.stdout))
         ledger = json.loads((run_dir / "ledger.json").read_text())
         self.assertEqual("ready", ledger["state"])
         self.assertEqual("T1", ledger["selected_task_id"])
-        self.assertEqual("preflight", ledger["current_step"])
+        self.assertEqual("ready", ledger["current_step"])
         self.assertEqual(0, ledger["correction_cycle"])
         self.assertFalse((run_dir / "attempts").exists())
         self.assertFalse((self.root / "argv.json").exists())
@@ -1646,9 +1756,9 @@ raise SystemExit(0)
         for current_step, correction_cycle in (
             ("implement", 1),
             ("correction", 0),
-            ("correction", 3),
-            ("semantic_review", 3),
-            ("accept", 3),
+            ("correction", 4),
+            ("semantic_review", 4),
+            ("accept", 4),
         ):
             with self.subTest(
                 current_step=current_step,
@@ -1699,7 +1809,7 @@ raise SystemExit(0)
         controller, run_dir = self.create_initialized_run()
         current = flow_profile()
         current["profile"] = "strong-current"
-        current["steps"][0]["mode"] = "strong"
+        current["steps"][2]["mode"] = "strong"
         current_path = self.root / "strong-current.json"
         current_path.write_text(json.dumps(current, indent=2, sort_keys=True) + "\n")
         controller.revise_flow(run_dir, current_path)
@@ -1734,12 +1844,13 @@ raise SystemExit(0)
         controller, run_dir = self.create_initialized_run()
         revised_flow = flow_profile()
         revised_flow["profile"] = "strong-implementation"
-        revised_flow["steps"][0]["mode"] = "strong"
+        revised_flow["steps"][2]["mode"] = "strong"
         revised_path = self.root / "strong-implementation-flow.json"
         revised_path.write_text(
             json.dumps(revised_flow, indent=2, sort_keys=True) + "\n"
         )
         controller.revise_flow(run_dir, revised_path)
+        stage_transport_fixture(run_dir)
         fake = self.write_fake_codex(created_paths=(), mutate_repository=False)
 
         result = subprocess.run([
@@ -1753,108 +1864,36 @@ raise SystemExit(0)
             (run_dir / "attempts/attempt-001/record.json").read_text()
         )
         self.assertEqual(
-            ("gpt-5.6-sol", "high"),
+            ("gpt-6.1-sol", "high"),
             (attempt["model"], attempt["effort"]),
         )
 
-    def test_post_acceptance_run_next_launches_next_ready_task(self):
-        controller = load_controller()
-        run_dir = self.root / "runs" / "run-accepted-next"
-        policy_path = self.root / "run-policy.json"
-        manifest_path = self.root / "task-manifest.json"
-        policy = self.policy()
-        policy["task_ids"] = ["T1", "T2"]
-        controller.persist_run_policy(policy_path, policy)
-        (self.repo / "tasks").mkdir()
-        for task_id in ("T1", "T2"):
-            (self.repo / "tasks" / f"{task_id}.md").write_text(f"# {task_id}\n")
-        manifest_path.write_text(json.dumps({
-            "version": 1,
-            "manifest_id": "accepted-next",
-            "completed_task_ids": [],
-            "tasks": [
-                {
-                    "id": "T1", "title": "First", "brief_path": "tasks/T1.md",
-                    "dependencies": [], "allowed_paths": ["allowed.txt"],
-                    "required_checks": ["python3 -m unittest test_targeted"],
-                },
-                {
-                    "id": "T2", "title": "Second", "brief_path": "tasks/T2.md",
-                    "dependencies": ["T1"], "allowed_paths": ["allowed.txt"],
-                    "required_checks": ["python3 -m unittest test_targeted"],
-                },
-            ],
-        }, indent=2, sort_keys=True) + "\n")
-        init_result = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "init",
-            "--run-dir", str(run_dir), "--policy", str(policy_path),
-            "--manifest", str(manifest_path), "--repository", str(self.repo),
-        ], text=True, capture_output=True)
-        self.assertEqual(0, init_result.returncode, init_result.stderr)
-
-        fake = self.write_fake_codex(
-            created_paths=(), clean_mutation=True, task_id="T1",
-        )
-        first = subprocess.run([
+    def test_accepted_workspace_rejects_later_drift(self):
+        controller, run_dir = self.create_initialized_run()
+        stage_transport_fixture(run_dir)
+        fake = self.write_fake_codex(created_paths=(), clean_mutation=True)
+        result = subprocess.run([
             sys.executable, str(CONTROLLER_PATH), "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(fake),
         ], text=True, capture_output=True)
-        self.assertEqual(0, first.returncode, first.stderr)
+        self.assertEqual(0, result.returncode, result.stderr)
         ledger = json.loads((run_dir / "ledger.json").read_text())
-        first_attempt = ledger["tasks"][0]["attempt_ids"][-1]
-        controller.update_ledger(run_dir, {
-            "state": "finalizing",
-            "last_verification_path": "verification/attempt-001.json",
-            "last_decision_path": "decisions/attempt-001.json",
-            "active_operation_path": "operations/T1-accept.json",
-        }, expected_revision=ledger["revision"])
-        ledger = json.loads((run_dir / "ledger.json").read_text())
-        released_tasks = [dict(task) for task in ledger["tasks"]]
-        released_tasks[0]["state"] = "accepted"
-        released_tasks[1]["state"] = "ready"
-        controller.update_ledger(run_dir, {
-            "state": "ready", "selected_task_id": None,
-            "active_operation_path": None, "current_step": None,
-            "correction_cycle": 0, "tasks": released_tasks,
-        }, expected_revision=ledger["revision"], closure_decision={
-            "accepted": True,
-            "allowed_transitions": ["accepted"],
-            "identity": {
-                "run_id": "run-1", "task_id": "T1", "attempt_id": first_attempt,
-            },
-        }, cursor_action="task_boundary")
-
-        fake = self.write_fake_codex(
-            created_paths=(), clean_mutation=True, task_id="T2",
-        )
-        second_command = [
-            sys.executable, str(CONTROLLER_PATH), "run-next",
-            "--run-dir", str(run_dir), "--timeout-seconds", "10",
-            "--codex-bin", str(fake),
-        ]
+        # Fixture for the historical integrity checker, not an acceptance path.
+        ledger["tasks"][0]["state"] = "accepted"
+        controller._validate_accepted_workspace(run_dir, ledger)
+        before = {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()}
         accepted_bytes = (self.repo / "allowed.txt").read_bytes()
-        ledger_before_drift = (run_dir / "ledger.json").read_bytes()
-        baseline_paths_before_drift = sorted((run_dir / "baselines").iterdir())
-        attempt_paths_before_drift = sorted((run_dir / "attempts").iterdir())
-        invocation_log = self.root / "argv.json"
-        invocations_before_drift = invocation_log.read_bytes()
         (self.repo / "allowed.txt").write_text("later ordinary drift\n")
-        drift = subprocess.run(second_command, text=True, capture_output=True)
-        self.assertNotEqual(0, drift.returncode)
-        self.assertIn("Repository bytes changed after acceptance", drift.stderr)
-        self.assertEqual(ledger_before_drift, (run_dir / "ledger.json").read_bytes())
-        self.assertEqual(baseline_paths_before_drift, sorted((run_dir / "baselines").iterdir()))
-        self.assertEqual(attempt_paths_before_drift, sorted((run_dir / "attempts").iterdir()))
-        self.assertEqual(invocations_before_drift, invocation_log.read_bytes())
-
+        with self.assertRaisesRegex(ValueError, "Repository bytes changed after acceptance"):
+            controller._validate_accepted_workspace(run_dir, ledger)
+        self.assertEqual(before, {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()})
         (self.repo / "allowed.txt").write_bytes(accepted_bytes)
-        second = subprocess.run(second_command, text=True, capture_output=True)
-        self.assertEqual(0, second.returncode, second.stderr)
-        ledger = json.loads((run_dir / "ledger.json").read_text())
-        self.assertEqual("T2", ledger["selected_task_id"])
-        self.assertEqual("awaiting_inspection", ledger["tasks"][1]["state"])
-        self.assertEqual(2, sum(len(task["attempt_ids"]) for task in ledger["tasks"]))
+        controller._validate_accepted_workspace(run_dir, ledger)
+        ledger["state"] = "ready"
+        ledger["selected_task_id"] = None
+        with self.assertRaisesRegex(ValueError, "No ready tasks found"):
+            controller.select_task(ledger, self.policy())
 
     def test_full_init_and_run_next_flow(self):
         """End-to-end: init + run-next with fake transport produces awaiting_inspection."""
@@ -1878,6 +1917,7 @@ raise SystemExit(0)
         # Write manifest
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest = {
             "version": 1,
             "manifest_id": "test-feature",
@@ -1912,6 +1952,8 @@ raise SystemExit(0)
         self.assertEqual("run-1", init_data["run_id"])
         self.assertEqual("ready", init_data["state"])
 
+        stage_transport_fixture(run_dir)
+        # The worker receives approved documents, with identity bound by inputs.json.
         # Run next
         run_result = subprocess.run(
             [
@@ -1931,6 +1973,9 @@ raise SystemExit(0)
         # Verify ledger state
         ledger = json.loads((run_dir / "ledger.json").read_text())
         self.assertEqual("awaiting_inspection", ledger["state"])
+        prompt = (run_dir / "attempts/attempt-001/prompt.txt").read_text()
+        self.assertIn("Frozen brief:\n# T1\n", prompt)
+        self.assertIn("Frozen verification:\nSource brief: T1.md\n", prompt)
         self.assertEqual("T1", ledger["selected_task_id"])
         self.assertIsNone(ledger["active_attempt_id"])
         self.assertIsNotNone(ledger["last_closure_path"])
@@ -2000,7 +2045,7 @@ raise SystemExit(0)
             closure_data["controller_observations"]["allowed_changed_paths"],
         )
         self.assertEqual(
-            sorted([*created_paths, "tasks/T1.md"]),
+            sorted([*created_paths, "tasks/T1.md", "tasks/verification.md"]),
             closure_data["controller_observations"]["untracked_paths"],
         )
         self.assertEqual([], closure_data["controller_observations"]["unexpected_paths"])
@@ -2075,6 +2120,7 @@ raise SystemExit(0)
         controller.persist_run_policy(policy_path, self.policy())
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps({
             "version": 1,
             "manifest_id": "test-feature",
@@ -2089,6 +2135,7 @@ raise SystemExit(0)
             }],
         }, indent=2, sort_keys=True) + "\n")
         controller.init_run(run_dir, policy_path, manifest_path, self.repo)
+        stage_transport_fixture(run_dir)
         command = [
             sys.executable, str(CONTROLLER_PATH), "run-next",
             "--run-dir", str(run_dir),
@@ -2159,6 +2206,7 @@ raise SystemExit(0)
         controller.persist_run_policy(policy_path, self.policy())
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps({
             "version": 1,
             "manifest_id": "test-feature",
@@ -2174,6 +2222,7 @@ raise SystemExit(0)
         }, indent=2, sort_keys=True) + "\n")
         controller.init_run(run_dir, policy_path, manifest_path, self.repo)
 
+        stage_transport_fixture(run_dir)
         result = subprocess.run(
             [
                 sys.executable, str(CONTROLLER_PATH), "run-next",
@@ -2219,6 +2268,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
         controller.persist_run_policy(policy_path, policy)
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps({
             "version": 1,
             "manifest_id": "clean-inspect",
@@ -2233,6 +2283,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
             }],
         }, indent=2, sort_keys=True) + "\n")
         controller.init_run(run_dir, policy_path, manifest_path, self.repo)
+        stage_transport_fixture(run_dir)
         fake = self.write_fake_codex(created_paths=(), clean_mutation=True)
         result = subprocess.run([
             sys.executable, str(CONTROLLER_PATH), "run-next",
@@ -2242,45 +2293,23 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
         return controller, run_dir
 
-    def test_verify_off_inspection_keeps_mechanical_boundary_and_runs_zero_commands(self):
+    def test_verify_off_profile_is_refused_before_execution(self):
         verify_off = flow_profile()
-        verify_off["profile"] = "verify-off"
         verify_off["steps"] = [
             step for step in verify_off["steps"] if step["kind"] != "verify"
         ]
-        controller, run_dir = self.create_clean_inspection_run(flow=verify_off)
-        original_inspection = controller._validate_closure_observations
-
         with mock.patch.object(
-            controller,
-            "_validate_closure_observations",
-            wraps=original_inspection,
-        ) as mechanical_inspection, mock.patch.object(
-            controller._verification_module,
-            "execute_verification_plan",
-            side_effect=AssertionError("verify-off reached command execution"),
+            load_controller()._verification_module, "execute_verification_plan",
+            side_effect=AssertionError("weak profile reached command execution"),
         ) as execute:
-            result = controller.inspect_run(run_dir, 10)
-
-        mechanical_inspection.assert_called_once()
+            with self.assertRaisesRegex(ValueError, "mandatory stage"):
+                self.create_clean_inspection_run(flow=verify_off)
         execute.assert_not_called()
-        self.assertTrue(result["accepted"])
-        execution = json.loads(
-            (run_dir / "verification/attempt-001.turn-001.execution.json").read_text()
-        )
-        verification = json.loads(Path(result["verification_path"]).read_text())
-        decision = json.loads(Path(result["decision_path"]).read_text())
-        self.assertEqual([], execution["plan"])
-        self.assertEqual([], execution["outcomes"])
-        self.assertEqual("omitted_by_policy", execution["terminal_reason"])
-        self.assertEqual("omitted_by_policy", verification["outcome"])
-        self.assertEqual(["mechanical checks passed"], decision["reasons"])
-        ledger = json.loads((run_dir / "ledger.json").read_text())
-        self.assertEqual("accept", ledger["current_step"])
+        self.assertFalse((self.root / "runs/run-clean-inspect").exists())
 
     def test_targeted_verification_excludes_configured_repository_gate(self):
         targeted = flow_profile()
-        targeted["steps"][1]["mode"] = "targeted"
+        targeted["steps"][3]["mode"] = "targeted"
         controller, run_dir = self.create_clean_inspection_run(
             targeted="/usr/bin/true",
             repository_gate="/usr/bin/false",
@@ -2311,7 +2340,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
 
     def test_repository_gate_mode_requires_persisted_repository_gate(self):
         with_gate = flow_profile()
-        with_gate["steps"][1]["mode"] = "targeted_plus_repository_gate"
+        with_gate["steps"][3]["mode"] = "targeted_plus_repository_gate"
         controller, run_dir = self.create_clean_inspection_run(
             repository_gate=None,
             flow=with_gate,
@@ -2341,10 +2370,6 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
     def test_inspect_keeps_pending_semantic_review_non_accepting(self):
         pending_review = flow_profile("reviewed")
         pending_review["profile"] = "review-only"
-        pending_review["steps"] = [
-            step for step in pending_review["steps"]
-            if step["kind"] not in {"preflight", "verify"}
-        ]
         controller, run_dir = self.create_clean_inspection_run(
             flow=pending_review
         )
@@ -2471,6 +2496,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
         controller.persist_run_policy(policy_path, policy)
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps({
             "version": 1,
             "manifest_id": "inspect-drift",
@@ -2485,6 +2511,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
             }],
         }, indent=2, sort_keys=True) + "\n")
         controller.init_run(run_dir, policy_path, manifest_path, self.repo)
+        stage_transport_fixture(run_dir)
         fake = self.write_fake_codex(created_paths=(), clean_mutation=True)
         run_result = subprocess.run([
             sys.executable, str(CONTROLLER_PATH), "run-next",
@@ -2518,7 +2545,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
             },
         )
 
-    def test_inspect_reuses_execution_after_crash_and_publishes_accepting_decision(self):
+    def test_inspect_reuses_execution_after_crash_with_review_pending(self):
         controller, run_dir = self.create_clean_inspection_run()
         ledger_before = json.loads((run_dir / "ledger.json").read_text())
         closure = json.loads((run_dir / ledger_before["last_closure_path"]).read_text())
@@ -2561,14 +2588,14 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
         ):
             result = controller.inspect_run(run_dir, 10)
 
-        self.assertTrue(result["accepted"])
-        self.assertEqual(["accept", "stop"], result["allowed_actions"])
+        self.assertFalse(result["accepted"])
+        self.assertEqual(["stop"], result["allowed_actions"])
         self.assertEqual(execution_bytes, execution_path.read_bytes())
         verification = json.loads(Path(result["verification_path"]).read_text())
         decision = json.loads(Path(result["decision_path"]).read_text())
         self.assertEqual("passed", verification["outcome"])
         self.assertEqual([], verification["drift_findings"])
-        self.assertTrue(decision["accepted"])
+        self.assertFalse(decision["accepted"])
         self.assertEqual("not_collected", decision["semantic_review"])
         ledger = json.loads((run_dir / "ledger.json").read_text())
         self.assertEqual("awaiting_inspection", ledger["state"])
@@ -2588,7 +2615,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
             if path.is_file()
         }
         replay = controller.inspect_run(run_dir, 10)
-        self.assertTrue(replay["accepted"])
+        self.assertFalse(replay["accepted"])
         self.assertEqual(
             completed_bytes,
             {
@@ -2883,14 +2910,14 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
             },
         )
 
-    def test_repository_gate_only_authorized_gap_can_still_offer_accept(self):
+    def test_repository_gate_authorized_gap_preserves_pending_review(self):
         gap = {
             "reason": "Known repository-only failure",
             "owner": "test-owner",
             "follow_up": "Resolve after this bounded task",
         }
         with_gate = flow_profile()
-        with_gate["steps"][1]["mode"] = "targeted_plus_repository_gate"
+        with_gate["steps"][3]["mode"] = "targeted_plus_repository_gate"
         controller, run_dir = self.create_clean_inspection_run(
             repository_gate="/usr/bin/false", authorized_gap=gap,
             flow=with_gate,
@@ -2898,14 +2925,14 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
 
         result = controller.inspect_run(run_dir, 10)
 
-        self.assertTrue(result["accepted"])
+        self.assertFalse(result["accepted"])
         decision = json.loads(Path(result["decision_path"]).read_text())
         execution = json.loads(
             (run_dir / "verification/attempt-001.turn-001.execution.json").read_text()
         )
         self.assertEqual("authorized_gap", execution["terminal_reason"])
         self.assertEqual(gap, decision["gap_details"])
-        self.assertEqual(["accept", "stop"], decision["allowed_actions"])
+        self.assertEqual(["stop"], decision["allowed_actions"])
 
     def test_authorized_gap_cannot_excuse_a_targeted_failure(self):
         gap = {
@@ -2914,7 +2941,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
             "follow_up": "Resolve later",
         }
         with_gate = flow_profile()
-        with_gate["steps"][1]["mode"] = "targeted_plus_repository_gate"
+        with_gate["steps"][3]["mode"] = "targeted_plus_repository_gate"
         controller, run_dir = self.create_clean_inspection_run(
             targeted="/usr/bin/false",
             repository_gate="/usr/bin/false",
@@ -3096,6 +3123,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
         controller.persist_run_policy(policy_path, policy)
         (self.repo / "tasks").mkdir()
         (self.repo / "tasks" / "T1.md").write_text("# T1\n")
+        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
         manifest_path.write_text(json.dumps({
             "version": 1,
             "manifest_id": "ready-rejection",

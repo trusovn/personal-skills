@@ -21,7 +21,6 @@
 ## Working on a specific named task (from official plan docs)
 
 - When finishing a task, do not update existing plan documents - write your results next to them either per task or in a dedicated file, if already present.
-- Use a soft stop around 25–35 tool calls or 80–100k current-context input. If the task reaches that boundary, stop with a structured handoff instead of continuing.
 
 ## Working on skill source in this repository
 

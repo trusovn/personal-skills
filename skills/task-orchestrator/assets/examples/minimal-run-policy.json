@@ -1,69 +1,85 @@
 {
-  "version": 1,
+  "version": 2,
   "run_id": "example-run",
   "repository": "/absolute/path/to/repository",
   "task_ids": [
     "T1"
   ],
   "flow": {
-    "actor_levels": {
-      "light": {
-        "model": "gpt-5.6-sol",
-        "reasoning": "low"
-      },
-      "standard": {
-        "model": "gpt-5.6-sol",
-        "reasoning": "medium"
-      },
-      "strong": {
-        "model": "gpt-5.6-sol",
-        "reasoning": "high"
-      }
-    },
-    "correction": {
-      "enabled": true,
-      "limit": 2
-    },
-    "implementation_session_reuse_threshold": 0.5,
+    "version": 2,
     "profile": "reviewed",
-    "routes": {
-      "blocked": "stop",
-      "corrections_exhausted": "escalate",
-      "failed": "stop",
-      "inconclusive": "escalate",
-      "needs_input": "escalate",
-      "permission_expansion": "stop",
-      "plan_or_architecture_question": "escalate",
-      "unexpected_changes": "stop"
-    },
     "steps": [
       {
+        "kind": "ready",
+        "role": "controller",
+        "mode": "off"
+      },
+      {
         "kind": "preflight",
-        "mode": "light",
-        "role": "preflight"
+        "role": "preflight",
+        "mode": "light"
       },
       {
         "kind": "implement",
-        "mode": "standard",
-        "role": "implementer"
+        "role": "implementer",
+        "mode": "standard"
       },
       {
         "kind": "verify",
-        "mode": "targeted",
-        "role": "verifier"
+        "role": "verifier",
+        "mode": "targeted"
       },
       {
         "kind": "semantic_review",
-        "mode": "standard",
-        "role": "semantic_reviewer"
+        "role": "review_collector",
+        "mode": "standard"
+      },
+      {
+        "kind": "acceptance",
+        "role": "acceptance_reviewer",
+        "mode": "standard"
       },
       {
         "kind": "accept",
-        "mode": "off",
-        "role": "controller"
+        "role": "controller",
+        "mode": "off"
+      },
+      {
+        "kind": "completed",
+        "role": "controller",
+        "mode": "off"
       }
     ],
-    "version": 1
+    "actor_levels": {
+      "light": {
+        "model": "gpt-6.1-sol",
+        "reasoning": "low"
+      },
+      "standard": {
+        "model": "gpt-6.1-sol",
+        "reasoning": "medium"
+      },
+      "strong": {
+        "model": "gpt-6.1-sol",
+        "reasoning": "high"
+      }
+    },
+    "implementation_session_reuse_threshold": 0.5,
+    "correction": {
+      "enabled": true,
+      "limit": 3,
+      "includes_environment_repair": true
+    },
+    "routes": {
+      "blocked": "stop",
+      "failed": "stop",
+      "needs_input": "escalate",
+      "unexpected_changes": "stop",
+      "inconclusive": "escalate",
+      "corrections_exhausted": "escalate",
+      "permission_expansion": "stop",
+      "plan_or_architecture_question": "escalate"
+    }
   },
   "verification": {
     "targeted_checks": [
@@ -90,5 +106,10 @@
     "on_failed": "stop",
     "on_needs_input": "escalate",
     "on_unexpected_changes": "stop"
+  },
+  "execution_authorization": {
+    "transport": "sbx",
+    "yolo": true,
+    "intervention": "active_chat"
   }
 }

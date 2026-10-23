@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:task-orchestrator:flow-profile:v1",
+  "$id": "urn:task-orchestrator:flow-profile:v2",
   "title": "Task Orchestrator MVP Flow Profile",
   "type": "object",
   "required": [
@@ -13,85 +13,229 @@
     "routes"
   ],
   "properties": {
-    "version": {"const": 1},
-    "profile": {"type": "string", "minLength": 1},
+    "version": {
+      "const": 2
+    },
+    "profile": {
+      "type": "string",
+      "minLength": 1
+    },
     "steps": {
       "type": "array",
-      "minItems": 2,
-      "maxItems": 5,
-      "items": {
-        "oneOf": [
-          {
-            "type": "object",
-            "required": ["kind", "role", "mode"],
-            "properties": {
-              "kind": {"const": "preflight"},
-              "role": {"const": "preflight"},
-              "mode": {"enum": ["light", "standard", "strong"]}
+      "minItems": 8,
+      "maxItems": 8,
+      "prefixItems": [
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "role",
+            "mode"
+          ],
+          "properties": {
+            "kind": {
+              "const": "ready"
             },
-            "additionalProperties": false
+            "role": {
+              "const": "controller"
+            },
+            "mode": {
+              "enum": [
+                "off"
+              ]
+            }
           },
-          {
-            "type": "object",
-            "required": ["kind", "role", "mode"],
-            "properties": {
-              "kind": {"const": "implement"},
-              "role": {"const": "implementer"},
-              "mode": {"enum": ["light", "standard", "strong"]}
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "role",
+            "mode"
+          ],
+          "properties": {
+            "kind": {
+              "const": "preflight"
             },
-            "additionalProperties": false
+            "role": {
+              "const": "preflight"
+            },
+            "mode": {
+              "enum": [
+                "light",
+                "standard",
+                "strong"
+              ]
+            }
           },
-          {
-            "type": "object",
-            "required": ["kind", "role", "mode"],
-            "properties": {
-              "kind": {"const": "verify"},
-              "role": {"const": "verifier"},
-              "mode": {
-                "enum": ["targeted", "targeted_plus_repository_gate"]
-              }
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "role",
+            "mode"
+          ],
+          "properties": {
+            "kind": {
+              "const": "implement"
             },
-            "additionalProperties": false
+            "role": {
+              "const": "implementer"
+            },
+            "mode": {
+              "enum": [
+                "light",
+                "standard",
+                "strong"
+              ]
+            }
           },
-          {
-            "type": "object",
-            "required": ["kind", "role", "mode"],
-            "properties": {
-              "kind": {"const": "semantic_review"},
-              "role": {"const": "semantic_reviewer"},
-              "mode": {"enum": ["standard", "strong"]}
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "role",
+            "mode"
+          ],
+          "properties": {
+            "kind": {
+              "const": "verify"
             },
-            "additionalProperties": false
+            "role": {
+              "const": "verifier"
+            },
+            "mode": {
+              "enum": [
+                "targeted",
+                "targeted_plus_repository_gate"
+              ]
+            }
           },
-          {
-            "type": "object",
-            "required": ["kind", "role", "mode"],
-            "properties": {
-              "kind": {"const": "accept"},
-              "role": {"const": "controller"},
-              "mode": {"const": "off"}
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "role",
+            "mode"
+          ],
+          "properties": {
+            "kind": {
+              "const": "semantic_review"
             },
-            "additionalProperties": false
-          }
-        ]
-      }
+            "role": {
+              "const": "review_collector"
+            },
+            "mode": {
+              "enum": [
+                "standard",
+                "strong"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "role",
+            "mode"
+          ],
+          "properties": {
+            "kind": {
+              "const": "acceptance"
+            },
+            "role": {
+              "const": "acceptance_reviewer"
+            },
+            "mode": {
+              "enum": [
+                "standard",
+                "strong"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "role",
+            "mode"
+          ],
+          "properties": {
+            "kind": {
+              "const": "accept"
+            },
+            "role": {
+              "const": "controller"
+            },
+            "mode": {
+              "enum": [
+                "off"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "role",
+            "mode"
+          ],
+          "properties": {
+            "kind": {
+              "const": "completed"
+            },
+            "role": {
+              "const": "controller"
+            },
+            "mode": {
+              "enum": [
+                "off"
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      ],
+      "items": false
     },
     "actor_levels": {
       "const": {
-        "light": {"model": "gpt-5.6-sol", "reasoning": "low"},
-        "standard": {"model": "gpt-5.6-sol", "reasoning": "medium"},
-        "strong": {"model": "gpt-5.6-sol", "reasoning": "high"}
+        "light": {
+          "model": "gpt-6.1-sol",
+          "reasoning": "low"
+        },
+        "standard": {
+          "model": "gpt-6.1-sol",
+          "reasoning": "medium"
+        },
+        "strong": {
+          "model": "gpt-6.1-sol",
+          "reasoning": "high"
+        }
       }
     },
-    "implementation_session_reuse_threshold": {"const": 0.5},
+    "implementation_session_reuse_threshold": {
+      "const": 0.5
+    },
     "correction": {
-      "type": "object",
-      "required": ["enabled", "limit"],
-      "properties": {
-        "enabled": {"type": "boolean"},
-        "limit": {"type": "integer", "minimum": 0}
-      },
-      "additionalProperties": false
+      "const": {
+        "enabled": true,
+        "limit": 3,
+        "includes_environment_repair": true
+      }
     },
     "routes": {
       "type": "object",
@@ -105,7 +249,12 @@
         "permission_expansion",
         "plan_or_architecture_question"
       ],
-      "additionalProperties": {"enum": ["stop", "escalate"]}
+      "additionalProperties": {
+        "enum": [
+          "stop",
+          "escalate"
+        ]
+      }
     }
   },
   "additionalProperties": false

@@ -1223,6 +1223,59 @@ def validate_actor_operations(ledger: dict[str, Any]) -> None:
             raise ValueError("Invalid evidence status")
 
 
+def validate_input_revision_request(request: dict[str, Any]) -> None:
+    """Validate a trusted caller's explicit owner decision, bound to its change.
+
+    This records authority supplied by the coordinator; it does not authenticate
+    external identities or turn actor output into an owner response.
+    """
+    _validate_exact_object(request, ("expected_version", "task_id", "revision_key", "payload", "authorization"), "input revision")
+    if type(request["expected_version"]) is not int or request["expected_version"] < 1:
+        raise ValueError("Invalid input revision version")
+    for field in ("task_id", "revision_key"):
+        _validate_str(request[field], field)
+    payload = request["payload"]
+    _validate_exact_object(payload, ("policy", "manifest", "documents"), "revision payload")
+    validate_run_policy(payload["policy"])
+    _validate_task_manifest_schema(payload["manifest"])
+    _validate_exact_object(payload["documents"], ("brief", "verification"), "revision documents")
+    for name, content in payload["documents"].items():
+        _validate_str(content, f"revision {name}")
+    authorization = request["authorization"]
+    _validate_exact_object(authorization, ("kind", "decision", "owner", "provenance", "request_sha256"), "revision authorization")
+    if authorization["kind"] != "owner_response" or authorization["decision"] != "authorize_input_revision":
+        raise ValueError("Explicit owner revision authority required")
+    for field in ("owner", "provenance"):
+        _validate_str(authorization[field], f"authorization {field}")
+    bound = {field: value for field, value in request.items() if field != "authorization"}
+    if authorization["request_sha256"] != sha256_text(canonical_json(bound)):
+        raise ValueError("Owner authority does not bind the requested revision")
+
+
+def validate_input_revisions(ledger: dict[str, Any]) -> None:
+    revisions = ledger.get("input_revisions", [])
+    if not isinstance(revisions, list):
+        raise ValueError("input_revisions must be an array")
+    keys = set()
+    for index, receipt in enumerate(revisions, 1):
+        _validate_exact_object(receipt, ("request", "path", "sha256", "inputs_sha256", "state_version", "previous"), "input revision receipt")
+        validate_input_revision_request(receipt["request"])
+        key = receipt["request"]["revision_key"]
+        if key in keys or receipt["path"] != f"input-revisions/revision-{index:03d}.json":
+            raise ValueError("Invalid input revision history")
+        keys.add(key)
+        for field in ("sha256", "inputs_sha256"):
+            _validate_sha256(receipt[field], f"revision {field}")
+        if receipt["state_version"] != receipt["request"]["expected_version"] + 1 or receipt["state_version"] > ledger["revision"]:
+            raise ValueError("Invalid input revision publication version")
+        if not isinstance(receipt["previous"], dict) or receipt["previous"].get("revision") != receipt["request"]["expected_version"]:
+            raise ValueError("Invalid previous input authority")
+    if revisions and any(ledger[field] != revisions[-1]["path"] for field in ("policy_path", "manifest_path", "flow_path")):
+        raise ValueError("Current input revision paths contradict history")
+    if revisions and ledger.get("inputs_sha256") != revisions[-1]["inputs_sha256"]:
+        raise ValueError("Current input identity contradicts revision history")
+
+
 def validate_ledger(ledger: dict[str, Any]) -> None:
     required = (
         "version", "run_id", "repository", "created_at", "updated_at", "revision", "policy_path",
@@ -1238,13 +1291,14 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
         raise ValueError(f"Ledger is missing: {', '.join(missing)}")
     if type(ledger["flow_revision"]) is not int or ledger["flow_revision"] < 1:
         raise ValueError("Ledger flow_revision must be a positive integer")
-    if ledger["flow_path"] != f"flows/flow-{ledger['flow_revision']:03d}.json":
+    if not ledger.get("input_revisions") and ledger["flow_path"] != f"flows/flow-{ledger['flow_revision']:03d}.json":
         raise ValueError("Ledger flow_path does not match flow_revision")
     _validate_sha256(ledger["flow_sha256"], "flow_sha256")
     if ledger["state"] not in ALLOWED_RUN_TRANSITIONS:
         raise ValueError(f"Invalid ledger state: {ledger['state']}")
     if type(ledger["revision"]) is not int or ledger["revision"] < 1:
         raise ValueError("Ledger revision must be a positive integer")
+    validate_input_revisions(ledger)
     if ledger["current_step"] is not None and ledger["current_step"] not in {
         *FLOW_STEP_ORDER, "correction",
     }:
@@ -1403,7 +1457,7 @@ def apply_ledger_update(
         "version", "run_id", "repository", "created_at", "policy_path", "policy_sha256",
         "manifest_path", "manifest_sha256", "initial_baseline_path",
         "initial_baseline_digest", "inputs_sha256", "completed_task_ids", "flow_revision",
-        "flow_path", "flow_sha256",
+        "flow_path", "flow_sha256", "input_revisions",
     )
     next_ledger.update(updater)
     next_ledger["updated_at"] = updated_at

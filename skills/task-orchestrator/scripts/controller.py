@@ -111,10 +111,30 @@ def _write_durable_exclusive(path: Path, content: bytes) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def load_frozen_inputs(run_dir: Path, ledger: dict[str, Any]) -> dict[str, Any]:
-    """Read approved bytes only; mutable repository sources are not authority."""
+def load_input_authority(run_dir: Path, ledger: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """Resolve all current inputs from one ledger snapshot and immutable bundle."""
     action = "Initialize a new run using reviewed current inputs."
-    policy = json.loads((run_dir / "run-policy.json").read_text())
+    revisions = ledger.get("input_revisions", [])
+    if revisions:
+        _state_module.validate_input_revisions(ledger)
+        receipt = revisions[-1]
+        raw = (run_dir / receipt["path"]).read_bytes()
+        if _sha256_bytes(raw) != receipt["sha256"]:
+            raise ValueError("Persisted input revision digest mismatch")
+        bundle = json.loads(raw)
+        if bundle["request"] != receipt["request"]:
+            raise ValueError("Persisted input revision request mismatch")
+        policy = bundle["request"]["payload"]["policy"]
+        manifest = bundle["request"]["payload"]["manifest"]
+        inputs = bundle["inputs"]
+        inputs_raw = _canonical_record_bytes(inputs)
+    else:
+        if ledger["policy_path"] != "run-policy.json" or ledger["manifest_path"] != "task-manifest.json":
+            raise ValueError("Persisted authority path mismatch")
+        policy = json.loads((run_dir / ledger["policy_path"]).read_text())
+        manifest = json.loads((run_dir / ledger["manifest_path"]).read_text())
+        inputs_raw = (run_dir / "inputs.json").read_bytes()
+        inputs = json.loads(inputs_raw)
     try:
         validate_run_policy(policy)
         if "inputs_sha256" not in ledger:
@@ -123,20 +143,33 @@ def load_frozen_inputs(run_dir: Path, ledger: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"Incompatible frozen run: {error}. {action}") from error
     if sha256_text(canonical_json(policy)) != ledger["policy_sha256"]:
         raise ValueError("Persisted policy digest mismatch")
-    raw = (run_dir / "inputs.json").read_bytes()
-    if _sha256_bytes(raw) != ledger["inputs_sha256"]:
+    if sha256_text(canonical_json(manifest)) != ledger["manifest_sha256"]:
+        raise ValueError("Persisted manifest digest mismatch")
+    if _sha256_bytes(inputs_raw) != ledger["inputs_sha256"]:
         raise ValueError("Persisted task input digest mismatch")
-    inputs = json.loads(raw)
     if inputs["task_id"] != policy["task_ids"][0]:
         raise ValueError("Frozen task inputs contradict policy")
-    return inputs
+    if policy["run_id"] != ledger["run_id"] or Path(policy["repository"]).resolve() != Path(ledger["repository"]).resolve():
+        raise ValueError("Persisted run/repository identity mismatch")
+    return policy, manifest, inputs
+
+
+def load_frozen_inputs(run_dir: Path, ledger: dict[str, Any]) -> dict[str, Any]:
+    """Read approved bytes only; mutable repository sources are not authority."""
+    return load_input_authority(run_dir, ledger)[2]
 
 
 def _load_flow_authority_state(
     run_dir: Path, ledger: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any] | None]:
-    load_frozen_inputs(run_dir, ledger)
+    policy, _, _ = load_input_authority(run_dir, ledger)
     revision = ledger["flow_revision"]
+    if ledger.get("input_revisions"):
+        flow = resolve_flow_profile(policy)
+        if _sha256_bytes(_canonical_flow_bytes(flow)) != ledger["flow_sha256"]:
+            raise ValueError("Persisted revised flow digest mismatch")
+        validate_flow_cursor(flow, {field: ledger[field] for field in ("current_step", "correction_cycle")})
+        return flow, {field: ledger[field] for field in ("flow_revision", "flow_path", "flow_sha256")}, None
     expected_path = f"flows/flow-{revision:03d}.json"
     if ledger["flow_path"] != expected_path:
         raise ValueError("Persisted current flow path does not match its revision")
@@ -831,17 +864,7 @@ def _load_inspection_authority(
         raise ValueError("inspect requires run state 'awaiting_inspection'")
     flow, flow_authority, _ = _load_flow_authority_state(run_dir, ledger)
 
-    policy_path = run_dir / "run-policy.json"
-    manifest_path = run_dir / "task-manifest.json"
-    if ledger["policy_path"] != "run-policy.json" or ledger["manifest_path"] != "task-manifest.json":
-        raise ValueError("Persisted authority path mismatch")
-    policy = json.loads(policy_path.read_text())
-    validate_run_policy(policy)
-    if sha256_text(canonical_json(policy)) != ledger["policy_sha256"]:
-        raise ValueError("Persisted policy digest mismatch")
-    manifest = json.loads(manifest_path.read_text())
-    if sha256_text(canonical_json(manifest)) != ledger["manifest_sha256"]:
-        raise ValueError("Persisted manifest digest mismatch")
+    policy, manifest, _ = load_input_authority(run_dir, ledger)
     repo = Path(ledger["repository"]).resolve()
     if repo != Path(policy["repository"]).resolve() or _git_module.repository_top_level(repo) != repo:
         raise ValueError("Persisted repository identity mismatch")
@@ -1517,9 +1540,6 @@ def _reservation_context(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any]]
         mode = _state_module.flow_step(flow, stage)["mode"]
         if assignment["actor"] != flow["actor_levels"].get(mode):
             raise ValueError("Active assignment actor contradicts the frozen flow")
-    manifest = json.loads((run_dir / "task-manifest.json").read_text())
-    if sha256_text(canonical_json(manifest)) != ledger["manifest_sha256"]:
-        raise ValueError("Persisted manifest digest mismatch")
     return ledger, flow
 
 
@@ -1581,14 +1601,13 @@ def _reservation_options(ledger: dict[str, Any]) -> tuple[list[str], str | None]
     if stage in {"ready", "preflight"}:
         return ["reserve:preflight"], None
     if stage in {"implement", "correction"}:
+        if not _current_readiness(ledger):
+            return ["reserve:preflight"], "current_preflight_readiness_required"
         if stage == "implement" and any(
             item["assignment"]["stage"] == "implement"
-            and item["assignment"]["inputs_sha256"] == ledger["inputs_sha256"]
             for item in ledger.get("actor_operations", [])
         ):
             return ["intervene"], "successor_admission_pending"
-        if not _current_readiness(ledger):
-            return ["reserve:preflight"], "current_preflight_readiness_required"
         if stage == "correction" and correction not in {"check_failed", "review_findings"}:
             return ["intervene"], "correction_authorization_pending"
         return [f"reserve:{stage}"], None
@@ -1606,7 +1625,7 @@ def status_run(run_dir: Path) -> dict[str, Any]:
     """Read one atomic ledger snapshot without advancing state or taking a lock."""
     ledger, flow = _reservation_context(run_dir)
     actions, blocker = _reservation_options(ledger)
-    task_id = json.loads((run_dir / "inputs.json").read_text())["task_id"]
+    task_id = load_frozen_inputs(run_dir, ledger)["task_id"]
     return {
         "status": "ok", "run_id": ledger["run_id"], "task_id": task_id,
         "inputs_sha256": ledger["inputs_sha256"],
@@ -1625,6 +1644,7 @@ def status_run(run_dir: Path) -> dict[str, Any]:
         "outstanding_findings": ledger.get("outstanding_findings", []),
         "operation": _active_actor(ledger), "operation_history": ledger.get("actor_operations", []),
         "readiness_current": _current_readiness(ledger),
+        "input_revision_history": ledger.get("input_revisions", []),
         "next_actions": actions, "blocker": blocker,
     }
 
@@ -1704,6 +1724,126 @@ def reserve_operation(
         return {**refuse("authority_or_lock_unavailable"), "detail": str(error)}
 
 
+def revise_inputs(run_dir: Path, request: dict[str, Any]) -> dict[str, Any]:
+    """Publish explicitly owner-authorized inputs at an idle task boundary.
+
+    The caller is responsible for obtaining the owner response; actor prose is
+    not an authorization object. A bundle is immutable preparation. Only the
+    atomic ledger replacement makes it current, including its replay receipt.
+    """
+    ledger = None
+    publishing = False
+
+    def refuse(reason: str, detail: str | None = None) -> dict[str, Any]:
+        result = {"status": "refused", "reason": reason,
+                  "state_version": ledger["revision"] if ledger else None,
+                  "next_actions": ["intervene"]}
+        if detail is not None:
+            result["detail"] = detail
+        return result
+
+    try:
+        # Detach caller-owned objects before validation, hashing or persistence.
+        request = json.loads(json.dumps(request))
+        _state_module.validate_input_revision_request(request)
+    except (ValueError, KeyError, TypeError) as error:
+        return refuse("invalid_revision_request", str(error))
+    try:
+        with RunCommandLock(run_dir):
+            ledger, _ = _reservation_context(run_dir)
+            for receipt in ledger.get("input_revisions", []):
+                if receipt["request"]["revision_key"] == request["revision_key"]:
+                    if receipt["request"] != request:
+                        return refuse("revision_key_conflict")
+                    return {"status": "replayed", "state_version": ledger["revision"],
+                            "revision_state_version": receipt["state_version"],
+                            "inputs_sha256": receipt["inputs_sha256"], "revision_path": receipt["path"]}
+            if request["expected_version"] != ledger["revision"]:
+                return refuse("stale_version")
+            task_id = load_frozen_inputs(run_dir, ledger)["task_id"]
+            if request["task_id"] != task_id:
+                return refuse("task_mismatch")
+            if task_id in ledger["completed_task_ids"] or any(task["state"] == "accepted" for task in ledger["tasks"]):
+                return refuse("task_completed")
+            active = _active_actor(ledger)
+            if active:
+                return refuse(f"operation_{active['state']}")
+            if ledger["active_attempt_id"] or ledger["active_operation_path"] or ledger["state"] in {"running", "finalizing"}:
+                return refuse("operation_active_or_unknown")
+            # An interrupted legacy flow change must be resolved explicitly.
+            _, _, pending_flow = _load_flow_authority_state(run_dir, ledger)
+            if pending_flow:
+                return refuse("pending_flow_revision")
+
+            payload = request["payload"]
+            policy, manifest = payload["policy"], payload["manifest"]
+            if (policy["run_id"] != ledger["run_id"] or policy["task_ids"] != [task_id]
+                    or Path(policy["repository"]).resolve() != Path(ledger["repository"]).resolve()):
+                return refuse("run_task_or_repository_mismatch")
+            validated = validate_task_manifest(policy, manifest, Path(ledger["repository"]))
+            if validated["completed_task_ids"] != ledger["completed_task_ids"]:
+                return refuse("completion_history_mismatch")
+            selected = next(task for task in manifest["tasks"] if task["id"] == task_id)
+            policy_digest = sha256_text(canonical_json(policy))
+            manifest_digest = sha256_text(canonical_json(manifest))
+            inputs = {"version": 1, "task_id": task_id, "revision_key": request["revision_key"],
+                      "policy_sha256": policy_digest, "manifest_sha256": manifest_digest,
+                      "allowed_paths": selected["allowed_paths"],
+                      "required_checks": selected.get("required_checks", []), "documents": {}}
+            for name, content in payload["documents"].items():
+                source = selected["brief_path"] if name == "brief" else str(Path(selected["brief_path"]).with_name("verification.md"))
+                inputs["documents"][name] = {"source_path": source, "content": content,
+                                             "sha256": _sha256_bytes(content.encode("utf-8"))}
+            inputs_digest = _sha256_bytes(_canonical_record_bytes(inputs))
+            bundle_bytes = _canonical_record_bytes({"version": 1, "request": request, "inputs": inputs})
+            history = ledger.get("input_revisions", [])
+            relative = f"input-revisions/revision-{len(history) + 1:03d}.json"
+            receipt = {"request": request, "path": relative, "sha256": _sha256_bytes(bundle_bytes),
+                       "inputs_sha256": inputs_digest, "state_version": ledger["revision"] + 1,
+                       "previous": {key: value for key, value in ledger.items() if key != "input_revisions"}}
+            updated = json.loads(json.dumps(ledger))
+            flow_digest = _sha256_bytes(_canonical_flow_bytes(resolve_flow_profile(policy)))
+            updated.update(revision=receipt["state_version"], updated_at=_now_iso(),
+                           inputs_sha256=inputs_digest, policy_sha256=policy_digest,
+                           manifest_sha256=manifest_digest, policy_path=relative, manifest_path=relative,
+                           flow_path=relative, flow_sha256=flow_digest,
+                           flow_revision=ledger["flow_revision"] + int(flow_digest != ledger["flow_sha256"]),
+                           input_revisions=[*history, receipt], state="ready", selected_task_id=task_id,
+                           active_attempt_id=None, active_operation_path=None, current_step="preflight",
+                           readiness=None, candidate_sha256=None, correction_request=None,
+                           last_closure_path=None, last_closure_sha256=None,
+                           last_verification_path=None, last_decision_path=None)
+            # Task projection changes, but implementation history and count do not.
+            task = validated["task_entries"][0]
+            task.update(state="ready", attempt_ids=ledger["tasks"][0]["attempt_ids"])
+            updated["tasks"] = [task]
+            _validate_ledger(updated)
+            path = run_dir / relative
+            if path.exists():
+                if path.read_bytes() != bundle_bytes:
+                    return refuse("pending_revision_conflict")
+            else:
+                publishing = True
+                _write_durable_exclusive(path, bundle_bytes)
+            publishing = True
+            atomic_write_json(run_dir / "ledger.json", updated)
+            return {"status": "revised", "state_version": updated["revision"],
+                    "revision_state_version": updated["revision"],
+                    "inputs_sha256": inputs_digest, "revision_path": relative}
+    except (ValueError, OSError, KeyError, TypeError) as error:
+        if publishing:
+            return {"status": "refused", "reason": "revision_publication_uncertain",
+                    "state_version": None, "next_actions": ["intervene"],
+                    "detail": f"{error}. Read status and retry the exact original revision request."}
+        return refuse("authority_or_lock_unavailable", str(error))
+
+
+def _cli_revise_inputs(args: Any) -> int:
+    result = revise_inputs(Path(args.run_dir), json.loads(Path(args.request).read_text()))
+    print(json.dumps(result, sort_keys=True))
+    return 1 if result["status"] == "refused" else 0
+
+
 def _cli_status(args: Any) -> int:
     print(json.dumps(status_run(Path(args.run_dir).resolve()), sort_keys=True))
     return 0
@@ -1771,6 +1911,10 @@ def build_parser() -> "argparse.ArgumentParser":  # type: ignore[name-defined]
         reserve_parser.add_argument(f"--{field}", required=True)
     reserve_parser.add_argument("--reason", default="initial")
     reserve_parser.set_defaults(handler=_cli_reserve)
+    inputs_parser = subparsers.add_parser("revise-inputs", help="Publish an explicit owner-authorized input revision")
+    inputs_parser.add_argument("--run-dir", required=True)
+    inputs_parser.add_argument("--request", required=True, help="JSON request including bound owner response")
+    inputs_parser.set_defaults(handler=_cli_revise_inputs)
     return parser
 
 
@@ -1800,8 +1944,9 @@ def _legacy_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-de
     ledger_path = run_dir / "ledger.json"
     ledger = json.loads(ledger_path.read_text())
     _validate_ledger(ledger)
-    policy = json.loads((run_dir / "run-policy.json").read_text())
-    manifest = json.loads((run_dir / "task-manifest.json").read_text())
+    if ledger.get("input_revisions"):
+        raise ValueError("Revised inputs require successor actor admission; legacy launch is unavailable")
+    policy, manifest, _ = load_input_authority(run_dir, ledger)
     validate_run_policy(policy)
 
     # Validate persisted digests

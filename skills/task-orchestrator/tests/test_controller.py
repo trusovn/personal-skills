@@ -2626,6 +2626,324 @@ class ControllerReservationTest(unittest.TestCase):
 
 
 
+class ControllerInputRevisionTest(unittest.TestCase):
+    # Reuse owning real-file fixtures without inheriting unrelated test cases.
+    setUp = ControllerReservationTest.setUp
+    tearDown = ControllerReservationTest.tearDown
+    policy = ControllerReservationTest.policy
+    create_initialized_run = ControllerReservationTest.create_initialized_run
+    read_ledger = ControllerReservationTest.read_ledger
+    seed_successor = ControllerReservationTest.seed_successor
+    reserve = ControllerReservationTest.reserve
+    snapshot = ControllerReservationTest.snapshot
+    ready_implementation = ControllerReservationTest.ready_implementation
+
+    def revision_request(self, run_dir, *, key="owner-revision", **changes):
+        ledger = self.read_ledger(run_dir)
+        if ledger.get("input_revisions"):
+            prior = ledger["input_revisions"][-1]["request"]["payload"]
+            payload = json.loads(json.dumps(prior))
+        else:
+            payload = {"policy": json.loads((run_dir / "run-policy.json").read_text()),
+                       "manifest": json.loads((run_dir / "task-manifest.json").read_text()),
+                       "documents": {name: item["content"] for name, item in
+                                     json.loads((run_dir / "inputs.json").read_text())["documents"].items()}}
+        payload["documents"]["brief"] += "\nOwner-approved requirement\n"
+        request = dict(expected_version=ledger["revision"], task_id="T1", revision_key=key,
+                       payload=payload)
+        request.update(changes)
+        self.bind_owner(request)
+        return request
+
+    def bind_owner(self, request):
+        bound = {field: value for field, value in request.items() if field != "authorization"}
+        request["authorization"] = dict(kind="owner_response", decision="authorize_input_revision",
+                                       owner="task-owner", provenance="active-chat/response-17",
+                                       request_sha256=sha256_bytes(canonical_bytes(bound).rstrip(b"\n")))
+
+    def test_authorized_document_policy_and_scope_revisions_preserve_old_files(self):
+        controller, run_dir = self.create_initialized_run()
+        original = self.snapshot(run_dir)
+        for index, variant in enumerate(("documents", "policy", "scope"), 1):
+            request = self.revision_request(run_dir, key=f"revision-{index}")
+            if variant == "policy":
+                request["payload"]["documents"] = self.read_ledger(run_dir)["input_revisions"][-1]["request"]["payload"]["documents"]
+                request["payload"]["policy"]["flow"] = flow_profile("strong-local")
+            if variant == "scope":
+                request["payload"]["manifest"]["tasks"][0]["allowed_paths"].append("new.txt")
+                request["payload"]["manifest"]["tasks"][0]["required_checks"].append("python3 -m unittest new_check")
+                request["payload"]["documents"]["verification"] += "\nVerify new requirement\n"
+            self.bind_owner(request)
+            before = self.read_ledger(run_dir)
+            result = controller.revise_inputs(run_dir, request)
+            self.assertEqual("revised", result["status"], result)
+            ledger = self.read_ledger(run_dir)
+            self.assertEqual(before["revision"] + 1, result["state_version"])
+            self.assertNotEqual(before["inputs_sha256"], result["inputs_sha256"])
+            self.assertEqual(before["correction_cycle"], ledger["correction_cycle"])
+            self.assertEqual(index, len(ledger["input_revisions"]))
+            inputs = load_controller().load_frozen_inputs(run_dir, ledger)
+            policy, manifest, approved_inputs = controller.load_input_authority(run_dir, ledger)
+            self.assertEqual(request["payload"]["policy"], policy)
+            self.assertEqual(request["payload"]["manifest"], manifest)
+            self.assertEqual(inputs, approved_inputs)
+            self.assertEqual(request["payload"]["documents"]["brief"], inputs["documents"]["brief"]["content"])
+            self.assertEqual(request["payload"]["documents"]["verification"], inputs["documents"]["verification"]["content"])
+            for document in inputs["documents"].values():
+                self.assertEqual(sha256_bytes(document["content"].encode()), document["sha256"])
+            self.assertEqual(request["payload"]["manifest"]["tasks"][0]["allowed_paths"], ledger["tasks"][0]["allowed_paths"])
+            self.assertEqual(request["payload"]["manifest"]["tasks"][0]["required_checks"], ledger["tasks"][0]["required_checks"])
+            self.assertEqual("preflight", controller.status_run(run_dir)["stage"])
+            if variant == "policy":
+                self.assertEqual(2, ledger["flow_revision"])
+                self.assertEqual(flow_profile("strong-local")["actor_levels"]["strong"],
+                                 self.reserve(run_dir, key="strong-preflight")["assignment"]["actor"])
+                self.seed_successor(run_dir, stage="preflight")
+        current = self.snapshot(run_dir)
+        for path, content in original.items():
+            if Path(path).name != "ledger.json":
+                self.assertEqual(content, current[path], path)
+
+    def test_invalid_revision_requests_are_byte_preserving(self):
+        controller, run_dir = self.create_initialized_run()
+        valid = self.revision_request(run_dir)
+        variants = []
+        for field, value in (("authorization", None), ("expected_version", 99), ("expected_version", True),
+                             ("task_id", "other"), ("revision_key", ""), ("payload", {})):
+            case = json.loads(json.dumps(valid)); case[field] = value
+            if field not in {"authorization", "payload"}:
+                self.bind_owner(case)
+            variants.append((field, case))
+        for field, value in (("kind", "actor_result"), ("decision", "acknowledged"),
+                             ("request_sha256", "a" * 64), ("owner", ""), ("provenance", "")):
+            case = json.loads(json.dumps(valid)); case["authorization"][field] = value
+            variants.append((field, case))
+        for change in ("stage", "policy", "run", "repo", "task", "scope", "documents"):
+            case = json.loads(json.dumps(valid))
+            payload = case["payload"]
+            if change == "stage": payload["policy"]["flow"]["steps"].pop()
+            if change == "policy": payload["policy"]["version"] = 1
+            if change == "run": payload["policy"]["run_id"] = "other"
+            if change == "repo": payload["policy"]["repository"] = str(self.root)
+            if change == "task": payload["policy"]["task_ids"] = ["other"]
+            if change == "scope": payload["manifest"]["tasks"][0]["allowed_paths"] = ["../outside"]
+            if change == "documents": payload["documents"]["brief"] = None
+            self.bind_owner(case); variants.append((change, case))
+        variants.extend((("prose", "Owner says go ahead"), ("empty", None)))
+        for label, request in variants:
+            with self.subTest(label=label):
+                before = self.snapshot(run_dir)
+                self.assertEqual("refused", controller.revise_inputs(run_dir, request)["status"])
+                self.assertEqual(before, self.snapshot(run_dir))
+        with controller.RunCommandLock(run_dir):
+            before = self.snapshot(run_dir)
+            self.assertEqual("authority_or_lock_unavailable", controller.revise_inputs(run_dir, valid)["reason"])
+            self.assertEqual(before, self.snapshot(run_dir))
+        self.assertEqual("revised", controller.revise_inputs(run_dir, valid)["status"])
+
+    def test_active_and_completed_tasks_refuse_revision(self):
+        controller, run_dir = self.create_initialized_run()
+        self.assertEqual("reserved", self.reserve(run_dir)["status"])
+        original = self.read_ledger(run_dir)
+        for state in ("reserved", "running", "unknown"):
+            ledger = json.loads(json.dumps(original))
+            ledger["actor_operations"][-1]["state"] = state
+            (run_dir / "ledger.json").write_bytes(canonical_bytes(ledger))
+            before = self.snapshot(run_dir)
+            result = controller.revise_inputs(run_dir, self.revision_request(run_dir))
+            self.assertEqual(f"operation_{state}", result["reason"])
+            self.assertEqual(before, self.snapshot(run_dir))
+        self.seed_successor(run_dir, stage="acceptance")
+        ledger = self.read_ledger(run_dir)
+        ledger["tasks"][0]["state"] = "accepted"
+        ledger.update(state="stopped", selected_task_id=None, current_step=None)
+        ledger["completed_task_ids"] = ["T1"]
+        (run_dir / "ledger.json").write_bytes(canonical_bytes(ledger))
+        before = self.snapshot(run_dir)
+        self.assertEqual("task_completed", controller.revise_inputs(run_dir, self.revision_request(run_dir))["reason"])
+        self.assertEqual(before, self.snapshot(run_dir))
+
+    def test_revision_invalidates_evidence_but_preserves_historical_contents(self):
+        for variant in ("brief", "verification", "policy"):
+            with self.subTest(variant=variant):
+                controller, run_dir = self.create_initialized_run(name=f"invalidation-{variant}")
+                self.ready_implementation(run_dir)
+                old = self.read_ledger(run_dir)
+                evidence = {stage: dict(status="passed", inputs_sha256=old["inputs_sha256"],
+                                       candidate_sha256="a" * 64, reference=f"evidence/{stage}.json")
+                            for stage in ("preflight", "implement", "verify", "semantic_review", "acceptance")}
+                for item in evidence.values():
+                    path = run_dir / item["reference"]; path.parent.mkdir(exist_ok=True)
+                    path.write_bytes(canonical_bytes(item))
+                self.seed_successor(run_dir, stage="implement", evidence=evidence, candidate_sha256="a" * 64,
+                                    outstanding_findings=["finding-1"])
+                old = self.read_ledger(run_dir)
+                files = self.snapshot(run_dir)
+                request = self.revision_request(run_dir)
+                if variant != "brief":
+                    request["payload"]["documents"]["brief"] = controller.load_frozen_inputs(run_dir, old)["documents"]["brief"]["content"]
+                if variant == "verification":
+                    request["payload"]["documents"]["verification"] += "\nOwner-approved verification revision\n"
+                if variant == "policy":
+                    request["payload"]["policy"]["flow"] = flow_profile("strong-local")
+                self.bind_owner(request)
+                result = controller.revise_inputs(run_dir, request)
+                self.assertEqual("revised", result["status"], result)
+                revised = self.read_ledger(run_dir)
+                self.assertEqual(old["readiness"], revised["input_revisions"][-1]["previous"]["readiness"])
+                self.assertEqual(old["actor_operations"], revised["actor_operations"])
+                self.assertEqual(evidence, revised["evidence"])
+                self.assertIsNone(revised["candidate_sha256"])
+                self.assertIsNone(revised["readiness"])
+                self.assertEqual(["finding-1"], revised["outstanding_findings"])
+                for path, content in files.items():
+                    if Path(path).name != "ledger.json": self.assertEqual(content, Path(path).read_bytes())
+                self.assertFalse(load_controller().status_run(run_dir)["readiness_current"])
+                self.assertEqual({"stale"}, {item["status"] for item in controller.status_run(run_dir)["evidence"].values()})
+                # Repointing old evidence/readiness cannot make it current after reload.
+                stale = json.loads(json.dumps(revised))
+                stale.update(current_step="implement", readiness=old["readiness"])
+                (run_dir / "ledger.json").write_bytes(canonical_bytes(stale))
+                self.assertEqual("current_preflight_readiness_required", self.reserve(run_dir, "implement", "stale-ready")["reason"])
+                for stage in ("verify", "semantic_review", "acceptance"):
+                    self.seed_successor(run_dir, stage=stage, candidate_sha256="a" * 64)
+                    self.assertEqual("successor_evidence_required", self.reserve(run_dir, stage, f"old-{stage}")["reason"])
+                (run_dir / "ledger.json").write_bytes(canonical_bytes(revised))
+                self.ready_implementation(run_dir, key="fresh-ready")
+                self.assertEqual("reserved", self.reserve(run_dir, "implement", "fresh-implementation")["status"])
+
+    def test_interrupted_publication_and_exact_replay(self):
+        for boundary in ("before_content", "before_pointer", "after_pointer"):
+            with self.subTest(boundary=boundary):
+                controller, run_dir = self.create_initialized_run(name=boundary)
+                request = self.revision_request(run_dir)
+                old = controller.status_run(run_dir)
+                old_files = self.snapshot(run_dir)
+                write = controller.atomic_write_json
+                def fault(path, value):
+                    if boundary == "after_pointer": write(path, value)
+                    raise OSError("injected publication interruption")
+                target = "_write_durable_exclusive" if boundary == "before_content" else "atomic_write_json"
+                with mock.patch.object(controller, target, side_effect=fault):
+                    uncertain = controller.revise_inputs(run_dir, request)
+                    self.assertEqual("revision_publication_uncertain", uncertain["reason"])
+                    self.assertIsNone(uncertain["state_version"])
+                state = load_controller().status_run(run_dir)
+                self.assertEqual(old["state_version"] + int(boundary == "after_pointer"), state["state_version"])
+                self.assertEqual(old["inputs_sha256"] == state["inputs_sha256"], boundary != "after_pointer")
+                if boundary == "before_content": self.assertEqual(old_files, self.snapshot(run_dir))
+                if boundary == "before_pointer":
+                    conflicting = json.loads(json.dumps(request)); conflicting["payload"]["documents"]["brief"] += "different"
+                    self.bind_owner(conflicting)
+                    before = self.snapshot(run_dir)
+                    self.assertEqual("pending_revision_conflict", controller.revise_inputs(run_dir, conflicting)["reason"])
+                    self.assertEqual(before, self.snapshot(run_dir))
+                result = load_controller().revise_inputs(run_dir, request)
+                self.assertEqual("replayed" if boundary == "after_pointer" else "revised", result["status"], result)
+                self.assertEqual(old["state_version"] + 1, result["state_version"])
+                before = self.snapshot(run_dir)
+                self.assertEqual("replayed", controller.revise_inputs(run_dir, request)["status"])
+                self.assertEqual(before, self.snapshot(run_dir))
+                later = self.revision_request(run_dir, key="later")
+                self.assertEqual("revised", controller.revise_inputs(run_dir, later)["status"])
+                before = self.snapshot(run_dir)
+                self.assertEqual("replayed", load_controller().revise_inputs(run_dir, request)["status"])
+                self.assertEqual(before, self.snapshot(run_dir))
+                request["payload"]["documents"]["brief"] += "conflicting"
+                self.bind_owner(request)
+                self.assertEqual("revision_key_conflict", controller.revise_inputs(run_dir, request)["reason"])
+                self.assertEqual(before, self.snapshot(run_dir))
+
+    def test_composed_three_corrections_revision_and_legacy_guards(self):
+        controller, run_dir = self.create_initialized_run()
+        self.assertEqual("refused", self.reserve(run_dir, "implement", "premature")["status"])
+        self.ready_implementation(run_dir)
+        self.assertEqual(0, self.reserve(run_dir, "implement", "cycle-zero")["assignment"]["correction_count"])
+        for count, reason in enumerate(("check_failed", "review_findings", "environment_repair"), 1):
+            self.seed_successor(run_dir, stage="verify", correction_request=reason)
+            version = self.read_ledger(run_dir)["revision"]
+            reserved = self.reserve(run_dir, "correction", f"fix-{count}", reason)
+            self.assertEqual(count, reserved["assignment"]["correction_count"])
+            self.assertEqual("replayed", self.reserve(run_dir, "correction", f"fix-{count}", reason,
+                                                     expected_version=version)["status"])
+        self.seed_successor(run_dir, stage="implement")
+        self.assertFalse(controller.status_run(run_dir)["readiness_current"])
+        self.assertEqual(["reserve:preflight"], controller.status_run(run_dir)["next_actions"])
+        history = self.read_ledger(run_dir)["actor_operations"]
+        request = self.revision_request(run_dir)
+        self.assertEqual("revised", controller.revise_inputs(run_dir, request)["status"])
+        self.assertEqual(history, self.read_ledger(run_dir)["actor_operations"])
+        self.assertEqual(3, load_controller().status_run(run_dir)["correction_count"])
+        self.assertEqual(["reserve:preflight"], controller.status_run(run_dir)["next_actions"])
+        self.ready_implementation(run_dir, key="post-revision-preflight")
+        before = self.snapshot(run_dir)
+        self.assertEqual("successor_admission_pending", self.reserve(run_dir, "implement", "another-cycle-zero")["reason"])
+        self.assertEqual(before, self.snapshot(run_dir))
+        self.seed_successor(run_dir, stage="verify", correction_request="review_findings")
+        before = self.snapshot(run_dir)
+        self.assertEqual("corrections_exhausted", self.reserve(run_dir, "correction", "fourth", "review_findings")["reason"])
+        self.assertEqual(before, self.snapshot(run_dir))
+        # Public legacy entry points cannot manufacture the missing successor evidence.
+        self.assertEqual("successor_inspection_pending", controller.inspect_run(run_dir, 10)["reason"])
+        command = [sys.executable, str(CONTROLLER_PATH), "run-next", "--run-dir", str(run_dir), "--timeout-seconds", "10"]
+        result = subprocess.run(command, capture_output=True, text=True, timeout=10)
+        self.assertEqual("pending", json.loads(result.stdout)["status"], result.stderr)
+        path = self.root / "flow.json"; path.write_bytes(canonical_bytes(flow_profile("strong-local")))
+        with self.assertRaisesRegex(ValueError, "safe task boundary"):
+            controller.revise_flow(run_dir, path)
+        for updater in ({"correction_cycle": 0}, {"readiness": {}}, {"input_revisions": []}):
+            with self.assertRaises(ValueError):
+                controller.update_ledger(run_dir, updater, expected_revision=self.read_ledger(run_dir)["revision"])
+        self.assertEqual(before, self.snapshot(run_dir))
+
+    def test_process_exit_during_publication_preserves_charge_and_releases_lock(self):
+        for committed in (False, True):
+            with self.subTest(committed=committed):
+                controller, run_dir = self.create_initialized_run(name=f"process-exit-{committed}")
+                self.assertEqual("reserved", self.reserve(run_dir, key="initial-preflight")["status"])
+                self.seed_successor(run_dir, stage="preflight", correction_request="environment_repair")
+                self.assertEqual(1, self.reserve(run_dir, "correction", "repair", "environment_repair")["assignment"]["correction_count"])
+                self.seed_successor(run_dir, stage="preflight")
+                old = self.read_ledger(run_dir)
+                request = self.revision_request(run_dir)
+                path = self.root / "exit-request.json"; path.write_bytes(canonical_bytes(request))
+                script = (
+                    "import sys, os, json; from pathlib import Path; "
+                    f"sys.path.insert(0, {str(CONTROLLER_PATH.parent)!r}); import controller; "
+                    "write = controller.atomic_write_json\n"
+                    "def interrupt(path, value):\n"
+                    f"    if {committed!r}: write(path, value)\n"
+                    "    os._exit(23)\n"
+                    "controller.atomic_write_json = interrupt\n"
+                    "controller.revise_inputs(Path(sys.argv[1]), json.loads(Path(sys.argv[2]).read_text()))\n"
+                )
+                result = subprocess.run([sys.executable, "-c", script, str(run_dir), str(path)],
+                                        text=True, capture_output=True, timeout=10)
+                self.assertEqual(23, result.returncode, result.stderr)
+                status = load_controller().status_run(run_dir)
+                self.assertEqual(old["revision"] + int(committed), status["state_version"])
+                self.assertEqual(1, status["correction_count"])
+                self.assertEqual(old["actor_operations"], status["operation_history"])
+                self.assertFalse(status["readiness_current"])
+                retried = controller.revise_inputs(run_dir, request)
+                self.assertEqual("replayed" if committed else "revised", retried["status"], retried)
+                self.assertEqual(old["revision"] + 1, self.read_ledger(run_dir)["revision"])
+                self.assertEqual(1, self.read_ledger(run_dir)["correction_cycle"])
+
+    def test_cli_revision_uses_explicit_request_file(self):
+        controller, run_dir = self.create_initialized_run()
+        request = self.revision_request(run_dir)
+        path = self.root / "owner-request.json"; path.write_bytes(canonical_bytes(request))
+        command = [sys.executable, str(CONTROLLER_PATH), "revise-inputs", "--run-dir", str(run_dir), "--request", str(path)]
+        result = subprocess.run(command, text=True, capture_output=True, timeout=10)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual("revised", json.loads(result.stdout)["status"])
+        before = self.snapshot(run_dir)
+        result = subprocess.run(command, text=True, capture_output=True, timeout=10)
+        self.assertEqual("replayed", json.loads(result.stdout)["status"])
+        self.assertEqual(before, self.snapshot(run_dir))
+
+
 class ControllerInspectionIntegrationTest(unittest.TestCase):
     setUp = ControllerIntegrationTest.setUp
     tearDown = ControllerIntegrationTest.tearDown

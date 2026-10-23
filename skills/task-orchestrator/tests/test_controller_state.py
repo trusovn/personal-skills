@@ -640,6 +640,8 @@ class ControllerStateContractTest(unittest.TestCase):
         policy = self.policy()
         policy_bytes = (controller.canonical_json(policy) + "\n").encode()
         (run_dir / "run-policy.json").write_bytes(policy_bytes)
+        manifest = self.manifest()
+        (run_dir / "task-manifest.json").write_text(json.dumps(manifest))
         flow_bytes = (controller.canonical_json(policy["flow"]) + "\n").encode()
         (run_dir / "flows").mkdir()
         (run_dir / "flows/flow-001.json").write_bytes(flow_bytes)
@@ -653,6 +655,7 @@ class ControllerStateContractTest(unittest.TestCase):
         (run_dir / "inputs.json").write_bytes(inputs_bytes)
         ledger.update(
             policy_sha256=controller.sha256_text(controller.canonical_json(policy)),
+            manifest_sha256=controller.sha256_text(controller.canonical_json(manifest)),
             inputs_sha256=hashlib.sha256(inputs_bytes).hexdigest(),
             flow_sha256=hashlib.sha256(flow_bytes).hexdigest(),
         )

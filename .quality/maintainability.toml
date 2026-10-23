@@ -1,0 +1,5 @@
+# Experimental targets; these are advisory, not acceptance gates.
+profile = "python-initial"
+checks = ["complexity", "ruff"]
+complexity_target = 10
+exclude_directories = [".git", ".agents", ".quality", ".venv", "venv", "__pycache__", "node_modules", "vendor", "dist", "build"]

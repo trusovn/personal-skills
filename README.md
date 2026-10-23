@@ -220,6 +220,18 @@ workflow identity, and the availability check only; the run-evidence
 collector's `begin`/`finish`/`recover` lifecycle still requires a resolved
 HEAD.
 
+## Local maintainability experiment
+
+Measure Python files or folders without changing skill behavior:
+
+```sh
+python3 scripts/measure_maintainability.py measure scripts tests
+```
+
+See [setup, baseline comparison, report fields, and verification](scripts/measure-maintainability.md).
+This standalone experiment uses pinned Radon/Ruff tools and provisional advisory
+targets. It is not part of the development installation profile or CI.
+
 ## Workflow version fingerprints
 
 Every directory containing a `SKILL.md` is versionable through one canonical

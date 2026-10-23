@@ -1,5 +1,13 @@
 # Repository test ownership and commands
 
+The standalone maintainability-tool tests run with the local analyzer environment:
+
+```sh
+.quality/venv/bin/python -B -m unittest discover -s tests -p test_maintainability.py -v
+```
+
+See [setup and measurement behavior](../scripts/measure-maintainability.md).
+
 Owners and focused selectors for the preparation/review-flow regression tests.
 All commands run from the repository root with `PYTHONDONTWRITEBYTECODE=1`
 unless noted; each module passes alone in a fresh invocation. The aggregate

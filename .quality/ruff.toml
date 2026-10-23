@@ -1,0 +1,12 @@
+target-version = "py311"
+preview = false
+exclude = []
+respect-gitignore = false
+
+[lint]
+select = ["PLR0913", "PLR0915"]
+ignore = []
+
+[lint.pylint]
+max-args = 5
+max-statements = 50

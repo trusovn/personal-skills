@@ -491,6 +491,12 @@ def init_run(
             "last_verification_path": None,
             "last_decision_path": None,
             "active_operation_path": None,
+            "actor_operations": [],
+            "readiness": None,
+            "correction_request": None,
+            "candidate_sha256": None,
+            "evidence": {},
+            "outstanding_findings": [],
             "current_step": None,
             "correction_cycle": 0,
             "tasks": validated["task_entries"],
@@ -576,6 +582,8 @@ def _update_ledger_locked(
     ledger_path = run_dir / "ledger.json"
     ledger = json.loads(ledger_path.read_text())
     _load_flow_authority(run_dir, ledger)
+    if _active_actor(ledger):
+        raise ValueError("Active actor operation blocks legacy ledger mutation")
     ledger = _state_module.apply_ledger_update(
         ledger, updater, _now_iso(), expected_revision=expected_revision,
         closure_decision=closure_decision,
@@ -594,6 +602,8 @@ def update_ledger(
     """Lock, validate the expected revision, and atomically update the ledger."""
     ledger = json.loads((run_dir / "ledger.json").read_text())
     _load_flow_authority(run_dir, ledger)
+    if _active_actor(ledger):
+        raise ValueError("Active actor operation blocks legacy ledger mutation")
     with RunCommandLock(run_dir):
         return _update_ledger_locked(
             run_dir, updater, expected_revision=expected_revision,
@@ -1222,6 +1232,11 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
         raise ValueError("timeout must be greater than zero")
     run_dir = run_dir.resolve()
     preliminary_ledger = json.loads((run_dir / "ledger.json").read_text())
+    if _active_actor(preliminary_ledger):
+        return {"status": "refused", "reason": "active_operation", "next_actions": ["observe_operation", "intervene"]}
+    if preliminary_ledger.get("actor_operations"):
+        _reservation_context(run_dir)
+        return {"status": "pending", "reason": "successor_inspection_pending", "next_actions": ["intervene"]}
     if preliminary_ledger["state"] != "awaiting_inspection":
         raise ValueError("inspect requires run state 'awaiting_inspection'")
     _validate_ledger(preliminary_ledger)
@@ -1231,6 +1246,8 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
             ledger, policy, selected, baseline, attempt, adapter_state,
             worker_result, closure_data,
         ) = _load_inspection_authority(run_dir)
+        if _active_actor(ledger):
+            return {"status": "refused", "reason": "active_operation", "next_actions": ["observe_operation", "intervene"]}
         closure = closure_data["packet"]
         closure_identity = closure_data["identity"]
         flow = _load_flow_authority(run_dir, ledger)
@@ -1487,6 +1504,229 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
 # ── CLI entry points ─────────────────────────────────────────────────
 
 
+# Actor assignments are embedded in the ledger: one atomic replace publishes
+# ownership, assignment and its charge together. No receipt is a liveness oracle.
+def _reservation_context(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    ledger = json.loads((run_dir / "ledger.json").read_text())
+    _validate_ledger(ledger)
+    flow = _load_flow_authority(run_dir, ledger)
+    active = _active_actor(ledger)
+    if active:
+        assignment = active["assignment"]
+        stage = "implement" if assignment["stage"] == "correction" else assignment["stage"]
+        mode = _state_module.flow_step(flow, stage)["mode"]
+        if assignment["actor"] != flow["actor_levels"].get(mode):
+            raise ValueError("Active assignment actor contradicts the frozen flow")
+    manifest = json.loads((run_dir / "task-manifest.json").read_text())
+    if sha256_text(canonical_json(manifest)) != ledger["manifest_sha256"]:
+        raise ValueError("Persisted manifest digest mismatch")
+    return ledger, flow
+
+
+def _active_actor(ledger: dict[str, Any]) -> dict[str, Any] | None:
+    return next((operation for operation in ledger.get("actor_operations", [])
+                 if operation["state"] != "terminal"), None)
+
+
+def _current_readiness(ledger: dict[str, Any]) -> bool:
+    readiness = ledger.get("readiness")
+    if not isinstance(readiness, dict) or readiness.get("status") != "ready":
+        return False
+    operation = next((item for item in ledger.get("actor_operations", [])
+                      if item["operation_id"] == readiness.get("operation_id")), None)
+    if operation is None or operation["state"] != "terminal":
+        return False
+    assignment = operation["assignment"]
+    return (
+        assignment["stage"] == "preflight"
+        and assignment["role"] == "preflight"
+        and all(readiness.get(field) == ledger[field] == assignment[field]
+                for field in ("inputs_sha256", "policy_sha256", "flow_sha256"))
+        and readiness.get("task_id") == assignment["task_id"]
+        and readiness.get("task_id") == ledger["selected_task_id"]
+        and not any(item["assignment"]["can_repair"] for item in
+                    ledger.get("actor_operations", [])[ledger.get("actor_operations", []).index(operation) + 1:])
+    )
+
+
+def _evidence_view(ledger: dict[str, Any], stage: str) -> dict[str, Any]:
+    item = dict(ledger.get("evidence", {}).get(stage, {"status": "missing"}))
+    if item["status"] != "missing":
+        if item.get("inputs_sha256") != ledger["inputs_sha256"] or (
+            stage != "preflight" and item.get("candidate_sha256") != ledger.get("candidate_sha256")
+        ):
+            item["status"] = "stale"
+        elif item["status"] == "omitted_by_policy":
+            # All actor/check stages in this policy are mandatory.
+            item["status"] = "blocked"
+    return item
+
+
+def _reservation_options(ledger: dict[str, Any]) -> tuple[list[str], str | None]:
+    active = _active_actor(ledger)
+    if active:
+        return ["observe_operation", "intervene"], f"operation_{active['state']}"
+    if ledger["state"] not in {"ready", "resumable"}:
+        return ["intervene"], "successor_admission_pending"
+    correction = ledger.get("correction_request")
+    if correction and ledger["correction_cycle"] >= 3:
+        return ["intervene"], "corrections_exhausted"
+    if correction == "environment_repair":
+        return ["reserve:correction"], None
+    if correction in {"check_failed", "review_findings"}:
+        if not _current_readiness(ledger):
+            return ["reserve:preflight"], "current_preflight_readiness_required"
+        return ["reserve:correction"], None
+    stage = ledger["current_step"] or "preflight"
+    if stage in {"ready", "preflight"}:
+        return ["reserve:preflight"], None
+    if stage in {"implement", "correction"}:
+        if stage == "implement" and any(
+            item["assignment"]["stage"] == "implement"
+            and item["assignment"]["inputs_sha256"] == ledger["inputs_sha256"]
+            for item in ledger.get("actor_operations", [])
+        ):
+            return ["intervene"], "successor_admission_pending"
+        if not _current_readiness(ledger):
+            return ["reserve:preflight"], "current_preflight_readiness_required"
+        if stage == "correction" and correction not in {"check_failed", "review_findings"}:
+            return ["intervene"], "correction_authorization_pending"
+        return [f"reserve:{stage}"], None
+    # Successors admit these records; reservations consume, never manufacture,
+    # eligible prerequisites. Semantic validation remains T-004/T-005 work.
+    predecessor = {"verify": "implement", "semantic_review": "verify", "acceptance": "semantic_review"}.get(stage)
+    if predecessor:
+        if not ledger.get("candidate_sha256") or _evidence_view(ledger, predecessor)["status"] != "passed":
+            return ["intervene"], "successor_evidence_required"
+        return [f"reserve:{stage}"], None
+    return ["intervene"], "successor_completion_pending"
+
+
+def status_run(run_dir: Path) -> dict[str, Any]:
+    """Read one atomic ledger snapshot without advancing state or taking a lock."""
+    ledger, flow = _reservation_context(run_dir)
+    actions, blocker = _reservation_options(ledger)
+    task_id = json.loads((run_dir / "inputs.json").read_text())["task_id"]
+    return {
+        "status": "ok", "run_id": ledger["run_id"], "task_id": task_id,
+        "inputs_sha256": ledger["inputs_sha256"],
+        "policy_sha256": ledger["policy_sha256"],
+        "flow_revision": ledger["flow_revision"], "flow_sha256": ledger["flow_sha256"],
+        "state": ledger["state"], "state_version": ledger["revision"],
+        "stage": ledger["current_step"] or "ready",
+        "attempts": next(task["attempt_ids"] for task in ledger["tasks"] if task["id"] == task_id),
+        "correction_count": ledger["correction_cycle"],
+        "candidate_sha256": ledger.get("candidate_sha256"),
+        "references": {field: ledger.get(field) for field in ("last_closure_path", "last_verification_path", "last_decision_path", "active_operation_path")},
+        "evidence": {stage: _evidence_view(ledger, stage) for stage in
+                     ("preflight", "implement", "verify", "semantic_review", "acceptance")},
+        "policy_omissions": ["repository_gate"] if _state_module.flow_step(flow, "verify")["mode"] == "targeted" else [],
+        "required_evidence": ["preflight", "implement", "verify", "semantic_review", "acceptance"],
+        "outstanding_findings": ledger.get("outstanding_findings", []),
+        "operation": _active_actor(ledger), "operation_history": ledger.get("actor_operations", []),
+        "readiness_current": _current_readiness(ledger),
+        "next_actions": actions, "blocker": blocker,
+    }
+
+
+def reserve_operation(
+    run_dir: Path, *, expected_version: int, task_id: str, stage: str,
+    role: str, operation_key: str, reason: str = "initial",
+) -> dict[str, Any]:
+    """Reserve only current permitted work. T-003 owns launch/outcome admission."""
+    def refuse(code: str, ledger: dict[str, Any] | None = None) -> dict[str, Any]:
+        actions, _ = _reservation_options(ledger) if ledger else (["intervene"], None)
+        return {"status": "refused", "reason": code, "next_actions": actions,
+                "state_version": ledger["revision"] if ledger else None}
+
+    try:
+        with RunCommandLock(run_dir):
+            ledger, flow = _reservation_context(run_dir)
+            if (type(expected_version) is not int or expected_version < 1
+                    or not isinstance(operation_key, str) or not operation_key
+                    or any(not isinstance(value, str) for value in (task_id, stage, role, reason))):
+                return refuse("invalid_request", ledger)
+            request = dict(expected_version=expected_version, task_id=task_id,
+                           stage=stage, role=role, operation_key=operation_key, reason=reason)
+            for operation in ledger.get("actor_operations", []):
+                if operation["request"]["operation_key"] == operation_key:
+                    if operation["request"] != request:
+                        return refuse("operation_key_conflict", ledger)
+                    return {"status": "replayed", "assignment": operation["assignment"],
+                            "state_version": ledger["revision"]}
+            if expected_version != ledger["revision"]:
+                return refuse("stale_version", ledger)
+            inputs = load_frozen_inputs(run_dir, ledger)
+            expected_role = "implementer" if stage == "correction" else _state_module.FLOW_STEP_ROLES.get(stage)
+            if task_id != inputs["task_id"] or role != expected_role:
+                return refuse("task_or_role_mismatch", ledger)
+            actions, blocker = _reservation_options(ledger)
+            if f"reserve:{stage}" not in actions:
+                return refuse(blocker or "stage_mismatch", ledger)
+            is_correction = stage == "correction"
+            if (is_correction and reason != ledger.get("correction_request")) or (
+                not is_correction and reason not in {"initial", "retry"}
+            ):
+                return refuse("reason_not_authorized", ledger)
+            if stage == "implement" and any(item["assignment"]["stage"] == "implement" for item in ledger.get("actor_operations", [])):
+                return refuse("initial_implementation_already_reserved", ledger)
+            mode = _state_module.flow_step(flow, "implement" if is_correction else stage)["mode"]
+            operation_id = f"operation-{len(ledger.get('actor_operations', [])) + 1:03d}"
+            count = ledger["correction_cycle"] + int(is_correction)
+            assignment = {
+                "run_id": ledger["run_id"], "task_id": task_id,
+                "operation_id": operation_id, "operation_key": operation_key,
+                "stage": stage, "role": role, "reason": reason,
+                "inputs_sha256": ledger["inputs_sha256"], "policy_sha256": ledger["policy_sha256"],
+                "flow_sha256": ledger["flow_sha256"], "flow_revision": ledger["flow_revision"],
+                "candidate_sha256": ledger.get("candidate_sha256"),
+                "correction_count": count, "can_repair": is_correction and reason == "environment_repair",
+                "can_change_files": stage in {"implement", "correction"},
+                "actor": flow["actor_levels"].get(mode),
+                "session_policy": "fresh" if is_correction else None,
+            }
+            operation = {"operation_id": operation_id, "state": "reserved",
+                         "request": request, "assignment": assignment}
+            updated = json.loads(json.dumps(ledger))
+            updated.setdefault("actor_operations", []).append(operation)
+            updated.update(revision=ledger["revision"] + 1, updated_at=_now_iso(),
+                           selected_task_id=task_id, current_step=stage,
+                           correction_cycle=count,
+                           active_operation_path=f"actor_operations/{operation_id}")
+            if is_correction:
+                updated["correction_request"] = None
+            if stage == "preflight" or assignment["can_repair"]:
+                updated["readiness"] = None
+            _validate_ledger(updated)
+            atomic_write_json(run_dir / "ledger.json", updated)
+            return {"status": "reserved", "assignment": assignment, "state_version": updated["revision"]}
+    except (ValueError, OSError, KeyError, TypeError) as error:
+        return {**refuse("authority_or_lock_unavailable"), "detail": str(error)}
+
+
+def _cli_status(args: Any) -> int:
+    print(json.dumps(status_run(Path(args.run_dir).resolve()), sort_keys=True))
+    return 0
+
+
+def _cli_reserve(args: Any) -> int:
+    result = reserve_operation(Path(args.run_dir).resolve(), expected_version=args.expected_version,
+                               task_id=args.task_id, stage=args.stage, role=args.role,
+                               operation_key=args.operation_key, reason=args.reason)
+    print(json.dumps(result, sort_keys=True))
+    return 0 if result["status"] != "refused" else 1
+
+
+def _cli_run_next(args: Any) -> int:
+    if not math.isfinite(args.timeout_seconds) or args.timeout_seconds <= 0:
+        raise ValueError("timeout must be greater than zero")
+    result = status_run(Path(args.run_dir).resolve())
+    print(json.dumps({"status": "pending", "task_id": result["task_id"],
+                      "current_step": result["stage"], "reason": result["blocker"] or "successor_launch_pending",
+                      "next_actions": result["next_actions"]}, sort_keys=True))
+    return 0
+
+
 def build_parser() -> "argparse.ArgumentParser":  # type: ignore[name-defined]
     import argparse
     parser = argparse.ArgumentParser(
@@ -1501,7 +1741,7 @@ def build_parser() -> "argparse.ArgumentParser":  # type: ignore[name-defined]
     init_parser.add_argument("--repository", required=True, help="Repository root")
     init_parser.set_defaults(handler=_cli_init)
 
-    runnext_parser = subparsers.add_parser("run-next", help="Select and launch one task")
+    runnext_parser = subparsers.add_parser("run-next", help="Report pending successor launch work")
     runnext_parser.add_argument("--run-dir", required=True)
     runnext_parser.add_argument("--timeout-seconds", type=float, required=True)
     runnext_parser.add_argument("--codex-bin", default="codex", help=argparse.SUPPRESS)
@@ -1521,6 +1761,16 @@ def build_parser() -> "argparse.ArgumentParser":  # type: ignore[name-defined]
     revise_parser.add_argument("--flow", required=True)
     revise_parser.set_defaults(handler=_cli_revise_flow)
 
+    status_parser = subparsers.add_parser("status", help="Read current task and operation status")
+    status_parser.add_argument("--run-dir", required=True)
+    status_parser.set_defaults(handler=_cli_status)
+    reserve_parser = subparsers.add_parser("reserve", help="Reserve one permitted operation")
+    reserve_parser.add_argument("--run-dir", required=True)
+    reserve_parser.add_argument("--expected-version", type=int, required=True)
+    for field in ("task-id", "stage", "role", "operation-key"):
+        reserve_parser.add_argument(f"--{field}", required=True)
+    reserve_parser.add_argument("--reason", default="initial")
+    reserve_parser.set_defaults(handler=_cli_reserve)
     return parser
 
 
@@ -1536,7 +1786,7 @@ def _cli_init(args: "argparse.Namespace") -> int:  # type: ignore[name-defined]
     return 0
 
 
-def _cli_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defined]
+def _legacy_run_next(args: "argparse.Namespace") -> int:  # type: ignore[name-defined]
     import argparse
     import codex_worker
     if args.timeout_seconds <= 0:
@@ -1939,7 +2189,7 @@ def main() -> int:
     try:
         return args.handler(args)
     except (OSError, ValueError, json.JSONDecodeError) as error:
-        parser.error(str(error))
+        print(json.dumps({"status": "refused", "reason": str(error), "next_actions": ["intervene"]}, sort_keys=True), file=sys.stderr)
     return 2
 
 

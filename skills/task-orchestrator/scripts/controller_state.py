@@ -188,10 +188,6 @@ def validate_flow_cursor(
     if current == "correction":
         if cycle == 0 or not correction["enabled"]:
             raise ValueError("correction step requires an active correction cycle")
-    elif current in {"ready", "preflight", "implement"} and cycle != 0:
-        raise ValueError(
-            f"{current} step requires correction cycle zero"
-        )
 
 
 def transition_flow_cursor(
@@ -1146,6 +1142,87 @@ def select_task(ledger: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any
     )
 
 
+def validate_actor_operations(ledger: dict[str, Any]) -> None:
+    operations = ledger.get("actor_operations", [])
+    if not isinstance(operations, list):
+        raise ValueError("actor_operations must be an array")
+    active = []
+    keys = set()
+    count = 0
+    for index, operation in enumerate(operations, 1):
+        _validate_exact_object(operation, ("operation_id", "state", "request", "assignment"), "actor operation")
+        operation_id = f"operation-{index:03d}"
+        if operation["operation_id"] != operation_id or operation["state"] not in {"reserved", "running", "unknown", "terminal"}:
+            raise ValueError("Invalid actor operation identity/state")
+        request = operation["request"]
+        _validate_exact_object(request, ("expected_version", "task_id", "stage", "role", "operation_key", "reason"), "reservation request")
+        if type(request["expected_version"]) is not int or request["expected_version"] < 1:
+            raise ValueError("Invalid reservation version")
+        for field in ("task_id", "stage", "role", "operation_key", "reason"):
+            _validate_str(request[field], f"reservation {field}")
+        if request["operation_key"] in keys:
+            raise ValueError("Repeated operation key")
+        keys.add(request["operation_key"])
+        assignment = operation["assignment"]
+        _validate_exact_object(assignment, (
+            "run_id", "task_id", "operation_id", "operation_key", "stage", "role", "reason",
+            "inputs_sha256", "policy_sha256", "flow_sha256", "flow_revision",
+            "candidate_sha256", "correction_count", "can_repair", "can_change_files", "actor", "session_policy",
+        ), "assignment")
+        if any(assignment[field] != request[field] for field in ("task_id", "operation_key", "stage", "role", "reason")) or assignment["operation_id"] != operation_id or assignment["run_id"] != ledger["run_id"]:
+            raise ValueError("Assignment identity mismatch")
+        stage = assignment["stage"]
+        role = "implementer" if stage == "correction" else FLOW_STEP_ROLES.get(stage)
+        if stage not in {"preflight", "implement", "correction", "verify", "semantic_review", "acceptance"} or assignment["role"] != role:
+            raise ValueError("Invalid assignment stage/role")
+        if assignment["task_id"] not in {task["id"] for task in ledger["tasks"]}:
+            raise ValueError("Assignment task is outside the run")
+        if type(assignment["flow_revision"]) is not int or assignment["flow_revision"] < 1:
+            raise ValueError("Invalid assignment flow revision")
+        if (stage == "verify" and assignment["actor"] is not None) or (
+            stage != "verify" and assignment["actor"] not in ACTOR_LEVELS.values()
+        ):
+            raise ValueError("Invalid assignment actor profile")
+        correction = stage == "correction"
+        if assignment["session_policy"] != ("fresh" if correction else None):
+            raise ValueError("Invalid assignment session policy")
+        if assignment["reason"] not in ({"check_failed", "review_findings", "environment_repair"} if correction else {"initial", "retry"}):
+            raise ValueError("Invalid assignment reason")
+        count += int(correction)
+        if type(assignment["correction_count"]) is not int or assignment["correction_count"] != count or count > 3:
+            raise ValueError("Assignment correction accounting mismatch")
+        if assignment["can_repair"] is not (correction and assignment["reason"] == "environment_repair") or assignment["can_change_files"] is not (stage in {"implement", "correction"}):
+            raise ValueError("Assignment write authority mismatch")
+        for field in ("inputs_sha256", "policy_sha256", "flow_sha256"):
+            _validate_sha256(assignment[field], f"assignment {field}")
+        if assignment["candidate_sha256"] is not None:
+            _validate_sha256(assignment["candidate_sha256"], "assignment candidate")
+        if operation["state"] != "terminal":
+            active.append(operation)
+            if index != len(operations) or any(assignment[field] != ledger.get(field) for field in (
+                "inputs_sha256", "policy_sha256", "flow_sha256", "flow_revision", "candidate_sha256",
+            )):
+                raise ValueError("Active assignment authority mismatch")
+            if assignment["task_id"] != ledger["selected_task_id"] or stage != ledger["current_step"]:
+                raise ValueError("Active assignment task/stage mismatch")
+    if operations and ledger["correction_cycle"] != count:
+        raise ValueError("Persisted correction count contradicts reservations")
+    if len(active) > 1:
+        raise ValueError("Only one active actor operation is permitted")
+    path = ledger["active_operation_path"]
+    if active and (path != f"actor_operations/{active[0]['operation_id']}" or ledger["state"] not in {
+        "ready", "running", "awaiting_inspection", "resumable",
+    }):
+        raise ValueError("Active operation pointer/state mismatch")
+    if not active and (path or "").startswith("actor_operations/"):
+        raise ValueError("Active operation pointer has no owner")
+    if ledger.get("correction_request") not in {None, "check_failed", "review_findings", "environment_repair"}:
+        raise ValueError("Invalid correction authorization")
+    for item in ledger.get("evidence", {}).values():
+        if item.get("status") not in {"passed", "failed", "stale", "blocked", "missing", "not_run", "omitted_by_policy"}:
+            raise ValueError("Invalid evidence status")
+
+
 def validate_ledger(ledger: dict[str, Any]) -> None:
     required = (
         "version", "run_id", "repository", "created_at", "updated_at", "revision", "policy_path",
@@ -1192,7 +1269,9 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
         raise ValueError("verification reference requires closure reference")
     if ledger["last_decision_path"] and not ledger["last_verification_path"]:
         raise ValueError("decision reference requires verification reference")
-    if ledger["active_operation_path"] and not ledger["last_decision_path"]:
+    actor_path = (ledger["active_operation_path"] or "").startswith("actor_operations/")
+    validate_actor_operations(ledger)
+    if ledger["active_operation_path"] and not actor_path and not ledger["last_decision_path"]:
         raise ValueError("operation reference requires decision reference")
     task_ids: set[str] = set()
     selected_task = None
@@ -1291,7 +1370,7 @@ def validate_ledger(ledger: dict[str, Any]) -> None:
         )
     ):
         raise ValueError("'finalizing' requires closure, verification, decision, and operation references")
-    if state != "finalizing" and ledger["active_operation_path"] is not None:
+    if state != "finalizing" and ledger["active_operation_path"] is not None and not actor_path:
         raise ValueError("active_operation_path is only valid while finalizing")
 
 
@@ -1307,6 +1386,10 @@ def apply_ledger_update(
         raise ValueError(
             f"Expected ledger revision {expected_revision}, found {next_ledger['revision']}"
         )
+    if set(updater) & {"actor_operations", "readiness", "correction_request", "candidate_sha256", "evidence", "outstanding_findings"}:
+        raise ValueError("Actor admission fields are controller-owned")
+    if ledger.get("actor_operations") and set(updater) & {"current_step", "correction_cycle", "active_operation_path"}:
+        raise ValueError("Actor reservation cursor is controller-owned")
     if "revision" in updater:
         raise ValueError("Ledger revision is controller-owned")
     previous_tasks = next_ledger["tasks"]

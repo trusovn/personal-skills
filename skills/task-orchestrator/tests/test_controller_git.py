@@ -733,7 +733,7 @@ result_path.write_text(json.dumps({
                 ) as closure_evidence,
                 mock.patch("builtins.print"),
             ):
-                return_code = controller._cli_run_next(SimpleNamespace(
+                return_code = controller._legacy_run_next(SimpleNamespace(
                     run_dir=str(run_dir), timeout_seconds=10.0, codex_bin=str(fake_codex)
                 ))
 

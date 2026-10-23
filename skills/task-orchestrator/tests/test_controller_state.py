@@ -341,7 +341,6 @@ class ControllerStateContractTest(unittest.TestCase):
         state = load_controller_state()
         flow = self.flow("reviewed")
         invalid_cursors = (
-            {"current_step": "implement", "correction_cycle": 1},
             {"current_step": "correction", "correction_cycle": 0},
             {"current_step": "correction", "correction_cycle": 4},
             {"current_step": "semantic_review", "correction_cycle": 4},
@@ -354,6 +353,8 @@ class ControllerStateContractTest(unittest.TestCase):
 
         for cursor in (
             {"current_step": "implement", "correction_cycle": 0},
+            {"current_step": "implement", "correction_cycle": 1},
+            {"current_step": "preflight", "correction_cycle": 1},
             {"current_step": "correction", "correction_cycle": 1},
             {"current_step": "semantic_review", "correction_cycle": 2},
             {"current_step": "accept", "correction_cycle": 2},

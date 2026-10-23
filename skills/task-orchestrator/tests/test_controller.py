@@ -15,6 +15,17 @@ from unittest import mock
 CONTROLLER_PATH = Path(__file__).parents[1] / "scripts" / "controller.py"
 
 
+# Historical transport mechanics have no public launch route in the new policy.
+# Exercise them explicitly, preserving Git/timeout/inspection regression oracles.
+LEGACY_CONTROLLER = [sys.executable, "-c", (
+    "import sys; from pathlib import Path; "
+    f"sys.path.insert(0, {str(CONTROLLER_PATH.parent)!r}); "
+    "import controller; parser = controller.build_parser(); args = parser.parse_args(); "
+    "args.handler = controller._legacy_run_next if args.command == 'run-next' else args.handler; "
+    "sys.exit(args.handler(args))"
+)]
+
+
 def load_controller():
     spec = importlib.util.spec_from_file_location("task_orchestrator_controller", CONTROLLER_PATH)
     module = importlib.util.module_from_spec(spec)
@@ -1055,7 +1066,7 @@ class ControllerContractTest(unittest.TestCase):
         )
 
         run_next_command = [
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir),
             "--timeout-seconds", "10",
             "--codex-bin", "/nonexistent/codex",
@@ -1096,7 +1107,7 @@ class ControllerContractTest(unittest.TestCase):
         fake.chmod(0o755)
         invalid_timeout = subprocess.run(
             [
-                sys.executable, str(CONTROLLER_PATH), "run-next",
+                *LEGACY_CONTROLLER, "run-next",
                 "--run-dir", str(run_dir),
                 "--timeout-seconds", "0",
                 "--codex-bin", str(fake),
@@ -1457,7 +1468,7 @@ raise SystemExit(0)
                     ledger_path.write_bytes(canonical_bytes(ledger))
                 policy_path.write_bytes(canonical_bytes(policy))
                 before = {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()}
-                result = subprocess.run([sys.executable, str(CONTROLLER_PATH), "run-next", "--run-dir", str(run_dir), "--timeout-seconds", "10", "--codex-bin", str(self.root / "must-not-launch")], text=True, capture_output=True)
+                result = subprocess.run([*LEGACY_CONTROLLER, "run-next", "--run-dir", str(run_dir), "--timeout-seconds", "10", "--codex-bin", str(self.root / "must-not-launch")], text=True, capture_output=True)
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn("Initialize a new run using reviewed current inputs", result.stderr)
                 self.assertEqual(before, {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()})
@@ -1503,7 +1514,7 @@ raise SystemExit(0)
         stage_transport_fixture(run_dir)
         fake = self.write_fake_codex(created_paths=(), clean_mutation=True)
         launch = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(fake),
         ], text=True, capture_output=True)
@@ -1524,7 +1535,7 @@ raise SystemExit(0)
                 before = {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()}
                 if entry == "run-next":
                     result = subprocess.run([
-                        sys.executable, str(CONTROLLER_PATH), "run-next",
+                        *LEGACY_CONTROLLER, "run-next",
                         "--run-dir", str(run_dir), "--timeout-seconds", "10",
                         "--codex-bin", str(self.root / "must-not-launch"),
                     ], text=True, capture_output=True)
@@ -1547,7 +1558,7 @@ raise SystemExit(0)
         missing_worker = self.root / "must-not-launch"
 
         result = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(missing_worker),
         ], text=True, capture_output=True)
@@ -1570,7 +1581,7 @@ raise SystemExit(0)
 
         ledger_bytes = (run_dir / "ledger.json").read_bytes()
         repeated = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(missing_worker),
         ], text=True, capture_output=True)
@@ -1651,7 +1662,7 @@ raise SystemExit(0)
         self.assertEqual(4, restored["flow_revision"])
 
         pending = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(self.root / "must-not-launch"),
         ], text=True, capture_output=True)
@@ -1723,7 +1734,7 @@ raise SystemExit(0)
         repository_before = controller.capture_git_status(self.repo)
 
         result = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(self.root / "must-not-launch"),
         ], text=True, capture_output=True)
@@ -1754,7 +1765,7 @@ raise SystemExit(0)
         ledger_path = run_dir / "ledger.json"
         ledger = json.loads(ledger_path.read_text())
         for current_step, correction_cycle in (
-            ("implement", 1),
+            ("implement", 4),
             ("correction", 0),
             ("correction", 4),
             ("semantic_review", 4),
@@ -1776,7 +1787,7 @@ raise SystemExit(0)
         ledger.update({
             "selected_task_id": "T1",
             "current_step": "implement",
-            "correction_cycle": 3,
+            "correction_cycle": 4,
         })
         ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
         run_bytes = {
@@ -1787,7 +1798,7 @@ raise SystemExit(0)
         fake = self.write_fake_codex(created_paths=(), mutate_repository=False)
 
         result = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(fake),
         ], text=True, capture_output=True)
@@ -1823,7 +1834,7 @@ raise SystemExit(0)
         fake = self.write_fake_codex(created_paths=(), mutate_repository=False)
 
         result = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(fake),
         ], text=True, capture_output=True)
@@ -1854,7 +1865,7 @@ raise SystemExit(0)
         fake = self.write_fake_codex(created_paths=(), mutate_repository=False)
 
         result = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(fake),
         ], text=True, capture_output=True)
@@ -1873,7 +1884,7 @@ raise SystemExit(0)
         stage_transport_fixture(run_dir)
         fake = self.write_fake_codex(created_paths=(), clean_mutation=True)
         result = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(fake),
         ], text=True, capture_output=True)
@@ -1957,7 +1968,7 @@ raise SystemExit(0)
         # Run next
         run_result = subprocess.run(
             [
-                sys.executable, str(CONTROLLER_PATH), "run-next",
+                *LEGACY_CONTROLLER, "run-next",
                 "--run-dir", str(run_dir),
                 "--timeout-seconds", "10",
                 "--codex-bin", str(fake),
@@ -2137,7 +2148,7 @@ raise SystemExit(0)
         controller.init_run(run_dir, policy_path, manifest_path, self.repo)
         stage_transport_fixture(run_dir)
         command = [
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir),
             "--timeout-seconds", "10",
             "--codex-bin", str(fake),
@@ -2225,7 +2236,7 @@ raise SystemExit(0)
         stage_transport_fixture(run_dir)
         result = subprocess.run(
             [
-                sys.executable, str(CONTROLLER_PATH), "run-next",
+                *LEGACY_CONTROLLER, "run-next",
                 "--run-dir", str(run_dir),
                 "--timeout-seconds", "10",
                 "--codex-bin", str(fake),
@@ -2242,6 +2253,377 @@ raise SystemExit(0)
         self.assertEqual("stopped", ledger["tasks"][0]["state"])
         self.assertEqual(["attempt-001"], ledger["tasks"][0]["attempt_ids"])
         self.assertFalse((run_dir / "closure").exists())
+
+
+class ControllerReservationTest(unittest.TestCase):
+    setUp = ControllerIntegrationTest.setUp
+    tearDown = ControllerIntegrationTest.tearDown
+    policy = ControllerIntegrationTest.policy
+    create_initialized_run = ControllerIntegrationTest.create_initialized_run
+
+    def test_reserve_replay_survives_reload(self):
+        controller, run_dir = self.create_initialized_run()
+        request = dict(expected_version=1, task_id="T1", stage="preflight",
+                       role="preflight", operation_key="first", reason="initial")
+        first = controller.reserve_operation(run_dir, **request)
+        self.assertEqual("reserved", first["status"])
+        before = (run_dir / "ledger.json").read_bytes()
+        replay = load_controller().reserve_operation(run_dir, **request)
+        self.assertEqual("replayed", replay["status"])
+        self.assertEqual(first["assignment"], replay["assignment"])
+        self.assertEqual(before, (run_dir / "ledger.json").read_bytes())
+
+    def read_ledger(self, run_dir):
+        return json.loads((run_dir / "ledger.json").read_text())
+
+    def seed_successor(self, run_dir, *, stage=None, readiness=False, **changes):
+        """Test-only T-003/004/005 admission; no production outcome is claimed."""
+        ledger = self.read_ledger(run_dir)
+        if ledger["actor_operations"]:
+            ledger["actor_operations"][-1]["state"] = "terminal"
+        ledger["active_operation_path"] = None
+        if stage:
+            ledger["current_step"] = stage
+        if readiness:
+            operation = ledger["actor_operations"][-1]
+            ledger["readiness"] = {field: operation["assignment"][field] for field in
+                                   ("task_id", "operation_id", "inputs_sha256", "policy_sha256", "flow_sha256")}
+            ledger["readiness"]["status"] = "ready"
+        ledger.update(changes)
+        ledger["revision"] += 1
+        (run_dir / "ledger.json").write_text(json.dumps(ledger))
+
+    def reserve(self, run_dir, stage="preflight", key="first", reason="initial", **overrides):
+        request = dict(expected_version=self.read_ledger(run_dir)["revision"], task_id="T1",
+                       stage=stage, role={"correction": "implementer", "implement": "implementer",
+                       "verify": "verifier", "semantic_review": "review_collector",
+                       "acceptance": "acceptance_reviewer", "preflight": "preflight"}[stage],
+                       operation_key=key, reason=reason)
+        request.update(overrides)
+        return load_controller().reserve_operation(run_dir, **request)
+
+    def snapshot(self, run_dir):
+        return {str(path): path.read_bytes() for root in (run_dir, self.repo)
+                for path in root.rglob("*") if path.is_file() and path.name != "controller.lock"}
+
+    def ready_implementation(self, run_dir, key="ready"):
+        self.assertEqual("reserved", self.reserve(run_dir, key=key)["status"])
+        self.seed_successor(run_dir, stage="implement", readiness=True)
+
+    def test_public_cli_contract_and_weakened_authority_refusal(self):
+        controller, run_dir = self.create_initialized_run()
+        status_command = [sys.executable, str(CONTROLLER_PATH), "status", "--run-dir", str(run_dir)]
+        result = subprocess.run(status_command, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(1, json.loads(result.stdout)["state_version"])
+        command = [sys.executable, str(CONTROLLER_PATH), "reserve", "--run-dir", str(run_dir),
+                   "--expected-version", "1", "--task-id", "T1", "--stage", "preflight",
+                   "--role", "preflight", "--operation-key", "cli"]
+        result = subprocess.run(command, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual("reserved", json.loads(result.stdout)["status"])
+        before = self.snapshot(run_dir)
+        replay = subprocess.run(command, text=True, capture_output=True)
+        self.assertEqual("replayed", json.loads(replay.stdout)["status"])
+        refused = subprocess.run(command[:-1] + ["competing"], text=True, capture_output=True)
+        self.assertEqual(1, refused.returncode)
+        self.assertEqual("stale_version", json.loads(refused.stdout)["reason"])
+        self.assertEqual(before, self.snapshot(run_dir))
+        self.seed_successor(run_dir, stage="implement", readiness=True)
+        policy_path = run_dir / "run-policy.json"
+        policy = json.loads(policy_path.read_text())
+        policy["flow"]["steps"] = policy["flow"]["steps"][1:]
+        policy_path.write_text(json.dumps(policy))
+        before = self.snapshot(run_dir)
+        self.assertEqual("authority_or_lock_unavailable", self.reserve(run_dir, "implement", "weak")["reason"])
+        self.assertEqual(before, self.snapshot(run_dir))
+
+
+    def test_status_is_read_only_and_preserves_evidence_distinctions(self):
+        controller, run_dir = self.create_initialized_run()
+        self.ready_implementation(run_dir)
+        ledger = self.read_ledger(run_dir)
+        for evidence_status, expected in (("passed", "passed"), ("failed", "failed"),
+                ("stale", "stale"), ("blocked", "blocked"), ("missing", "missing"),
+                ("not_run", "not_run"), ("omitted_by_policy", "blocked")):
+            with self.subTest(evidence_status=evidence_status):
+                evidence = {"verify": {"status": evidence_status, "inputs_sha256": ledger["inputs_sha256"],
+                                      "candidate_sha256": "a" * 64, "reference": "checks/check-1.json"}}
+                self.seed_successor(run_dir, candidate_sha256="a" * 64, evidence=evidence,
+                                    outstanding_findings=[{"id": "F1", "status": "open"}])
+                before = self.snapshot(run_dir)
+                status = load_controller().status_run(run_dir)
+                self.assertEqual(expected, status["evidence"]["verify"]["status"])
+                self.assertEqual("checks/check-1.json", status["evidence"]["verify"]["reference"])
+                self.assertEqual("F1", status["outstanding_findings"][0]["id"])
+                self.assertEqual("T1", status["task_id"])
+                self.assertEqual("run-1", status["run_id"])
+                self.assertEqual(0, status["correction_count"])
+                self.assertEqual(["reserve:implement"], status["next_actions"])
+                self.assertEqual(before, self.snapshot(run_dir))
+        self.seed_successor(run_dir, evidence={"verify": {"status": "passed", "inputs_sha256": "b" * 64}})
+        self.assertEqual("stale", controller.status_run(run_dir)["evidence"]["verify"]["status"])
+        targeted = flow_profile()
+        targeted["steps"][3]["mode"] = "targeted"
+        controller, other = self.create_initialized_run(flow=targeted, name="targeted")
+        self.assertEqual(["repository_gate"], controller.status_run(other)["policy_omissions"])
+
+    def test_active_states_and_conflicts_preserve_files_and_charge(self):
+        controller, run_dir = self.create_initialized_run()
+        first = self.reserve(run_dir)
+        self.assertEqual("reserved", first["status"])
+        for state in ("reserved", "running", "unknown"):
+            ledger = self.read_ledger(run_dir)
+            ledger["actor_operations"][-1]["state"] = state
+            (run_dir / "ledger.json").write_text(json.dumps(ledger))
+            before = self.snapshot(run_dir)
+            self.assertEqual("refused", self.reserve(run_dir, key="competitor")["status"])
+            self.assertEqual("operation_key_conflict", self.reserve(run_dir, key="first", reason="retry")["reason"])
+            status = load_controller().status_run(run_dir)
+            self.assertEqual(state, status["operation"]["state"])
+            self.assertEqual(["observe_operation", "intervene"], status["next_actions"])
+            self.assertEqual("refused", controller.inspect_run(run_dir, 10)["status"])
+            with self.assertRaisesRegex(ValueError, "Active actor"):
+                controller.update_ledger(run_dir, {}, expected_revision=ledger["revision"])
+            flow_path = self.root / "same-flow.json"
+            flow_path.write_text(json.dumps(flow_profile()))
+            with self.assertRaises(ValueError):
+                controller.revise_flow(run_dir, flow_path)
+            self.assertEqual(before, self.snapshot(run_dir))
+        self.seed_successor(run_dir, stage="preflight")
+        self.assertEqual("reserved", self.reserve(run_dir, key="terminal-retry", reason="retry")["status"])
+
+    def test_active_assignment_must_match_current_ledger(self):
+        for profile, stage, prior in (
+            (profile, stage, prior) for profile in ("fast-local", "strong-local")
+            for stage, prior in (("preflight", None), ("implement", None), ("correction", None),
+                                 ("verify", "implement"), ("semantic_review", "verify"),
+                                 ("acceptance", "semantic_review"))
+        ):
+            controller, run_dir = self.create_initialized_run(
+                flow=flow_profile(profile), name=f"identity-{profile}-{stage}")
+            if stage != "preflight":
+                self.ready_implementation(run_dir)
+            if prior:
+                ledger = self.read_ledger(run_dir)
+                evidence = {prior: {"status": "passed", "inputs_sha256": ledger["inputs_sha256"],
+                                    "candidate_sha256": "a" * 64}}
+                self.seed_successor(run_dir, stage=stage, candidate_sha256="a" * 64, evidence=evidence)
+            if stage == "correction":
+                self.seed_successor(run_dir, correction_request="environment_repair")
+            result = self.reserve(run_dir, stage, "active", "environment_repair" if stage == "correction" else "initial")
+            self.assertEqual("reserved", result["status"], result)
+            base = self.read_ledger(run_dir)
+            for state in ("reserved", "running", "unknown"):
+                good = json.loads(json.dumps(base))
+                good["actor_operations"][-1]["state"] = state
+                (run_dir / "ledger.json").write_text(json.dumps(good))
+                self.assertEqual(state, controller.status_run(run_dir)["operation"]["state"])
+                request = good["actor_operations"][-1]["request"]
+                self.assertEqual("replayed", controller.reserve_operation(run_dir, **request)["status"])
+                variants = []
+                for field, value in (("inputs_sha256", "b" * 64), ("policy_sha256", "b" * 64),
+                                     ("flow_sha256", "b" * 64), ("flow_revision", 2),
+                                     ("candidate_sha256", "b" * 64)):
+                    invalid = json.loads(json.dumps(good))
+                    invalid["actor_operations"][-1]["assignment"][field] = value
+                    variants.append((field, invalid))
+                for reasoning in ("low", "medium", "high"):
+                    actor = {"model": "gpt-6.1-sol", "reasoning": reasoning}
+                    if actor != good["actor_operations"][-1]["assignment"]["actor"]:
+                        invalid = json.loads(json.dumps(good))
+                        invalid["actor_operations"][-1]["assignment"]["actor"] = actor
+                        variants.append((f"actor {reasoning}", invalid))
+                invalid = json.loads(json.dumps(good))
+                invalid["current_step"] = "verify" if stage != "verify" else "acceptance"
+                variants.append(("current stage", invalid))
+                invalid = json.loads(json.dumps(good))
+                invalid.update(selected_task_id=None, current_step=None, correction_cycle=0)
+                variants.append(("selected task", invalid))
+                for parent in ("initialized", "finalizing", "stopped"):
+                    invalid = json.loads(json.dumps(good))
+                    invalid.update(state=parent, selected_task_id=None, current_step=None, correction_cycle=0)
+                    variants.append((f"{parent} parent", invalid))
+                for name, invalid in variants:
+                    with self.subTest(profile=profile, stage=stage, state=state, mismatch=name):
+                        (run_dir / "ledger.json").write_text(json.dumps(invalid))
+                        before = self.snapshot(run_dir)
+                        with self.assertRaises(ValueError):
+                            controller.status_run(run_dir)
+                        denied = load_controller().reserve_operation(run_dir, **request)
+                        self.assertEqual("refused", denied["status"], denied)
+                        self.assertEqual("authority_or_lock_unavailable", denied["reason"])
+                        self.assertEqual(before, self.snapshot(run_dir))
+
+    def test_terminal_assignment_retains_historical_authority(self):
+        controller, run_dir = self.create_initialized_run()
+        self.ready_implementation(run_dir)
+        self.assertEqual("reserved", self.reserve(run_dir, "implement", "initial")["status"])
+        self.seed_successor(run_dir, stage="verify", candidate_sha256="a" * 64)
+        ledger = self.read_ledger(run_dir)
+        operation = ledger["actor_operations"][-1]
+        operation["assignment"].update(inputs_sha256="b" * 64, policy_sha256="b" * 64,
+                                       flow_sha256="b" * 64, flow_revision=2, candidate_sha256="b" * 64,
+                                       actor={"model": "gpt-6.1-sol", "reasoning": "low"})
+        (run_dir / "ledger.json").write_text(json.dumps(ledger))
+        before = self.snapshot(run_dir)
+        self.assertIsNone(controller.status_run(run_dir)["operation"])
+        replay = load_controller().reserve_operation(run_dir, **operation["request"])
+        self.assertEqual("replayed", replay["status"])
+        self.assertEqual(operation["assignment"], replay["assignment"])
+        self.assertEqual(before, self.snapshot(run_dir))
+
+    def test_separate_process_reservations_have_one_winner(self):
+        controller, run_dir = self.create_initialized_run()
+        script = (
+            "import sys,json; from pathlib import Path; "
+            f"sys.path.insert(0, {str(CONTROLLER_PATH.parent)!r}); import controller; "
+            "print('ready', flush=True); sys.stdin.readline(); "
+            "print(json.dumps(controller.reserve_operation(Path(sys.argv[1]), expected_version=1, "
+            "task_id='T1',stage='preflight',role='preflight',operation_key=sys.argv[2])))"
+        )
+        processes = [subprocess.Popen([sys.executable, "-c", script, str(run_dir), key],
+                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                     for key in ("one", "two")]
+        try:
+            for process in processes:
+                self.assertEqual("ready\n", process.stdout.readline())
+            for process in processes:
+                process.stdin.write("go\n")
+                process.stdin.flush()
+            results = []
+            for process in processes:
+                stdout, stderr = process.communicate(timeout=10)
+                self.assertEqual(0, process.returncode, stderr)
+                results.append(json.loads(stdout))
+            self.assertEqual(["refused", "reserved"], sorted(item["status"] for item in results))
+            self.assertEqual(1, len(self.read_ledger(run_dir)["actor_operations"]))
+            self.assertEqual(0, controller.status_run(run_dir)["correction_count"])
+        finally:
+            for process in processes:
+                if process.poll() is None:
+                    process.kill()
+                process.wait()
+
+    def test_shared_budget_repair_replay_restart_and_fourth_refusal(self):
+        controller, run_dir = self.create_initialized_run()
+        self.ready_implementation(run_dir)
+        self.assertEqual(0, self.reserve(run_dir, "implement", "initial")["assignment"]["correction_count"])
+        for count, reason in enumerate(("check_failed", "review_findings", "environment_repair"), 1):
+            self.seed_successor(run_dir, stage="verify", correction_request=reason, candidate_sha256="a" * 64)
+            request_version = self.read_ledger(run_dir)["revision"]
+            result = self.reserve(run_dir, "correction", f"fix-{count}", reason)
+            self.assertEqual("reserved", result["status"], result)
+            assignment = result["assignment"]
+            self.assertEqual(count, assignment["correction_count"])
+            self.assertEqual("fresh", assignment["session_policy"])
+            self.assertEqual(reason == "environment_repair", assignment["can_repair"])
+            before = self.snapshot(run_dir)
+            self.assertEqual("replayed", self.reserve(run_dir, "correction", f"fix-{count}", reason,
+                             expected_version=request_version)["status"])
+            self.assertEqual("refused", self.reserve(run_dir, "correction", "uncertain", reason)["status"])
+            self.assertEqual(before, self.snapshot(run_dir))
+        self.seed_successor(run_dir, stage="verify", correction_request="review_findings")
+        before = self.snapshot(run_dir)
+        refusal = self.reserve(run_dir, "correction", "fourth", "review_findings")
+        self.assertEqual("corrections_exhausted", refusal["reason"])
+        self.assertEqual(["intervene"], load_controller().status_run(run_dir)["next_actions"])
+        self.assertEqual(before, self.snapshot(run_dir))
+        self.assertFalse(controller.status_run(run_dir)["readiness_current"])
+
+    def test_repair_before_initial_implementation_does_not_reset_count(self):
+        controller, run_dir = self.create_initialized_run()
+        self.assertEqual("reserved", self.reserve(run_dir)["status"])
+        self.seed_successor(run_dir, stage="preflight", correction_request="environment_repair")
+        self.assertEqual(1, self.reserve(run_dir, "correction", "repair", "environment_repair")["assignment"]["correction_count"])
+        self.seed_successor(run_dir, stage="implement")
+        denied = self.reserve(run_dir, "implement", "too-soon")
+        self.assertEqual("current_preflight_readiness_required", denied["reason"])
+        self.ready_implementation(run_dir, key="re-preflight")
+        result = self.reserve(run_dir, "implement", "initial-after-repair")
+        self.assertEqual("reserved", result["status"], result)
+        self.assertEqual(1, result["assignment"]["correction_count"])
+        for count in (2, 3):
+            self.seed_successor(run_dir, stage="verify", correction_request="check_failed")
+            self.assertEqual(count, self.reserve(run_dir, "correction", f"fix-{count}", "check_failed")["assignment"]["correction_count"])
+        self.seed_successor(run_dir, stage="verify", correction_request="check_failed")
+        self.assertEqual("corrections_exhausted", self.reserve(run_dir, "correction", "fourth", "check_failed")["reason"])
+
+    def test_free_evidence_and_preflight_retries_never_authorize_repair(self):
+        controller, run_dir = self.create_initialized_run()
+        self.ready_implementation(run_dir)
+        self.assertEqual("reserved", self.reserve(run_dir, "implement", "initial")["status"])
+        for stage, prior in (("verify", "implement"), ("semantic_review", "verify"), ("acceptance", "semantic_review")):
+            ledger = self.read_ledger(run_dir)
+            evidence = {prior: {"status": "passed", "inputs_sha256": ledger["inputs_sha256"], "candidate_sha256": "a" * 64}}
+            for retry in range(2):
+                self.seed_successor(run_dir, stage=stage, candidate_sha256="a" * 64, evidence=evidence)
+                before = self.snapshot(run_dir)
+                self.assertEqual("refused", self.reserve(run_dir, stage, "repair-in-disguise", "environment_repair")["status"])
+                self.assertEqual(before, self.snapshot(run_dir))
+                assignment = self.reserve(run_dir, stage, f"{stage}-{retry}", "retry")["assignment"]
+                self.assertEqual(0, assignment["correction_count"])
+                self.assertFalse(assignment["can_change_files"])
+                self.assertFalse(assignment["can_repair"])
+        self.seed_successor(run_dir, stage="preflight")
+        assignment = self.reserve(run_dir, key="preflight-retry", reason="retry")["assignment"]
+        self.assertEqual(0, assignment["correction_count"])
+        self.assertFalse(assignment["can_repair"])
+
+    def test_invalid_requests_readiness_and_public_legacy_guards(self):
+        controller, run_dir = self.create_initialized_run()
+        for overrides in (dict(expected_version=0), dict(expected_version=99), dict(task_id="other"),
+                          dict(role="implementer"), dict(operation_key=""), dict(stage="implement"),
+                          dict(reason="environment_repair")):
+            before = self.snapshot(run_dir)
+            self.assertEqual("refused", self.reserve(run_dir, **overrides)["status"])
+            self.assertEqual(before, self.snapshot(run_dir))
+        self.ready_implementation(run_dir)
+        good = self.read_ledger(run_dir)
+        variants = [None]
+        for field, value in (("inputs_sha256", "b" * 64), ("operation_id", "absent"),
+                             ("task_id", "other"), ("status", "failed"), ("flow_sha256", "c" * 64)):
+            invalid = dict(good["readiness"])
+            invalid[field] = value
+            variants.append(invalid)
+        for readiness in variants:
+            ledger = json.loads(json.dumps(good))
+            ledger["readiness"] = readiness
+            (run_dir / "ledger.json").write_text(json.dumps(ledger))
+            before = self.snapshot(run_dir)
+            self.assertEqual("current_preflight_readiness_required", self.reserve(run_dir, "implement", "denied")["reason"])
+            self.assertEqual(before, self.snapshot(run_dir))
+        # A nonterminal preflight record cannot grant readiness.
+        ledger = json.loads(json.dumps(good))
+        ledger["actor_operations"][-1]["state"] = "unknown"
+        ledger["active_operation_path"] = "actor_operations/operation-001"
+        ledger["current_step"] = "preflight"
+        (run_dir / "ledger.json").write_text(json.dumps(ledger))
+        self.assertFalse(controller.status_run(run_dir)["readiness_current"])
+        # A terminal non-preflight actor is not an admitted preflight result.
+        wrong_role = json.loads(json.dumps(good))
+        operation = wrong_role["actor_operations"][-1]
+        operation["request"].update(stage="implement", role="implementer")
+        operation["assignment"].update(stage="implement", role="implementer", can_change_files=True)
+        (run_dir / "ledger.json").write_text(json.dumps(wrong_role))
+        self.assertFalse(controller.status_run(run_dir)["readiness_current"])
+        before = self.snapshot(run_dir)
+        self.assertEqual("refused", self.reserve(run_dir, "implement", "wrong-readiness-role")["status"])
+        self.assertEqual(before, self.snapshot(run_dir))
+        # Public run-next stays pending even with a test-seeded implement cursor.
+        for ledger in (ledger, good):
+            (run_dir / "ledger.json").write_text(json.dumps(ledger))
+            before = self.snapshot(run_dir)
+            result = subprocess.run([sys.executable, str(CONTROLLER_PATH), "run-next", "--run-dir", str(run_dir),
+                                     "--timeout-seconds", "10", "--codex-bin", str(self.root / "must-not-launch")],
+                                    text=True, capture_output=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual("pending", json.loads(result.stdout)["status"])
+            self.assertEqual(before, self.snapshot(run_dir))
+        # Generic ledger mutation cannot inject readiness, evidence or a counter.
+        with self.assertRaisesRegex(ValueError, "controller-owned"):
+            controller.update_ledger(run_dir, {"readiness": good["readiness"]}, expected_revision=good["revision"])
+
 
 
 class ControllerInspectionIntegrationTest(unittest.TestCase):
@@ -2286,7 +2668,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
         stage_transport_fixture(run_dir)
         fake = self.write_fake_codex(created_paths=(), clean_mutation=True)
         result = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(fake),
         ], text=True, capture_output=True)
@@ -2514,7 +2896,7 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
         stage_transport_fixture(run_dir)
         fake = self.write_fake_codex(created_paths=(), clean_mutation=True)
         run_result = subprocess.run([
-            sys.executable, str(CONTROLLER_PATH), "run-next",
+            *LEGACY_CONTROLLER, "run-next",
             "--run-dir", str(run_dir), "--timeout-seconds", "10",
             "--codex-bin", str(fake),
         ], text=True, capture_output=True)

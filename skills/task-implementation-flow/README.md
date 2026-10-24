@@ -442,10 +442,10 @@ or an explicitly narrower threat model.
 Maintainability review has a different ledger. Keep it focused on concrete
 regression introduced or materially worsened by the current change:
 
-- responsibility/cohesion;
-- unnecessary or hidden coupling and dependency direction;
-- change locality across owning subsystems;
-- independently testable important logic;
+- responsibility/cohesion and truthful names for behavior, state and units;
+- unnecessary or hidden coupling, mutations, indirection and dependency direction;
+- change locality and invariant/state ownership across subsystems;
+- independently testable important logic and usable failure context;
 - duplicated business/domain rules or growing dispatch structures;
 - speculative layers/interfaces/abstractions with no concrete boundary,
   variation, or test-seam value;

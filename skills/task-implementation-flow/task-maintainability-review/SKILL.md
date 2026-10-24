@@ -5,8 +5,8 @@ description: >
   policy requires focused maintainability/architecture review or the user explicitly asks for it.
   Independently review current changed implementation assets, including significant tests, evaluations,
   fixtures and harness code, plus any required deterministic architecture
-  gate for concrete cohesion, coupling, change-locality, dependency, testability, duplication, or
-  speculative-abstraction regressions. Return ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE. Do not
+  gate for concrete regressions in semantic clarity, state/rule ownership, cohesion, coupling,
+  change locality, testability, diagnosability, or abstraction cost. Return ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE. Do not
   perform full specification/functional acceptance here.
 ---
 # Task Maintainability Review
@@ -15,7 +15,7 @@ Perform a **fresh, narrow architecture/maintainability review of the current cha
 
 The question is:
 
-> Did this change introduce or materially worsen a concrete design condition that makes expected future changes unnecessarily broader, more coupled, harder to test, or easier to break?
+> Did this change introduce or materially worsen a concrete design condition that makes future changes, investigation, or verification unnecessarily difficult, expensive, or risky for human developers or agents?
 
 ## Review contract
 
@@ -27,17 +27,17 @@ follows changed ownership, dependencies, scenario authority, isolation, oracle
 structure or harness behavior, not file size or assertion counts.
 
 For test assets, use relevant [testing-discipline](../../testing-discipline/SKILL.md)
-guidance from the same installation root. Review introduced or worsened design
+guidance from the same installation root. Review introduced or materially worsened design
 conditions; leave functional conformance and test adequacy to discovery/acceptance.
 
 Focus on six ideas:
 
-1. **Cohesion** — does each changed module or scenario owner still have a clear responsibility?
+1. **Cohesion** — do responsibilities and names convey the behavior, state, units and contracts a caller must understand?
 2. **Coupling** — did the change create unnecessary knowledge/dependency between components, fixtures or harness internals?
-3. **Explicit dependencies** — are important collaborators/boundaries visible rather than hidden through unrelated infrastructure/global state or mutable setup?
-4. **Change locality** — would the next closely related variant be local to its owning subsystem or scenario authority, or did this change spread one behavior across unrelated modules?
-5. **Testability** — can important changed logic and test scenarios be exercised independently and repeatedly without unnecessary external I/O/infrastructure?
-6. **Proportionate abstraction** — did the change reuse existing patterns and add abstraction only where a concrete boundary, variation, or test seam justifies it, including fixture/harness helpers?
+3. **Explicit dependencies** — can a reader trace decisions, data, collaborators and mutations without reconstructing hidden execution order or mutable setup?
+4. **Change locality** — do important invariants, state transitions and scenario facts retain a clear owner, without duplicated authority or scattered coordinated edits?
+5. **Testability** — can important changed behavior be exercised independently and repeatedly, and can failures be traced to useful causes and context?
+6. **Proportionate abstraction** — do layers and helpers earn their navigation cost through a concrete boundary, variation, or test seam?
 
 Treat these as review questions, not slogans.
 
@@ -129,31 +129,32 @@ Interpret results as follows:
 
 Do not edit architecture config, exceptions, or baselines to make review pass. A baseline expansion is itself a foundation/architecture change, not reviewer cleanup.
 
-### 3. Review responsibility / cohesion
+### 3. Review responsibility and semantic clarity
 
-Look for **introduced or materially worsened** mixed reasons-to-change.
+Trace a representative changed path through decisions, transformations,
+mutations and failures. Compare with the baseline and established contracts:
+what must the next developer or agent reconstruct to change it safely?
 
-Useful questions:
+Look for mixed reasons-to-change or names that materially misrepresent a
+responsibility, unit, state, result or side effect: e.g. a query-like helper
+consuming state or seconds-named values carrying milliseconds. Show the mismatch
+and credible modification it risks, even when current outputs are correct.
+Check local definitions and external contracts; unfamiliar or short names alone
+are not findings.
 
-- What primary responsibility did this module have before the change?
-- What independent reason-to-change did the new code add?
-- Are orchestration, domain rules, persistence, transport, rendering, external API calls, configuration, or unrelated concerns being combined merely because the file was convenient?
-- Does the changed logic depend on a different collaborator set or lifecycle than the module's existing job?
-
-A large file is not automatically a god file. Block only when the diff gives concrete evidence of unrelated responsibility growth or similar cohesion loss.
+Inspect unnecessary indirection, hidden mutations, order-dependent helpers and
+decision logic that obscures the determining rule. Explain the extra navigation
+or execution knowledge needed and a bounded correction. Branch count, nesting
+and file length alone prove nothing; explicit protocol branches can be justified.
 
 ### 4. Review coupling and dependency direction
 
-Inspect new/changed dependency edges and immediate collaborators.
-
-Look for:
-
-- business/domain logic reaching directly into concrete external infrastructure when an existing boundary should own that dependency;
-- reach-through into another module's private internals instead of its established public surface;
-- hidden global/service-locator dependencies;
-- broad dependency injection where the component needs only a narrow capability;
-- new bidirectional/cyclic coupling where the repo expects one-way ownership;
-- one feature change requiring knowledge of several unrelated subsystem internals.
+Inspect changed edges and immediate collaborators for private reach-through,
+hidden global/service-locator dependencies, unnecessarily broad injected
+capabilities, or bidirectional/cyclic coupling against established ownership.
+Check whether domain rules now reach into concrete infrastructure instead of
+using the existing boundary. Identify the unnecessary knowledge a caller must
+acquire or keep synchronized.
 
 For test assets, inspect fragile mutable fixtures, unclear/cross-owner coupling,
 and harness-internal dependencies. Show the introduced isolation, repeatability
@@ -161,27 +162,30 @@ or ownership consequence rather than blocking merely because setup is shared.
 
 Do not demand an interface for every concrete class. Dependency inversion is useful when it protects an actual boundary/test seam/variation, not as ritual.
 
-### 5. Review change locality / extension shape
+### 5. Review change locality and state/rule ownership
 
 Ask a concrete near-future question:
 
 > If the next **same-kind** behavior/variant were added, would it normally stay near this subsystem, or would it require editing multiple unrelated modules/dispatchers because of the structure introduced here?
 
-Look for:
-
-- behavior encoded in repeated type checks across unrelated files;
-- a growing `switch` / `if` dispatcher where the repo already has a clear extension mechanism;
-- registrations/variants that require coordinated edits in several owners without necessity;
-- duplicated business policy that must stay synchronized.
+Locate the owner of each important changed invariant and state transition.
+Look for duplicated business policy, scattered writes/invalidation rules,
+repeated dispatch or registrations that now require coordinated edits without
+necessity. Trace reads and writes of the affected state: a rule can become
+scattered across partial updates without any text being copied. Name the
+concrete rule change that would require finding and updating those sites.
 
 For tests/evals, inspect duplicated scenario authority: one scenario fact now
 requires synchronized edits across owners. A one-owner change divergence is
 concrete evidence. Repeated construction at legitimate separate observation
 boundaries does not alone establish a blocker.
 
-Do not invent speculative plugin systems for one known case. One extra branch is not automatically an OCP violation; block only when the current change concretely worsens an already meaningful extension point or creates duplicated coordination cost.
+Mechanical code duplication is not automatically duplicated authority. Separate
+validation at trust boundaries, derived projections and explicit transitions
+can be justified. Do not invent a plugin system for one case or demand one
+writer for every field; establish avoidable coordination cost in this change.
 
-### 6. Review testability
+### 6. Review testability and diagnosability
 
 Focus on **important changed behavior**, not a universal mocking preference.
 
@@ -200,28 +204,25 @@ Inspect incidental text/layout assertions that couple a scenario to unrelated
 formatting instead of its observation contract. Stable textual contracts remain
 legitimate; explain the concrete maintenance consequence before blocking.
 
-### 7. Review duplication and abstraction cost
+Trace relevant changed failures to available diagnostic evidence. Does a wrapper,
+fallback or translation discard cause, operation identity or state context with
+no usable alternative? Show the lost distinction and investigation cost. Do not
+mandate logging, expose sensitive data, or reject public error boundaries that
+retain appropriate internal evidence. Functional failure behavior and test
+adequacy remain discovery/acceptance responsibilities.
 
-Look for two opposite failure modes.
+### 7. Review abstraction cost and calibrate findings
 
-#### Duplicated authority
+Inspect speculative abstraction, including fixture/harness helpers: layers that
+merely forward calls, duplicate an existing abstraction, or add navigation cost
+without localizing policy, a current variation, dependency boundary or test seam.
+Respect abstractions that serve those purposes.
 
-Potential blocker when the change introduces a second copy of business/domain policy or scenario authority that must remain synchronized with an existing source of truth.
-
-Mechanical code duplication is not automatically architectural duplication.
-
-#### Speculative abstraction
-
-Potential blocker when the change adds layers/interfaces/factories/providers/registries that:
-
-- have no current boundary or variation to protect;
-- merely forward calls without isolating dependency or policy;
-- increase navigation/cognitive cost more than they localize change;
-- duplicate an existing repo abstraction.
-
-Apply the same speculative abstraction question to fixture and harness helpers.
-
-Do not penalize a small abstraction that clearly creates a required test seam or external boundary.
+Connect each candidate's diff evidence to a credible future change, investigation
+or verification task and avoidable cost/risk. Respect repo conventions and
+justified trade-offs; reject preferences and speculative redesigns. Report each
+root cause once across dimensions. A small rename can resolve a material
+contract trap; correction size does not determine impact.
 
 ### 8. Use automated signals as leads, not verdicts
 
@@ -266,16 +267,9 @@ Each blocker must include:
 - maintainability consequence
 - smallest reasonable correction direction
 
-Do not prescribe a full implementation unless necessary to explain the boundary. Prefer directions such as:
-
-- move deterministic fee policy out of HTTP adapter into the existing payment domain service;
-- use the existing repository port instead of importing the Postgres adapter;
-- keep receipt rendering behind the existing receipt boundary rather than adding it to payment orchestration.
-
-Avoid directions such as:
-
-- rewrite to Clean Architecture;
-- split this into five classes;
+Give a bounded direction, such as using the existing repository port or keeping
+fee policy in its domain owner. Do not prescribe a full implementation,
+architecture rewrite or arbitrary class split.
 
 ### 10. Decide the verdict
 
@@ -294,7 +288,7 @@ Use when:
 Use when at least one is true:
 
 - current task introduces/worsens a hard architecture violation;
-- semantic review finds a concrete high-impact cohesion/coupling/locality/testability/duplication/abstraction regression with actionable evidence.
+- semantic review finds a concrete high-impact regression under the review contract with actionable evidence.
 
 #### `INCONCLUSIVE`
 
@@ -324,7 +318,7 @@ BLOCKERS:
 1. MNT-01 — <file/location>
    - Problem: <concrete introduced/worsened issue>
    - Evidence: <diff/dependency/gate evidence>
-   - Maintainability impact: <why future change/refactor becomes riskier>
+   - Maintainability impact: <concrete future change, investigation or verification made harder/riskier>
    - Smallest correction direction: <bounded direction, not redesign>
    - Current disposition: <confirmed, or resolved/corrected with current evidence>
 

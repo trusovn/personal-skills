@@ -15,6 +15,10 @@ qualification inputs, not durable review reports.
 Test-asset variants keep production unchanged and supply duplicated scenario
 authority, mutable occurrence state, clean controls and a tests-only correction.
 Their held-back oracle stays outside the reviewer workspace.
+
+Semantic variants contrast working reservation/recovery code with misleading
+contracts, scattered invalidation and lost failure context, versus justified
+protocol complexity. They reuse the unchanged gate and staging helpers.
 """
 
 from pathlib import Path
@@ -682,6 +686,199 @@ def test_assets(variant: str) -> None:
     write(RUNS, f"{TASK}/test-assets-{variant}-oracle.md", TEST_ASSET_ORACLE)
 
 
+SEMANTIC_BRIEF = """
+# Task Brief: MNT-42 — Reservation recovery and heartbeat
+
+Status: ready
+Task kind: executable
+Review: immediate
+
+Add heartbeat renewal and recovery after a worker disconnect. Existing callers
+must still reserve ready work, reject an exhausted attempt budget, revise inputs,
+and receive a completion status. All time values at Python entry points use
+monotonic milliseconds. Recovery clears evidence for the old inputs and makes
+work ready again. src/state.py owns evidence invalidation and attempt eligibility.
+
+Allowed paths: src/controller.py; tests/test_controller.py.
+The wire field `expires` is a legacy millisecond field and cannot be renamed.
+State mutation under the caller's lock is intentional. Explicit branches for
+ready/running/done phases keep the protocol visible; no plugin system is needed.
+There is no external failure log. Public completion status is the API contract;
+internal failure details are available only through the completion return record.
+No contract registry stage exists. This requested review judges maintainability;
+functional conformance and coverage are reviewed separately.
+"""
+
+SEMANTIC_STATE = '''
+"""Shared rules. The caller holds the state lock for commands."""
+
+
+def eligible(state):
+    return state["phase"] == "ready" and state["attempts"] < 3
+
+
+def invalidate_evidence(state):
+    state["readiness"] = None
+    state["verification"] = None
+'''
+
+SEMANTIC_BASELINE = '''
+"""Commands run under the caller's lock; timestamps and durations are in ms."""
+from src import state as rules
+
+
+def reserve(state, now_ms, ttl_ms):
+    if not rules.eligible(state):
+        return False
+    state.update(phase="running", attempts=state["attempts"] + 1,
+                 expires=now_ms + ttl_ms)
+    return True
+
+
+def revise_inputs(state):
+    rules.invalidate_evidence(state)
+    state["phase"] = "ready"
+
+
+def complete(state, publish):
+    try:
+        publish(state["operation_id"])
+    except (OSError, ValueError) as error:
+        return {"status": "failed", "operation_id": state["operation_id"],
+                "detail": str(error)}
+    state["phase"] = "done"
+    return {"status": "done"}
+'''
+
+SEMANTIC_ADDITIONS = '''
+
+
+def heartbeat(state, now_ms, ttl_ms):
+    if state["phase"] == "running":
+        state["expires"] = now_ms + ttl_ms
+        return "renewed"
+    if state["phase"] == "done":
+        return "finished"
+    return "not_running"
+
+
+def recover(state):
+    rules.invalidate_evidence(state)
+    state["phase"] = "ready"
+'''
+
+SEMANTIC_TEST = '''
+import unittest
+from src import controller
+
+
+def new_state():
+    return dict(phase="ready", attempts=0, expires=0, operation_id="job-7",
+                readiness="old-inputs", verification="old-inputs")
+
+
+class ControllerTest(unittest.TestCase):
+    def test_reserve_and_complete(self):
+        state = new_state()
+        self.assertTrue(controller.reserve(state, 1000, 5000))
+        self.assertEqual(("running", 1, 6000),
+                         (state["phase"], state["attempts"], state["expires"]))
+        seen = []
+        self.assertEqual("done", controller.complete(state, seen.append)["status"])
+        self.assertEqual(["job-7"], seen)
+
+    def test_revision_and_failure(self):
+        state = new_state()
+        controller.revise_inputs(state)
+        self.assertIsNone(state["readiness"])
+        self.assertIsNone(state["verification"])
+        def fail(operation_id):
+            raise OSError("queue unavailable")
+        self.assertEqual("failed", controller.complete(state, fail)["status"])
+'''
+
+SEMANTIC_TEST_ADDITIONS = '''
+
+    def test_heartbeat_and_recovery(self):
+        state = new_state()
+        controller.reserve(state, 1000, 5000)
+        self.assertEqual("renewed", controller.heartbeat(state, 2000, 5000))
+        self.assertEqual(7000, state["expires"])
+        controller.recover(state)
+        self.assertEqual(("ready", None, None),
+                         (state["phase"], state["readiness"], state["verification"]))
+'''
+
+SEMANTIC_ORACLE = """
+# Held-back semantic review oracle
+
+Defect variant: current suite and unchanged architecture gate pass. Expect
+distinct actionable root causes, not a quota or one finding per vocabulary word:
+- `_is_ready` now performs the reservation mutation and is called by reserve;
+  its predicate contract hides attempt consumption and deadline writes. A future
+  readiness observer reusing it would consume work. Name the effect truthfully
+  or restore a query boundary; do not insist on pure functions everywhere.
+- heartbeat's `lease_seconds` holds milliseconds, unlike its explicit name.
+  With (2000, 5000), expires is 7000; following the name with a seconds value
+  of 5 gives 2005. Ground the future caller trap in the task's ms contract.
+  The legacy wire field `expires` is deliberate and is NOT the same defect.
+- revise_inputs and recover bypass rules.invalidate_evidence with copied partial
+  resets. Extending the existing owner to invalidate a new evidence field leaves
+  both commands stale. Keep invalidation authority with the existing owner;
+  do not demand a generic state machine or one writer for all state.
+- complete replaces useful failure context with the same status-only record for
+  distinct failures. OSError('queue unavailable') and ValueError('receipt invalid')
+  now lose both their cause and operation identity; no other diagnostic source
+  exists. Preserve appropriate internal context, without mandatory logging.
+
+Control variant: ACCEPT with no blockers. Same feature, explicit ordered phase
+branches, locked in-place updates and legacy wire naming are justified. reserve
+is a command; shared eligibility/invalidation owners remain; failure details
+are retained. Do not demand classes, a registry, a purity rewrite, additional
+logging, or more tests to earn maintainability acceptance. Untouched retry limit
+3 is legacy policy, not a new magic-number finding. Correct existing function
+names alone are not evidence of a regression.
+
+Both variants: compare actual diff to baseline; give location, changed evidence,
+future maintenance consequence and smallest correction for confirmed findings.
+Do not split hidden mutation into redundant naming/flow findings or relitigate
+functional coverage. Preserve read-only scope and separate functional acceptance.
+"""
+
+
+def semantic_assets(variant: str) -> None:
+    root = initialize(f"maintainability-semantics-{variant}")
+    write(root, "AGENTS.md", AGENTS_RULES)
+    write(root, f"docs/tasks/{TASK}/brief.md", SEMANTIC_BRIEF)
+    write(root, ".quality/gates.yaml", GATES_RUNNABLE)
+    write(root, "scripts/check-architecture", GATE)
+    write(root, "src/__init__.py", "")
+    write(root, "src/state.py", SEMANTIC_STATE)
+    write(root, "src/controller.py", SEMANTIC_BASELINE)
+    write(root, "tests/__init__.py", "")
+    write(root, "tests/test_controller.py", SEMANTIC_TEST)
+    commit(root, "reservation baseline")
+    changed = SEMANTIC_BASELINE + SEMANTIC_ADDITIONS
+    if variant == "defects":
+        changed = changed.replace("def reserve(state, now_ms, ttl_ms):",
+                                  "def _is_ready(state, now_ms, ttl_ms):")
+        changed += '''\n\ndef reserve(state, now_ms, ttl_ms):
+    return _is_ready(state, now_ms, ttl_ms)
+'''
+        changed = changed.replace("def heartbeat(state, now_ms, ttl_ms):",
+                                  "def heartbeat(state, now_ms, lease_seconds):")
+        changed = changed.replace('state["expires"] = now_ms + ttl_ms',
+                                  'state["expires"] = now_ms + lease_seconds')
+        changed = changed.replace("rules.invalidate_evidence(state)",
+                                  'state.update(readiness=None, verification=None)')
+        changed = changed.replace('return {"status": "failed", "operation_id": state["operation_id"],\n'
+                                  '                "detail": str(error)}',
+                                  'return {"status": "failed"}')
+    write(root, "src/controller.py", changed)
+    write(root, "tests/test_controller.py", SEMANTIC_TEST + SEMANTIC_TEST_ADDITIONS)
+    write(RUNS, f"{TASK}/semantics-{variant}-oracle.md", SEMANTIC_ORACLE)
+
+
 SCENARIOS = {
     "correction-round": correction_round,
     "four-blockers": four_blockers,
@@ -690,6 +887,8 @@ SCENARIOS = {
     "test-assets-control": lambda: test_assets("control"),
     "test-assets-correction": lambda: test_assets("correction"),
     "test-assets-stop": lambda: test_assets("stop"),
+    "semantic-defects": lambda: semantic_assets("defects"),
+    "semantic-control": lambda: semantic_assets("control"),
 }
 
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:

@@ -160,7 +160,7 @@ class MaintainabilityReportingContractTest(unittest.TestCase):
             case["id"]: case
             for case in json.loads(EVALS.read_text(encoding="utf-8"))["evals"]
         }
-        self.assertEqual(list(range(1, 9)), sorted(cases))
+        self.assertEqual(list(range(1, 11)), sorted(cases))
         self.assertIn("wrote the current production bytes", cases[1]["prompt"])
         first = " ".join(cases[1]["expectations"])
         self.assertIn("SELF_CHECK_ONLY", first)
@@ -326,6 +326,7 @@ class MaintainabilityFixtureTest(unittest.TestCase):
         for scenario in (
             "four-blockers", "genuine-stop", "correction-round", "test-assets",
             "test-assets-control", "test-assets-correction", "test-assets-stop",
+            "semantic-defects", "semantic-control",
         ):
             subprocess.run(
                 [sys.executable, str(FIXTURE), scenario],
@@ -337,6 +338,98 @@ class MaintainabilityFixtureTest(unittest.TestCase):
         cls.stop_repo = cls.work / "maintainability-stop"
         cls.correction_repo = cls.work / "maintainability-correction"
         cls.run_dir = cls.work / "task-runs" / "MNT-42"
+
+    def test_semantic_variants_have_runnable_baselines_and_green_current_behavior(self):
+        for variant in ("defects", "control"):
+            repo = self.work / f"maintainability-semantics-{variant}"
+            baseline = Path(tempfile.mkdtemp(dir=self.work))
+            for relative in self.git(repo, "ls-files").splitlines():
+                path = baseline / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(self.git(repo, "show", f"HEAD:{relative}"))
+            for target in (baseline, repo):
+                with self.subTest(variant=variant, target=target):
+                    suite = subprocess.run(
+                        [sys.executable, "-B", "-m", "unittest", "tests.test_controller"],
+                        cwd=target, capture_output=True, text=True,
+                    )
+                    self.assertEqual(0, suite.returncode, suite.stderr)
+                    gate = subprocess.run(
+                        [sys.executable, "-B", "scripts/check-architecture"],
+                        cwd=target, capture_output=True, text=True,
+                    )
+                    self.assertEqual(0, gate.returncode, gate.stderr)
+            self.assertEqual(["src/controller.py", "tests/test_controller.py"],
+                             self.git(repo, "diff", "--name-only").splitlines())
+
+    def test_semantic_oracles_distinguish_contract_traps_and_valid_complexity(self):
+        for variant in ("defects", "control"):
+            repo = self.work / f"maintainability-semantics-{variant}"
+            with self.subTest(variant=variant):
+                result, _ = self.probe(repo, '''
+import inspect, json
+from src import controller, state as rules
+from tests.test_controller import new_state
+
+state = new_state()
+query = getattr(controller, "_is_ready", rules.eligible)
+if "_is_ready" in vars(controller):
+    query(state, 1000, 5000)
+else:
+    query(state)
+print(json.dumps([state["phase"], state["attempts"], state["expires"]]))
+print(list(inspect.signature(controller.heartbeat).parameters)[-1])
+
+# A future evidence kind extends the existing owner, not its callers.
+previous = rules.invalidate_evidence
+def extended(state):
+    previous(state)
+    state["receipt"] = None
+rules.invalidate_evidence = extended
+for command in (controller.revise_inputs, controller.recover):
+    state = new_state() | {"receipt": "old-inputs"}
+    command(state)
+    print(json.dumps(state["receipt"]))
+
+for error in (OSError("queue unavailable"), ValueError("receipt invalid")):
+    def fail(operation_id):
+        raise error
+    print(json.dumps(controller.complete(new_state(), fail), sort_keys=True))
+''')
+                self.assertEqual(0, result.returncode, result.stderr)
+                lines = result.stdout.splitlines()
+                self.assertEqual(["running", 1, 6000] if variant == "defects"
+                                 else ["ready", 0, 0], json.loads(lines[0]))
+                self.assertEqual("lease_seconds" if variant == "defects" else "ttl_ms",
+                                 lines[1])
+                self.assertEqual(["old-inputs", "old-inputs"] if variant == "defects"
+                                 else [None, None], [json.loads(line) for line in lines[2:4]])
+                failures = [json.loads(line) for line in lines[4:]]
+                if variant == "defects":
+                    self.assertEqual([{"status": "failed"}] * 2, failures)
+                else:
+                    self.assertEqual(["queue unavailable", "receipt invalid"],
+                                     [item["detail"] for item in failures])
+                    self.assertTrue(all(item["operation_id"] == "job-7" for item in failures))
+
+    def test_semantic_eval_execution_stages_real_reviewer_inputs(self):
+        # Use the existing runner's planner, without launching model calls.
+        import importlib.util
+        runner_path = ROOT / "skills/skill-creator/scripts/run_behavior_evals.py"
+        spec = importlib.util.spec_from_file_location("behavior_runner", runner_path)
+        runner = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(runner)
+        for case in runner.load_evals(PACKAGE):
+            if case["id"] < 9:
+                continue
+            run = Path(tempfile.mkdtemp(dir=self.work)).resolve()
+            command, cwd, env, workspace = runner.execution_plan(case, PACKAGE, run)
+            setup = subprocess.run(command, cwd=cwd, env=os.environ | env,
+                                   capture_output=True, text=True)
+            self.assertEqual(0, setup.returncode, setup.stderr)
+            self.assertTrue((workspace / "docs/tasks/MNT-42/brief.md").is_file())
+            self.assertTrue(self.git(workspace, "diff", "--name-only").strip())
+            self.assertFalse((workspace / "task-runs").exists())
 
     def test_test_assets_supply_green_tests_only_diffs_and_policy(self):
         for variant in ("defects", "control", "correction", "stop"):

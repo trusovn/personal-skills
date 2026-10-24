@@ -47,7 +47,22 @@
         "A newly confirmed finding receives an identity no earlier report or resolved finding already used; resolved IDs are not recycled.",
         "The review writes only `docs/tasks/MNT-42/reviews/maintainability-02.md` and does not rewrite the prior report or redirect it to runtime storage.",
         "The report names the applicable conditional remainder after this review \u2014 registry synchronization when it applies, then fresh discovery evidence and the separate acceptance decision \u2014 without implying that naming a stage executes it."
-      ]
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "correction-round"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/maintainability-correction"
+      }
     },
     {
       "id": 5,
@@ -59,7 +74,22 @@
         "It reports the distinct shared mutable fixture defect with current isolation or repeatability evidence, even though the ordinary suite passes.",
         "It does not block the stable receipt-text assertion or legitimate independent observation boundaries; all confirmed findings have stable IDs.",
         "It reviews actual test assets, preserves production bytes and read-only permissions, and leaves functional acceptance to its separate owner."
-      ]
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "test-assets"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/maintainability-tests-defects"
+      }
     },
     {
       "id": 6,
@@ -70,7 +100,22 @@
         "The current required gate passes; the requested review reports no material blocker merely for independent fixtures or a stable textual contract.",
         "It recognizes that this small assertion edit alone does not require conditional review, a new gate or registry work.",
         "It does not describe maintainability ACCEPT as functional task acceptance."
-      ]
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "test-assets-control"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/maintainability-tests-control"
+      }
     },
     {
       "id": 7,
@@ -82,7 +127,22 @@
         "The prior reviewed scenarios.py identity is stale; unchanged transport scope is usable only while current and applicable.",
         "It writes only docs/tasks/MNT-42/reviews/maintainability-02.md and preserves maintainability-01.md unchanged.",
         "It carries the first outstanding stage and complete ordered remainder by actual effects; no registry stage exists, and fresh discovery precedes separate acceptance."
-      ]
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "test-assets-correction"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/maintainability-tests-correction"
+      }
     },
     {
       "id": 8,
@@ -93,7 +153,77 @@
         "It reports VERDICT: INCONCLUSIVE and ARCHITECTURE_GATE: NOT_AVAILABLE because tools/archcheck is absent with no valid fresh proof or exception.",
         "It retains any confirmed findings, outstanding coverage, concrete stop reason and next owner; the tests-only label waives no required review.",
         "It does not install tools, edit policy or production/test assets, invent registry work or claim completed acceptance."
-      ]
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "test-assets-stop"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/maintainability-tests-stop"
+      }
+    },
+    {
+      "id": 9,
+      "prompt": "The fixture is staged before this reviewer session. Independently review the target repository in the current workspace using its task brief, actual Git diff, immediate collaborators and gate policy. Keep review read-only; return the compact report inline. Do not read setup programs, eval expectations or task-runs oracle files; those are held back until raw output is recorded.",
+      "expected_output": "An evidence-supported maintainability CHANGES_REQUESTED on working reservation/recovery code, with distinct semantic contract, invalidation ownership and diagnosability regressions.",
+      "files": [],
+      "expectations": [
+        "It identifies that _is_ready consumes attempts and changes phase/deadline, grounds the misleading query contract in a credible future readiness observer, and proposes a bounded correction without duplicate naming/flow findings.",
+        "It identifies lease_seconds as milliseconds at heartbeat, cites the actual arithmetic/caller contract and a future unit-conversion trap, without blocking the documented legacy expires wire field.",
+        "It traces revise_inputs and recover bypassing the existing invalidation owner; explains how one new evidence field requires synchronized edits, rather than only alleging duplication.",
+        "It explains which cause/operation context complete discards for distinct failures and why investigation is harder with no other diagnostic source; does not mandate a logging framework.",
+        "Each confirmed blocker has a stable ID, location, introduced-change evidence, concrete future maintenance impact and smallest correction. It does not block justified phase branches, in-place command mutation or untouched legacy policy, repeat one root cause, edit implementation, or perform functional/test-adequacy acceptance."
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "semantic-defects"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/maintainability-semantics-defects"
+      }
+    },
+    {
+      "id": 10,
+      "prompt": "The fixture is staged before this reviewer session. Independently review the target repository in the current workspace using its task brief, actual Git diff, immediate collaborators and gate policy. Keep review read-only; return the compact report inline. Do not read setup programs, eval expectations or task-runs oracle files; those are held back until raw output is recorded.",
+      "expected_output": "Maintainability ACCEPT for the same feature with justified protocol branches, command mutation, stable wire naming, localized rules and retained diagnostic context.",
+      "files": [],
+      "expectations": [
+        "It returns VERDICT: ACCEPT after the existing gate passes and confirms no introduced material maintainability blocker.",
+        "It accepts explicit ordered phase branches, caller-locked mutation and the documented legacy expires wire field; unfamiliar naming, repeated state assignment or complexity alone are not evidence.",
+        "It recognizes the existing shared eligibility/invalidation authority and retained failure details; does not demand a state-machine framework, plugin registry, purity rewrite, logging infrastructure or additional tests as maintainability conditions.",
+        "It reviews the diff rather than untouched retry policy, preserves read-only scope and leaves functional correctness/test adequacy to discovery and acceptance."
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "semantic-control"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/maintainability-semantics-control"
+      }
     }
   ]
 }

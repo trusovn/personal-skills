@@ -1177,16 +1177,46 @@ class ControllerStateContractTest(unittest.TestCase):
 
     def test_ledger_scalar_and_array_boundaries(self):
         state = load_controller_state()
-        for revision in (True, 0, -1):
-            with self.subTest(revision=revision):
+        invalid_fields = (
+            ("revision", True, "positive integer"),
+            ("revision", 0, "positive integer"),
+            ("revision", -1, "positive integer"),
+            ("flow_revision", True, "positive integer"),
+            ("flow_revision", 0, "positive integer"),
+            ("flow_path", "flows/flow-002.json", "flow_path.*flow_revision"),
+            ("flow_sha256", "invalid", "flow_sha256"),
+            ("state", "unknown", "Invalid ledger state"),
+            ("current_step", "unknown", "current_step is invalid"),
+            ("correction_cycle", True, "non-negative integer"),
+            ("correction_cycle", -1, "non-negative integer"),
+            ("completed_task_ids", "T0", "completed_task_ids.*array"),
+        )
+        for field, value, error in invalid_fields:
+            with self.subTest(field=field, value=value):
                 ledger = self.ledger()
-                ledger["revision"] = revision
-                with self.assertRaisesRegex(ValueError, "positive integer"):
+                ledger[field] = value
+                original = json.dumps(ledger, sort_keys=True)
+                with self.assertRaisesRegex(ValueError, error):
                     state.validate_ledger(ledger)
-        ledger = self.ledger()
-        ledger["completed_task_ids"] = "T0"
-        with self.assertRaisesRegex(ValueError, "completed_task_ids.*array"):
-            state.validate_ledger(ledger)
+                self.assertEqual(original, json.dumps(ledger, sort_keys=True))
+
+    def test_ledger_task_identity_and_history_boundaries(self):
+        state = load_controller_state()
+        invalid_tasks = (
+            ({"id": ""}, "non-empty and unique"),
+            ({"id": None}, "non-empty and unique"),
+            ({"state": "unknown"}, "Invalid task state"),
+            ({"attempt_ids": "attempt-001"}, "unique array"),
+            ({"attempt_ids": ["attempt-001", "attempt-001"]}, "unique array"),
+        )
+        for fields, error in invalid_tasks:
+            with self.subTest(fields=fields):
+                ledger = self.ledger()
+                ledger["tasks"][0].update(fields)
+                original = json.dumps(ledger, sort_keys=True)
+                with self.assertRaisesRegex(ValueError, error):
+                    state.validate_ledger(ledger)
+                self.assertEqual(original, json.dumps(ledger, sort_keys=True))
 
     def test_incoherent_updates_preserve_input_and_persisted_bytes(self):
         state = load_controller_state()

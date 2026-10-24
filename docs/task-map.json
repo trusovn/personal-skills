@@ -1,0 +1,822 @@
+{
+  "schema_version": "1.0",
+  "project": "Advisory maintainability feedback in the bounded task flow",
+  "plan_path": "docs/project-plan.md",
+  "capabilities": [
+    {
+      "id": "CAP-001",
+      "name": "Portable installed measurement",
+      "outcome": "Installed skills measure target code without the source checkout.",
+      "flows": [
+        "FLOW-001"
+      ]
+    },
+    {
+      "id": "CAP-002",
+      "name": "Applicable pre-edit evidence",
+      "outcome": "Preflight or self-preflight hands off one original task baseline.",
+      "flows": [
+        "FLOW-002"
+      ]
+    },
+    {
+      "id": "CAP-003",
+      "name": "Proportionate implementer feedback",
+      "outcome": "Implementers compare affected code and explain retained threshold decisions.",
+      "flows": [
+        "FLOW-002",
+        "FLOW-003"
+      ]
+    },
+    {
+      "id": "CAP-004",
+      "name": "Independent maintainability disposition",
+      "outcome": "Fresh review compares submitted bytes and judges concrete design consequences.",
+      "flows": [
+        "FLOW-002",
+        "FLOW-003"
+      ]
+    },
+    {
+      "id": "CAP-005",
+      "name": "Coordinated existing static checks",
+      "outcome": "Native check policy and ownership remain effective without redundant execution.",
+      "flows": [
+        "FLOW-002",
+        "FLOW-003"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "ART-001",
+      "name": "Installed measurement runtime and effective settings",
+      "kind": "configuration",
+      "source_of_truth": "Managed runtime/default source and explicit target .quality settings; target-native analyzer environment is provisioned only by authorized setup.",
+      "producer": "Installer projects files; target owner supplies settings; explicit setup prepares native dependencies.",
+      "consumers": [
+        "Preflight",
+        "Implementer",
+        "Independent maintainability reviewer"
+      ],
+      "lifecycle": "Installed and prepared, or explicitly unavailable. Installation/settings changes may invalidate comparisons; no active-run refresh."
+    },
+    {
+      "id": "ART-002",
+      "name": "Original task baseline and capture reference",
+      "kind": "persisted",
+      "source_of_truth": "Named report with pre-edit source snapshots/hashes, governed folders and measurement identity.",
+      "producer": "Task-preflight, or bounded-task-implementer self-preflight before edits, invokes measurement.",
+      "consumers": [
+        "Implementer",
+        "Independent maintainability reviewer"
+      ],
+      "lifecycle": "Capture once before edits. Retain through corrections; incompatible or unrecoverable evidence stays a visible gap. Never replace with current implementation."
+    },
+    {
+      "id": "ART-003",
+      "name": "Current comparison report",
+      "kind": "derived",
+      "source_of_truth": "Measurement output for captured current bytes and compatible original baseline/settings.",
+      "producer": "Measurement CLI invoked by implementer and separately by fresh reviewer.",
+      "consumers": [
+        "Implementer",
+        "Independent maintainability reviewer"
+      ],
+      "lifecycle": "Fresh output path per invocation. Changed relevant inputs stale applicability; historical reports remain unchanged. Unknown values are not zero."
+    },
+    {
+      "id": "ART-004",
+      "name": "Implementation rationale",
+      "kind": "output",
+      "source_of_truth": "Existing implementation submission or correction artifact.",
+      "producer": "Implementer",
+      "consumers": [
+        "Independent maintainability reviewer"
+      ],
+      "lifecycle": "References report/function/metric and design alternatives for required threshold decisions. Corrected submissions supersede applicability without rewriting history."
+    },
+    {
+      "id": "ART-005",
+      "name": "Maintainability review and dispositions",
+      "kind": "output",
+      "source_of_truth": "Fresh reviewer's existing numbered durable review or authorized inline result.",
+      "producer": "Independent task-maintainability-review invocation",
+      "consumers": [
+        "Implementer",
+        "Coordinator",
+        "Conditional registry updater",
+        "Functional discovery and acceptance"
+      ],
+      "lifecycle": "ACCEPT, CHANGES_REQUESTED or INCONCLUSIVE applies to reviewed bytes. Affected corrections stale verdict; retain stable finding IDs and historical reports."
+    },
+    {
+      "id": "ART-006",
+      "name": "Verification evidence",
+      "kind": "audit",
+      "source_of_truth": "Actual commands, scenario setup, results, skips and limitations recorded beside the plan or per task.",
+      "producer": "Focused local tests; separately authorized and graded fresh-agent evals when run.",
+      "consumers": [
+        "Task reviewers",
+        "Project owner"
+      ],
+      "lifecycle": "Historical evidence of tested bytes. Structural and deterministic proof never implies agent-behavior qualification."
+    },
+    {
+      "id": "ART-007",
+      "name": "Existing repository check policy",
+      "kind": "configuration",
+      "source_of_truth": "Existing command registry/equivalent, agent instructions, native configs/tests and task-runner declarations.",
+      "producer": "Existing repository authority; foundation materialization documents advisory discovery where enabled.",
+      "consumers": [
+        "Preflight",
+        "Implementer",
+        "Independent maintainability reviewer",
+        "Existing native-check owner"
+      ],
+      "lifecycle": "Referenced without copying policy or silently changing requiredness. Material policy changes require the authority owner."
+    },
+    {
+      "id": "ART-008",
+      "name": "Existing native-check execution evidence",
+      "kind": "output",
+      "source_of_truth": "Native command execution record with scope, policy, checked-byte identity, result and producer/stage.",
+      "producer": "Existing declared native-check stage owner; reviewer executes when required or recovers current proof.",
+      "consumers": [
+        "Implementer",
+        "Independent maintainability reviewer",
+        "Downstream check owner"
+      ],
+      "lifecycle": "Current applicable evidence may be reused. Relevant input changes stale it. Missing/stale required proof remains owed; no new evidence store."
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "IF-001",
+      "name": "Installed measurement CLI",
+      "owner": "Shared runtime and installer",
+      "consumer": "Preflight, implementer and reviewer",
+      "inputs": [
+        "ART-001"
+      ],
+      "outputs": [
+        "ART-002",
+        "ART-003"
+      ],
+      "contract": "Preserve baseline/compare/measure, --root, scopes and --output. Support target-aware explicit setup, target settings with shipped-default fallback, neutral labels and valid empty folder baselines. Measurement never installs packages or edits source/index. Complete breached measurements exit 0; execution/incomplete/incompatible errors are distinct from review verdicts."
+    },
+    {
+      "id": "IF-002",
+      "name": "Pre-edit capture handoff",
+      "owner": "Task-preflight or implementer self-preflight",
+      "consumer": "Implementer and independent reviewer",
+      "inputs": [
+        "ART-001"
+      ],
+      "outputs": [
+        "ART-002"
+      ],
+      "contract": "Before edits, capture smallest relevant folder scope and carry explicit report path, origin and identity in existing artifacts. Detect changed starting state. No recapture after implementation or during correction. Record unsupported/unavailable evidence; explicit required evidence retains strict recovery semantics."
+    },
+    {
+      "id": "IF-003",
+      "name": "Submission, independent review and downstream handoff",
+      "owner": "Implementer then fresh maintainability reviewer",
+      "consumer": "Reviewer then existing conditional downstream stage owners",
+      "inputs": [
+        "ART-002",
+        "ART-003",
+        "ART-004"
+      ],
+      "outputs": [
+        "ART-005"
+      ],
+      "contract": "Reviewer independently compares actual submitted bytes, checks attribution, and records complete relevant rationale dispositions. Below-target growth is informational. Breaches need design reasoning, not automatic rejection. Affected corrections retain baseline and stable finding IDs and re-enter existing conditional stages; downstream owners consume current review without repeating general maintainability review."
+    },
+    {
+      "id": "IF-004",
+      "name": "Existing native-check discovery and evidence handoff",
+      "owner": "Repository check authority and existing stage/check owners",
+      "consumer": "Preflight, implementer and independent reviewer",
+      "inputs": [
+        "ART-007",
+        "ART-008"
+      ],
+      "outputs": [
+        "ART-008",
+        "ART-005"
+      ],
+      "contract": "Discover exact command, governed scope, requiredness, native policy and stage owner once. Retain required native lint/typecheck/architecture checks, validate current applicable evidence or recover stale/missing proof. Respect whole-project scope. Reuse known aggregate coverage without reporting-driven duplicate execution. Advisory metric success never waives a hard failure; no new linter, registry or runner is required."
+    }
+  ],
+  "invariants": [
+    {
+      "id": "INV-001",
+      "statement": "Metrics remain advisory; hard repository rules retain separate authority.",
+      "applies_to": [
+        "ART-003",
+        "ART-005",
+        "FLOW-002"
+      ],
+      "verification": "Real threshold boundary cases and justified-breach/rejected-mechanical-split agent evals."
+    },
+    {
+      "id": "INV-002",
+      "statement": "One original baseline captures actual pre-edit dirty/untracked worktree bytes and is retained across corrections.",
+      "applies_to": [
+        "ART-002",
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "verification": "Dirty/index preservation fixture and two corrections compared against identical original baseline."
+    },
+    {
+      "id": "INV-003",
+      "statement": "Compatible tool/settings/scope identity and exact report paths are required; missing or ambiguous values remain unknown.",
+      "applies_to": [
+        "ART-001",
+        "ART-002",
+        "ART-003",
+        "IF-001",
+        "IF-002"
+      ],
+      "verification": "Old-format rejection, settings changes, native exemptions, missing tools and report transfer cases."
+    },
+    {
+      "id": "INV-004",
+      "statement": "Changed relevant bytes stale affected evidence and verdicts; a fresh independent reviewer owns its current comparison and semantic disposition.",
+      "applies_to": [
+        "ART-003",
+        "ART-005",
+        "IF-003",
+        "FLOW-003"
+      ],
+      "verification": "Correction journey plus fresh-reviewer eval with stale submission evidence."
+    },
+    {
+      "id": "INV-005",
+      "statement": "Attention follows affected responsibilities; below-target growth and untouched debt impose no metric-driven refactor.",
+      "applies_to": [
+        "ART-004",
+        "ART-005",
+        "FLOW-002"
+      ],
+      "verification": "Below-target, touched versus untouched legacy, justified complexity and extraction readability scenarios."
+    },
+    {
+      "id": "INV-006",
+      "statement": "Installed runtime is complete, uses its own dependencies and preserves unrelated target ownership.",
+      "applies_to": [
+        "ART-001",
+        "FLOW-001"
+      ],
+      "verification": "Real installed CLI from unrelated cwd with original source unnecessary; installer preservation and drift tests."
+    },
+    {
+      "id": "INV-007",
+      "statement": "Measurement preserves source/index, never provisions packages automatically and does not claim tamper resistance from colocated hashes.",
+      "applies_to": [
+        "ART-001",
+        "ART-002",
+        "ART-003",
+        "FLOW-001",
+        "FLOW-002"
+      ],
+      "verification": "Source/index assertions, offline missing-tool failure, explicit setup and provenance limitations."
+    },
+    {
+      "id": "INV-008",
+      "statement": "Existing conditional review order and affected-scope re-entry remain authoritative without a new agent stage.",
+      "applies_to": [
+        "ART-005",
+        "IF-003",
+        "FLOW-003"
+      ],
+      "verification": "Existing entry/correction route evals extended only for the measurement handoff."
+    },
+    {
+      "id": "INV-009",
+      "statement": "Native static-check policy and ownership remain effective; advisory success cannot waive hard failure and aggregate/check overlap does not cause reporting-only duplicate runs.",
+      "applies_to": [
+        "ART-007",
+        "ART-008",
+        "ART-005",
+        "IF-004",
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "verification": "Mixed hard/advisory fixture, aggregate evidence reuse, stale/missing required proof and no-checks-present cases."
+    }
+  ],
+  "flows": [
+    {
+      "id": "FLOW-001",
+      "name": "Install and prepare measurement",
+      "trigger": "Development profile is installed into a target repository.",
+      "terminal_outcome": "Installed command measures target code independently of source checkout, or reports actionable unavailable capability.",
+      "steps": [
+        {
+          "id": "FLOW-001-S01",
+          "actor": "Installer",
+          "action": "Project explicitly managed runtime/defaults and skill guidance, preserving unrelated bytes.",
+          "consumes": [],
+          "produces": [
+            "ART-001"
+          ],
+          "interfaces": [
+            "IF-001"
+          ],
+          "invariants": [
+            "INV-006"
+          ],
+          "state_transition": "Absent -> installed"
+        },
+        {
+          "id": "FLOW-001-S02",
+          "actor": "Authorized caller",
+          "action": "Resolve target settings/defaults and explicitly prepare target-native pinned dependencies when authorized; no implicit network.",
+          "consumes": [
+            "ART-001"
+          ],
+          "produces": [
+            "ART-001"
+          ],
+          "interfaces": [
+            "IF-001"
+          ],
+          "invariants": [
+            "INV-003",
+            "INV-007"
+          ],
+          "state_transition": "Unprepared -> prepared or unavailable"
+        },
+        {
+          "id": "FLOW-001-S03",
+          "actor": "Test or caller",
+          "action": "Invoke installed CLI against target from unrelated cwd and retain actual results.",
+          "consumes": [
+            "ART-001"
+          ],
+          "produces": [
+            "ART-006"
+          ],
+          "interfaces": [
+            "IF-001"
+          ],
+          "invariants": [
+            "INV-006",
+            "INV-007"
+          ],
+          "state_transition": "Installed capability -> demonstrated or explicitly unproved"
+        }
+      ]
+    },
+    {
+      "id": "FLOW-002",
+      "name": "Capture, implement and review",
+      "trigger": "Supported Python task begins through preflight or direct implementer entry.",
+      "terminal_outcome": "Current independent maintainability disposition reaches existing next required stage, or a concrete evidence gap has an owner.",
+      "steps": [
+        {
+          "id": "FLOW-002-S01",
+          "actor": "Preflight or implementer self-preflight",
+          "action": "Resolve existing native-check obligations and capture relevant pre-edit folder baseline, including legitimate empty-start scope.",
+          "consumes": [
+            "ART-001",
+            "ART-007"
+          ],
+          "produces": [
+            "ART-002"
+          ],
+          "interfaces": [
+            "IF-001",
+            "IF-002",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-002",
+            "INV-003",
+            "INV-007",
+            "INV-009"
+          ],
+          "state_transition": "Uncaptured -> captured or explicit unavailable/not applicable"
+        },
+        {
+          "id": "FLOW-002-S02",
+          "actor": "Implementer and existing check owners",
+          "action": "Validate baseline applicability, edit actual target, run required applicable native checks, and compare affected added/changed/deleted files.",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-007"
+          ],
+          "produces": [
+            "ART-003",
+            "ART-008"
+          ],
+          "interfaces": [
+            "IF-001",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-002",
+            "INV-003",
+            "INV-007",
+            "INV-009"
+          ],
+          "state_transition": "Captured -> compared"
+        },
+        {
+          "id": "FLOW-002-S03",
+          "actor": "Implementer",
+          "action": "Attribute affected responsibilities and record threshold/legacy design reasoning under plan section 5; no per-increase defense below target.",
+          "consumes": [
+            "ART-003"
+          ],
+          "produces": [
+            "ART-004"
+          ],
+          "interfaces": [
+            "IF-003"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-005"
+          ],
+          "state_transition": "Compared -> submitted"
+        },
+        {
+          "id": "FLOW-002-S04",
+          "actor": "Fresh independent reviewer",
+          "action": "Independently compare submitted bytes, run/validate required architecture evidence, consume/recover native check proof, review semantics and dispose rationale.",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-003",
+            "ART-004",
+            "ART-007",
+            "ART-008"
+          ],
+          "produces": [
+            "ART-003",
+            "ART-005"
+          ],
+          "interfaces": [
+            "IF-001",
+            "IF-003",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-001",
+            "INV-003",
+            "INV-004",
+            "INV-005",
+            "INV-009"
+          ],
+          "state_transition": "Submitted -> ACCEPT, CHANGES_REQUESTED or INCONCLUSIVE"
+        },
+        {
+          "id": "FLOW-002-S05",
+          "actor": "Coordinator and existing downstream owners",
+          "action": "Consume current report and native evidence, following only outstanding conditional stages without duplicate general review.",
+          "consumes": [
+            "ART-005",
+            "ART-008"
+          ],
+          "produces": [],
+          "interfaces": [
+            "IF-003",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-008",
+            "INV-009"
+          ],
+          "state_transition": "Accepted review -> next required existing stage"
+        }
+      ]
+    },
+    {
+      "id": "FLOW-003",
+      "name": "Correct or recover evidence",
+      "trigger": "Correction, changed submission or failed/incompatible comparison requires recovery.",
+      "terminal_outcome": "Fresh affected-stage decision and current evidence, or explicit unresolved gap and recovery owner; original baseline retained.",
+      "steps": [
+        {
+          "id": "FLOW-003-S01",
+          "actor": "Implementer or capability owner",
+          "action": "Resolve bounded finding/evidence failure and identify affected existing native checks.",
+          "consumes": [
+            "ART-002",
+            "ART-005",
+            "ART-007",
+            "ART-008"
+          ],
+          "produces": [],
+          "interfaces": [
+            "IF-002",
+            "IF-003",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-002",
+            "INV-004",
+            "INV-009"
+          ],
+          "state_transition": "Prior result -> affected evidence stale"
+        },
+        {
+          "id": "FLOW-003-S02",
+          "actor": "Implementer and existing check owner",
+          "action": "Compare corrected files against original baseline, update rationale and recover affected required native-check proof.",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-007"
+          ],
+          "produces": [
+            "ART-003",
+            "ART-004",
+            "ART-008"
+          ],
+          "interfaces": [
+            "IF-001",
+            "IF-003",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-002",
+            "INV-003",
+            "INV-009"
+          ],
+          "state_transition": "Corrected bytes -> new current submission"
+        },
+        {
+          "id": "FLOW-003-S03",
+          "actor": "Fresh independent reviewer",
+          "action": "Independently compare corrected bytes, reconcile stable finding IDs and review current rationale and required native evidence.",
+          "consumes": [
+            "ART-001",
+            "ART-002",
+            "ART-003",
+            "ART-004",
+            "ART-005",
+            "ART-007",
+            "ART-008"
+          ],
+          "produces": [
+            "ART-003",
+            "ART-005"
+          ],
+          "interfaces": [
+            "IF-001",
+            "IF-003",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-004",
+            "INV-008",
+            "INV-009"
+          ],
+          "state_transition": "New submission -> fresh affected-stage decision"
+        },
+        {
+          "id": "FLOW-003-S04",
+          "actor": "Coordinator",
+          "action": "Follow existing route according to actual affected scope and current proof; retain incomplete reasons and recovery owner.",
+          "consumes": [
+            "ART-005",
+            "ART-008"
+          ],
+          "produces": [],
+          "interfaces": [
+            "IF-003",
+            "IF-004"
+          ],
+          "invariants": [
+            "INV-008",
+            "INV-009"
+          ],
+          "state_transition": "Current decision -> outstanding stage or explicit gap"
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Distribute usable measurement tooling",
+      "outcome": "Installed command and foundation discovery work against a separate target without source-checkout dependencies.",
+      "depends_on": [],
+      "capabilities": [
+        "CAP-001",
+        "CAP-005"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-002"
+      ],
+      "consumes": [
+        "ART-007"
+      ],
+      "produces": [
+        "ART-001",
+        "ART-006",
+        "ART-007"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-004"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-003",
+        "INV-006",
+        "INV-007",
+        "INV-009"
+      ],
+      "integration_boundary": "Real installed baseline/compare with pinned analyzers, target/default policy, explicit target setup, neutral versioned reports, empty-start baseline and source/index/unmanaged-file preservation.",
+      "task_planner_context": "Follow plan section 7 shared scripts placement and explicit flat managed resources; preserve public CLI. Update installer/profile docs/tests and smallest repo-foundation/architecture-guardrails discovery guidance. No new runner, linter or required registry. Register only implemented contracts through existing bounded registry stage."
+    },
+    {
+      "id": "T-002",
+      "title": "Capture and hand off the starting code",
+      "outcome": "Preflight supplies one applicable before report and existing native-check obligations without broad baseline execution.",
+      "depends_on": [
+        "T-001"
+      ],
+      "capabilities": [
+        "CAP-002",
+        "CAP-005"
+      ],
+      "flows": [
+        "FLOW-002"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-007"
+      ],
+      "produces": [
+        "ART-002",
+        "ART-006"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-002",
+        "IF-004"
+      ],
+      "invariants": [
+        "INV-002",
+        "INV-003",
+        "INV-007",
+        "INV-009"
+      ],
+      "integration_boundary": "Existing preflight packet/result carries baseline path/scope/origin/identity and native check policy/owner; dirty and stale inputs plus default-versus-required unavailable evidence have distinct outcomes.",
+      "task_planner_context": "Modify source preflight instructions/templates and reuse eval fixtures. Preserve guided/high-assurance readiness and narrow scope. Do not run every static gate as a new before baseline; do not treat a registry template as an installed checker."
+    },
+    {
+      "id": "T-003",
+      "title": "Give implementers proportionate feedback",
+      "outcome": "Packaged and direct implementation paths submit current comparison, proportional rationale and current required native-check evidence.",
+      "depends_on": [
+        "T-002"
+      ],
+      "capabilities": [
+        "CAP-002",
+        "CAP-003",
+        "CAP-005"
+      ],
+      "flows": [
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002",
+        "ART-007"
+      ],
+      "produces": [
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-006",
+        "ART-008"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-002",
+        "IF-003",
+        "IF-004"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-003",
+        "INV-005",
+        "INV-007",
+        "INV-008",
+        "INV-009"
+      ],
+      "integration_boundary": "Direct self-preflight captures before editing; both paths compare relevant changed/added/deleted implementation and test assets, retain original baseline during corrections and preserve native check duties without duplicate aggregate/constituent runs.",
+      "task_planner_context": "Plan section 5 supersedes old every-increase defense. Rationale addresses retained breaches and materially edited legacy hotspots; below-target growth is informational. Reuse submission/correction artifacts and optional run-evidence lifecycle. Update flow README/current policy references without rewriting historical experiments."
+    },
+    {
+      "id": "T-004",
+      "title": "Add independent measurement and review decisions",
+      "outcome": "Fresh reviewer compares actual submitted code and reconciles rationale plus required static evidence before existing downstream handoff.",
+      "depends_on": [
+        "T-003"
+      ],
+      "capabilities": [
+        "CAP-004",
+        "CAP-005"
+      ],
+      "flows": [
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-007",
+        "ART-008"
+      ],
+      "produces": [
+        "ART-003",
+        "ART-005",
+        "ART-006",
+        "ART-008"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-003",
+        "IF-004"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-003",
+        "INV-004",
+        "INV-005",
+        "INV-008",
+        "INV-009"
+      ],
+      "integration_boundary": "Justified breach may ACCEPT; concrete semantic regression may request correction; missing mandatory proof remains owed. Current aggregate evidence is consumed, stale evidence recovered, hard failures remain distinct, and existing correction/next-stage order is retained.",
+      "task_planner_context": "Preserve current naming/state ownership/test-harness/abstraction guidance and session independence. Complete rationale dispositions must not disappear under the optional-warning cap. Do not duplicate functional review or invent static commands. Downstream instructions change only for evidence consumption."
+    },
+    {
+      "id": "T-005",
+      "title": "Verify the complete installed handoff",
+      "outcome": "Recorded installed journey proves deterministic composition and prepared fresh-agent evals expose remaining behavioral qualification.",
+      "depends_on": [
+        "T-004"
+      ],
+      "capabilities": [
+        "CAP-001",
+        "CAP-002",
+        "CAP-003",
+        "CAP-004",
+        "CAP-005"
+      ],
+      "flows": [
+        "FLOW-001",
+        "FLOW-002",
+        "FLOW-003"
+      ],
+      "consumes": [
+        "ART-001",
+        "ART-002",
+        "ART-003",
+        "ART-004",
+        "ART-005",
+        "ART-007",
+        "ART-008"
+      ],
+      "produces": [
+        "ART-006"
+      ],
+      "interfaces": [
+        "IF-001",
+        "IF-002",
+        "IF-003",
+        "IF-004"
+      ],
+      "invariants": [
+        "INV-001",
+        "INV-002",
+        "INV-003",
+        "INV-004",
+        "INV-005",
+        "INV-006",
+        "INV-007",
+        "INV-008",
+        "INV-009"
+      ],
+      "integration_boundary": "Actual installed baseline -> edit -> implementer compare -> separate reviewer compare -> correction against original baseline, with real native static failure then recovery, all identity/preservation assertions and honest focused-suite/gate results.",
+      "task_planner_context": "Reuse existing measurement/installer tests and task-flow fixtures. Scripted composition is not agent behavior. Prepare V-005/V-006/V-008 agent scenarios with decisive inputs and independent grading; live execution requires separate budget approval. Publish results beside plan/per task; never update plan with completion claims or refresh active skill installation."
+    }
+  ],
+  "open_system_questions": []
+}

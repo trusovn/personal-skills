@@ -445,3 +445,44 @@ The rest can be routine implementation design:
 Before coding, turn those decisions into a bounded brief and behavioral verification cases. The important cases are below-target increases, unchanged legacy debt, stale baselines, missing tools, and refactors that lower numbers while worsening navigation.
 
 **My recommended next step:** a small tooling experiment to establish which metrics can be collected completely. That resolves the largest technical uncertainty before committing to a runner design. `.quality/gates.yaml` can follow once there is a real command to register.
+
+
+========
+
+As a separate issues raised during such refactorings is naming issue. Likely the good place to handle
+it is task-maintainability-review. Overall complex names is also a good indication that the design
+isn't great.
+Here's report from the agent on the issue:
+Yes, but **standard linters mainly check naming conventions, not whether a name explains its purpose**. `_ledger_attempt_owners` is a weak name I introduced: it hides both the mapping direction and the validation it performs.
+
+The function builds **attempt ID → task ID**, rejecting duplicate attempt IDs. A clearer version would be:
+
+```python
+def _map_attempt_ids_to_task_ids(ledger: dict[str, Any]) -> dict[str, str]:
+    """Return the task ID for each attempt ID; reject duplicate attempt IDs."""
+```
+
+At the call site:
+
+```python
+task_id_by_attempt_id = _map_attempt_ids_to_task_ids(ledger)
+```
+
+That communicates more than `attempt_owners = _ledger_attempt_owners(ledger)`.
+
+Available help falls into three groups:
+
+| Approach | What it can assess |
+|---|---|
+| Ruff naming rules | Capitalization, naming conventions, `self`/`cls`, and similar consistency checks. [Rules](https://docs.astral.sh/ruff/rules/#pep8-naming-n) |
+| Pylint naming configuration | Naming patterns and explicitly forbidden names such as `foo` or project-specific ambiguous terms. [Configuration](https://pylint.readthedocs.io/en/latest/user_guide/messages/convention/invalid-name.html), [forbidden names](https://pylint.pycqa.org/en/latest/messages/convention/disallowed-name.html) |
+| Focused human or LLM review | Whether names communicate the actual responsibility, mapping direction, domain meaning, and important effects. This requires judgment and can still miss problems. |
+
+For this experiment, I recommend adding a **signature-and-call-site readability check** to semantic review:
+
+- Can the reviewer describe the function’s purpose without opening its body?
+- Do collection names identify their contents and mapping direction?
+- Does the name or short docstring disclose important rejection behavior?
+- Did extraction create helpers whose purpose remains unclear outside the original function?
+
+This is a concrete weakness in the result: the metrics showed smaller functions, but they did not establish clearer names. Adding more naming-style lint rules alone would not catch your example.

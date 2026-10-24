@@ -3,4 +3,5 @@ __pycache__/
 *.py[cod]
 .handoff/
 .quality/venv/
+.quality/envs/
 .quality/reports/

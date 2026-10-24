@@ -2,6 +2,7 @@ import base64
 import importlib.util
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -14,13 +15,16 @@ SPEC = importlib.util.spec_from_file_location("maintainability", ROOT / "tools" 
 metrics = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(metrics)
 HAS_TOOLS = metrics.tool_version("radon") and metrics.tool_version("ruff")
+ENV_SPEC = importlib.util.spec_from_file_location("maintainability_env", ROOT / "tools/maintainability_env.py")
+environment = importlib.util.module_from_spec(ENV_SPEC)
+ENV_SPEC.loader.exec_module(environment)
 
 
 def function(name, branches):
     return f"def {name}(value):\n" + "    if value: pass\n" * branches + "    return value\n"
 
 
-@unittest.skipUnless(HAS_TOOLS, "Run with .quality/venv/bin/python; real Radon and Ruff required")
+@unittest.skipUnless(HAS_TOOLS, "Run with the Python environment printed by setup; real Radon and Ruff required")
 class MeasurementTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
@@ -102,13 +106,48 @@ def duplicate(): pass
 
     def test_incompatible_scope_tool_configuration_and_failed_baseline(self):
         baseline = self.report()
-        for change in ("scope", "tools", "ruff_config", "adapter_sha256"):
+        for change in ("scope", "tools", "ruff_config", "adapter_sha256", "python_implementation"):
             with self.subTest(change=change):
                 changed = json.loads(json.dumps(baseline))
                 changed["identity"][change] = "different"
                 self.assertEqual("incompatible", metrics.comparison(self.report(), changed)["status"])
+        changed = dict(baseline, format_version=1)
+        self.assertIn("report format differs", metrics.comparison(self.report(), changed)["reasons"])
         baseline["measurement_status"] = "incomplete"
         self.assertEqual("incompatible", metrics.comparison(self.report(), baseline)["status"])
+
+    def test_report_can_be_compared_from_a_different_mount_path(self):
+        baseline = self.report()
+        with tempfile.TemporaryDirectory() as relocated:
+            root = Path(relocated)
+            (root / "sample.py").write_text(function("small", 2))
+            current = metrics.build_report(root, ["."], ["complexity", "ruff"])
+        # Patch versions may differ between host and sandbox; parser versions may not.
+        baseline["identity"]["python"] = ".".join(map(str, sys.version_info[:2])) + ".0"
+        result = metrics.comparison(current, baseline)
+        self.assertEqual("compared", result["status"])
+        self.assertEqual(1, result["complexity"][0]["delta"])
+        baseline["identity"]["python"] = "3.0.0"
+        self.assertEqual("incompatible", metrics.comparison(current, baseline)["status"])
+
+    def test_cli_report_handoff_uses_target_root_for_relative_report_paths(self):
+        launcher = [sys.executable, str(ROOT / "scripts/measure_maintainability.py")]
+        before = subprocess.run([*launcher, "baseline", ".", "--root", str(self.root),
+                                 "--output", ".quality/reports/before.json"], capture_output=True, text=True)
+        self.assertEqual(0, before.returncode, before.stderr)
+        with tempfile.TemporaryDirectory() as temporary:
+            other = Path(temporary) / "checkout"
+            shutil.copytree(self.root, other)
+            (other / "sample.py").write_text(function("small", 3))
+            result = subprocess.run([*launcher, "compare", ".", "--root", str(other),
+                                     "--baseline", ".quality/reports/before.json",
+                                     "--output", ".quality/reports/after.json"], capture_output=True, text=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            report = json.loads((other / ".quality/reports/after.json").read_text())
+            self.assertEqual("compared", report["comparison"]["status"])
+            self.assertEqual(2, report["required_response"][0]["delta"])
+            self.assertEqual(["sample.py"], list(report["files"]))
+            self.assertTrue((other / ".quality/reports/after.txt").is_file())
 
     def test_identical_ruff_messages_on_new_symbols_remain_new_diagnostics(self):
         self.source.write_text("def existing(a,b,c,d,e,f): pass\n")
@@ -247,6 +286,45 @@ def duplicate(): pass
         self.source.unlink()
         with self.assertRaisesRegex(ValueError, "no included Python"):
             self.report()
+
+
+class LauncherTests(unittest.TestCase):
+    def test_environment_key_separates_native_runtimes_and_dependency_versions(self):
+        original = environment.environment_path()
+        for name, value in (("system", "OtherOS"), ("machine", "OtherCPU"),
+                            ("python_version", "3.99.0")):
+            with self.subTest(name=name), patch.object(environment.platform, name, return_value=value):
+                self.assertNotEqual(original, environment.environment_path())
+        with tempfile.TemporaryDirectory() as temporary:
+            pins = Path(temporary) / "requirements.txt"
+            pins.write_text("radon==0.0.0\n")
+            with patch.object(environment, "REQUIREMENTS", pins):
+                self.assertNotEqual(original, environment.environment_path())
+                self.assertFalse(environment.pins_available())
+
+    def test_foreign_legacy_venv_is_not_executed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "scripts").mkdir()
+            (root / "tools").mkdir()
+            shutil.copy(ROOT / "scripts/measure_maintainability.py", root / "scripts")
+            shutil.copy(ROOT / "tools/maintainability_env.py", root / "tools")
+            shutil.copytree(ROOT / ".quality", root / ".quality",
+                            ignore=shutil.ignore_patterns("venv", "envs", "reports"))
+            foreign = root / ".quality/venv/bin/python"
+            foreign.parent.mkdir(parents=True)
+            foreign.write_text("foreign binary, cannot execute on this OS")
+            (root / "tools/maintainability.py").write_text("print('adapter reached')\n")
+            result = subprocess.run([sys.executable, str(root / "scripts/measure_maintainability.py"), "--help"],
+                                    capture_output=True, text=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertIn("adapter reached", result.stdout)
+            missing = subprocess.run([sys.executable, "-S", str(root / "scripts/measure_maintainability.py"), "measure"],
+                                     capture_output=True, text=True)
+            self.assertEqual(2, missing.returncode, missing.stderr)
+            self.assertIn("setup", missing.stderr)
+            self.assertNotIn("adapter reached", missing.stdout)
+            self.assertFalse((root / ".quality/envs").exists())
 
 
 if __name__ == "__main__":

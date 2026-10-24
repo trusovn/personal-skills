@@ -225,6 +225,7 @@ HEAD.
 Measure Python files or folders without changing skill behavior:
 
 ```sh
+python3 scripts/measure_maintainability.py setup
 python3 scripts/measure_maintainability.py measure scripts tests
 ```
 

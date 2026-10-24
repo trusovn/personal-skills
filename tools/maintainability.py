@@ -21,7 +21,7 @@ import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
 QUALITY = ROOT / ".quality"
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2
 
 
 def digest(data):
@@ -174,7 +174,7 @@ def measure(sources, checks, policy, ruff_config):
                   "version": version, "errors": [], "values": []}
         results[check] = result
         if version is None:
-            result["errors"].append("Install .quality/requirements.txt into .quality/venv")
+            result["errors"].append("Run python3 scripts/measure_maintainability.py setup")
             continue
         try:
             if check == "complexity":
@@ -222,14 +222,22 @@ def compare_complexity(current, previous):
     return rows
 
 
+def comparison_identity(report):
+    identity = dict(report.get("identity", {}))
+    # Mount paths and patch releases are provenance, not measurement settings.
+    identity.pop("root", None)
+    identity["python"] = ".".join(identity.get("python", "").split(".")[:2])
+    return identity
+
+
 def comparison(report, baseline):
     if baseline is None:
         return {"status": "not_requested", "complexity": [], "ruff": []}
     reasons = []
     if baseline.get("format_version") != FORMAT_VERSION:
         reasons.append("report format differs")
-    if baseline.get("identity") != report["identity"]:
-        reasons.append("scope, tools, interpreter, adapter, or configuration differs")
+    if comparison_identity(baseline) != comparison_identity(report):
+        reasons.append("scope, tools, Python major/minor, adapter, or configuration differs")
     if baseline.get("measurement_status") != "complete" or report["measurement_status"] != "complete":
         reasons.append("baseline or current measurement is incomplete")
     if reasons:
@@ -328,6 +336,7 @@ def build_report(root, scopes, checks):
         errors.append("Git context changed during scanning; remeasure before comparison")
     identity = {"root": str(root), "scope": scopes, "checks": checks,
                 "python": platform.python_version(),
+                "python_implementation": platform.python_implementation(),
                 "tools": {name: check["version"] for name, check in results.items()},
                 "adapter_sha256": digest(Path(__file__).read_bytes()),
                 "policy": policy_bytes.decode(), "ruff_config": ruff_bytes.decode()}
@@ -361,12 +370,16 @@ def main(argv=None):
     if args.operation == "baseline" and args.output is None:
         parser.error("baseline requires --output to preserve the measurement")
     try:
+        root = args.root.resolve(strict=True)
+        if args.output is not None:
+            args.output = root / args.output
+        if args.baseline is not None:
+            args.baseline = root / args.baseline
         if args.output is not None:
             if args.output.exists() or args.output.with_suffix(".txt").exists():
                 raise ValueError("Report or summary already exists; choose a new --output")
             if args.output.suffix != ".json":
                 raise ValueError("--output must end in .json")
-        root = args.root.resolve(strict=True)
         scopes = []
         for value in args.paths or ["."]:
             path = Path(value)

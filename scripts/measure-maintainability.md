@@ -11,14 +11,26 @@ rules. The design context is in
 Use Python 3.11 or later. From this repository:
 
 ```sh
-python3 -m venv .quality/venv
-.quality/venv/bin/python -m pip install -r .quality/requirements.txt
+python3 scripts/measure_maintainability.py setup
 ```
 
-The launcher automatically uses `.quality/venv` when it exists. It never installs
-dependencies during measurement. The environment and local reports are ignored
-by Git. Dependencies are pinned, including Radon's transitive dependencies.
-The initial versions are Radon 6.0.1 and Ruff 0.14.2.
+Run setup once in each host or sandbox environment. It creates an environment in
+`.quality/envs/`, keyed by OS, CPU architecture, Python implementation and full
+version, and the pinned requirements hash. macOS and Linux therefore use their
+own binaries even when they share the repository. Python with `venv`/`pip` and
+Git must be installed in each environment. Setup needs package-index access (or
+an offline wheel directory configured through pip). Run one setup at a time per
+environment; rerun it to repair an interrupted install.
+
+The launcher selects that native environment, or uses the invoking interpreter
+if all pinned dependencies are already installed. It ignores the legacy
+`.quality/venv` directory; existing environments may still be invoked explicitly.
+Measurement never installs packages. Missing or incorrect dependencies produce
+an error with the setup command. Environments and local reports are ignored by
+Git. Dependencies are pinned, including Radon's transitive dependencies.
+The initial versions are Radon 6.0.1 and Ruff 0.14.2. This setup provisions Python
+analyzers only; future language tools can keep their own native runtimes separate
+from the shared report directory.
 
 ## Measure a folder or files
 
@@ -36,7 +48,8 @@ python3 scripts/measure_maintainability.py measure scripts/run_evidence.py tests
 python3 scripts/measure_maintainability.py measure scripts --checks complexity --output .quality/reports/complexity-01.json
 ```
 
-Paths are relative to `--root`, which defaults to the current working directory.
+Scope, `--output`, and `--baseline` paths are relative to `--root`, which defaults
+to the current working directory.
 Absolute paths inside that root also work. To measure a different repository,
 run this launcher's absolute path with `--root /path/to/repo`. The settings and
 tools still come from this installation. Files must end in `.py`; an empty or
@@ -51,7 +64,7 @@ added later. With explicit file paths, keep those paths present for comparison.
 # Before editing. Do not capture a baseline after the change and call it "before".
 python3 scripts/measure_maintainability.py baseline scripts tests --output .quality/reports/before-01.json
 
-# After editing, using the same roots, checks, tools, and settings.
+# After editing, using the same relative scope, checks, tools, and settings.
 python3 scripts/measure_maintainability.py compare scripts tests --baseline .quality/reports/before-01.json --output .quality/reports/after-01.json
 ```
 
@@ -63,6 +76,28 @@ Each saved report needs a new output path. The runner refuses to overwrite
 reports or their sibling `.txt` summaries. A baseline preserves actual worktree
 bytes, including relevant untracked files. It does not reset, stash, stage, or
 refresh the real index. It cannot reconstruct a missing pre-edit baseline.
+
+## Share reports between host and sandbox
+
+Store reports in the measured repository's `.quality/reports/`, as above. When
+the sandbox mounts that repository, both sides see the same JSON and text files,
+even if their absolute repository paths differ. Give each run a distinct filename
+(for example, a task ID plus `before`/`after` and a run ID). Pass the relative JSON
+path to the next agent; there is no mutable "latest" report to confuse runs.
+Neither analyzer binaries nor virtual environments need to be shared.
+
+For a separate clone, copy the report files back into the receiving repository's
+`.quality/reports/` before comparison. Reports are ignored by Git, so commits do
+not transfer them. A local folder cannot synchronize isolated filesystems.
+Keep write permissions usable by both environments when sharing a mount.
+
+Comparisons allow different absolute roots, operating systems, architectures,
+and Python patch versions. They still require the same Python implementation
+and major/minor version, analyzer versions, relative scope, adapter, and settings.
+The caller must select a baseline from the same logical project; a matching
+scope alone cannot establish project identity. Full root and Python version
+remain recorded as provenance. Format 1 reports must be recaptured before the
+edit with this version; they cannot serve as format 2 baselines.
 
 Exit **0** means the selected measurements completed and any requested
 comparison was compatible. Advisory findings can still require action. Exit
@@ -105,7 +140,8 @@ With `--output`, a run writes JSON and a short sibling `.txt` summary. The JSON 
 - `measurement_status`, individual check status, versions, errors, raw Ruff
   output and command, and the Radon API identity.
 - `identity`: exact root/scope, selected checks, interpreter/tool versions,
-  adapter hash, and native settings. Different identities prevent comparison.
+  adapter hash, and native settings. Compatibility ignores the absolute root and
+  Python patch version; other identity differences prevent comparison.
 - `repository` and `files`: Git context, source hashes, asset groups, and exact
   source bytes encoded as base64. Reports are self-contained local observations.
 - `checks.complexity.values`: qualified symbols, locations, values, and targets.
@@ -135,7 +171,8 @@ CRAP, cognitive complexity, and dependency rules are outside this experiment.
 ## Verify the tooling
 
 ```sh
-.quality/venv/bin/python -B -m unittest discover -s tests -p test_maintainability.py -v
+# Use the native environment path printed by setup.
+<environment>/bin/python -B -m unittest discover -s tests -p test_maintainability.py -v
 ```
 
 These tests run real Radon/Ruff measurements and the launcher against disposable
@@ -146,3 +183,6 @@ input changes, incompatible baselines, and output preservation. Missing tools
 are simulated at the package-discovery boundary; other analyzers still run.
 Without the tools, the analyzer tests explicitly skip rather than simulate
 successful measurements.
+Portability cases cover foreign legacy environments, native environment keys,
+offline missing-tool failure, and a saved baseline transferred between checkout
+paths. These local tests do not replace a live Linux sandbox run.

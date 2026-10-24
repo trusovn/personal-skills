@@ -143,43 +143,47 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
         self.assertIn("Require the executable package's `verification.md`", preflight)
         self.assertIn("| Verification design |", packet_template)
         self.assertIn("implementation-neutral", verification)
-        self.assertIn("does **not** own verification design across sibling", verification)
+        self.assertIn(
+            "Design verification within one executable leaf's acceptance scope",
+            verification,
+        )
         self.assertTrue(verification_evals.is_file(), verification_evals)
 
 
     def test_integration_leaf_composition_permission_keeps_refusal_boundaries(self):
         """INT-FLOW-001 I-05: an executable integration leaf may derive
-        scenarios for its own composition ACs from supplied producer outputs;
-        composite parents, invented sibling/system scope, and unavailable
-        inputs/oracles stay refused. Rejects the old blanket composition
-        refusal.
+        cases for its own composition ACs from supplied producer outputs;
+        composite parents route to their dependency-ready leaf, sibling and
+        system scope stay with their owners, and unavailable inputs or
+        unresolvable oracles are reported truthfully before readiness.
+        Rejects the old blanket composition refusal.
         """
         verification = (
             FLOW / "task-verification-designer" / "SKILL.md"
         ).read_text(encoding="utf-8")
         flat = " ".join(verification.split())
         self.assertIn(
-            "An executable integration leaf is different: when its own "
-            "explicit ACs require composing supplied producer outputs at "
-            "stated consumer boundaries, derive task-local scenarios for "
-            "exactly those composition ACs",
+            "When its own ACs require composing supplied producer outputs "
+            "at stated consumer boundaries, derive cases for exactly those "
+            "composition ACs",
             flat,
         )
         self.assertIn("The leaf's brief and supplied inputs remain the authority", flat)
-        self.assertIn("does **not** own verification design across sibling", flat)
-        self.assertIn("route the request to its dependency-ready executable leaf", flat)
         self.assertIn(
-            "do not invent or own a sibling task's requirements, system-wide "
-            "integration strategy, or parent-level closure",
+            "Route a decomposed composite parent to its dependency-ready "
+            "executable leaf",
             flat,
         )
-        self.assertIn("report the unavailable input or capability to its owner", flat)
         self.assertIn(
-            "route an expected result the authority cannot settle to task "
-            "design or the decision owner",
+            "Leave sibling requirements, system-wide integration strategy, "
+            "and parent-level composition closure with their owners",
             flat,
         )
-        self.assertIn("never fabricate a report or claim readiness to bypass the gap", flat)
+        self.assertIn(
+            "For unavailable inputs or an unresolvable oracle, use the "
+            "routing below and report the gap truthfully before readiness",
+            flat,
+        )
         self.assertIn("Packaged preparation remains mandatory for that leaf", flat)
         self.assertNotIn(
             "If the supplied brief can only be verified by composing separate "

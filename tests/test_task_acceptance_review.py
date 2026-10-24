@@ -217,7 +217,11 @@ class ReviewerDisciplineTests(unittest.TestCase):
             "Task scope, an allowed test path, or `review: immediate` is not write permission",
             text,
         )
-        self.assertIn("next unused numbered acceptance path", text)
+        self.assertIn(
+            "write the report to the next unused "
+            "`<brief-directory>/reviews/acceptance-NN.md`, starting at `01`",
+            text,
+        )
         self.assertIn("Never overwrite an earlier review", text)
         self.assertIn(
             "Even `ACCEPT` records a decision/route without authorizing tracker mutation",

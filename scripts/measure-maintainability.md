@@ -53,10 +53,11 @@ to the current working directory.
 Absolute paths inside that root also work. To measure a different repository,
 run this launcher's absolute path with `--root /path/to/repo`. The settings and
 tools still come from this installation. Files must end in `.py`; an empty or
-missing scope is an error. Symlinks are not followed. Explicit excluded scopes
+missing scope is an error, except when comparing deleted files preserved in the
+baseline. Symlinks are not followed. Explicit excluded scopes
 are rejected; excluded directories encountered during traversal are recorded.
 Folders are appropriate for a baseline: they also capture functions or files
-added later. With explicit file paths, keep those paths present for comparison.
+added later. Include deleted file paths in the after scope to report removals.
 
 ## Capture before and compare after
 
@@ -64,13 +65,17 @@ added later. With explicit file paths, keep those paths present for comparison.
 # Before editing. Do not capture a baseline after the change and call it "before".
 python3 scripts/measure_maintainability.py baseline scripts tests --output .quality/reports/before-01.json
 
-# After editing, using the same relative scope, checks, tools, and settings.
-python3 scripts/measure_maintainability.py compare scripts tests --baseline .quality/reports/before-01.json --output .quality/reports/after-01.json
+# After editing, compare only the affected files within those baseline folders.
+python3 scripts/measure_maintainability.py compare scripts/run_evidence.py tests/test_run_evidence.py --baseline .quality/reports/before-01.json --output .quality/reports/after-01.json
 ```
 
 `measure` and `compare` print the summary to the console by default. Use
 `--output` to also save JSON and text reports. `baseline` requires `--output`
 because later comparisons need the saved measurement.
+Pass that report filename to the next skill. The after scope may be the same
+scope or a subset; new files must be under a baseline folder. Baseline records
+outside the after scope are not compared or reported as removals. Checks,
+tools, and settings must still match.
 
 Each saved report needs a new output path. The runner refuses to overwrite
 reports or their sibling `.txt` summaries. A baseline preserves actual worktree
@@ -93,14 +98,18 @@ Keep write permissions usable by both environments when sharing a mount.
 
 Comparisons allow different absolute roots, operating systems, architectures,
 and Python patch versions. They still require the same Python implementation
-and major/minor version, analyzer versions, relative scope, adapter, and settings.
+and major/minor version, analyzer versions, adapter, and settings, with the
+current relative scope covered by the baseline.
 The caller must select a baseline from the same logical project; a matching
 scope alone cannot establish project identity. Full root and Python version
-remain recorded as provenance. Format 1 reports must be recaptured before the
-edit with this version; they cannot serve as format 2 baselines.
+remain recorded as provenance. Reports now use format 4, with explicit Ruff
+collection limits and separate advisory targets. Older reports cannot
+serve as format 4 baselines. Capture a new baseline before edits, or remeasure
+exact pre-edit source bytes preserved in an older report with the current tool.
 
 Exit **0** means the selected measurements completed and any requested
-comparison was compatible. Advisory findings can still require action. Exit
+comparison was compatible. Highlights are observations for agent judgment,
+not a quality verdict. Exit
 **2** means invalid input, incomplete measurement, analyzer failure, or an
 incompatible comparison. Check `full_profile` before treating a subset as the
 default profile. No hard architecture or correctness gate is run.
@@ -110,13 +119,16 @@ default profile. No hard architecture or correctness gate is run.
 | Check ID | Tool and result | Provisional target | Comparison |
 |---|---|---|---|
 | `complexity` | Radon score for each named function, async function, method, and nested function, including local-class methods | 10 | Full before/after inventory, including scores below target |
-| `ruff` | Native `PLR0915` and `PLR0913` diagnostics | 50 statements / 5 arguments | Supplementary target diagnostics only; below-target no-increase comparison is unavailable |
+| `ruff` | Native `PLR0915` and `PLR0913` counts collected with zero-limit CLI overrides | 50 statements / 5 arguments | Numeric deltas, including below target, when both sides have a diagnostic; missing values remain unknown |
 
 The Radon adapter visits each function AST with `cc_visit_ast`. It does not
 implement its own complexity formula or include class aggregate scores.
 Ruff uses `.quality/ruff.toml` explicitly, with no inherited repository config,
 fixes, cache, Git-ignore filtering, or `noqa` suppression. Native rule exemptions
 still apply; for example, Ruff exempts `@override` methods from `PLR0913`.
+The runner overrides `lint.pylint.max-args` and `lint.pylint.max-statements` to
+zero on the command line to collect counts below the advisory targets. The
+targets still come from `.quality/ruff.toml`; that file is not rewritten.
 Ruff analyzes a temporary snapshot containing exactly the captured Python files.
 Radon analyzes the captured bytes. Neither executes target project code.
 
@@ -126,7 +138,7 @@ Radon analyzes the captured bytes. Neither executes target project code.
 native semantics. The local tests exercise these pinned tools with real input.
 
 `.quality/maintainability.toml` owns scope exclusions, the default profile, and
-the Radon target. `.quality/ruff.toml` owns Ruff rules and limits. The experiment
+the Radon target. `.quality/ruff.toml` owns Ruff rules and advisory targets. The experiment
 includes implementation, tests, evals, fixture generators, and harnesses;
 asset groups are reported separately. It excludes installed `.agents/` copies,
 local environments and reports, caches, and common generated/vendor folders.
@@ -140,25 +152,44 @@ With `--output`, a run writes JSON and a short sibling `.txt` summary. The JSON 
 - `measurement_status`, individual check status, versions, errors, raw Ruff
   output and command, and the Radon API identity.
 - `identity`: exact root/scope, selected checks, interpreter/tool versions,
-  adapter hash, and native settings. Compatibility ignores the absolute root and
-  Python patch version; other identity differences prevent comparison.
+  adapter hash, baseline folder scopes, native settings, and `ruff_collection_limits`. Compatibility
+  ignores the absolute root and Python patch version, and permits a narrower
+  after scope; other measurement-setting differences prevent comparison.
 - `repository` and `files`: Git context, source hashes, asset groups, and exact
   source bytes encoded as base64. Reports are self-contained local observations.
 - `checks.complexity.values`: qualified symbols, locations, values, and targets.
-  `checks.ruff.values` contains native diagnostic messages and locations, not a
-  fabricated numeric inventory.
+  `checks.ruff.values` contains native diagnostic messages, locations, reported
+  counts, collection thresholds, and advisory targets. A message such as
+  `(4 > 0)` describes collection; the record's `target` remains 5 arguments.
+  It is not a complete numeric inventory. No diagnostic means no numeric record,
+  not an inferred zero.
 - `comparison`: compatible per-function deltas and diagnostic changes.
-- `required_response`: complexity increases, new complexity breaches, new Ruff
-  diagnostics, and unmatched symbol relationships that need review. This list
-  is evaluated only for a compatible comparison. A measurement or baseline
-  alone reports hotspots; an empty response list in such a run is not a pass.
+- `highlights`: rows with factual labels, also printed before legacy hotspots.
+  A measurement or baseline alone highlights values above target. A compatible
+  comparison adds change highlights. No highlight is an automatic rejection.
+
+| Highlight | Meaning |
+|---|---|
+| `got_worse` | A matched numeric value increased, including below target |
+| `crossed_above_threshold` | A matched value moved from within target to above it; also marked `got_worse` |
+| `new_above_threshold` | A new complexity symbol exceeds the target |
+| `above_threshold` | A standalone hotspot or a newly appearing Ruff count above its advisory target |
+| `improved` | A matched numeric value decreased |
+| `needs_interpretation` | A symbol was added, removed, or ambiguous, or a Ruff diagnostic appeared or disappeared |
 
 Complexity decreases cannot offset increases elsewhere. Unchanged legacy
-hotspots remain in the inventory without creating a new response item. Symbol
-identity uses path and qualified name, never line number. Missing or duplicate
-symbols remain unmatched. If old symbols disappear, new ones are conservatively
-unmatched too; the tool does not guess move, rename, or extraction relationships.
-Ruff diagnostic matching also includes symbol and message; it cannot prove a
+hotspots remain in the inventory without creating a change highlight. Symbol
+identity uses path, qualified name, and metric, never line number. Added and
+removed symbols are reported separately; duplicate identities remain unmatched.
+The tool does not guess move, rename, or extraction relationships.
+Ruff matching uses symbol and rule rather than diagnostic message, so a change
+from 7 arguments to 6 is an improvement. A newly appearing diagnostic has no
+known numeric before value. A disappearing diagnostic may reflect an exemption
+or removal, so it is not claimed as a numeric improvement. Both transitions
+request interpretation; a newly appearing diagnostic is only labeled
+`above_threshold` when its count exceeds the advisory target. Native exemptions,
+zero counted arguments, and return-only bodies can leave gaps even with zero
+collection limits. Absence is never converted to zero. Ruff cannot prove a
 complete statement/argument regression policy. Changes during scanning mark the
 report incomplete. Measurements collected before a failure remain visible.
 
@@ -186,3 +217,8 @@ successful measurements.
 Portability cases cover foreign legacy environments, native environment keys,
 offline missing-tool failure, and a saved baseline transferred between checkout
 paths. These local tests do not replace a live Linux sandbox run.
+Additional cases cover folder baselines with affected-file comparisons, new and
+deleted files, factual highlights, native Ruff count changes, and console
+findings/errors without JSON inspection. Zero-limit cases exercise below-target
+increases, advisory crossings, configured targets, native override/overload
+exemptions, missing-evidence transitions, and rejection of older collection identities.

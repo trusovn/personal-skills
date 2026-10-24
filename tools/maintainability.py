@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import subprocess
 import sys
 import tempfile
@@ -21,7 +22,8 @@ import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
 QUALITY = ROOT / ".quality"
-FORMAT_VERSION = 2
+FORMAT_VERSION = 4
+RUFF_COLLECTION_LIMITS = {"lint.pylint.max-args": 0, "lint.pylint.max-statements": 0}
 
 
 def digest(data):
@@ -50,17 +52,19 @@ def asset_group(path):
     return "implementation"
 
 
-def discover(root, scopes, excluded):
+def discover(root, scopes, excluded, known_files=()):
     files = set()
     skipped = set()
     for scope in scopes:
         path = root / scope
-        if not path.exists():
-            raise ValueError(f"Scope does not exist: {scope}")
         if path.is_symlink() or not path.resolve().is_relative_to(root):
             raise ValueError(f"Scope must be inside --root and not a symlink: {scope}")
         if set(Path(scope).parts) & excluded:
             raise ValueError(f"Explicit scope is excluded: {scope}")
+        if not path.exists():
+            if scope in known_files:
+                continue
+            raise ValueError(f"Scope does not exist: {scope}")
         if path.is_file():
             if path.suffix != ".py":
                 raise ValueError(f"Expected a Python file: {scope}")
@@ -81,7 +85,7 @@ def discover(root, scopes, excluded):
                     skipped.add(child.relative_to(root).as_posix())
                 else:
                     files.add(child.relative_to(root).as_posix())
-    if not files:
+    if not files and not known_files:
         raise ValueError("Scope contains no included Python files")
     return sorted(files), sorted(skipped)
 
@@ -134,6 +138,7 @@ def tool_version(name):
 
 
 def run_ruff(sources, config):
+    targets = tomllib.loads(config.decode())["lint"]["pylint"]
     with tempfile.TemporaryDirectory(prefix="maintainability-") as temporary:
         snapshot = Path(temporary).resolve()
         for path, data in sources.items():
@@ -143,7 +148,10 @@ def run_ruff(sources, config):
         config_path = snapshot / "experiment-ruff.toml"
         config_path.write_bytes(config)
         args = [sys.executable, "-m", "ruff", "check", "--config", str(config_path),
-                "--no-cache", "--no-fix", "--ignore-noqa", "--output-format", "json", "."]
+                "--no-cache", "--no-fix", "--ignore-noqa", "--output-format", "json"]
+        for setting, value in RUFF_COLLECTION_LIMITS.items():
+            args.extend(["--config", f"{setting}={value}"])
+        args.append(".")
         record = command(args, snapshot)
         record["snapshot_root"] = str(snapshot)
         if record["exit_code"] not in (0, 1):
@@ -162,6 +170,13 @@ def run_ruff(sources, config):
                                "code": finding["code"], "message": finding["message"],
                                "symbol": locations[relative].get(finding["location"]["row"]),
                                "asset_group": asset_group(relative)})
+            if finding["code"] in ("PLR0913", "PLR0915"):
+                count = re.search(r"\((\d+) > (\d+)\)$", finding["message"])
+                if count is None:
+                    raise ValueError(f"Unrecognized Ruff count: {finding['message']}")
+                target_name = "max-args" if finding["code"] == "PLR0913" else "max-statements"
+                normalized[-1].update(value=int(count[1]), collection_threshold=int(count[2]),
+                                      target=targets[target_name], metric=finding["code"])
         syntax = [item for item in normalized if item["code"] not in ("PLR0913", "PLR0915")]
         return record, normalized, syntax
 
@@ -191,34 +206,44 @@ def measure(sources, checks, policy, ruff_config):
 
 
 def symbol_key(item):
-    return item["path"], item["symbol"]
+    return item["path"], item["symbol"], item["metric"]
 
 
-def compare_complexity(current, previous):
+def numeric_change(item, old):
+    delta = item["value"] - old["value"]
+    classification = "worsened" if delta > 0 else "improved" if delta < 0 else "unchanged"
+    highlights = ["got_worse"] if delta > 0 else ["improved"] if delta < 0 else []
+    if old["value"] <= item["target"] < item["value"]:
+        highlights.append("crossed_above_threshold")
+    return {"before": old["value"], "delta": delta, "classification": classification, "highlights": highlights}
+
+
+def compare_values(current, previous, diagnostics=False):
     before = {symbol_key(item): item for item in previous}
     old_counts = Counter(map(symbol_key, previous))
     new_counts = Counter(map(symbol_key, current))
-    missing = set(before) - set(new_counts)
     rows = []
     for item in current:
         key = symbol_key(item)
         old = before.get(key)
         row = dict(item, before=None, delta=None)
-        if new_counts[key] > 1 or old_counts[key] > 1:
-            row.update(classification="unmatched", requires_response=True)
+        if item["symbol"] is None or new_counts[key] > 1 or old_counts[key] > 1:
+            row.update(classification="unmatched", highlights=["needs_interpretation"])
         elif old is None:
             # Never guess move/rename/split relationships from similar scores or bodies.
-            row.update(classification="unmatched" if missing else "new",
-                       requires_response=bool(missing) or item["value"] > item["target"])
+            if diagnostics:
+                highlights = ["above_threshold"] if item["value"] > item["target"] else []
+                row.update(classification="new_diagnostic", highlights=highlights + ["needs_interpretation"])
+            else:
+                highlights = ["new_above_threshold"] if item["value"] > item["target"] else []
+                row.update(classification="new", highlights=highlights + ["needs_interpretation"])
         else:
-            delta = item["value"] - old["value"]
-            classification = "worsened" if delta > 0 else "improved" if delta < 0 else "unchanged"
-            row.update(before=old["value"], delta=delta, classification=classification,
-                       requires_response=delta > 0)
+            row.update(numeric_change(item, old))
         rows.append(row)
-    for key in sorted(missing):
+    for key in sorted(set(before) - set(new_counts)):
         rows.append(dict(before[key], before=before[key]["value"], value=None, delta=None,
-                         classification="unmatched", requires_response=True))
+                         classification="diagnostic_resolved" if diagnostics else "removed",
+                         highlights=["needs_interpretation"]))
     return rows
 
 
@@ -226,8 +251,14 @@ def comparison_identity(report):
     identity = dict(report.get("identity", {}))
     # Mount paths and patch releases are provenance, not measurement settings.
     identity.pop("root", None)
+    identity.pop("scope", None)
+    identity.pop("scope_directories", None)
     identity["python"] = ".".join(identity.get("python", "").split(".")[:2])
     return identity
+
+
+def within_scope(path, scopes):
+    return any(Path(path).is_relative_to(scope) for scope in scopes)
 
 
 def comparison(report, baseline):
@@ -237,28 +268,20 @@ def comparison(report, baseline):
     if baseline.get("format_version") != FORMAT_VERSION:
         reasons.append("report format differs")
     if comparison_identity(baseline) != comparison_identity(report):
-        reasons.append("scope, tools, Python major/minor, adapter, or configuration differs")
+        reasons.append("tools, Python major/minor, adapter, or configuration differs")
+    baseline_scopes = baseline.get("identity", {}).get("scope", [])
+    baseline_directories = baseline.get("identity", {}).get("scope_directories", [])
+    scopes = report["identity"]["scope"]
+    if any(scope not in baseline_scopes and not within_scope(scope, baseline_directories) for scope in scopes):
+        reasons.append("current scope is outside the baseline scope")
     if baseline.get("measurement_status") != "complete" or report["measurement_status"] != "complete":
         reasons.append("baseline or current measurement is incomplete")
     if reasons:
         return {"status": "incompatible", "reasons": reasons, "complexity": [], "ruff": []}
     result = {"status": "compared", "complexity": [], "ruff": []}
-    if "complexity" in report["checks"]:
-        result["complexity"] = compare_complexity(report["checks"]["complexity"]["values"],
-                                                 baseline["checks"]["complexity"]["values"])
-    if "ruff" in report["checks"]:
-        def finding_key(item):
-            return item["path"], item["symbol"], item["code"], item["message"]
-
-        old_findings = Counter(map(finding_key, baseline["checks"]["ruff"]["values"]))
-        current_findings = Counter(map(finding_key, report["checks"]["ruff"]["values"]))
-        for item in report["checks"]["ruff"]["values"]:
-            key = finding_key(item)
-            existed = key in old_findings
-            ambiguous = item["symbol"] is None or old_findings[key] > 1 or current_findings[key] > 1
-            classification = "unmatched" if ambiguous else "existing_diagnostic" if existed else "new_diagnostic"
-            result["ruff"].append(dict(item, classification=classification,
-                                       requires_response=ambiguous or not existed))
+    for check in report["checks"]:
+        previous = [item for item in baseline["checks"][check]["values"] if within_scope(item["path"], scopes)]
+        result[check] = compare_values(report["checks"][check]["values"], previous, diagnostics=check == "ruff")
     return result
 
 
@@ -268,30 +291,20 @@ def summary_location(item):
 
 
 def summary_change(item):
+    label = "CC" if item["metric"] == "cyclomatic_complexity" else item["metric"]
     if item["value"] is None:
-        return f"CC {item['before']}->none"
+        return f"{label} {item['before']}->none"
     if item["before"] is None:
-        return f"CC {item['value']}"
-    return f"CC {item['before']}->{item['value']} ({item['delta']:+d})"
+        return f"{label} {item['value']}"
+    return f"{label} {item['before']}->{item['value']} ({item['delta']:+d})"
 
 
-def summary_response(item):
-    # Complexity comparison rows always carry "delta"; Ruff findings never do.
-    if "delta" in item:
-        return f"{item['classification']} {summary_change(item)}"
-    return f"{item['classification']} {item['code']} {item['message']}"
-
-
-def summary_comparison_lines(report):
-    lines = [f"Required response items: {len(report['required_response'])}"]
-    lines.extend(f"  Response required: {summary_response(item)}: {summary_location(item)}"
-                 for item in report["required_response"])
-    changed = [row for row in report["comparison"]["complexity"]
-               if row["classification"] in ("new", "improved", "worsened")]
-    lines.append(f"Changed symbols: {len(changed)}")
-    lines.extend(f"  {row['classification'].capitalize()} {summary_change(row)}: {summary_location(row)}"
-                 for row in changed)
-    return lines
+def report_highlights(report):
+    if report["comparison"]["status"] == "compared":
+        return [row for check in ("complexity", "ruff") for row in report["comparison"][check] if row["highlights"]]
+    return [dict(item, before=None, delta=None, highlights=["above_threshold"])
+            for check in report["checks"].values() for item in check["values"]
+            if "value" in item and item["value"] > item["target"]]
 
 
 def summarize(report):
@@ -303,11 +316,13 @@ def summarize(report):
         if name == "complexity":
             breaches = sum(item["value"] > item["target"] for item in check["values"])
             lines.append(f"  Functions above target: {breaches}")
-    if report["comparison"]["status"] == "compared":
-        # Response identities and changed-symbol deltas come before the legacy top five.
-        lines.extend(summary_comparison_lines(report))
-    else:
-        lines.append("Required response items: not evaluated (no compatible comparison)")
+        lines.extend(f"  Error: {error}" for error in check["errors"])
+    lines.append(f"Highlights: {len(report['highlights'])}")
+    for item in report["highlights"]:
+        labels = ", ".join(item["highlights"]).replace("_", " ").capitalize()
+        lines.append(f"  {labels}: {summary_change(item)}: {summary_location(item)}")
+    if report["comparison"]["status"] != "compared":
+        lines.append("Change highlights unavailable (no compatible comparison)")
     complexity_values = report["checks"].get("complexity", {}).get("values", [])
     lines.append("Top five by complexity:")
     for item in sorted(complexity_values, key=lambda item: -item["value"])[:5]:
@@ -318,28 +333,31 @@ def summarize(report):
     return "\n".join(lines) + "\n"
 
 
-def build_report(root, scopes, checks):
+def build_report(root, scopes, checks, baseline=None):
     root = root.resolve()
     policy_bytes = (QUALITY / "maintainability.toml").read_bytes()
     ruff_bytes = (QUALITY / "ruff.toml").read_bytes()
     policy = tomllib.loads(policy_bytes.decode())
     context = git_context(root)
-    paths, skipped = discover(root, scopes, set(policy["exclude_directories"]))
+    known_files = baseline.get("files", {}) if baseline else ()
+    paths, skipped = discover(root, scopes, set(policy["exclude_directories"]), known_files)
     sources = capture(root, paths)
     results = measure(sources, checks, policy, ruff_bytes)
     errors = []
-    after_paths, _ = discover(root, scopes, set(policy["exclude_directories"]))
+    after_paths, _ = discover(root, scopes, set(policy["exclude_directories"]), known_files)
     if paths != after_paths or sources != capture(root, after_paths):
         errors.append("Source inputs changed during scanning; remeasure before comparison")
     after_context = git_context(root)
     if context != after_context:
         errors.append("Git context changed during scanning; remeasure before comparison")
     identity = {"root": str(root), "scope": scopes, "checks": checks,
+                "scope_directories": [scope for scope in scopes if (root / scope).is_dir()],
                 "python": platform.python_version(),
                 "python_implementation": platform.python_implementation(),
                 "tools": {name: check["version"] for name, check in results.items()},
                 "adapter_sha256": digest(Path(__file__).read_bytes()),
-                "policy": policy_bytes.decode(), "ruff_config": ruff_bytes.decode()}
+                "policy": policy_bytes.decode(), "ruff_config": ruff_bytes.decode(),
+                "ruff_collection_limits": dict(RUFF_COLLECTION_LIMITS)}
     complete = not errors and all(check["status"] == "completed" for check in results.values())
     return {"format_version": FORMAT_VERSION, "profile": policy["profile"],
             "captured_at": datetime.now(timezone.utc).isoformat(),
@@ -351,7 +369,7 @@ def build_report(root, scopes, checks):
             "checks": results, "measurement_status": "complete" if complete else "incomplete",
             "hard_rules": "not_run", "errors": errors,
             "limitations": ["Advisory experiment; metrics do not establish design or functional acceptance.",
-                             "Ruff supplies target diagnostics only; statement/argument no-increase comparison is unavailable.",
+                             "Ruff uses zero-limit collection with separate advisory targets. Missing diagnostics are unknown, not zero; native exemptions and return-only bodies can leave gaps. Deltas require numeric evidence on both sides.",
                              "Moves, renames, splits, and duplicate qualified names require explicit human matching.",
                              "Coverage, cognitive complexity, and architecture rules are not collected."]}
 
@@ -393,15 +411,11 @@ def main(argv=None):
         checks = sorted(set(args.checks or default_checks))
         if not checks or set(checks) - {"complexity", "ruff"}:
             raise ValueError("Profile must select supported checks: complexity, ruff")
-        report = build_report(root, sorted(set(scopes)), checks)
+        report = build_report(root, sorted(set(scopes)), checks, baseline=baseline)
         report["operation"] = args.operation
         report["baseline_path"] = str(args.baseline.resolve()) if args.baseline else None
         report["comparison"] = comparison(report, baseline)
-        if report["comparison"]["status"] == "compared":
-            items = report["comparison"]["complexity"] + report["comparison"]["ruff"]
-            report["required_response"] = [item for item in items if item["requires_response"]]
-        else:
-            report["required_response"] = []
+        report["highlights"] = report_highlights(report)
         summary = summarize(report)
         if args.output is not None:
             args.output.parent.mkdir(parents=True, exist_ok=True)

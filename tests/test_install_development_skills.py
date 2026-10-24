@@ -61,6 +61,13 @@ EXPECTED_DEVELOPMENT_SKILL_SOURCES = (
 )
 
 
+EXPECTED_MEASUREMENT_FILES = (
+    "measure_maintainability.py", "maintainability.py", "maintainability_env.py",
+    "maintainability-default.toml", "maintainability-ruff-default.toml",
+    "maintainability-requirements.txt",
+)
+
+
 PREPARATION_PROFILE_SKILLS = (
     "task-brief-designer",
     "task-verification-designer",
@@ -206,6 +213,26 @@ def init_repo(
     git(repo, "commit", "-qm", "baseline")
 
 
+def seed_measurement_target(repo: Path) -> dict[Path, bytes]:
+    """Existing target-owned policy/evidence and real dirty Git input."""
+    source = repo / "app.py"
+    source.write_text("staged bytes\n")
+    git(repo, "add", "app.py")
+    source.write_text("unstaged bytes\n")
+    names = (
+        "untracked.py", ".quality/maintainability.toml", ".quality/ruff.toml",
+        ".quality/requirements.txt", ".quality/envs/native/bin/python",
+        ".quality/reports/before.json", ".quality/reports/before.txt",
+        ".agents/scripts/existing_helper.py", ".agents/skills/existing/SKILL.md",
+    )
+    for name in names:
+        path = repo / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"---\nname: existing\ndescription: User-owned skill.\n---\nKeep.\n" if name.endswith("SKILL.md") else b"target-owned sentinel\n")
+    paths = [source, repo / ".git/index", *(repo / name for name in names)]
+    return {path: path.read_bytes() for path in paths}
+
+
 def run_installer(
     target_repo: Path, *, cwd: Path = ROOT, extra_args: tuple[str, ...] = ()
 ) -> subprocess.CompletedProcess[str]:
@@ -315,8 +342,31 @@ CHECK_GUIDE_REQUIRED_PHRASES = (
 )
 
 
+def build_relocated_source_distribution(base: Path) -> tuple[Path, Path]:
+    """Copy a complete disposable source distribution with a relocated CLI."""
+    source = base / "source"
+    source.mkdir()
+    for _, relative in installer.DEVELOPMENT_SKILL_SOURCES:
+        shutil.copytree(
+            ROOT / relative,
+            source / relative,
+            ignore=shutil.ignore_patterns(*installer.TRANSIENT_PATTERNS),
+        )
+    scripts_dir = source / "scripts"
+    scripts_dir.mkdir()
+    for name in (*installer.SHARED_SCRIPT_FILES, INSTALLER_PATH.name):
+        shutil.copy2(ROOT / "scripts" / name, scripts_dir / name)
+    shutil.copy2(
+        ROOT / installer.PROFILE_SKILLS_README,
+        source / installer.PROFILE_SKILLS_README,
+    )
+    return source, scripts_dir / INSTALLER_PATH.name
+
+
 class DevelopmentSkillInstallerTests(unittest.TestCase):
     def test_profile_contains_repo_stage_and_bounded_delivery_skills(self):
+        for name in EXPECTED_MEASUREMENT_FILES:
+            self.assertIn(name, installer.SHARED_SCRIPT_FILES)
         self.assertEqual(
             EXPECTED_DEVELOPMENT_SKILL_SOURCES,
             installer.DEVELOPMENT_SKILL_SOURCES,
@@ -1054,9 +1104,14 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
 
                     assert_repository_identity_stable()
 
+                    preserved = seed_measurement_target(repo)
+                    staged = git(repo, "show", ":app.py")
+
                     # First install, then a matching fresh check.
                     first = run_installer(repo)
                     self.assertEqual(0, first.returncode, first.stderr)
+                    self.assertEqual(preserved, {p: p.read_bytes() for p in preserved})
+                    self.assertEqual(staged, git(repo, "show", ":app.py"))
                     fresh = run_check(repo)
                     self.assertEqual(0, fresh.returncode, fresh.stderr)
                     fresh_info = json.loads(fresh.stdout)
@@ -1272,6 +1327,9 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
                     self.assertEqual(b"user bytes\n", unrelated.read_bytes())
                     assert_repository_identity_stable()
 
+                    self.assertEqual(preserved, {p: p.read_bytes() for p in preserved})
+                    self.assertEqual(staged, git(repo, "show", ":app.py"))
+
                     # Matching recheck, then a second matching check that
                     # agrees with it, close the journey.
                     restored = run_check(repo)
@@ -1287,6 +1345,40 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
                     self.assertEqual(
                         len(expected_managed_paths()), restored_info["compared_paths"]
                     )
+
+    def test_measurement_resources_changed_missing_checks_and_refresh(self):
+        source_before = source_projection_snapshot()
+        with tempfile.TemporaryDirectory() as temporary:
+            repo = Path(temporary)
+            init_repo(repo, agents_text="# Keep these instructions.\n")
+            preserved = seed_measurement_target(repo)
+            result = run_installer(repo)
+            self.assertEqual(0, result.returncode, result.stderr)
+            agents = (repo / "AGENTS.md").read_bytes()
+            for name in EXPECTED_MEASUREMENT_FILES:
+                managed = repo / ".agents/scripts" / name
+                self.assertEqual((ROOT / "scripts" / name).read_bytes(), managed.read_bytes())
+                for category in ("changed", "missing"):
+                    with self.subTest(resource=name, category=category):
+                        if category == "changed":
+                            managed.write_bytes(b"changed managed resource\n")
+                        else:
+                            managed.unlink()
+                        before = snapshot_tree(repo)
+                        for _ in range(2):
+                            result = run_check(repo)
+                            self.assertEqual(1, result.returncode, result.stderr)
+                            self.assertEqual([{"category": category, "path": f".agents/scripts/{name}"}], json.loads(result.stdout)["differences"])
+                            self.assertEqual(before, snapshot_tree(repo))
+                        refreshed = run_installer(repo)
+                        self.assertEqual(0, refreshed.returncode, refreshed.stderr)
+                        self.assertEqual((ROOT / "scripts" / name).read_bytes(), managed.read_bytes())
+                        self.assertEqual(preserved, {p: p.read_bytes() for p in preserved})
+                        self.assertEqual(agents, (repo / "AGENTS.md").read_bytes())
+                        checked = run_check(repo)
+                        self.assertEqual(0, checked.returncode, checked.stderr)
+                        self.assertEqual([], json.loads(checked.stdout)["differences"])
+        self.assertEqual(source_before, source_projection_snapshot())
 
     def test_check_reports_changed_bytes_for_every_managed_family(self):
         with tempfile.TemporaryDirectory() as tempdir:
@@ -1706,26 +1798,6 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
                 os.chmod(references, 0o700)
             self.assertFalse((target / ".agents").exists())
 
-    def build_relocated_source_distribution(self, base: Path) -> tuple[Path, Path]:
-        """Copy a complete disposable source distribution with a relocated CLI."""
-        source = base / "source"
-        source.mkdir()
-        for _, relative in installer.DEVELOPMENT_SKILL_SOURCES:
-            shutil.copytree(
-                ROOT / relative,
-                source / relative,
-                ignore=shutil.ignore_patterns(*installer.TRANSIENT_PATTERNS),
-            )
-        scripts_dir = source / "scripts"
-        scripts_dir.mkdir()
-        for name in (*installer.SHARED_SCRIPT_FILES, INSTALLER_PATH.name):
-            shutil.copy2(ROOT / "scripts" / name, scripts_dir / name)
-        shutil.copy2(
-            ROOT / installer.PROFILE_SKILLS_README,
-            source / installer.PROFILE_SKILLS_README,
-        )
-        return source, scripts_dir / INSTALLER_PATH.name
-
     def test_check_covers_directory_linked_source_content_the_installer_copies(self):
         # F-02 regression: install-time copying dereferences directory
         # symlinks inside selected source packages, so the expected
@@ -1737,7 +1809,7 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
             tempfile.TemporaryDirectory() as target_dir,
         ):
             base = Path(base_dir)
-            source, cli = self.build_relocated_source_distribution(base)
+            source, cli = build_relocated_source_distribution(base)
             outside = base / "outside"
             outside.mkdir()
             (outside / "copied.txt").write_text(
@@ -1831,7 +1903,7 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
             tempfile.TemporaryDirectory() as target_dir,
         ):
             base = Path(base_dir)
-            source, cli = self.build_relocated_source_distribution(base)
+            source, cli = build_relocated_source_distribution(base)
             outside = base / "outside"
             outside.mkdir()
             (outside / "copied.txt").write_text(
@@ -1911,7 +1983,7 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
             tempfile.TemporaryDirectory() as target_dir,
         ):
             base = Path(base_dir)
-            source, cli = self.build_relocated_source_distribution(base)
+            source, cli = build_relocated_source_distribution(base)
             package = source / "skills/project-direction"
             (package / "loop").symlink_to(package, target_is_directory=True)
 

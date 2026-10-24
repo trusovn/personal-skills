@@ -1,6 +1,28 @@
 {
   "generated": true,
-  "plan_refs": {},
+  "plan_refs": {
+    "ART-001": [
+      "measurement"
+    ],
+    "IF-001": [
+      "measurement"
+    ],
+    "INV-001": [
+      "measurement"
+    ],
+    "INV-002": [
+      "measurement"
+    ],
+    "INV-003": [
+      "measurement"
+    ],
+    "INV-006": [
+      "measurement"
+    ],
+    "INV-007": [
+      "measurement"
+    ]
+  },
   "schema_version": 1,
   "subsystems": [
     {
@@ -27,6 +49,18 @@
       "id": "installation",
       "owner_paths": [
         "scripts/install_development_skills.py"
+      ]
+    },
+    {
+      "contract": "measurement.json",
+      "id": "measurement",
+      "owner_paths": [
+        "scripts/maintainability-default.toml",
+        "scripts/maintainability-requirements.txt",
+        "scripts/maintainability-ruff-default.toml",
+        "scripts/maintainability.py",
+        "scripts/maintainability_env.py",
+        "scripts/measure_maintainability.py"
       ]
     },
     {

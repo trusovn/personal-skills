@@ -20,14 +20,50 @@ import tokenize
 import tomllib
 
 
-ROOT = Path(__file__).resolve().parents[1]
-QUALITY = ROOT / ".quality"
+SCRIPTS = Path(__file__).resolve().parent
+DEFAULT_FILES = {"maintainability.toml": SCRIPTS / "maintainability-default.toml",
+                 "ruff.toml": SCRIPTS / "maintainability-ruff-default.toml"}
 FORMAT_VERSION = 4
 RUFF_COLLECTION_LIMITS = {"lint.pylint.max-args": 0, "lint.pylint.max-statements": 0}
 
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def validate_policy(policy):
+    profile = policy.get("profile")
+    if not isinstance(profile, str) or not profile.strip():
+        raise ValueError("profile must be a non-empty string")
+    checks = policy.get("checks")
+    if (not isinstance(checks, list) or not checks
+            or any(not isinstance(check, str) or check not in ("complexity", "ruff") for check in checks)):
+        raise ValueError("checks must be a non-empty list of supported checks: complexity, ruff")
+    target = policy.get("complexity_target")
+    if type(target) is not int or target < 0:
+        raise ValueError("complexity_target must be a non-negative integer")
+    excluded = policy.get("exclude_directories")
+    if (not isinstance(excluded, list)
+            or any(not isinstance(name, str) or not name.strip() for name in excluded)):
+        raise ValueError("exclude_directories must be a list of non-empty directory names")
+
+
+def settings(root):
+    contents, origins = {}, {}
+    for name, default in DEFAULT_FILES.items():
+        target = root / ".quality" / name
+        path = target if target.exists() or target.is_symlink() else default
+        data = path.read_bytes()
+        try:
+            parsed = tomllib.loads(data.decode())
+            if name == "maintainability.toml":
+                validate_policy(parsed)
+        except ValueError as error:
+            raise ValueError(f"Invalid settings {path}: {error}") from error
+        contents[name] = data
+        origins[name] = {"origin": "target" if path == target else "shipped",
+                         "path": str(path), "sha256": digest(data)}
+    return contents, origins
 
 
 def command(args, cwd):
@@ -253,6 +289,7 @@ def comparison_identity(report):
     identity.pop("root", None)
     identity.pop("scope", None)
     identity.pop("scope_directories", None)
+    identity.pop("settings", None)  # Origins are provenance; effective bytes below decide compatibility.
     identity["python"] = ".".join(identity.get("python", "").split(".")[:2])
     return identity
 
@@ -335,8 +372,9 @@ def summarize(report):
 
 def build_report(root, scopes, checks, baseline=None):
     root = root.resolve()
-    policy_bytes = (QUALITY / "maintainability.toml").read_bytes()
-    ruff_bytes = (QUALITY / "ruff.toml").read_bytes()
+    effective, origins = settings(root)
+    policy_bytes = effective["maintainability.toml"]
+    ruff_bytes = effective["ruff.toml"]
     policy = tomllib.loads(policy_bytes.decode())
     context = git_context(root)
     known_files = baseline.get("files", {}) if baseline else ()
@@ -357,6 +395,7 @@ def build_report(root, scopes, checks, baseline=None):
                 "tools": {name: check["version"] for name, check in results.items()},
                 "adapter_sha256": digest(Path(__file__).read_bytes()),
                 "policy": policy_bytes.decode(), "ruff_config": ruff_bytes.decode(),
+                "settings": origins,
                 "ruff_collection_limits": dict(RUFF_COLLECTION_LIMITS)}
     complete = not errors and all(check["status"] == "completed" for check in results.values())
     return {"format_version": FORMAT_VERSION, "profile": policy["profile"],
@@ -407,7 +446,8 @@ def main(argv=None):
         baseline = json.loads(args.baseline.read_text()) if args.baseline else None
         if baseline is not None and not isinstance(baseline, dict):
             raise ValueError("Baseline must be a JSON report object")
-        default_checks = tomllib.loads((QUALITY / "maintainability.toml").read_text())["checks"]
+        effective, _ = settings(root)
+        default_checks = tomllib.loads(effective["maintainability.toml"].decode())["checks"]
         checks = sorted(set(args.checks or default_checks))
         if not checks or set(checks) - {"complexity", "ruff"}:
             raise ValueError("Profile must select supported checks: complexity, ruff")

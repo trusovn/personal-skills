@@ -1,21 +1,29 @@
 import base64
+from contextlib import redirect_stdout
 import importlib.util
+import io
 import json
+import os
+import shlex
+import venv
 from pathlib import Path
 import shutil
 import subprocess
 import sys
+import sysconfig
 import tempfile
 import unittest
 from unittest.mock import patch
 
+from test_install_development_skills import build_relocated_source_distribution, init_repo, installer, snapshot_tree
+
 
 ROOT = Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("maintainability", ROOT / "tools" / "maintainability.py")
+SPEC = importlib.util.spec_from_file_location("maintainability", ROOT / "scripts" / "maintainability.py")
 metrics = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(metrics)
 HAS_TOOLS = metrics.tool_version("radon") and metrics.tool_version("ruff")
-ENV_SPEC = importlib.util.spec_from_file_location("maintainability_env", ROOT / "tools/maintainability_env.py")
+ENV_SPEC = importlib.util.spec_from_file_location("maintainability_env", ROOT / "scripts/maintainability_env.py")
 environment = importlib.util.module_from_spec(ENV_SPEC)
 ENV_SPEC.loader.exec_module(environment)
 
@@ -29,7 +37,7 @@ class MeasurementTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name)
+        self.root = Path(self.temporary.name).resolve()
         self.source = self.root / "sample.py"
         self.source.write_text(function("small", 1))
 
@@ -39,6 +47,54 @@ class MeasurementTests(unittest.TestCase):
     def git(self, *args):
         return subprocess.run(["git", "-C", str(self.root), *args], check=True,
                               capture_output=True, text=True).stdout
+
+    def installed_launcher(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        base = Path(temporary.name)
+        source, install_cli = build_relocated_source_distribution(base)
+        init_repo(self.root)
+        result = subprocess.run([sys.executable, str(install_cli), str(self.root)],
+                                capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        shutil.rmtree(source)  # No source-distribution resources remain accessible.
+        unrelated = base / "unrelated"
+        unrelated.mkdir()
+        return self.root / ".agents/scripts/measure_maintainability.py", unrelated
+
+    def launch(self, launcher, cwd, *args):
+        env = dict(os.environ)
+        env.pop("PYTHONPATH", None)
+        env.pop("PYTHONHOME", None)
+        return subprocess.run([sys.executable, str(launcher), *args, "--root", str(self.root)],
+                              cwd=cwd, env=env, capture_output=True, text=True)
+
+    def test_installed_and_source_launchers_work_without_distribution(self):
+        installed, cwd = self.installed_launcher()
+        for label, launcher in (("installed", installed), ("source", ROOT / "scripts/measure_maintainability.py")):
+            with self.subTest(launcher=label):
+                self.source.write_text(function("small", 1))
+                before_path = self.root / f".quality/reports/{label}-before.json"
+                after_path = self.root / f".quality/reports/{label}-after.json"
+                before = self.launch(launcher, cwd, "baseline", ".", "--output", str(before_path))
+                self.assertEqual(0, before.returncode, before.stderr)
+                saved = {path: path.read_bytes() for path in (before_path, before_path.with_suffix(".txt"))}
+                self.source.write_text(function("small", 2))
+                after = self.launch(launcher, cwd, "compare", "sample.py", "--baseline", str(before_path), "--output", str(after_path))
+                self.assertEqual(0, after.returncode, after.stderr)
+                report = json.loads(after_path.read_text())
+                row, = report["comparison"]["complexity"]
+                self.assertEqual((2, 3, 1), tuple(row[key] for key in ("before", "value", "delta")))
+                self.assertEqual("complete", report["measurement_status"])
+                self.assertTrue(after_path.with_suffix(".txt").is_file())
+                for name, setting in report["identity"]["settings"].items():
+                    self.assertEqual("shipped", setting["origin"])
+                    self.assertEqual(launcher.parent.resolve(), Path(setting["path"]).parent)
+                self.assertEqual(saved, {path: path.read_bytes() for path in saved})
+                measured = self.launch(launcher, cwd, "measure", "sample.py")
+                self.assertEqual(0, measured.returncode, measured.stderr)
+                self.assertIn("CC 3:", measured.stdout)
+                self.assertFalse((self.root / ".quality/envs").exists())
 
     def test_real_complexity_boundaries_and_below_target_increase(self):
         self.source.write_text(function("small", 1) + function("at_target", 9)
@@ -136,6 +192,11 @@ def duplicate(): pass
         self.assertEqual("incompatible", metrics.comparison(self.report(), changed)["status"])
         baseline["measurement_status"] = "incomplete"
         self.assertEqual("incompatible", metrics.comparison(self.report(), baseline)["status"])
+        path = self.root / "incomplete.json"
+        path.write_text(json.dumps(baseline))
+        result = self.launch(ROOT / "scripts/measure_maintainability.py", self.root, "compare", ".", "--baseline", str(path))
+        self.assertEqual(2, result.returncode, result.stderr)
+        self.assertIn("comparison: incompatible", result.stdout)
 
     def test_report_can_be_compared_from_a_different_mount_path(self):
         baseline = self.report()
@@ -244,19 +305,125 @@ def duplicate(): pass
                 self.assertEqual((count, None, None, "diagnostic_resolved", ["needs_interpretation"]),
                                  tuple(removed[key] for key in ("before", "value", "delta", "classification", "highlights")))
 
-    def test_ruff_configured_targets_are_separate_from_collection_limits(self):
+    def test_settings_select_each_target_file_independently(self):
+        self.source.write_text(function("branch", 4) + "def f(a,b,c): pass\n")
+        quality = self.root / ".quality"
+        quality.mkdir()
+        launcher, cwd = self.installed_launcher()
+        defaults = {name: launcher.parent / path.name for name, path in metrics.DEFAULT_FILES.items()}
+        policies = {
+            "maintainability.toml": defaults["maintainability.toml"].read_text().replace("complexity_target = 10", "complexity_target = 3"),
+            "ruff.toml": defaults["ruff.toml"].read_text().replace("max-args = 5", "max-args = 2").replace("max-statements = 50", "max-statements = 3"),
+        }
+        for present in ((), ("maintainability.toml",), ("ruff.toml",), tuple(policies)):
+            with self.subTest(present=present):
+                for name, content in policies.items():
+                    path = quality / name
+                    path.unlink(missing_ok=True)
+                    if name in present:
+                        path.write_text(content)
+                output = f".quality/reports/policy-{len(present)}-{'ruff' if 'ruff.toml' in present else 'cc'}.json"
+                result = self.launch(launcher, cwd, "measure", ".", "--output", output)
+                self.assertEqual(0, result.returncode, result.stderr)
+                report = json.loads((self.root / output).read_text())
+                branch = next(row for row in report["checks"]["complexity"]["values"] if row["symbol"] == "branch")
+                self.assertEqual((5, 3 if "maintainability.toml" in present else 10),
+                                 (branch["value"], branch["target"]))
+                rows = [row for row in report["checks"]["ruff"]["values"] if row["symbol"] == "f"]
+                self.assertEqual([(3, 2 if "ruff.toml" in present else 5, 0),
+                                  (1, 3 if "ruff.toml" in present else 50, 0)],
+                                 [(row["value"], row["target"], row["collection_threshold"]) for row in rows])
+                for name in policies:
+                    origin = "target" if name in present else "shipped"
+                    effective = (quality / name) if name in present else defaults[name]
+                    self.assertEqual({"origin": origin, "path": str(effective.resolve()),
+                                      "sha256": metrics.digest(effective.read_bytes())},
+                                     report["identity"]["settings"][name])
+                    if name in present:
+                        self.assertEqual(policies[name], effective.read_text())
+
+    def test_invalid_policy_settings_fail_before_measurement(self):
+        launcher, cwd = self.installed_launcher()
+        path = self.root / ".quality/maintainability.toml"
+        path.parent.mkdir(exist_ok=True)
+        defaults = metrics.DEFAULT_FILES["maintainability.toml"].read_text()
+        (self.root / ".git/hidden.py").write_text("def invalid(:")
+        path.write_text(defaults)
+        control = self.launch(launcher, cwd, "measure", ".", "--output", "control.json")
+        self.assertEqual(0, control.returncode, control.stderr)
+        report = json.loads((self.root / "control.json").read_text())
+        self.assertEqual(["sample.py"], list(report["files"]))
+        self.assertEqual(10, report["checks"]["complexity"]["values"][0]["target"])
+        cases = {
+            "complexity_target": ("true", '"10"', "1.5", "-1"),
+            "exclude_directories": ('".git"', "[1]", '[""]'),
+            "checks": ('"complexity"', "[true]", '["unknown"]', "[]"),
+            "profile": ("true", '""'),
+        }
+        for field, invalid_values in cases.items():
+            for index, value in enumerate((*invalid_values, None)):
+                with self.subTest(field=field, value=value):
+                    policy = "\n".join(
+                        line if not line.startswith(field + " =") else f"{field} = {value}"
+                        for line in defaults.splitlines()
+                        if value is not None or not line.startswith(field + " ="))
+                    path.write_text(policy)
+                    before = snapshot_tree(self.root)
+                    result = self.launch(launcher, cwd, "measure", ".", "--output", f"invalid-{field}-{index}.json")
+                    self.assertEqual(2, result.returncode, result.stderr)
+                    self.assertIn("Invalid settings", result.stderr)
+                    self.assertIn(str(path), result.stderr)
+                    self.assertIn(field, result.stderr)
+                    self.assertNotIn("Measurement: complete", result.stdout)
+                    self.assertEqual(before, snapshot_tree(self.root))
+        # A custom profile, zero advisory target, subset and empty exclusions are valid.
+        path.write_text('profile = "custom"\nchecks = ["complexity"]\n'
+                        'complexity_target = 0\nexclude_directories = []\n')
+        control = self.launch(launcher, cwd, "measure", "sample.py", "--output", "custom.json")
+        self.assertEqual(0, control.returncode, control.stderr)
+        report = json.loads((self.root / "custom.json").read_text())
+        self.assertEqual("custom", report["profile"])
+        self.assertEqual(["complexity"], report["requested_checks"])
+        self.assertEqual(0, report["checks"]["complexity"]["values"][0]["target"])
+        self.assertEqual([], report["excluded_directories"])
+
+    def test_invalid_target_settings_and_unrelated_root_ruff(self):
+        launcher, cwd = self.installed_launcher()
+        quality = self.root / ".quality"
+        quality.mkdir(exist_ok=True)
+        for name, default in metrics.DEFAULT_FILES.items():
+            (quality / name).write_bytes(default.read_bytes())
+        for name in metrics.DEFAULT_FILES:
+            with self.subTest(invalid=name):
+                path = quality / name
+                valid = path.read_bytes()
+                path.write_bytes(b"[invalid TOML")
+                result = self.launch(launcher, cwd, "measure", ".")
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertIn(name, result.stderr)
+                self.assertNotIn("Measurement: complete", result.stdout)
+                self.assertEqual(b"[invalid TOML", path.read_bytes())
+                path.write_bytes(valid)
         self.source.write_text("def f(a,b,c): pass\n")
-        with tempfile.TemporaryDirectory() as temporary:
-            quality = Path(temporary)
-            shutil.copy(metrics.QUALITY / "maintainability.toml", quality)
-            (quality / "ruff.toml").write_text((metrics.QUALITY / "ruff.toml").read_text()
-                                              .replace("max-args = 5", "max-args = 2")
-                                              .replace("max-statements = 50", "max-statements = 3"))
-            with patch.object(metrics, "QUALITY", quality):
-                report = self.report(("ruff",))
-        self.assertEqual([(3, 2, 0), (1, 3, 0)],
-                         [(row["value"], row["target"], row["collection_threshold"])
-                          for row in report["checks"]["ruff"]["values"]])
+        for present in (False, True):
+            with self.subTest(target_ruff=present):
+                ruff = quality / "ruff.toml"
+                ruff.unlink(missing_ok=True)
+                if present:
+                    ruff.write_bytes(metrics.DEFAULT_FILES["ruff.toml"].read_bytes())
+                result = self.launch(launcher, cwd, "measure", ".", "--output", f".quality/reports/before-root-{present}.json")
+                self.assertEqual(0, result.returncode, result.stderr)
+                before = json.loads((quality / f"reports/before-root-{present}.json").read_text())
+                unrelated = self.root / "ruff.toml"
+                unrelated.write_text('[lint]\nignore = ["ALL"]\n')
+                saved = unrelated.read_bytes()
+                result = self.launch(launcher, cwd, "measure", ".", "--output", f".quality/reports/root-{present}.json")
+                self.assertEqual(0, result.returncode, result.stderr)
+                after = json.loads((quality / f"reports/root-{present}.json").read_text())
+                self.assertEqual(before["checks"]["ruff"]["values"], after["checks"]["ruff"]["values"])
+                self.assertEqual(before["identity"]["settings"], after["identity"]["settings"])
+                self.assertEqual(saved, unrelated.read_bytes())
+                unrelated.unlink()
 
     def test_folder_baseline_can_compare_affected_new_and_deleted_files(self):
         untouched = self.root / "untouched.py"
@@ -289,8 +456,10 @@ def duplicate(): pass
         staged = self.git("show", ":sample.py")
         self.source.write_text(function("small", 3))
         (self.root / "untracked.py").write_text(function("untracked", 0))
+        source_before = {p.name: p.read_bytes() for p in self.root.glob("*.py")}
         report = self.report()
         self.assertEqual("complete", report["measurement_status"])
+        self.assertEqual(source_before, {p.name: p.read_bytes() for p in self.root.glob("*.py")})
         self.assertEqual(index, (self.root / ".git" / "index").read_bytes())
         self.assertEqual(staged, self.git("show", ":sample.py"))
         self.assertIn("MM sample.py", report["repository"]["status"])
@@ -298,10 +467,33 @@ def duplicate(): pass
         self.assertEqual(self.source.read_bytes(), base64.b64decode(report["files"]["sample.py"]["source_base64"]))
         self.assertEqual(4, report["checks"]["complexity"]["values"][0]["value"])
 
+        self.assertEqual([4, 1], [row["value"] for row in report["checks"]["complexity"]["values"]])
+        for name, data in source_before.items():
+            self.assertEqual(data, base64.b64decode(report["files"][name]["source_base64"]))
+            self.assertEqual(metrics.digest(data), report["files"][name]["sha256"])
+        baseline = self.root / "before.json"
+        baseline.write_text(json.dumps(report))
+        baseline.with_suffix(".txt").write_text("preserved summary\n")
+        saved = {p: p.read_bytes() for p in (baseline, baseline.with_suffix(".txt"))}
+        self.source.write_text(function("small", 4))
+        source_after = {p.name: p.read_bytes() for p in self.root.glob("*.py")}
+        result = subprocess.run([sys.executable, str(ROOT / "scripts/measure_maintainability.py"),
+                                 "compare", "sample.py", "--root", str(self.root), "--baseline", str(baseline), "--output", "after.json"], capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        after = json.loads((self.root / "after.json").read_text())
+        row, = after["comparison"]["complexity"]
+        self.assertEqual((4, 5, 1), tuple(row[key] for key in ("before", "value", "delta")))
+        self.assertEqual(saved, {p: p.read_bytes() for p in saved})
+        self.assertEqual(source_after, {p.name: p.read_bytes() for p in self.root.glob("*.py")})
+        self.assertEqual(index, (self.root / ".git/index").read_bytes())
+        self.assertEqual(staged, self.git("show", ":sample.py"))
+
     def test_partial_completion_missing_tool_and_invalid_python(self):
         version = metrics.tool_version
         with patch.object(metrics, "tool_version", side_effect=lambda name: None if name == "ruff" else version(name)):
             report = self.report()
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(2, metrics.main(["measure", ".", "--root", str(self.root)]))
         self.assertEqual("incomplete", report["measurement_status"])
         self.assertEqual("completed", report["checks"]["complexity"]["status"])
         self.assertEqual("unavailable", report["checks"]["ruff"]["status"])
@@ -313,6 +505,9 @@ def duplicate(): pass
         report["comparison"] = metrics.comparison(report, None)
         report["highlights"] = []
         self.assertIn("invalid syntax", metrics.summarize(report))
+        result = self.launch(ROOT / "scripts/measure_maintainability.py", self.root, "measure", ".")
+        self.assertEqual(2, result.returncode, result.stderr)
+        self.assertIn("Measurement: incomplete", result.stdout)
 
     def test_concurrent_input_change_marks_results_incomplete(self):
         measure = metrics.measure
@@ -323,6 +518,9 @@ def duplicate(): pass
 
         with patch.object(metrics, "measure", side_effect=change_during_measurement):
             report = self.report()
+            self.source.write_text(function("small", 1))
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(2, metrics.main(["measure", ".", "--root", str(self.root)]))
         self.assertEqual("incomplete", report["measurement_status"])
         self.assertIn("Source inputs changed", report["errors"][0])
         self.assertEqual(2, report["checks"]["complexity"]["values"][0]["value"])
@@ -366,11 +564,17 @@ def duplicate(): pass
         self.assertIn("  Got worse: PLR0915 2->4 (+2): sample.py:1 small [implementation]",
                       console_compare.stdout)
         self.assertEqual(files_before, set(self.root.iterdir()))
-        before = baseline_path.read_bytes()
-        retry = subprocess.run([*args, "baseline", "sample.py", "--root", str(self.root),
-                                "--output", str(baseline_path)], capture_output=True, text=True)
-        self.assertEqual(2, retry.returncode)
-        self.assertEqual(before, baseline_path.read_bytes())
+        for operation, destination in (("baseline", baseline_path), ("compare", output),
+                                       ("baseline", self.root / "sibling.json"), ("compare", self.root / "sibling.json")):
+            with self.subTest(operation=operation, destination=destination.name):
+                destination.with_suffix(".txt").write_text("preserve summary\n")
+                saved = {p: p.read_bytes() for p in self.root.iterdir() if p.is_file()}
+                extra = ["--baseline", str(baseline_path)] if operation == "compare" else []
+                retry = subprocess.run([*args, operation, "sample.py", "--root", str(self.root),
+                                        "--output", str(destination), *extra], capture_output=True, text=True)
+                self.assertEqual(2, retry.returncode)
+                self.assertIn("already exists", retry.stderr)
+                self.assertEqual(saved, {p: p.read_bytes() for p in self.root.iterdir() if p.is_file()})
 
     def test_console_compare_prints_identities_and_deltas_before_top_five(self):
         baseline_path = self.root / "console-baseline.json"
@@ -411,6 +615,27 @@ def duplicate(): pass
         self.assertFalse(report["full_profile"])
         self.assertEqual([".agents"], report["skipped_paths"])
         self.assertEqual(["sample.py"], list(report["files"]))
+        for name in ("tests/test_sample.py", "evals/fixture.py", "nested/.venv/invalid.py"):
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("def invalid(:" if ".venv" in name else function("asset", 0))
+        report = self.report(("complexity",))
+        self.assertEqual({"implementation", "test", "eval_or_harness"}, {row["asset_group"] for row in report["files"].values()})
+        self.assertIn("nested/.venv", report["skipped_paths"])
+        launcher = ROOT / "scripts/measure_maintainability.py"
+        result = self.launch(launcher, self.root, "measure", str(self.source), "--checks", "complexity", "--output", "partial.json")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertFalse(json.loads((self.root / "partial.json").read_text())["full_profile"])
+        link = self.root / "link.py"
+        link.symlink_to(self.source)
+        for scope in ("../outside.py", "link.py", ".agents"):
+            with self.subTest(scope=scope):
+                result = self.launch(launcher, self.root, "measure", scope)
+                self.assertEqual(2, result.returncode)
+                self.assertIn("Measurement error", result.stderr)
+        link.unlink()
+        shutil.rmtree(self.root / "tests")
+        shutil.rmtree(self.root / "evals")
         self.source.unlink()
         with self.assertRaisesRegex(ValueError, "no included Python"):
             self.report()
@@ -420,39 +645,86 @@ class LauncherTests(unittest.TestCase):
     def test_environment_key_separates_native_runtimes_and_dependency_versions(self):
         original = environment.environment_path()
         for name, value in (("system", "OtherOS"), ("machine", "OtherCPU"),
-                            ("python_version", "3.99.0")):
+                            ("python_version", ".".join([*environment.platform.python_version().split(".")[:2], "999"]))):
             with self.subTest(name=name), patch.object(environment.platform, name, return_value=value):
                 self.assertNotEqual(original, environment.environment_path())
+        with patch.object(environment.sys, "implementation", type("Runtime", (), {"name": "other"})):
+            self.assertNotEqual(original, environment.environment_path())
         with tempfile.TemporaryDirectory() as temporary:
+            target = Path(temporary)
+            (target / ".quality").mkdir()
+            (target / ".quality/requirements.txt").write_text("radon==0.0.0\n")
+            self.assertEqual(original.name, environment.environment_path(target).name)
             pins = Path(temporary) / "requirements.txt"
             pins.write_text("radon==0.0.0\n")
             with patch.object(environment, "REQUIREMENTS", pins):
                 self.assertNotEqual(original, environment.environment_path())
                 self.assertFalse(environment.pins_available())
 
-    def test_foreign_legacy_venv_is_not_executed(self):
+    def test_missing_pins_recipe_dispatches_setup_for_selected_target(self):
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            (root / "scripts").mkdir()
-            (root / "tools").mkdir()
-            shutil.copy(ROOT / "scripts/measure_maintainability.py", root / "scripts")
-            shutil.copy(ROOT / "tools/maintainability_env.py", root / "tools")
-            shutil.copytree(ROOT / ".quality", root / ".quality",
-                            ignore=shutil.ignore_patterns("venv", "envs", "reports"))
-            foreign = root / ".quality/venv/bin/python"
-            foreign.parent.mkdir(parents=True)
-            foreign.write_text("foreign binary, cannot execute on this OS")
-            (root / "tools/maintainability.py").write_text("print('adapter reached')\n")
-            result = subprocess.run([sys.executable, str(root / "scripts/measure_maintainability.py"), "--help"],
-                                    capture_output=True, text=True)
-            self.assertEqual(0, result.returncode, result.stderr)
-            self.assertIn("adapter reached", result.stdout)
-            missing = subprocess.run([sys.executable, "-S", str(root / "scripts/measure_maintainability.py"), "measure"],
-                                     capture_output=True, text=True)
+            base = Path(temporary).resolve()
+            root = base / "target with spaces"
+            root.mkdir()
+            init_repo(root)
+            source = root / "app.py"
+            source.write_text(function("staged", 1))
+            subprocess.run(["git", "-C", str(root), "add", "app.py"], check=True)
+            source.write_text(function("dirty", 2))
+            (root / "untracked.py").write_text(function("untracked", 0))
+            scripts = base / "installation with spaces"
+            scripts.mkdir()
+            for name in installer.SHARED_SCRIPT_FILES:
+                if name.startswith(("maintainability", "measure_maintainability")):
+                    shutil.copy(ROOT / "scripts" / name, scripts / name)
+            quality = root / ".quality"
+            for name in ("venv/bin/python", "envs/ForeignOS/bin/python", "reports/before.json", "reports/before.txt", "requirements.txt", "maintainability.toml"):
+                path = quality / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("foreign or user bytes\n")
+            before = snapshot_tree(root)
+            launcher = scripts / "measure_maintainability.py"
+            missing = subprocess.run([sys.executable, "-S", str(launcher), "measure", "--root", str(root)],
+                                     cwd=base, capture_output=True, text=True)
             self.assertEqual(2, missing.returncode, missing.stderr)
-            self.assertIn("setup", missing.stderr)
-            self.assertNotIn("adapter reached", missing.stdout)
-            self.assertFalse((root / ".quality/envs").exists())
+            self.assertIn("Pinned tools unavailable", missing.stderr)
+            recipe = shlex.split(missing.stderr.split("Run: ", 1)[1].strip())
+            self.assertEqual([str(launcher), "setup", "--root", str(root.resolve())], recipe[1:])
+            self.assertEqual(before, snapshot_tree(root))
+            self.assertEqual({p.parent for p in quality.glob("envs/*/bin/python")}, {quality / "envs/ForeignOS/bin"})
+            self.assertFalse((scripts / ".quality").exists())
+            # Replay the printed setup arguments at the real provisioning seam; no download.
+            spec = importlib.util.spec_from_file_location("setup_env", scripts / "maintainability_env.py")
+            setup_env = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(setup_env)
+            with patch.object(setup_env.venv.EnvBuilder, "create") as create, patch.object(setup_env.subprocess, "run") as install, redirect_stdout(io.StringIO()):
+                self.assertEqual(0, setup_env.main(recipe[2:]))
+            expected_env = setup_env.environment_path(root.resolve())
+            create.assert_called_once_with(expected_env)
+            install.assert_called_once_with([str(setup_env.environment_python(expected_env)), "-m", "pip", "install", "-r", str(scripts / "maintainability-requirements.txt")], check=True)
+            self.assertEqual(before, snapshot_tree(root))
+
+    @unittest.skipUnless(HAS_TOOLS, "Real pinned dependencies required")
+    def test_native_target_environment_reaches_real_adapter(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            (root / "sample.py").write_text(function("native", 2))
+            native = environment.environment_path(root)
+            venv.EnvBuilder(with_pip=False).create(native)
+            site = next(native.glob("lib/python*/site-packages")) if os.name != "nt" else native / "Lib/site-packages"
+            (site / "prepared-dependencies.pth").write_text(sysconfig.get_path("purelib") + "\n")
+            shutil.copy2(Path(sysconfig.get_path("scripts")) / ("ruff.exe" if os.name == "nt" else "ruff"), environment.environment_python(native).parent)
+            for foreign in (root / ".quality/venv/bin/python", root / ".quality/envs/ForeignOS/bin/python"):
+                foreign.parent.mkdir(parents=True)
+                foreign.write_text("foreign binary cannot execute\n")
+            result = subprocess.run([sys._base_executable, str(ROOT / "scripts/measure_maintainability.py"),
+                                     "measure", "sample.py", "--root", str(root), "--output", ".quality/reports/native.json"],
+                                    capture_output=True, text=True)
+            self.assertEqual(0, result.returncode, result.stderr + result.stdout + (root / ".quality/reports/native.json").read_text())
+            report = json.loads((root / ".quality/reports/native.json").read_text())
+            self.assertEqual(str(environment.environment_python(native)), report["checks"]["ruff"]["raw"]["command"][0])
+            self.assertEqual(3, report["checks"]["complexity"]["values"][0]["value"])
+            self.assertEqual({"complexity": "6.0.1", "ruff": "0.14.2"}, report["identity"]["tools"])
 
 
 if __name__ == "__main__":

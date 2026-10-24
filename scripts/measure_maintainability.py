@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Run the repository-local experiment with platform-local dependencies."""
+"""Measure a target repository with installation-local, platform-native tools."""
 
 from pathlib import Path
 import runpy
 
 
-ROOT = Path(__file__).resolve().parents[1]
-runpy.run_path(str(ROOT / "tools" / "maintainability_env.py"), run_name="__main__")
+runpy.run_path(str(Path(__file__).resolve().with_name("maintainability_env.py")), run_name="__main__")

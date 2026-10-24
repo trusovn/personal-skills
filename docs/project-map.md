@@ -7,7 +7,7 @@ Verified against the working tree: 2026-10-24.
 | `skills/<name>/` | Complete skill-owned package: instructions, scripts, references, eval inputs, and local tests. Start at its `SKILL.md`. |
 | `skills/task-implementation-flow/` | Nested bounded-task skills; its README owns call-order guidance. |
 | `skills/task-orchestrator/` | Current runtime work. Use its [module map](../skills/task-orchestrator/references/architecture-map.md) for source/test ownership and [operator guide](../skills/task-orchestrator/references/operator-guide.md) for supported commands. |
-| `scripts/` | Existing shared runtime/installer CLIs. `install_development_skills.py` owns distribution; `run_evidence.py` shows shared dependency resolution. Keep public paths stable. |
+| `scripts/` | Existing shared runtime/installer CLIs. `install_development_skills.py` owns distribution; `run_evidence.py` shows shared dependency resolution. Portable measurement helpers moved from `tools/maintainability.py` and `tools/maintainability_env.py` to `scripts/`, beside the launcher, flat defaults and pins. Keep public paths stable. |
 | `tools/` | Repository development utilities. `verify.py` composes checks; `check_contracts.py` validates contract discovery. These are not development-profile runtime dependencies. |
 | `tests/` | Shared-tool and cross-skill tests; `staging_fixture_support.py` owns reusable repository-only setup. Skill eval setup remains self-contained. |
 | `docs/contracts/` | [Generated index](contracts/index.json) routes to implemented reusable contracts and their code/schema/test authorities. Edit subsystem records, regenerate the index. |

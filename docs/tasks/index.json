@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "tasks": {
+    "T-001": {
+      "kind": "composite",
+      "source_plan_task": "T-001",
+      "brief": "docs/tasks/T-001/brief.md",
+      "parent": null,
+      "children": ["T-001.1", "T-001.2", "T-001.3"],
+      "depends_on": []
+    },
+    "T-001.1": {
+      "kind": "executable",
+      "source_plan_task": "T-001",
+      "brief": "docs/tasks/T-001.1/brief.md",
+      "parent": "T-001",
+      "children": [],
+      "depends_on": []
+    },
+    "T-001.2": {
+      "kind": "executable",
+      "source_plan_task": "T-001",
+      "brief": "docs/tasks/T-001.2/brief.md",
+      "parent": "T-001",
+      "children": [],
+      "depends_on": ["T-001.1"]
+    },
+    "T-001.3": {
+      "kind": "executable",
+      "source_plan_task": "T-001",
+      "brief": "docs/tasks/T-001.3/brief.md",
+      "parent": "T-001",
+      "children": [],
+      "depends_on": ["T-001.1", "T-001.2"]
+    }
+  }
+}

@@ -55,6 +55,12 @@ SHARED_SCRIPT_FILES: tuple[str, ...] = (
     "runtime-context.schema.v1.json",
     "ollama_delegate.py",
     "ollama-models.json",
+    "measure_maintainability.py",
+    "maintainability.py",
+    "maintainability_env.py",
+    "maintainability-default.toml",
+    "maintainability-ruff-default.toml",
+    "maintainability-requirements.txt",
 )
 
 AGENTS_BEGIN = "<!-- personal-skills:development-install:begin -->"

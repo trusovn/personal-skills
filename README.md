@@ -85,7 +85,8 @@ idea work (`ask-user-questions`, `idea-challenger`, `idea-investigator`, and
 `task-orchestrator` remain separate installs. The profile also installs the
 shared workflow/runtime/evidence files required by the current bounded
 implementation integration plus the Ollama delegation runtime and its local
-model-alias configuration.
+model-alias configuration, plus the portable measurement runtime, shipped defaults
+and analyzer pins listed in the [measurement guide](scripts/measure-maintainability.md).
 
 The installer:
 
@@ -194,6 +195,7 @@ Current shared integrations:
 | Workflow fingerprinting | `.agents/scripts/workflow_version.py` | Only when workflow identity/fingerprinting is wanted |
 | Generic runtime identity | `.agents/scripts/runtime_context.py`, `.agents/scripts/runtime-context.schema.v1.json` | Only when trusted runtime identity is supplied/consumed |
 | Bounded-run evidence | `.agents/scripts/run_evidence.py` plus the workflow-version and runtime-context files above | Optional in ordinary guided use; may be made mandatory by an explicit repository/user/machine contract |
+| Python measurement | `.agents/scripts/measure_maintainability.py` and its adjacent helpers/defaults/pins | Optional advisory measurement; explicit `setup --root <target>` provisions target-native dependencies |
 | Ollama cloud delegation | `.agents/skills/ollama-delegate/`, `.agents/scripts/ollama_delegate.py`, `.agents/scripts/ollama-models.json` | Only when a bounded task should be delegated to an Ollama-backed model through the configured local daemon |
 
 `workflow_version.py` supports both this source repository layout
@@ -231,18 +233,23 @@ workflow identity, and the availability check only; the run-evidence
 collector's `begin`/`finish`/`recover` lifecycle still requires a resolved
 HEAD.
 
-## Local maintainability experiment
+## Portable maintainability measurement
 
 Measure Python files or folders without changing skill behavior:
 
 ```sh
-python3 scripts/measure_maintainability.py setup
+python3 scripts/measure_maintainability.py setup --root .
 python3 scripts/measure_maintainability.py measure scripts tests
 ```
 
 See [setup, baseline comparison, report fields, and verification](scripts/measure-maintainability.md).
-This standalone experiment uses pinned Radon/Ruff tools and provisional advisory
-targets. It is not part of the development installation profile or CI.
+The development profile installs this runtime as `.agents/scripts/measure_maintainability.py`
+with adjacent helpers, shipped defaults and installation-owned pins. Each target
+`.quality/maintainability.toml` or `.quality/ruff.toml` overrides its corresponding
+default independently. Invalid present settings fail. Setup and measurement select
+the same `--root`; measurement never installs packages. Target environments and
+reports stay under `.quality/` and survive profile refresh. The Radon/Ruff values
+remain advisory and do not change CI or native hard checks.
 
 ## Workflow version fingerprints
 

@@ -17,7 +17,7 @@ and the [contract index](contracts/index.json) for implemented reusable surfaces
 | Default local verification | Python and Git available in `PATH`; permission to create temporary directories, local child processes, and disposable Git repositories. |
 | Real containment tests | macOS and `/usr/bin/sandbox-exec`, with host permission to run it. Unsupported hosts report skips; execution denial on a supported host is a failure, not a skip. Loopback fixtures do not contact external services. |
 | Skill frontmatter/package validation | Optional PyYAML, imported by `skills/skill-creator/scripts/quick_validate.py`; separate from behavioral tests. |
-| Analyzer evidence | Existing pinned Radon/Ruff environment; see [analyzer setup](../scripts/measure-maintainability.md). Tests requiring real tools report skips when absent. |
+| Analyzer evidence | Pinned Radon/Ruff environment under the selected target; installation pins are `scripts/maintainability-requirements.txt` (installed under `.agents/scripts/`). See [analyzer setup](../scripts/measure-maintainability.md). Tests requiring real tools report skips when absent. |
 | Live model evals/qualification | Explicit approval for the selected check, runtime/provider authentication and supported configuration. Excluded from the default gate. |
 
 For optional frontmatter validation, use a separate virtual environment and
@@ -107,8 +107,10 @@ The validator was copied from the active project-local repo-foundation package.
 `tools/check_contracts.py` is this repository's standalone validator; it has no
 installed-skill dependency. It checks the core v1 shape, local paths, subsystem
 references, and generated-index agreement. These are structural checks, not
-semantic acceptance of the described runtime. Current records omit plan IDs
-where today's revised plan does not match the older implemented capability.
+semantic acceptance of the described runtime. Records omit plan IDs where
+today's revised plan does not match the older implemented capability. The
+measurement record maps T-001.1's implemented surfaces to their plan IDs and
+explicitly identifies the remaining IF-001 work.
 
 ## AI boundary diagnostics
 

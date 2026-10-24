@@ -2,21 +2,21 @@
 
 The entry point is `python3 scripts/measure_maintainability.py`. It measures
 Python source without importing or executing it. This is a standalone
-experiment: it does not change skills, installation profiles, CI, or acceptance
-rules. The design context is in
+measurement runtime included in the development installation profile. Its metrics
+are advisory and do not change CI or acceptance rules. The design context is in
 [`docs/advisory-code-maintainability-signals.md`](../docs/advisory-code-maintainability-signals.md).
 
 ## Setup
 
-Use Python 3.11 or later. From this repository:
+Use Python 3.11 or later. Select the same target for setup and measurement:
 
 ```sh
-python3 scripts/measure_maintainability.py setup
+python3 scripts/measure_maintainability.py setup --root /path/to/target
 ```
 
 Run setup once in each host or sandbox environment. It creates an environment in
-`.quality/envs/`, keyed by OS, CPU architecture, Python implementation and full
-version, and the pinned requirements hash. macOS and Linux therefore use their
+the selected target's `.quality/envs/`, keyed by OS, CPU architecture, Python
+implementation and full version, and the pinned requirements hash. macOS and Linux therefore use their
 own binaries even when they share the repository. Python with `venv`/`pip` and
 Git must be installed in each environment. Setup needs package-index access (or
 an offline wheel directory configured through pip). Run one setup at a time per
@@ -31,6 +31,40 @@ Git. Dependencies are pinned, including Radon's transitive dependencies.
 The initial versions are Radon 6.0.1 and Ruff 0.14.2. This setup provisions Python
 analyzers only; future language tools can keep their own native runtimes separate
 from the shared report directory.
+
+## Installed resources and target policy
+
+Source `scripts/` and installed `.agents/scripts/` contain the same flat runtime:
+
+| Resource | Role |
+|---|---|
+| `measure_maintainability.py` | Stable public launcher |
+| `maintainability_env.py` | Native interpreter selection and explicit setup |
+| `maintainability.py` | Measurement adapter |
+| `maintainability-default.toml` | Fallback for target `.quality/maintainability.toml` |
+| `maintainability-ruff-default.toml` | Fallback for target `.quality/ruff.toml` |
+| `maintainability-requirements.txt` | Installation-owned analyzer pins |
+
+Each settings file is selected independently from the target when present, or
+from its corresponding shipped default when absent. Invalid present settings
+fail visibly. Unrelated root Ruff configuration is ignored. Reports record
+effective settings contents, SHA-256 identities, paths and target/shipped origins.
+Paths and origins are provenance; effective contents decide compatibility.
+The source repository's `.quality/` settings remain its deliberate target policy;
+its requirements file cannot select installed packages. Setup uses only the
+installation's `maintainability-requirements.txt`.
+
+The helpers moved from `tools/maintainability.py` and
+`tools/maintainability_env.py` to `scripts/`. No repo-only or global fallback
+exists. In a target repository, use the installed public launcher:
+
+```sh
+python3 /path/to/target/.agents/scripts/measure_maintainability.py setup --root /path/to/target
+python3 /path/to/target/.agents/scripts/measure_maintainability.py measure . --root /path/to/target
+```
+
+Installer refresh manages only declared runtime resources. It preserves target
+policy, environments, saved JSON/text reports and unmanaged helpers.
 
 ## Measure a folder or files
 
@@ -51,9 +85,8 @@ python3 scripts/measure_maintainability.py measure scripts --checks complexity -
 Scope, `--output`, and `--baseline` paths are relative to `--root`, which defaults
 to the current working directory.
 Absolute paths inside that root also work. To measure a different repository,
-run this launcher's absolute path with `--root /path/to/repo`. The settings and
-tools still come from this installation. Files must end in `.py`; an empty or
-missing scope is an error, except when comparing deleted files preserved in the
+run this launcher's absolute path with `--root /path/to/repo`. Files must end in
+`.py`; an empty or missing scope is an error, except when comparing deleted files preserved in the
 baseline. Symlinks are not followed. Explicit excluded scopes
 are rejected; excluded directories encountered during traversal are recorded.
 Folders are appropriate for a baseline: they also capture functions or files

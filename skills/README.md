@@ -63,6 +63,18 @@ a tests-only label never waives an affected required review.
 
 ## Checking the installed profile
 
+The profile also installs the portable measurement runtime under `.agents/scripts/`:
+`measure_maintainability.py`, `maintainability.py`, `maintainability_env.py`,
+`maintainability-default.toml`, `maintainability-ruff-default.toml`, and
+`maintainability-requirements.txt`. These are explicit managed files, alongside
+the existing workflow/evidence and Ollama helpers. Setup selects the measured
+repository with `setup --root <target>` and uses installation-owned pins.
+Each target `.quality/maintainability.toml` and `.quality/ruff.toml` independently
+replaces its shipped default when present; invalid settings fail. Refresh preserves
+target policy, environments/reports and unmanaged helpers. Measurement does not
+install dependencies or replace native hard checks. The source repository's
+`scripts/measure-maintainability.md` documents the public interface.
+
 The installer also supports a read-only `--check` comparison of the installed
 profile with its canonical source:
 

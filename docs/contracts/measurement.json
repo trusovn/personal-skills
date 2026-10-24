@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "measurement",
+  "summary": "Portable advisory Python measurement runtime and target-aware settings/setup, implemented by T-001.1. This is partial IF-001 materialization: neutral labels and valid empty folder baselines remain T-001.2 work.",
+  "owner_paths": ["scripts/measure_maintainability.py", "scripts/maintainability.py", "scripts/maintainability_env.py", "scripts/maintainability-default.toml", "scripts/maintainability-ruff-default.toml", "scripts/maintainability-requirements.txt"],
+  "provides": [
+    {
+      "name": "portable-measurement-cli",
+      "kind": "cli",
+      "summary": "Source and installed launchers use adjacent runtime resources without a source-checkout or global fallback. Preserve baseline/compare/measure, --root, file/folder scopes and --output. setup --root explicitly provisions target-native pinned dependencies; measurement never provisions them. Complete breached measurements exit 0; invalid, incomplete or incompatible measurements exit 2. IF-001 remains partial as stated above.",
+      "plan_refs": ["IF-001"],
+      "declarations": ["scripts/measure_maintainability.py", "scripts/maintainability_env.py", "scripts/maintainability.py", "tests/test_maintainability.py"]
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "runtime-defaults-pins-and-effective-settings",
+      "summary": "The launcher, helpers, flat defaults and pins are installation-local. Each target .quality/maintainability.toml and .quality/ruff.toml independently replaces its shipped default when present; invalid present settings fail without fallback. Effective maintainability policy requires a non-empty profile string, a non-empty list of supported checks (complexity, ruff), a non-negative integer complexity_target excluding Booleans, and an exclude_directories list of non-empty strings. Invalid policy fails before scanning or report publication, with the settings path and invalid field in the diagnostic. Unrelated root Ruff configuration is ignored. identity.settings records origin, path and SHA-256 for each effective file; effective contents, not provenance paths/origins, determine settings compatibility.",
+      "plan_refs": ["ART-001"],
+      "declarations": ["scripts/maintainability.py", "scripts/maintainability-default.toml", "scripts/maintainability-ruff-default.toml", "scripts/maintainability-requirements.txt", "tests/test_maintainability.py"]
+    }
+  ],
+  "state_owned": [
+    {
+      "name": "target-native-analyzer-environments",
+      "summary": "Explicit setup creates or repairs target .quality/envs/<key>, keyed by OS, CPU, Python implementation/full version and installation pin hash. Measurement selects that native environment or an already pinned caller; legacy/foreign environments are not fallback runtimes. Missing pins report an executable setup recipe for the selected target.",
+      "declarations": ["scripts/maintainability_env.py", "tests/test_maintainability.py"]
+    }
+  ],
+  "invariants": [
+    {"statement": "Metrics remain advisory and do not waive native hard repository checks.", "plan_refs": ["INV-001"]},
+    {"statement": "Measurement captures actual dirty, staged and untracked source bytes without changing source or the real index; saved JSON/text reports are not overwritten. Retaining one original task baseline across corrections remains a workflow obligation.", "plan_refs": ["INV-002", "INV-007"]},
+    {"statement": "Comparison requires compatible tool/settings/scope identity; missing native numeric evidence remains unknown rather than zero.", "plan_refs": ["INV-003"]},
+    {"statement": "Installed runtime resources and pins come from one installation; refresh preserves unrelated target files, target policy, native environments and reports.", "plan_refs": ["INV-006"]},
+    {"statement": "Measurement never installs packages and colocated hashes do not establish tamper resistance.", "plan_refs": ["INV-007"]}
+  ],
+  "module_docs": ["scripts/measure-maintainability.md", "skills/README.md", "README.md"]
+}

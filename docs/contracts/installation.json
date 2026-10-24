@@ -14,7 +14,7 @@
   "artifacts": [
     {
       "name": "profile-membership-and-dependencies",
-      "summary": "DEVELOPMENT_SKILL_SOURCES, PROFILE_SKILLS_README and SHARED_SCRIPT_FILES define the managed installation set.",
+      "summary": "DEVELOPMENT_SKILL_SOURCES, PROFILE_SKILLS_README and SHARED_SCRIPT_FILES define the managed installation set, including the measurement launcher, adjacent runtime helpers, two shipped settings defaults and installation-owned analyzer pins under target .agents/scripts/.",
       "declarations": ["scripts/install_development_skills.py", "skills/README.md"]
     }
   ],
@@ -22,6 +22,6 @@
     {"statement": "Replacement is limited to selected packages, explicitly managed shared files and guide, and the marked AGENTS block; unrelated content is preserved."},
     {"statement": "An active installation is distinct from editable source and is not refreshed during an ongoing agent run."}
   ],
-  "depends_on": ["runtime-evidence"],
+  "depends_on": ["runtime-evidence", "measurement"],
   "module_docs": ["README.md", "skills/README.md"]
 }

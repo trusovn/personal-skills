@@ -254,6 +254,38 @@ def comparison(report, baseline):
     return result
 
 
+def summary_location(item):
+    symbol = f" {item['symbol']}" if item.get("symbol") else ""
+    return f"{item['path']}:{item['line']}{symbol} [{item['asset_group']}]"
+
+
+def summary_change(item):
+    if item["value"] is None:
+        return f"CC {item['before']}->none"
+    if item["before"] is None:
+        return f"CC {item['value']}"
+    return f"CC {item['before']}->{item['value']} ({item['delta']:+d})"
+
+
+def summary_response(item):
+    # Complexity comparison rows always carry "delta"; Ruff findings never do.
+    if "delta" in item:
+        return f"{item['classification']} {summary_change(item)}"
+    return f"{item['classification']} {item['code']} {item['message']}"
+
+
+def summary_comparison_lines(report):
+    lines = [f"Required response items: {len(report['required_response'])}"]
+    lines.extend(f"  Response required: {summary_response(item)}: {summary_location(item)}"
+                 for item in report["required_response"])
+    changed = [row for row in report["comparison"]["complexity"]
+               if row["classification"] in ("new", "improved", "worsened")]
+    lines.append(f"Changed symbols: {len(changed)}")
+    lines.extend(f"  {row['classification'].capitalize()} {summary_change(row)}: {summary_location(row)}"
+                 for row in changed)
+    return lines
+
+
 def summarize(report):
     groups = Counter(item["asset_group"] for item in report["files"].values())
     lines = [f"Measurement: {report['measurement_status']}; comparison: {report['comparison']['status']}",
@@ -264,10 +296,12 @@ def summarize(report):
             breaches = sum(item["value"] > item["target"] for item in check["values"])
             lines.append(f"  Functions above target: {breaches}")
     if report["comparison"]["status"] == "compared":
-        lines.append(f"Required response items: {len(report['required_response'])}")
+        # Response identities and changed-symbol deltas come before the legacy top five.
+        lines.extend(summary_comparison_lines(report))
     else:
         lines.append("Required response items: not evaluated (no compatible comparison)")
     complexity_values = report["checks"].get("complexity", {}).get("values", [])
+    lines.append("Top five by complexity:")
     for item in sorted(complexity_values, key=lambda item: -item["value"])[:5]:
         lines.append(f"  CC {item['value']}: {item['path']}:{item['line']} {item['symbol']} [{item['asset_group']}]")
     lines.extend(f"Limit: {limit}" for limit in report["limitations"])

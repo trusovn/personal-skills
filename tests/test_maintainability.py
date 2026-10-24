@@ -175,6 +175,9 @@ def duplicate(): pass
         self.assertEqual(0, console.returncode, console.stderr)
         self.assertIn("Measurement: complete", console.stdout)
         self.assertIn("CC 2: sample.py:1 small", console.stdout)
+        self.assertIn("Top five by complexity:", console.stdout)
+        self.assertNotIn("Response required:", console.stdout)
+        self.assertNotIn("Changed symbols", console.stdout)
         self.assertNotIn("Report:", console.stdout)
         self.assertEqual([self.source], list(self.root.iterdir()))
         missing_output = subprocess.run([*args, "baseline", "sample.py", "--root", str(self.root)],
@@ -196,12 +199,41 @@ def duplicate(): pass
                                          "--baseline", str(baseline_path)], capture_output=True, text=True)
         self.assertEqual(0, console_compare.returncode, console_compare.stderr)
         self.assertIn("Required response items: 1", console_compare.stdout)
+        self.assertIn("  Response required: worsened CC 2->3 (+1): sample.py:1 small [implementation]",
+                      console_compare.stdout)
+        self.assertIn("Changed symbols: 1", console_compare.stdout)
+        self.assertIn("  Worsened CC 2->3 (+1): sample.py:1 small [implementation]", console_compare.stdout)
         self.assertEqual(files_before, set(self.root.iterdir()))
         before = baseline_path.read_bytes()
         retry = subprocess.run([*args, "baseline", "sample.py", "--root", str(self.root),
                                 "--output", str(baseline_path)], capture_output=True, text=True)
         self.assertEqual(2, retry.returncode)
         self.assertEqual(before, baseline_path.read_bytes())
+
+    def test_console_compare_prints_identities_and_deltas_before_top_five(self):
+        baseline_path = self.root / "console-baseline.json"
+        args = [sys.executable, str(ROOT / "scripts" / "measure_maintainability.py")]
+        self.source.write_text(function("target", 15))
+        baseline = subprocess.run([*args, "baseline", "sample.py", "--root", str(self.root),
+                                   "--output", str(baseline_path)], capture_output=True, text=True)
+        self.assertEqual(0, baseline.returncode, baseline.stderr)
+        self.source.write_text(function("target", 1) + function("helper", 1) + function("hotspot", 10)
+                               + "def wide(a,b,c,d,e,f): pass\n")
+        console = subprocess.run([*args, "compare", "sample.py", "--root", str(self.root),
+                                  "--baseline", str(baseline_path)], capture_output=True, text=True)
+        self.assertEqual(0, console.returncode, console.stderr)
+        self.assertIn("Required response items: 2\n", console.stdout)
+        self.assertIn("  Response required: new CC 11: sample.py:7 hotspot [implementation]\n", console.stdout)
+        self.assertIn("  Response required: new_diagnostic PLR0913 Too many arguments in function "
+                      "definition (6 > 5): sample.py:19 wide [implementation]\n", console.stdout)
+        self.assertIn("Changed symbols: 4\n", console.stdout)
+        self.assertIn("  Improved CC 16->2 (-14): sample.py:1 target [implementation]\n", console.stdout)
+        self.assertIn("  New CC 2: sample.py:4 helper [implementation]\n", console.stdout)
+        self.assertIn("  New CC 11: sample.py:7 hotspot [implementation]\n", console.stdout)
+        self.assertIn("  New CC 1: sample.py:19 wide [implementation]\n", console.stdout)
+        self.assertIn("Top five by complexity:", console.stdout)
+        self.assertLess(console.stdout.index("Response required:"), console.stdout.index("Top five by complexity:"))
+        self.assertLess(console.stdout.index("Changed symbols:"), console.stdout.index("Top five by complexity:"))
 
     def test_directory_exclusions_selected_check_and_empty_scope(self):
         excluded = self.root / ".agents"

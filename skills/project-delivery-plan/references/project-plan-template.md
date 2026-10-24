@@ -55,7 +55,7 @@ Plan version: `<version/date/commit or other project convention>`
 |---|---|---|---|---|---|---|
 | ART-001 | ... | persisted / derived / request / output / audit | ... | ... | ... | ... |
 
-## 5. Lifecycle/state models
+## 5. Lifecycle and decision rules
 
 ### <stateful artifact/process>
 
@@ -82,7 +82,7 @@ Rules:
 
 Record authorization, idempotency, concurrency, staleness, validation, or exact-version semantics here when they affect independent work.
 
-## 8. End-to-end data/process/state flows
+## 8. End-to-end flows
 
 ### FLOW-001 — <name>
 
@@ -129,7 +129,7 @@ outcome; do not repeat it as another requirement or progress claim.>
 |---|---|---|---|
 | FLOW-001 | ... | ... | ... |
 
-## 12. Risks, assumptions, and delegated choices
+## 12. Risks, assumptions and delegated choices
 
 ### Blocking/open system questions
 - `<question that must be resolved before implementation or verification>`

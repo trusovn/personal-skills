@@ -19,16 +19,22 @@ REQUIRED_HEADINGS = [
     "Scope",
     "Actors and capabilities",
     "Artifact and state catalog",
-    "Lifecycle/state models",
+    "Lifecycle and decision rules",
     "Cross-task invariants",
     "System interface map",
-    "End-to-end data/process/state flows",
+    "End-to-end flows",
     "Capability-to-flow coverage",
     "Implementation task map",
     "System verification map",
-    "Risks, assumptions, and delegated choices",
+    "Risks, assumptions and delegated choices",
     "Plan-verification handoff",
 ]
+
+HEADING_ALIASES = {
+    "lifecycle/state models": "lifecycle and decision rules",
+    "end-to-end data/process/state flows": "end-to-end flows",
+    "risks, assumptions, and delegated choices": "risks, assumptions and delegated choices",
+}
 
 PREFIXES = {
     "capabilities": "CAP-",
@@ -68,6 +74,7 @@ def main() -> int:
     plan = plan_path.read_text(encoding="utf-8")
     headings = [m.group(1).strip() for m in re.finditer(r"^#{1,6}\s+(.+?)\s*$", plan, re.MULTILINE)]
     normalized_headings = [re.sub(r"^\d+(?:\.\d+)*\.\s+", "", h).strip().lower() for h in headings]
+    normalized_headings = [HEADING_ALIASES.get(h, h) for h in normalized_headings]
     for required in REQUIRED_HEADINGS:
         if required.lower() not in normalized_headings:
             errors.append(f"project plan missing heading: {required}")

@@ -2,6 +2,17 @@
 
 This repository is the canonical editable source for general-purpose personal
 agent skills used by the Local Workbench.
+
+## Development
+
+Start with the [project map](docs/project-map.md) and
+[setup and verification guide](docs/development.md). Run the owning focused
+suite first; use `python3 tools/verify.py` for repository-wide local verification.
+It reports optional skips and excludes live model evals and dependency installs.
+The [contract index](docs/contracts/index.json) routes to currently implemented
+reusable surfaces. Source and installed skills are separate; checking drift does
+not refresh an active installation.
+
 ## Layout
 
 ```text

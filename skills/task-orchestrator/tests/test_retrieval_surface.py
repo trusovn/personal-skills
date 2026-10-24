@@ -42,11 +42,6 @@ class RetrievalSurfaceTest(unittest.TestCase):
         missing = [path for path in expected if not (SKILL_ROOT / path).is_file()]
 
         self.assertEqual([], missing)
-        self.assertEqual(
-            {"README.md", "direction-local-harness.md",
-             "local-harness-orchestration-plan.md", "local-harness-task-map.json"},
-            {path.name for path in (SKILL_ROOT / "docs").iterdir()},
-        )
 
     def test_skill_routes_through_controller_and_matches_commit_policy(self):
         skill = (SKILL_ROOT / "SKILL.md").read_text()

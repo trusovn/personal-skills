@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "id": "runtime-evidence",
+  "summary": "Workflow identity, optional trusted runtime identity, and Git-local bounded-run evidence.",
+  "owner_paths": ["scripts/workflow_version.py", "scripts/runtime_context.py", "scripts/runtime-context.schema.v1.json", "scripts/run_evidence.py"],
+  "provides": [
+    {
+      "name": "workflow-fingerprint",
+      "kind": "cli-and-python-api",
+      "summary": "Deterministic skill-owned package fingerprint, separate from repository provenance; supports source and installed layouts and explicit unborn identity.",
+      "declarations": ["scripts/workflow_version.py", "tests/test_workflow_version.py"]
+    },
+    {
+      "name": "external-runtime-context-v1",
+      "kind": "schema-and-python-api",
+      "summary": "Validate externally supplied identity; absent trusted context has unavailable provenance and null identity fields.",
+      "declarations": ["scripts/runtime_context.py", "scripts/runtime-context.schema.v1.json", "tests/test_runtime_context.py"]
+    },
+    {
+      "name": "bounded-run-evidence",
+      "kind": "cli",
+      "summary": "availability, active, begin, finish, recover and check preserve raw invocation/snapshot/check facts; lifecycle requires a resolved HEAD.",
+      "declarations": ["scripts/run_evidence.py", "tests/test_run_evidence.py", "tests/test_run_evidence_availability.py"]
+    }
+  ],
+  "state_owned": [
+    {
+      "name": "git-local-evidence-runs-and-snapshot-refs",
+      "summary": "Run manifests and check captures under worktree Git metadata, with immutable snapshot objects retained by refs.",
+      "declarations": ["scripts/run_evidence.py"]
+    }
+  ],
+  "invariants": [
+    {"statement": "Fingerprint selection/framing semantics are a compatibility boundary; absolute installation location is excluded."},
+    {"statement": "Runtime identity is not inferred from model self-identification or configured model names."},
+    {"statement": "Evidence uses a temporary index, does not alter the real index, and does not decide acceptance. Parallel multi-agent execution in one worktree is unsupported."}
+  ],
+  "module_docs": ["README.md", "scripts/runtime-context.md", "scripts/run-evidence.md"]
+}

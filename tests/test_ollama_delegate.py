@@ -186,6 +186,31 @@ class OllamaDelegateTests(unittest.TestCase):
                         script_path=fake_script,
                     )
 
+    def test_run_delegate_rejects_missing_empty_and_wrong_type_messages(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            fake_script, config, repo = self.make_delegate_fixture(Path(tempdir))
+            for event in (
+                {"done": True},
+                {"done": True, "message": {}},
+                {"done": True, "message": {"content": "   "}},
+                {"done": True, "message": {"content": ["unexpected"]}},
+                {"done": True, "message": {"tool_calls": "unexpected"}},
+            ):
+                with self.subTest(event=event):
+                    with mock.patch.object(ollama_delegate, "ollama_complete", return_value=event):
+                        with self.assertRaises(ollama_delegate.DelegateError):
+                            ollama_delegate.run_delegate(
+                                repo=repo, skill_id="sample", task="review", model_alias=None,
+                                config_path=config, max_turns=4, script_path=fake_script,
+                            )
+
+    def test_provider_timeout_becomes_delegate_error(self):
+        with mock.patch.object(ollama_delegate.urllib.request, "urlopen", side_effect=TimeoutError("fixture timeout")):
+            with self.assertRaisesRegex(ollama_delegate.DelegateError, "fixture timeout"):
+                ollama_delegate.ollama_complete(
+                    "http://invalid.example", {"model": "fixture"}, [], timeout=0.1,
+                )
+
     def test_run_delegate_rejects_error_response(self):
         with tempfile.TemporaryDirectory() as tempdir:
             fake_script, config, repo = self.make_delegate_fixture(Path(tempdir))

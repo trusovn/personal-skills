@@ -1,0 +1,50 @@
+{
+  "generated": true,
+  "plan_refs": {},
+  "schema_version": 1,
+  "subsystems": [
+    {
+      "contract": "delegation.json",
+      "id": "delegation",
+      "owner_paths": [
+        "scripts/ollama-models.json",
+        "scripts/ollama_delegate.py",
+        "skills/ollama-delegate"
+      ]
+    },
+    {
+      "contract": "foundation-tools.json",
+      "id": "foundation-tools",
+      "owner_paths": [
+        "tests/test_architecture.py",
+        "tests/test_foundation_tools.py",
+        "tools/check_contracts.py",
+        "tools/verify.py"
+      ]
+    },
+    {
+      "contract": "installation.json",
+      "id": "installation",
+      "owner_paths": [
+        "scripts/install_development_skills.py"
+      ]
+    },
+    {
+      "contract": "runtime-evidence.json",
+      "id": "runtime-evidence",
+      "owner_paths": [
+        "scripts/run_evidence.py",
+        "scripts/runtime-context.schema.v1.json",
+        "scripts/runtime_context.py",
+        "scripts/workflow_version.py"
+      ]
+    },
+    {
+      "contract": "task-orchestrator.json",
+      "id": "task-orchestrator",
+      "owner_paths": [
+        "skills/task-orchestrator"
+      ]
+    }
+  ]
+}

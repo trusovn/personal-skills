@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "id": "task-orchestrator",
+  "summary": "Current experimental controller primitives; not a complete accepted-task workflow.",
+  "owner_paths": ["skills/task-orchestrator"],
+  "provides": [
+    {
+      "name": "public-controller",
+      "kind": "cli",
+      "summary": "init freezes validated policy/manifest and baseline; run-next launches one ready task; inspect records mechanical eligibility; revise-flow records an authorized safe-boundary flow revision.",
+      "declarations": ["skills/task-orchestrator/scripts/controller.py", "skills/task-orchestrator/tests/test_controller.py"]
+    },
+    {
+      "name": "validated-state-and-record-contracts",
+      "kind": "python-api-and-schema",
+      "summary": "Pure state/record validation, closed flow profiles, cursor transitions, and assignment/outcome contracts. Data contracts do not establish a complete runnable workflow.",
+      "declarations": ["skills/task-orchestrator/scripts/controller_state.py", "skills/task-orchestrator/assets", "skills/task-orchestrator/tests/test_controller_state.py"]
+    },
+    {
+      "name": "codex-transport-test-seam",
+      "kind": "internal-provider-boundary",
+      "summary": "codex_worker.py isolates process/thread/result handling; tests supply a fake executable. Internal resume does not provide safe public controller recovery.",
+      "declarations": ["skills/task-orchestrator/scripts/codex_worker.py", "skills/task-orchestrator/assets/worker-result.schema.json", "skills/task-orchestrator/tests/test_codex_worker.py"]
+    },
+    {
+      "name": "verification-containment",
+      "kind": "execution-boundary",
+      "summary": "Plan and run authorized argv checks using macOS /usr/bin/sandbox-exec; unsupported configurations fail before launch, without unrestricted fallback.",
+      "declarations": ["skills/task-orchestrator/scripts/verification_runner.py", "skills/task-orchestrator/tests/test_verification_runner.py"]
+    }
+  ],
+  "state_owned": [
+    {
+      "name": "external-controller-run-directory",
+      "summary": "Frozen inputs, ledger, attempts, process identity, structured results, and diagnostics remain outside worker-writable scope.",
+      "declarations": ["skills/task-orchestrator/scripts/controller.py", "skills/task-orchestrator/scripts/controller_state.py"]
+    }
+  ],
+  "invariants": [
+    {"statement": "Workers report claims and may edit authorized paths; they cannot grant permissions, commit authority, ledger ownership, or semantic acceptance."},
+    {"statement": "Missing output, process failure, timeout, or ambiguous liveness does not authorize completion or another writer."},
+    {"statement": "Safe public recovery, full semantic review/correction, finalization and automatic advancement remain unimplemented; planned interfaces are not current contracts."}
+  ],
+  "module_docs": ["skills/task-orchestrator/references/architecture-map.md", "skills/task-orchestrator/references/operator-guide.md"]
+}

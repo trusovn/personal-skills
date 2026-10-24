@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "foundation-tools",
+  "summary": "Repository-local verification and contract-discovery commands; not installed shared runtime dependencies.",
+  "owner_paths": ["tools/verify.py", "tools/check_contracts.py", "tests/test_architecture.py", "tests/test_foundation_tools.py"],
+  "provides": [
+    {
+      "name": "local-verification",
+      "kind": "cli",
+      "summary": "Discover maintained root and skill test locations, run isolated unittest processes, report skips, validate the registry, and check an existing development installation without refreshing it.",
+      "declarations": ["tools/verify.py", "tests/test_foundation_tools.py"]
+    },
+    {
+      "name": "architecture-check",
+      "kind": "unittest-policy",
+      "summary": "CLEAN checks for declared runtime/test separation, shared-runtime independence from skill imports, and the existing orchestrator sibling dependency direction; computed loading still needs review.",
+      "declarations": ["tests/test_architecture.py"]
+    },
+    {
+      "name": "implemented-contract-registry",
+      "kind": "cli-and-generated-index",
+      "summary": "Validate v1 subsystem records and local paths; --write-index regenerates the discovery router only when records validate.",
+      "declarations": ["tools/check_contracts.py", "tests/test_foundation_tools.py"]
+    }
+  ],
+  "invariants": [
+    {"statement": "Default verification neither installs dependencies nor runs live model evals. Passing with reported skips does not qualify skipped capabilities."},
+    {"statement": "Subsystem JSON records are editable current-state routing; index.json is generated. Schemas, code and tests remain underlying authority."},
+    {"statement": "Architecture rules are deterministic constraints; complexity measurements remain advisory and are not acceptance thresholds."}
+  ],
+  "module_docs": ["docs/project-map.md", "docs/development.md"]
+}

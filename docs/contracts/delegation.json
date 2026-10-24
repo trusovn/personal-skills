@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "delegation",
+  "summary": "Optional bounded read-only Ollama-backed repository inspection.",
+  "owner_paths": ["scripts/ollama_delegate.py", "scripts/ollama-models.json", "skills/ollama-delegate"],
+  "provides": [
+    {
+      "name": "read-only-delegate",
+      "kind": "cli-and-provider-boundary",
+      "summary": "run_delegate coordinates bounded read tools; ollama_complete isolates HTTP and is replaced by deterministic response fixtures in tests.",
+      "declarations": ["scripts/ollama_delegate.py", "tests/test_ollama_delegate.py"]
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "provider-alias-configuration",
+      "summary": "Adjacent model aliases and endpoint, with OLLAMA_BASE_URL endpoint override; model configuration is not observed runtime identity.",
+      "declarations": ["scripts/ollama-models.json", "scripts/ollama_delegate.py"]
+    }
+  ],
+  "invariants": [
+    {"statement": "Read-tool paths stay inside the selected repository and outputs are bounded; no write or shell tools are granted."},
+    {"statement": "Incomplete, invalid, error, or empty final responses do not become completed inspection results. Review text is advisory evidence."}
+  ],
+  "module_docs": ["skills/ollama-delegate/SKILL.md", "skills/ollama-delegate/README.md"]
+}

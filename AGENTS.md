@@ -42,6 +42,30 @@ For development of skills not yet installed:
 
 Do not omit an independent review merely because the named skill is unavailable, and do not combine separate discovery and acceptance decisions when the applicable task contract requires separation.
 
+## Development routing and maintainability
+
+- Read `docs/project-map.md` for source/test ownership and `docs/development.md`
+  for setup, test tiers, and command scope.
+- Discover implemented reusable contracts through `docs/contracts/index.json`,
+  then the subsystem record and its code/schema/test authorities. Plans describe
+  intended work, not implemented capability. Update affected subsystem records
+  and regenerate the index when current contracts change; in the bounded task
+  flow, use its designated registry-updater stage.
+- Run the owning focused suite first. For cross-cutting changes run
+  `python3 tools/verify.py`; report skips and failures without treating them as
+  successful behavioral qualification. Live or expensive checks still require
+  the applicable approval.
+- Keep modules focused and changes local to their owner. Keep dependencies
+  explicit, reuse existing patterns, and keep deterministic logic testable
+  without provider I/O. Add abstractions only for concrete boundaries or consumers.
+- Before handoff, run the canonical architecture check:
+  `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_architecture.py`.
+  Fix hard failures. `tests/test_architecture.py` owns CLEAN policy; there is no
+  debt baseline. Advisory analyzer signals do not require unrelated cleanup.
+- Check contracts with `python3 tools/check_contracts.py --root .`;
+  regenerate only with the explicit `--write-index` command. Repository-only
+  foundation tools are not development-profile runtime dependencies.
+
 <!-- personal-skills:development-install:begin -->
 ## Skill installation resolution
 

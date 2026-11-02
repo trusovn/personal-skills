@@ -7,7 +7,16 @@
     "ART-002": [
       "measurement"
     ],
+    "ART-006": [
+      "measurement"
+    ],
+    "ART-007": [
+      "measurement"
+    ],
     "IF-001": [
+      "measurement"
+    ],
+    "IF-004": [
       "measurement"
     ],
     "INV-001": [
@@ -23,6 +32,9 @@
       "measurement"
     ],
     "INV-007": [
+      "measurement"
+    ],
+    "INV-009": [
       "measurement"
     ]
   },

@@ -96,6 +96,32 @@ class MeasurementTests(unittest.TestCase):
                 self.assertIn("CC 3:", measured.stdout)
                 self.assertFalse((self.root / ".quality/envs").exists())
 
+    def test_native_hard_failure_remains_separate_from_installed_advisory_success(self):
+        launcher, cwd = self.installed_launcher()
+        native = self.root / "native-ruff.toml"
+        native.write_text('[lint]\nselect = ["F401"]\n')
+        command = [sys.executable, "-m", "ruff", "check", "--no-cache", "--config", str(native), str(self.root)]
+        (self.root / "AGENTS.md").write_text(
+            "Native check: " + shlex.join(command) + "\n"
+            "Scope: whole project; policy: native-ruff.toml; required: true; owner: implementer.\n")
+        clean = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
+        self.assertEqual(0, clean.returncode, clean.stderr)
+        self.source.write_text("import os\n" + function("small", 4))
+        before = snapshot_tree(self.root)
+        failed = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
+        self.assertEqual(1, failed.returncode, failed.stderr)
+        self.assertIn("F401", failed.stdout)
+        self.assertIn("sample.py", failed.stdout)
+        self.assertEqual(before, snapshot_tree(self.root))
+        result = self.launch(launcher, cwd, "measure", "sample.py", "--output", "advisory.json")
+        self.assertEqual(0, result.returncode, result.stderr)
+        report = json.loads((self.root / "advisory.json").read_text())
+        self.assertEqual("complete", report["measurement_status"])
+        self.assertEqual(5, report["checks"]["complexity"]["values"][0]["value"])
+        after = snapshot_tree(self.root)
+        for relative, content in before.items():
+            self.assertEqual(content, after[relative], relative)
+
     def test_real_complexity_boundaries_and_below_target_increase(self):
         self.source.write_text(function("small", 1) + function("at_target", 9)
                                + function("legacy", 10) + function("improves", 15))
@@ -217,12 +243,12 @@ def duplicate(): pass
         self.assertIn("comparison: incompatible", result.stdout)
 
     def test_cli_rejects_incompatible_baseline_identities(self):
-        launcher = ROOT / "scripts/measure_maintainability.py"
+        launcher, cwd = self.installed_launcher()
         before = ".quality/reports/compatible.json"
-        result = self.launch(launcher, self.root, "baseline", "sample.py", "--output", before)
+        result = self.launch(launcher, cwd, "baseline", "sample.py", "--output", before)
         self.assertEqual(0, result.returncode, result.stderr)
         original = (self.root / before).read_bytes()
-        for field, value in (("format_version", 4), ("tools", {}), ("ruff_collection_limits", {}),
+        for field, value in (("format_version", 3), ("format_version", 4), ("tools", {}), ("ruff_collection_limits", {}),
                              ("adapter_sha256", "different"), ("python", "3.0.0"),
                              ("python_implementation", "different"), ("measurement_status", "incomplete")):
             with self.subTest(field=field):
@@ -230,7 +256,7 @@ def duplicate(): pass
                 (changed if field in ("format_version", "measurement_status") else changed["identity"])[field] = value
                 path = self.root / f".quality/reports/incompatible-{field}.json"
                 path.write_text(json.dumps(changed))
-                result = self.launch(launcher, self.root, "compare", "sample.py", "--baseline", str(path))
+                result = self.launch(launcher, cwd, "compare", "sample.py", "--baseline", str(path))
                 self.assertEqual(2, result.returncode, result.stderr)
                 self.assertIn("comparison: incompatible", result.stdout)
                 self.assertEqual(original, (self.root / before).read_bytes())
@@ -339,6 +365,7 @@ def duplicate(): pass
                 self.assertEqual(highlights, row["highlights"])
 
     def test_ruff_missing_diagnostics_never_become_numeric_zero(self):
+        launcher, cwd = self.installed_launcher()
         for before, after, metric, count, highlights in (
             ("def f(): pass\n", "def f(a): pass\n", "PLR0913", 1, ["needs_interpretation"]),
             ("def f(): return 1\n", "def f():\n    a = 1\n    return a\n", "PLR0915", 1, ["needs_interpretation"]),
@@ -351,9 +378,15 @@ def duplicate(): pass
         ):
             with self.subTest(before=before, metric=metric):
                 reports = []
-                for source in (before, after):
+                for index, source in enumerate((before, after)):
                     self.source.write_text("from typing import override, overload\n" + source)
-                    reports.append(self.report(("ruff",)))
+                    output = self.root / f"unknown-{index}.json"
+                    result = self.launch(launcher, cwd, "measure", "sample.py", "--checks", "ruff",
+                                         "--output", str(output))
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    reports.append(json.loads(output.read_text()))
+                    output.unlink()
+                    output.with_suffix(".txt").unlink()
                 added = next(item for item in metrics.comparison(reports[1], reports[0])["ruff"]
                              if item["metric"] == metric)
                 self.assertEqual((None, count, None, "new_diagnostic", highlights),
@@ -503,7 +536,7 @@ def duplicate(): pass
         self.assertEqual(["removed"], [row["classification"] for row in result["complexity"]])
 
     def test_snapshot_preserves_staged_unstaged_untracked_and_index(self):
-        self.git("init", "-q")
+        launcher, cwd = self.installed_launcher()
         self.git("config", "user.email", "test@example.com")
         self.git("config", "user.name", "Test")
         (self.root / "untouched.py").write_text(function("untouched", 0))
@@ -513,7 +546,7 @@ def duplicate(): pass
         self.git("add", ".")
         index = (self.root / ".git" / "index").read_bytes()
         staged = self.git("show", ":sample.py")
-        self.source.write_text(function("small", 3))
+        self.source.write_text(function("small", 4))
         (self.root / "untracked.py").write_text(function("untracked", 0))
         source_before = {p.name: p.read_bytes() for p in self.root.glob("*.py")}
         report = self.report()
@@ -524,31 +557,38 @@ def duplicate(): pass
         self.assertIn("MM sample.py", report["repository"]["status"])
         self.assertIn("?? untracked.py", report["repository"]["status"])
         self.assertEqual(self.source.read_bytes(), base64.b64decode(report["files"]["sample.py"]["source_base64"]))
-        self.assertEqual(4, report["checks"]["complexity"]["values"][0]["value"])
+        self.assertEqual(5, report["checks"]["complexity"]["values"][0]["value"])
 
-        self.assertEqual([4, 1, 1], [row["value"] for row in report["checks"]["complexity"]["values"]])
+        self.assertEqual([5, 1, 1], [row["value"] for row in report["checks"]["complexity"]["values"]])
         for name, data in source_before.items():
             self.assertEqual(data, base64.b64decode(report["files"][name]["source_base64"]))
             self.assertEqual(metrics.digest(data), report["files"][name]["sha256"])
         baseline = self.root / "before.json"
-        launch = self.launch(ROOT / "scripts/measure_maintainability.py", self.root,
+        launch = self.launch(launcher, cwd,
                              "baseline", ".", "--output", str(baseline))
         self.assertEqual(0, launch.returncode, launch.stderr)
         captured = json.loads(baseline.read_text())
         self.assertEqual(source_before, {name: base64.b64decode(data["source_base64"])
                                          for name, data in captured["files"].items()})
+        for name, data in source_before.items():
+            self.assertEqual(metrics.digest(data), captured["files"][name]["sha256"])
+        self.assertEqual(source_before, {p.name: p.read_bytes() for p in self.root.glob("*.py")})
         self.assertEqual(index, (self.root / ".git/index").read_bytes())
         saved = {p: p.read_bytes() for p in (baseline, baseline.with_suffix(".txt"))}
-        self.source.write_text(function("small", 4))
+        self.source.write_text(function("small", 6))
         (self.root / "added.py").write_text(function("added", 0))
         source_after = {p.name: p.read_bytes() for p in self.root.glob("*.py")}
-        result = subprocess.run([sys.executable, str(ROOT / "scripts/measure_maintainability.py"),
-                                 "compare", "sample.py", "added.py", "--root", str(self.root), "--baseline", str(baseline), "--output", "after.json"], capture_output=True, text=True)
+        result = self.launch(launcher, cwd, "compare", "sample.py", "added.py",
+                             "--baseline", str(baseline), "--output", "after.json")
         self.assertEqual(0, result.returncode, result.stderr)
         after = json.loads((self.root / "after.json").read_text())
+        for name, entry in after["files"].items():
+            data = (self.root / name).read_bytes()
+            self.assertEqual(data, base64.b64decode(entry["source_base64"]))
+            self.assertEqual(metrics.digest(data), entry["sha256"])
         rows = {row["symbol"]: row for row in after["comparison"]["complexity"]}
         self.assertEqual({"small", "added"}, set(rows))
-        self.assertEqual((4, 5, 1), tuple(rows["small"][key] for key in ("before", "value", "delta")))
+        self.assertEqual((5, 7, 2), tuple(rows["small"][key] for key in ("before", "value", "delta")))
         self.assertEqual(("new", None, None), tuple(rows["added"][key] for key in ("classification", "before", "delta")))
         self.assertEqual(saved, {p: p.read_bytes() for p in saved})
         self.assertEqual(source_after, {p.name: p.read_bytes() for p in self.root.glob("*.py")})
@@ -556,13 +596,12 @@ def duplicate(): pass
         self.assertEqual(staged, self.git("show", ":sample.py"))
         saved.update({p: p.read_bytes() for p in (self.root / "after.json", self.root / "after.txt")})
         self.source.unlink()
-        removed = subprocess.run([sys.executable, str(ROOT / "scripts/measure_maintainability.py"),
-                                  "compare", "sample.py", "--root", str(self.root), "--baseline", str(baseline),
-                                  "--output", "removed.json"], capture_output=True, text=True)
+        removed = self.launch(launcher, cwd, "compare", "sample.py",
+                              "--baseline", str(baseline), "--output", "removed.json")
         self.assertEqual(0, removed.returncode, removed.stderr)
         deleted = json.loads((self.root / "removed.json").read_text())
         row, = deleted["comparison"]["complexity"]
-        self.assertEqual(("removed", 4, None, None),
+        self.assertEqual(("removed", 5, None, None),
                          tuple(row[key] for key in ("classification", "before", "value", "delta")))
         self.assertTrue(all(row["delta"] is None for row in deleted["comparison"]["ruff"]))
         self.assertEqual(saved, {p: p.read_bytes() for p in saved})
@@ -658,13 +697,13 @@ def duplicate(): pass
                 self.assertEqual(saved, {p: p.read_bytes() for p in self.root.iterdir() if p.is_file()})
 
     def test_each_report_sibling_collision_refuses_write(self):
+        launcher, cwd = self.installed_launcher()
         self.git("init", "-q")
         self.git("add", "sample.py")
         index = (self.root / ".git/index").read_bytes()
         source = self.source.read_bytes()
-        launcher = ROOT / "scripts/measure_maintainability.py"
         baseline = ".quality/reports/before.json"
-        result = self.launch(launcher, self.root, "baseline", "sample.py", "--output", baseline)
+        result = self.launch(launcher, cwd, "baseline", "sample.py", "--output", baseline)
         self.assertEqual(0, result.returncode, result.stderr)
         for operation in ("baseline", "compare", "measure"):
             for suffix in (".json", ".txt"):
@@ -673,7 +712,7 @@ def duplicate(): pass
                     occupied = destination.with_suffix(suffix)
                     occupied.write_bytes(b"sentinel")
                     extra = ("--baseline", baseline) if operation == "compare" else ()
-                    result = self.launch(launcher, self.root, operation, "sample.py", "--output", str(destination), *extra)
+                    result = self.launch(launcher, cwd, operation, "sample.py", "--output", str(destination), *extra)
                     self.assertEqual(2, result.returncode)
                     self.assertIn("already exists", result.stderr)
                     self.assertEqual(b"sentinel", occupied.read_bytes())
@@ -705,15 +744,15 @@ def duplicate(): pass
         self.assertLess(console.stdout.index("Decreased:"), console.stdout.index("Top five by complexity:"))
 
     def test_saved_and_console_reports_use_neutral_labels(self):
-        launcher = ROOT / "scripts/measure_maintainability.py"
+        launcher, cwd = self.installed_launcher()
         before = ".quality/reports/labels-before.json"
         after = ".quality/reports/labels-after.json"
         self.source.write_text(function("at", 8) + function("over", 10) + function("down", 11))
-        result = self.launch(launcher, self.root, "baseline", "sample.py", "--output", before)
+        result = self.launch(launcher, cwd, "baseline", "sample.py", "--output", before)
         self.assertEqual(0, result.returncode, result.stderr)
         self.source.write_text(function("at", 9) + function("over", 11) + function("down", 10)
                                + function("new_hotspot", 10))
-        result = self.launch(launcher, self.root, "compare", "sample.py", "--baseline", before, "--output", after)
+        result = self.launch(launcher, cwd, "compare", "sample.py", "--baseline", before, "--output", after)
         self.assertEqual(0, result.returncode, result.stderr)
         report = json.loads((self.root / after).read_text())
         rows = {row["symbol"]: row for row in report["comparison"]["complexity"]}
@@ -730,7 +769,7 @@ def duplicate(): pass
         for row in report["comparison"]["complexity"] + report["comparison"]["ruff"]:
             self.assertNotIn(row["classification"], ("worsened", "improved"))
             self.assertFalse(set(row["highlights"]) & {"got_worse", "improved"})
-        measured = self.launch(launcher, self.root, "measure", "sample.py", "--output", ".quality/reports/breach.json")
+        measured = self.launch(launcher, cwd, "measure", "sample.py", "--output", ".quality/reports/breach.json")
         self.assertEqual(0, measured.returncode, measured.stderr)
         self.assertIn("Above threshold", measured.stdout)
 
@@ -742,31 +781,31 @@ def duplicate(): pass
         self.assertIn("Above threshold: PLR0913 6: sample.py:1 wide", result.stdout)
 
     def test_empty_folder_baseline_preserves_absence_across_edits(self):
+        launcher, cwd = self.installed_launcher()
         self.git("init", "-q")
         self.git("add", "sample.py")
         index = (self.root / ".git/index").read_bytes()
         area = self.root / "area"
         area.mkdir()
-        launcher = ROOT / "scripts/measure_maintainability.py"
         before = ".quality/reports/empty-before.json"
-        empty = self.launch(launcher, self.root, "baseline", "area", "--output", before)
+        empty = self.launch(launcher, cwd, "baseline", "area", "--output", before)
         self.assertEqual(0, empty.returncode, empty.stderr)
         baseline = json.loads((self.root / before).read_text())
         self.assertEqual({}, baseline["files"])
         self.assertEqual(["area"], baseline["identity"]["scope_directories"])
         self.assertEqual(index, (self.root / ".git/index").read_bytes())
         saved = {p: p.read_bytes() for p in (self.root / before, (self.root / before).with_suffix(".txt"))}
-        self.assertEqual(2, self.launch(launcher, self.root, "measure", "area").returncode)
+        self.assertEqual(2, self.launch(launcher, cwd, "measure", "area").returncode)
         for scope in ("missing", ".agents"):
             (self.root / scope).mkdir(exist_ok=True) if scope == ".agents" else None
-            result = self.launch(launcher, self.root, "baseline", scope, "--output", f".quality/reports/{scope}.json")
+            result = self.launch(launcher, cwd, "baseline", scope, "--output", f".quality/reports/{scope}.json")
             self.assertEqual(2, result.returncode, result.stderr)
         for number, branches in enumerate((1, 2), 1):
             source = area / "new.py"
             source.write_text(function("added", branches))
             source_bytes = source.read_bytes()
             output = f".quality/reports/empty-after-{number}.json"
-            result = self.launch(launcher, self.root, "compare", "area/new.py", "--baseline", before, "--output", output)
+            result = self.launch(launcher, cwd, "compare", "area/new.py", "--baseline", before, "--output", output)
             self.assertEqual(0, result.returncode, result.stderr)
             report = json.loads((self.root / output).read_text())
             row, = report["comparison"]["complexity"]
@@ -779,7 +818,7 @@ def duplicate(): pass
                 saved[p] = p.read_bytes()
         outside = self.root / "outside.py"
         outside.write_text(function("outside", 0))
-        result = self.launch(launcher, self.root, "compare", "outside.py", "--baseline", before)
+        result = self.launch(launcher, cwd, "compare", "outside.py", "--baseline", before)
         self.assertEqual(2, result.returncode)
         self.assertIn("outside the baseline scope", result.stdout)
 

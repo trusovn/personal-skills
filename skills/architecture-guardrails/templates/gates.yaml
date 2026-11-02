@@ -5,6 +5,8 @@ version: 1
 
 architecture:
   command: "<repo-native architecture check command>"
+  scope: "<native governed scope; retain whole-project scope when declared>"
+  owner: "<declared native stage owner>"
   required: true
   semantic_review:
     required: true
@@ -14,3 +16,15 @@ architecture:
     - "<native config or architecture-test path>"
   baseline: null # path when no-regression needs an explicit baseline; otherwise null
   baseline_freshness: null # required no-write stale-entry check when mode is no-regression
+
+# Include only when advisory measurement is enabled. No thresholds or new review
+# requirement belong here. Native hard-check obligations remain independent.
+advisory_measurement:
+  command: "python3 <repo>/.agents/scripts/measure_maintainability.py"
+  setup: "python3 <repo>/.agents/scripts/measure_maintainability.py setup --root <repo>"
+  scope: "<selected Python folders/files>"
+  policy:
+    - "<target>/.quality/maintainability.toml (or adjacent shipped default)"
+    - "<target>/.quality/ruff.toml (or adjacent shipped default)"
+  required: false # invocation duties, if any, remain in the existing task policy
+  owner: "<declared advisory evidence owner>"

@@ -1346,8 +1346,12 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
                         len(expected_managed_paths()), restored_info["compared_paths"]
                     )
 
-    def test_measurement_resources_changed_missing_checks_and_refresh(self):
+    def test_measurement_and_discovery_resources_changed_missing_checks_and_refresh(self):
         source_before = source_projection_snapshot()
+        resources = [f"scripts/{name}" for name in EXPECTED_MEASUREMENT_FILES]
+        resources.extend(f"skills/{relative}" for relative in (
+            "repo-foundation/SKILL.md", "architecture-guardrails/SKILL.md",
+            "architecture-guardrails/templates/gates.yaml", "README.md"))
         with tempfile.TemporaryDirectory() as temporary:
             repo = Path(temporary)
             init_repo(repo, agents_text="# Keep these instructions.\n")
@@ -1355,11 +1359,11 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
             result = run_installer(repo)
             self.assertEqual(0, result.returncode, result.stderr)
             agents = (repo / "AGENTS.md").read_bytes()
-            for name in EXPECTED_MEASUREMENT_FILES:
-                managed = repo / ".agents/scripts" / name
-                self.assertEqual((ROOT / "scripts" / name).read_bytes(), managed.read_bytes())
+            for relative in resources:
+                managed = repo / ".agents" / relative
+                self.assertEqual((ROOT / relative).read_bytes(), managed.read_bytes())
                 for category in ("changed", "missing"):
-                    with self.subTest(resource=name, category=category):
+                    with self.subTest(resource=relative, category=category):
                         if category == "changed":
                             managed.write_bytes(b"changed managed resource\n")
                         else:
@@ -1368,11 +1372,11 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
                         for _ in range(2):
                             result = run_check(repo)
                             self.assertEqual(1, result.returncode, result.stderr)
-                            self.assertEqual([{"category": category, "path": f".agents/scripts/{name}"}], json.loads(result.stdout)["differences"])
+                            self.assertEqual([{"category": category, "path": f".agents/{relative}"}], json.loads(result.stdout)["differences"])
                             self.assertEqual(before, snapshot_tree(repo))
                         refreshed = run_installer(repo)
                         self.assertEqual(0, refreshed.returncode, refreshed.stderr)
-                        self.assertEqual((ROOT / "scripts" / name).read_bytes(), managed.read_bytes())
+                        self.assertEqual((ROOT / relative).read_bytes(), managed.read_bytes())
                         self.assertEqual(preserved, {p: p.read_bytes() for p in preserved})
                         self.assertEqual(agents, (repo / "AGENTS.md").read_bytes())
                         checked = run_check(repo)

@@ -225,7 +225,28 @@ If automated or low-capability agents benefit and no equivalent registry exists,
 `.quality/gates.yaml` using `templates/gates.yaml` as a shape guide.
 
 This registry is **command discovery**, not the architecture policy language. Keep dependency rules in
-the native config/tests. When guardrails are being installed specifically to support low-capability
+the native config/tests. Discover once through the existing registry/equivalent,
+then agent instructions, map and native task configuration as needed. Documented
+commands suffice without a registry. Carry command, governed scope, policy
+reference, requiredness and declared stage owner; record absence when no native
+command applies rather than selecting a new linter or typechecker.
+
+For enabled advisory Python measurement, use the installed
+`<repo>/.agents/scripts/measure_maintainability.py` and adjacent resources.
+Explicit provisioning is `python3 <repo>/.agents/scripts/measure_maintainability.py
+setup --root <repo>`; measurement never provisions tools. Target
+`.quality/maintainability.toml` and `.quality/ruff.toml` each independently replace
+their shipped default when present; malformed settings fail without fallback.
+Keep thresholds in those settings, not the optional discovery template. See
+`repo-foundation` for baseline/compare command discovery.
+
+Keep native scope, requiredness, policy and owners intact, including whole-project
+checks beside affected-path metrics. A successful advisory report cannot waive
+a hard failure or supply missing/stale required proof. Carry outstanding proof
+and its native owner/recovery route. Current aggregate evidence may cover its
+constituents when scope, policy and checked bytes match; do not rerun them just
+for reporting. Advisory discovery adds no review stage and preserves existing
+conditional review duties. When guardrails are being installed specifically to support low-capability
 implementation agents, default the semantic review entry to `task-maintainability-review` and mark it required; disable
 that stage only by an explicit repo decision.
 

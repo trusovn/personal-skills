@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "measurement",
-  "summary": "Portable advisory Python measurement runtime and target-aware settings/setup from T-001.1, with T-001.2 format-5 neutral reports and explicit empty-folder baselines. This records implemented tool capabilities, not later workflow integration or T-001.3 installed-composition qualification.",
+  "summary": "Portable advisory Python measurement runtime, target-aware settings/setup, format-5 neutral reports and empty-folder baselines, with T-001.3 foundation discovery guidance and installed-composition test authority. Later task-flow integration and live agent compliance remain outside this record.",
   "owner_paths": ["scripts/measure_maintainability.py", "scripts/maintainability.py", "scripts/maintainability_env.py", "scripts/maintainability-default.toml", "scripts/maintainability-ruff-default.toml", "scripts/maintainability-requirements.txt"],
   "provides": [
     {
@@ -10,6 +10,13 @@
       "summary": "Source and installed launchers use adjacent runtime resources without a source-checkout or global fallback. Preserve baseline/compare/measure, --root, file/folder scopes and --output. setup --root explicitly provisions target-native pinned dependencies; measurement never provisions them. Format-5 JSON/text reports use neutral increased/decreased classifications and highlights while retaining threshold and interpretation signals; older formats are incompatible baselines. baseline accepts explicitly selected existing directories with an empty included Python inventory; ordinary empty measure, missing/excluded scopes and comparisons outside captured coverage fail. Complete breached measurements exit 0; invalid, incomplete or incompatible measurements exit 2.",
       "plan_refs": ["IF-001"],
       "declarations": ["scripts/measure_maintainability.py", "scripts/maintainability_env.py", "scripts/maintainability.py", "tests/test_maintainability.py"]
+    },
+    {
+      "name": "foundation-native-and-advisory-discovery",
+      "kind": "skill-guidance",
+      "summary": "Foundation guidance discovers native checks once through an existing registry/equivalent or documented commands and exposes enabled installed advisory measurement beside them. Carry command, governed scope, policy reference, requiredness and declared stage owner. Preserve whole-project scope and existing review duties; reuse aggregate evidence only for matching scope, policy and checked bytes. Missing/stale required proof retains its native owner and recovery route. No new linter, typechecker, mandatory registry, runner or review stage is introduced. This is foundation guidance, not completed downstream task-flow integration or agent-compliance qualification.",
+      "plan_refs": ["IF-004"],
+      "declarations": ["skills/repo-foundation/SKILL.md", "skills/architecture-guardrails/SKILL.md"]
     }
   ],
   "artifacts": [
@@ -24,6 +31,18 @@
       "summary": "The tool portion of ART-002 is a named format-5 JSON report and sibling text summary containing captured source snapshots/hashes, folder coverage and measurement identity. An explicitly selected existing empty folder captures known absence; later covered additions have unknown numeric before/delta values rather than zero. Repeated comparisons can retain the same original baseline with fresh output names; a collision with either report sibling refuses overwrite. Capture-before-edit and retention through corrections remain caller workflow obligations, not enforced workflow integration.",
       "plan_refs": ["ART-002"],
       "declarations": ["scripts/maintainability.py", "tests/test_maintainability.py"]
+    },
+    {
+      "name": "native-check-policy-discovery",
+      "summary": "The optional gates template carries native command, scope, owner, requiredness and policy references plus enabled advisory command/setup and settings references. It is command discovery only; native policy remains authoritative and measurement thresholds stay in effective settings.",
+      "plan_refs": ["ART-007"],
+      "declarations": ["skills/architecture-guardrails/templates/gates.yaml", "skills/architecture-guardrails/SKILL.md", "skills/repo-foundation/SKILL.md"]
+    },
+    {
+      "name": "installed-composition-verification-authority",
+      "summary": "Reusable local tests exercise a disposable installation from an unrelated cwd after deleting its source distribution: dirty/staged/untracked capture, edits/additions/deletions, empty-folder capture, settings and refusal cases, report/source/index preservation, managed-resource drift/refresh, and real native F401 failure beside successful advisory measurement. Real analyzer cases require pinned tools; skips do not qualify them. T-001.3 results record implementation execution claims and limits, not independent acceptance or live agent behavior.",
+      "plan_refs": ["ART-006"],
+      "declarations": ["tests/test_maintainability.py", "tests/test_install_development_skills.py", "docs/tasks/T-001.3/results.md"]
     }
   ],
   "state_owned": [
@@ -34,7 +53,7 @@
     }
   ],
   "invariants": [
-    {"statement": "Metrics remain advisory and do not waive native hard repository checks.", "plan_refs": ["INV-001"]},
+    {"statement": "Metrics remain advisory and do not waive native hard repository checks. Foundation discovery preserves native policy, scope and ownership, and does not duplicate current aggregate-covered checks merely for reporting.", "plan_refs": ["INV-001", "INV-009"]},
     {"statement": "Measurement captures actual dirty, staged and untracked source bytes without changing source or the real index; saved JSON/text reports are not overwritten. Retaining one original task baseline across corrections remains a workflow obligation.", "plan_refs": ["INV-002", "INV-007"]},
     {"statement": "Comparison requires compatible tool/settings/scope identity; missing native numeric evidence remains unknown rather than zero.", "plan_refs": ["INV-003"]},
     {"statement": "Installed runtime resources and pins come from one installation; refresh preserves unrelated target files, target policy, native environments and reports.", "plan_refs": ["INV-006"]},

@@ -109,8 +109,9 @@ installed-skill dependency. It checks the core v1 shape, local paths, subsystem
 references, and generated-index agreement. These are structural checks, not
 semantic acceptance of the described runtime. Records omit plan IDs where
 today's revised plan does not match the older implemented capability. The
-measurement record maps T-001.1's implemented surfaces to their plan IDs and
-explicitly identifies the remaining IF-001 work.
+measurement record maps implemented runtime and foundation-discovery surfaces
+to their plan IDs and routes to installed-composition test authority. Later
+task-flow integration and live agent compliance remain outside that record.
 
 ## AI boundary diagnostics
 

@@ -74,6 +74,11 @@ replaces its shipped default when present; invalid settings fail. Refresh preser
 target policy, environments/reports and unmanaged helpers. Measurement does not
 install dependencies or replace native hard checks. The source repository's
 `scripts/measure-maintainability.md` documents the public interface.
+`repo-foundation` and `architecture-guardrails` expose this installed command
+beside native checks through existing discovery or documented commands. Carry
+native scope, policy, requiredness and owner separately; reuse applicable current
+aggregate evidence and retain missing/stale proof duties. The optional gates
+template neither duplicates thresholds nor adds a review stage.
 
 The installer also supports a read-only `--check` comparison of the installed
 profile with its canonical source:

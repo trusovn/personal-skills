@@ -183,6 +183,35 @@ Make verification discoverable and boring:
 
 Avoid verification theater. A gate should catch real mistakes or document a meaningful invariant.
 
+### Discover native checks and enabled advisory measurement
+
+Use one discovery pass through the existing registry or equivalent, then agent
+instructions, the project map and native task configuration as needed. Documented
+commands suffice; do not require a registry or runner. Carry each applicable
+command, governed scope, policy reference, requiredness and declared stage owner
+into the handoff without copying policy. If no native command applies, record
+that absence; do not invent a linter, typechecker or gate.
+
+When advisory Python measurement is enabled, expose
+`python3 <repo>/.agents/scripts/measure_maintainability.py` beside native checks.
+Use `baseline <folder> --root <repo> --output <fresh-name.json>` before editing,
+then `compare <affected-paths> --root <repo> --baseline <original.json>
+--output <another-fresh-name.json>`. Explicit setup is
+`python3 <repo>/.agents/scripts/measure_maintainability.py setup --root <repo>`;
+measurement never installs dependencies. Resolve helpers, defaults and pins beside
+that installed launcher. Each target `.quality/maintainability.toml` and
+`.quality/ruff.toml` independently replaces its shipped default when present;
+invalid target settings fail without fallback. Effective settings origins, paths
+and hashes are recorded in reports. Do not copy thresholds into discovery docs.
+
+Advisory success cannot waive a native hard failure, narrow a whole-project gate
+to measured paths, or add a review stage. Preserve existing review duties and
+owners. Reuse current aggregate evidence for covered constituents when scope,
+policy and checked bytes match; do not repeat checks merely to populate a report.
+Missing or stale required proof remains owed under its native policy: carry its
+owner and recovery route, or perform an authorized focused run. Publish native
+and advisory outcomes separately.
+
 When `architecture-guardrails` is available, use it for tool selection, hard-vs-advisory classification, baseline/no-regression policy, and failure-sentinel verification. `repo-foundation` remains responsible for fitting the result into local commands, docs, layout, and CI without creating a parallel source of truth.
 ## Agent-facing maintainability contract
 

@@ -30,6 +30,7 @@
         "The two-, three-, and four-item cases are individually identifiable and state success, success, and too_many_items respectively, with concrete persisted or unchanged-state outcomes. The successful controls reject an implementation that always refuses.",
         "A human can understand the behavior protected, practical failure consequences, test-level choices, real boundaries, and evidence limits without decoding identifiers. Filesystem claims exercise the public command and actual persisted files; setup and observation methods are distinct from expected results.",
         "Shared setup and test-level reasoning are stated once where applicable. Case-specific inputs and results remain explicit, and neither empty optional sections nor duplicate explanations are added to fill a template.",
+        "The opening explains import behavior and its main promises, followed by concrete cases using Situation, Action, Expected result, Why test this and How to check (or an equally clear table/sequence). Methods sit beside relevant cases. Coverage and source/revision metadata are at the end, retaining a singular Source brief declaration and revision information. There is no opening generic Testing approach table, Ready means paragraph, or generic Implementation handoff; only informative task-specific constraints or next actions remain.",
         "The artifact remains implementation-neutral: it does not prescribe test names, file placement, mocking, helpers, framework structure, or production architecture."
       ]
     },

@@ -128,9 +128,9 @@ owner; scenario editing cannot settle it.
    durable boundaries. Add higher-level evidence for distinct wiring or interaction
    risks. Keep interface/document review and schema checks visibly separate from
    behavioral tests.
-5. Write the artifact using the structure below. Establish the feature and
-   testing approach first, then the promises and cases. Share common setup and
-   test-level reasoning; keep each case's decisive inputs and results easy to find.
+5. Write the artifact using the structure below. Open with a short explanation
+   of the behavior and its main promises, then concrete cases. Share common setup once and explain the test method beside
+   each relevant case. Put coverage and source/revision metadata at the end.
 6. Apply the completion checks and write only the standalone `verification.md`.
    Leave test names, file placement, framework usage, doubles, helpers, and
    production design to `bounded-task-implementer` within repository authority.
@@ -166,9 +166,9 @@ journey should protect its required interaction and reference focused cases for
 the remaining matrix.
 
 **Each explanation has one home.** Use behavior-focused titles and explain the
-practical consequence of failure in the rationale. Let `Then` state correctness
-and `Check` describe observation. Put common level-selection reasoning and shared
-setup once, with local additions where a case differs. Use short sentences,
+practical consequence of failure in the rationale. Let `Expected result` state
+correctness and `How to check` describe observation. Put common level-selection
+reasoning and shared setup once, with local additions where a case differs. Use short sentences,
 concrete verbs and consistent terms, following ASD-STE100 principles without
 claiming formal compliance. Define necessary terms near first use and retain
 exact contract names where useful.
@@ -197,22 +197,44 @@ Packaged preparation remains mandatory for that leaf: derived
 
 ## Output contract
 
-Use this single starting structure. Adapt labels and combine short sections when
-that improves readability while preserving the required information. The shared
-setup section is optional. Case tables and checkpoint sequences may replace the
-individual case shape below.
+Lead with readable test cases. Adapt labels or use a small table or checkpoint
+sequence for related cases while preserving every distinct obligation. Do not
+require an opening generic Testing approach table. Put the coverage map and
+source/revision metadata at the end. Include task-specific constraints,
+unresolved dependencies or necessary next actions only when they add information;
+do not add a generic Implementation handoff or repeat consuming-workflow rules.
+Omit the explanatory “Ready means…” paragraph from generated documents; the
+workflow's design-readiness and implementation-readiness rules still apply.
 
 ```markdown
 # Verification Design: <TASK-ID> — <title>
 
-<Briefly explain the behavior protected and its main failure risks in plain
-language.>
+<Short explanation of the behavior being checked and its main promises.>
 
-## Testing approach
+## Shared setup
 
-| Checks | Level and real boundary | Why this evidence is sufficient |
+<Optional common starting state and inputs; state these once.>
+
+## Test cases
+
+### V-01 — <concrete behavior and expected outcome>
+
+**Situation:** <starting state and decisive inputs>
+
+**Action:** <observable action>
+
+**Expected result:** <exact result, state transition and important unchanged state>
+
+**Why test this:** <practical consequence of the failure>
+
+**How to check:** <method, real observation boundary and evidence limits;
+explain why this method proves this case, referring to shared setup as needed>
+
+## Coverage summary
+
+| Promise from the brief | AC / risk row | Required cases |
 |---|---|---|
-| <named group; case IDs as needed> | <scope and real behavior exercised> | <distinct risk proved and important limits> |
+| <short promise with link to the relevant brief section> | AC-01 | V-01 |
 
 ## Source and revision
 
@@ -221,51 +243,6 @@ Source brief revision: <identified brief revision or supplied revision>
 Verification revision: <integer>
 Authority: derived from the task brief and its cited normative sources
 Status: ready
-
-Ready means the verification design is complete; execution and implementation
-readiness are established by later stages.
-
-## Coverage summary
-
-| Promise from the brief | AC / risk row | Required cases |
-|---|---|---|
-| <short promise with link to the relevant brief section> | AC-01 | V-01 |
-
-## Shared setup
-
-<Common starting state, inputs, and assumptions referenced by related cases.>
-
-## Verification scenarios
-
-### V-01 — <observable behavior and expected outcome>
-
-Covers: AC-01
-
-Why: <practical consequence this check protects against>
-
-Given:
-- <starting state and decisive inputs, including relevant shared setup>
-
-When:
-- <observable action>
-
-Then:
-- <exact decision or result, state transition, and important unchanged state>
-
-Check:
-- <how to observe the result at the selected boundary; refer to shared reasoning>
-
-## Implementation handoff
-
-- Implement these cases under the brief's authority, reusing relevant existing
-  tests and fixtures. Choose concrete test structure within repository rules.
-- Use current preflight for implementation readiness. A reasoned verification
-  revision preserves IDs and supersedes affected readiness and evidence until
-  focused preflight is ready for that revision.
-- Route an unresolved expected result to task design/the decision owner, and an
-  unavailable boundary or capability to preflight/its owner, preserving the
-  required coverage and expected results.
-- <task-specific handoff needs, exclusions, or remaining evidence limits>
 ```
 
 If the brief is materially insufficient, do not create or overwrite
@@ -276,6 +253,10 @@ AC/authority gap and smallest next action.
 
 Read the artifact as both its next implementer and a human reviewer:
 
+- Does the opening explain the behavior and its main promises before metadata,
+  with concrete case titles and the test method beside each relevant case?
+- Are source/revision metadata and coverage at the end, without generic readiness
+  or handoff boilerplate?
 - Can each material AC and finite-risk row be followed from a named promise to
   its required cases, including negative, boundary, and lifecycle obligations?
 - Can the implementer enumerate those cases and exact expected results without

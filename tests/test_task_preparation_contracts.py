@@ -150,6 +150,19 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
         self.assertTrue(verification_evals.is_file(), verification_evals)
 
 
+    def test_verification_example_leads_with_cases_and_keeps_metadata_last(self):
+        skill = (FLOW / "task-verification-designer/SKILL.md").read_text()
+        example = skill.split("```markdown\n", 1)[1].split("```", 1)[0]
+        for label in ("Situation", "Action", "Expected result", "Why test this", "How to check"):
+            self.assertIn(f"**{label}:**", example)
+        self.assertLess(example.index("### V-01"), example.index("## Coverage summary"))
+        self.assertLess(example.index("## Coverage summary"), example.index("## Source and revision"))
+        self.assertEqual(1, example.count("Source brief:"))
+        for removed in ("## Testing approach", "## Implementation handoff", "Ready means"):
+            self.assertNotIn(removed, example)
+        for retained in ("Source brief revision:", "Verification revision:", "AC / risk row"):
+            self.assertIn(retained, example)
+
     def test_integration_leaf_composition_permission_keeps_refusal_boundaries(self):
         """INT-FLOW-001 I-05: an executable integration leaf may derive
         cases for its own composition ACs from supplied producer outputs;

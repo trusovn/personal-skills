@@ -3,7 +3,9 @@
 Choose the applicable form below. Place explanations in the indicated sections;
 optional fields serve a concrete task need, not a checklist to fill. For an
 existing adequate brief, preserve equivalent sections and make a local delta.
-The skill owns routing and evidence rules; these forms own the reading order.
+The skill owns routing and evidence rules; these forms suggest the reading order.
+Adapt headings and omit empty fields. Preserve applicable direction decisions
+where they govern outcome or authority; do not add a separate history account.
 
 ## Executable brief
 
@@ -18,17 +20,6 @@ execution status and launch guidance come after its requirements and evidence.
 <What completion demonstrates, who uses the result, and what it enables next.
 Distinguish what this task defines, what it executes, and what later work owns.
 Link to project purpose rather than retelling it.>
-
-## Direction trace
-
-<Include only when governing direction was supplied. Use concise references to
-Outcome where fields concern the same fact rather than paraphrasing it.>
-
-- Direction contribution: <approved outcome, scenario, priority, or boundary advanced>
-- User-observable effect: <direct effect, or "No direct effect; enables <next demonstrable outcome>">
-- Why now: <approved sequence or real dependency>
-- Direction decisions used: <exact source sections or decision IDs>
-- New direction decisions required: None
 
 ## Authority and scope
 
@@ -56,57 +47,40 @@ For a task-local handoff, name its consumer and exact artifact here.>
 
 ## Work and acceptance criteria
 
-- **AC-01:** <observable required behavior and completion result>
-- **AC-02:** <distinct credible failure, refusal, or unchanged-state behavior>
+**AC-01 — <descriptive title>**
 
-<Add criteria for distinct approved outcomes. When an AC contains several rules,
-use a short subordinate list under its stable ID. Keep work steps only when they
-add necessary ordering or ownership beyond the criteria. A brief concrete example
-can clarify an abstract rule without choosing an unapproved mechanism.>
+<One cohesive completion condition, or short flat bullets for independent rules.>
 
-### Finite-risk cases
+**AC-02 — <descriptive refusal or preservation title>**
 
-<Include only for finite, material cases identified by the skill. Repeat the
-following block per stable risk ID. A short-cell table is also suitable.>
+<Required failure, boundary, lifecycle or unchanged-state behavior. Cite exact
+normative sections for finite requirements rather than repeating them elsewhere.>
 
-#### R-01 — <plain-language risk; related AC IDs>
+<Keep required values and transitions visible here or in precise authority.
+Setup, observation methods and implementation choices belong to their owners.>
 
-- Invariant: <property that must remain true>
-- Material cases: <exact finite values, dimensions, or state transitions>
-- Observable result and boundary: <decisive oracle at the real entry point>
-- Implementation evidence: <fail-first, targeted, or owning evidence>
-- Independent review probe: <distinct corroboration, or N/A with reason>
-- Gate owner and stage: <who runs the owning/broad gate and when>
-
-<Shared gate ownership may be stated once with explicit risk IDs.>
-
-## Verification
+## Evidence boundaries
 
 Verification-design recommendation: <inline | separate — concrete reason>
 
-| Evidence | Scenario/result or case reference | Command and owner |
-|---|---|---|
-| Fail-first / regression | <fault the test rejects, or why infeasible> | <command or focused discovery owner> |
-| Targeted | <lowest reliable behavior/boundary, or R-ID> | <command or focused discovery owner> |
-| Owning suite | <nearby regression protection> | <command> |
-| Broader gate, if needed | <blast radius; gate stage or reference to shared ownership> | <command, owner, and any approval need> |
-
-<Include applicable rows. Refer to case IDs for detailed scenarios and shared
-gate ownership. Repeated flows need the first occurrence, its legitimate state
-change, and the next real occurrence at the boundary that carries the risk.>
+<Optional consequential risk, invariant, essential proof boundary or capability
+uncertainty that adds information beyond acceptance. No risk IDs or six-field
+blocks are required. Detailed scenarios, fixtures, assertions, evidence reuse,
+independent probes and gate allocation belong in derived verification.md.>
 
 ## Execution and handoff
 
 Status: `ready | ready_for_preflight`
 Task kind: `executable`
 
-<Explain the status in ordinary language: the brief is prepared; name pending
-execution prerequisites, or cite current evidence that they passed.>
+Next: <first pending preparation action, or current evidence for completed prerequisites>.
+The brief is prepared; derived `verification.md`, then ready `preflight.md`,
+are required before implementation. Use <standalone guided | high-assurance>
+preflight; name a material uncertainty here only when applicable.
 
-Readiness route: <standalone guided preflight [— material uncertainty] | high-assurance preflight>
-
-For an executable task package, derived `verification.md`, then ready
-`preflight.md`, are required before implementation.
+Workflow: [submission route](<relative path to the active installation skills/README.md#submission-route>).
+<Retain task-specific outputs, consumers, deviations and stops when relevant.
+Do not repeat the default report inventory or the shared route.>
 
 Launch guidance:
 
@@ -123,15 +97,6 @@ claims about observed runtime configuration.>
   — <triggered limits; candidate boundary considered; concrete coupling or
   coordination/rework reason; residual execution risk>
 
-### Stops and next action
-
-- Stops: <task-specific authority, ownership, scope, permission, or capability limits>
-- Next action: <first pending preparation stage, then implementation; cite passed prerequisites>
-- Required follow-on, when review is immediate: <ordered independent-review route from the skill>
-
-<The follow-on applies after implementation or correction and any applicable
-conditional stages. Do not use same-session self-review as that discovery or
-acceptance step.>
 ```
 
 Insert only this launch block at the indicated position:
@@ -156,22 +121,19 @@ Reference existing AC/risk IDs and authority entries instead of copying them.
   exact primary authority, policy identity or UNKNOWN for preflight>
 - Knowledge ledger: <confirmed facts with sources, frozen decisions, provisional
   assumptions and confirmation owners; unresolved blockers use the blocked form>
-- AC execution matrix: <for every AC, record or reference its production invariant,
-  positive and negative evidence, real entry point/boundary, first + state change
-  + next occurrence where relevant, and verification dependency/disposition>
-- Legacy-assumption checks: <entry points, guards, literals, identifiers, paths,
-  or baselines at risk; focused search/test and required follow-through>
-- Risk checks: <credible failure, consequence/escalation trigger, evidence,
-  and residual gap; reference finite-risk cases where they already supply this>
-- Verification-capability inventory: <each required fixture/helper/runner/oracle;
-  task-local | prerequisite task | believed existing | blocked;
-  owner/path and exact preflight confirmation question>
-- Stage handoffs: <preflight confirms exact paths, dependencies, ownership,
-  permissions, command syntax, oracles, and required freshness; implementation
-  stays within confirmed scope and records commands and the supplied structured
-  result; independent discovery reconstructs the scoped diff and corroborates
-  every AC at the required boundary before a separate fresh acceptance decision,
-  including after corrections>
+- Verification requirements: <precise authority for required AC/invariant,
+  positive/negative, real-boundary and first/change/next proof; derived
+  verification.md owns the detailed matrix and evidence/capability disposition>
+- Legacy assumptions: <task-specific entry points, guards, literals, identifiers,
+  paths or baselines at risk; detailed probes belong in verification>
+- Capability uncertainties: <required mechanism and exact preflight question;
+  distinguish task-local, prerequisite, believed-existing and blocked capability>
+- Machine/audit obligations: <exact required schema, result and policy paths,
+  freshness identities and downstream consumers; omit if not applicable>
+
+<Keep exact provenance, knowledge and direction decisions required by authority.
+Reference shared preflight freshness and submission rules; do not duplicate
+verification matrices or generic stage instructions.>
 
 ## Composite parent
 
@@ -226,7 +188,9 @@ required review route.
 ```
 
 A composite has no launch metadata or readiness route. Preserve approved
-direction in the parent and each affected child.
+direction in the parent and each affected child. Apply the same concise content
+boundary to the parent and every child: titled ACs, optional informative risks,
+and detailed proof in each owning leaf verification design.
 
 ## Blocked design
 

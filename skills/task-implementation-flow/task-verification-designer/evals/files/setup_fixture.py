@@ -101,11 +101,6 @@ def lifecycle() -> None:
         bundles according to the import policy. Size refusal preserves destination
         bytes.
 
-        Finite-risk rows:
-        - ROW-RESUME — first commit, interruption, and next invocation.
-        - ROW-INVALID — malformed header and missing manifest share the same
-          pre-write rejection invariant.
-        - ROW-LIMIT — otherwise-valid bundles containing two, three, and four items.
         """,
     )
     write(root, "src/importer.py", "# production placeholder")

@@ -383,22 +383,23 @@ class ComposedReviewFlowGuideTests(unittest.TestCase):
 
 
     def test_brief_designer_follow_on_prescribes_discovery_then_acceptance(self):
-        follow_on = (
-            "hand the completed bytes to a fresh independent "
-            "`task-review-discovery` call, and hand its report to a separate "
-            "`task-acceptance-review` decision"
-        )
         designer = normalized(DESIGNER_SKILL)
-        self.assertIn("any applicable conditional stages", designer)
-        self.assertIn(follow_on, designer)
-        self.assertIn("does not state independent acceptance", designer)
         template = normalized(DESIGNER_TEMPLATE)
-        self.assertIn("any applicable conditional stages", template)
-        self.assertIn("ordered independent-review route from the skill", template)
-        self.assertIn(
-            "Do not use same-session self-review as that discovery or acceptance step",
-            template,
-        )
+        self.assertIn("../../README.md#submission-route", designer)
+        self.assertIn("active installation skills/README.md#submission-route", template)
+        route = PROFILE_GUIDE.read_text().split("## Submission route", 1)[1].split("## ", 1)[0]
+        flat = " ".join(route.split())
+        for obligation in (
+            "derived `verification.md`, then ready `preflight.md`",
+            "deterministic architecture gate",
+            "maintainability review and contract-registry synchronization",
+            "fresh independent `task-review-discovery`",
+            "separate `task-acceptance-review` decision",
+            "Corrections re-enter affected conditional stages",
+            "current unaffected-stage evidence remains applicable",
+        ):
+            self.assertIn(obligation, flat)
+        self.assertIn("cannot imply same-session self-review is independent acceptance", designer)
         self.assertNotIn("fresh independent acceptance reviewer", designer + template)
 
 

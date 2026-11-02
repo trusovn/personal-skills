@@ -90,10 +90,25 @@ report the artifact conflict.
 ## Authority, coverage, and revision
 
 Identify the source brief and a revision in every `verification.md`. Map every
-material AC and finite-risk row to identifiable cases with setup, action, and a
+material AC and any supplied risk row to identifiable cases with setup, action, and a
 decisive expected result (the oracle). Derive each expectation from the brief or
 its cited authority. Coverage is complete only when every required obligation
 is represented, regardless of green evidence for other cases.
+
+No risk section, R IDs or six-field blocks are required in the brief. Derive
+finite material cases from acceptance and its precise cited authority even when
+no risk rows exist. Their absence is neither missing authority nor permission
+for happy-path-only coverage. Preserve supplied risk IDs when present.
+
+Verification owns the detailed proof: invariant and material dimensions/state
+transitions, decisive observations at the real boundary, implementation evidence,
+distinct independent corroboration (or N/A with a reason), and gate owner/stage.
+Place these beside cases or state common responsibilities once with exact case
+references. Keep implementation checks separate from fresh independent review.
+Respect authority-assigned aggregate ownership and targeted-first correction
+order. Derive justified negative, boundary, lifecycle, preservation and interaction
+cases; avoid speculative catalogs and unnecessary Cartesian products. A missing
+expected behavior still routes to its decision owner.
 
 Keep stable scenario IDs such as `V-01`. Where a scenario groups related cases,
 give them stable child IDs such as `V-01a` and `V-01b`, and reference those cases
@@ -111,7 +126,7 @@ owner; scenario editing cannot settle it.
    context needed to understand public boundaries and existing test conventions.
    Keep discovery focused on verification design.
 2. Name the promises from the brief in plain language. Map every material AC and
-   finite-risk row to cases, with links to the relevant brief sections. Identify
+   supplied risk row to cases, with links to the relevant brief sections. Identify
    any authority gap before writing a ready artifact.
 3. Select the smallest set of cases that distinguishes the intended behavior
    from credible wrong behavior:
@@ -119,7 +134,8 @@ owner; scenario editing cannot settle it.
    - the most credible negative, failure, or unchanged-state behavior;
    - a boundary case when the specification contains a meaningful boundary;
    - the next real occurrence for retry/resume/recovery/repeated-state behavior;
-   - every finite material case already required by the brief.
+   - every finite material case required by acceptance or cited authority,
+     whether or not the brief supplies risk rows.
 4. Choose the lowest reliable test level and observation boundary. Explain its
    scope, the real behavior exercised, and why it catches the intended failure.
    Unit/component checks can prove pure policy decisions. Persistence and reload
@@ -257,7 +273,7 @@ Read the artifact as both its next implementer and a human reviewer:
   with concrete case titles and the test method beside each relevant case?
 - Are source/revision metadata and coverage at the end, without generic readiness
   or handoff boilerplate?
-- Can each material AC and finite-risk row be followed from a named promise to
+- Can each material AC and any supplied risk row be followed from a named promise to
   its required cases, including negative, boundary, and lifecycle obligations?
 - Can the implementer enumerate those cases and exact expected results without
   unpacking variants or interpreting the policy again?

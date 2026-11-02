@@ -95,6 +95,41 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
         )
 
 
+    def test_concise_brief_separates_contract_from_verification_detail(self):
+        """SIDE-002 structural guards; worked outputs supply content evidence."""
+        designer = (CANONICAL / "SKILL.md").read_text()
+        template = (CANONICAL / "references/task-brief-template.md").read_text()
+        verification = (FLOW / "task-verification-designer/SKILL.md").read_text()
+        readme = (FLOW / "README.md").read_text()
+        self.assertIn("A risk section is optional", designer)
+        self.assertIn("stable AC IDs with descriptive titles", designer)
+        self.assertNotIn("### Finite-risk cases", template)
+        self.assertNotIn("## Direction trace", template)
+        self.assertNotIn("- AC execution matrix:", template)
+        self.assertIn("#submission-route", template)
+        self.assertIn("../README.md#submission-route", readme)
+        self.assertIn("## Submission route", (ROOT / "skills/README.md").read_text())
+        for obligation in ("no risk rows exist", "distinct independent corroboration",
+                           "gate owner/stage", "targeted-first correction"):
+            self.assertIn(obligation, verification)
+        evals = json.loads((CANONICAL / "evals/evals.json").read_text())["evals"]
+        finite = next(case for case in evals if case["id"] == 5)
+        self.assertIn("no R IDs or six-field blocks", " ".join(finite["expectations"]))
+
+    def test_lifecycle_fixture_derives_cases_without_risk_rows(self):
+        setup = FLOW / "task-verification-designer/evals/files/setup_fixture.py"
+        with tempfile.TemporaryDirectory() as temporary:
+            subprocess.run([sys.executable, str(setup), "lifecycle"], check=True,
+                           cwd=ROOT, env=os.environ | {"EVAL_WORK_ROOT": temporary})
+            root = Path(temporary) / "lifecycle"
+            brief = (root / "docs/tasks/IMP-21/brief.md").read_text()
+            self.assertNotIn("ROW-", brief)
+            policy = (root / "docs/import-policy.md").read_text()
+            for requirement in ("two or three items succeed", "too_many_items",
+                                "invalid_header", "missing_manifest", "sentinel.txt"):
+                self.assertIn(requirement, policy)
+            self.assertIn("AC-04", brief)
+
     def test_downstream_skills_refuse_decomposed_parents(self):
         for skill_name in (
             "bounded-task-implementer",

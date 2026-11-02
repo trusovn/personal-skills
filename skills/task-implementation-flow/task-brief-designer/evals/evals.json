@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Use the high-assurance profile to turn approved plan item `docs/stage-3-plan.md#S3-04` into an executable `ready_for_preflight` brief at `docs/stage-3-tasks/S3-04.md`. The approved behavior adds `run-next`: the command selects the next ready task, records it as running, and later invocations continue selecting remaining ready tasks. Existing unit ACs mention only selecting one task from a static queue. The public entry point is `runner run-next`; state is persisted in `.runner/state.json`. Do brief design only\u2014do not certify the current tree or edit implementation files.",
+      "prompt": "Use the high-assurance profile to turn approved plan item `docs/stage-3-plan.md#S3-04` into an executable `ready_for_preflight` brief at `docs/stage-3-tasks/S3-04/brief.md`. The approved behavior adds `run-next`: the command selects the next ready task, records it as running, and later invocations continue selecting remaining ready tasks. Existing unit ACs mention only selecting one task from a static queue. The public entry point is `runner run-next`; state is persisted in `.runner/state.json`. Do brief design only\u2014do not certify the current tree or edit implementation files.",
       "expected_output": "A ready-for-preflight task brief that preserves the approved lifecycle behavior and adds real public-entry evidence covering the first invocation, its persisted state change, and a second invocation, with negative/unchanged-state evidence and provisional preflight checks.",
       "files": [
         "evals/files/setup_fixture.py"
@@ -24,8 +24,8 @@
       },
       "expectations": [
         "The artifact uses status `ready_for_preflight` without claiming repository readiness or passing commands.",
-        "The AC execution matrix invokes the real `runner run-next` entry point rather than relying only on a pure selection-function test.",
-        "Repeated-flow evidence executes a first invocation, observes or applies its legitimate persisted state change, and executes a second invocation.",
+        "Acceptance retains the public `runner run-next` boundary; a precise reference delegates its detailed AC execution matrix to derived verification.md rather than repeating the matrix in the brief.",
+        "The first invocation, persisted change and next invocation remain requirements; derived verification owns detailed lifecycle proof.",
         "The brief includes negative or unchanged-state evidence and a legacy-assumption sweep for first/only-task assumptions.",
         "The output does not edit production code, tests, the master plan, or task-orchestrator state."
       ]
@@ -108,7 +108,7 @@
     {
       "id": 5,
       "prompt": "Create the guided implementation brief `docs/tasks/EVD-12/brief.md` from `docs/evidence-plan.md#EVD-12`. The existing test covers only one complete happy path. Preserve the approved scope and do task design only.",
-      "expected_output": "A compact guided brief whose readable finite-risk cases enumerates all approved persisted evidence families, publication stages and legal prefixes, and contradictory orphan states; uses the public resume boundary and pre-side-effect rejection/reuse oracle; separates implementation from independent-review evidence; assigns the final fresh reviewer as aggregate-gate owner; and recommends standalone guided preflight with the named observer-capability uncertainty.",
+      "expected_output": "A compact guided contract preserving the exact EVD-12 finite requirements in titled ACs or precise authority, with optional informative risk notes, a separate verification recommendation and observer-readiness stop; detailed proof belongs to verification design.",
       "files": [
         "evals/files/setup_fixture.py"
       ],
@@ -127,13 +127,13 @@
         "workspace": "{run_root}/work/evidence-flow"
       },
       "expectations": [
-        "Finite-risk coverage prefers labelled case blocks with stable risk IDs; a table is acceptable only with short readable cells. Each case retains invariant, material cases, observable result/boundary, implementation evidence, independent review probe, and gate owner/stage. Shared gate ownership names its applicable risk IDs.",
+        "The brief uses stable descriptive AC titles and readable independent bullets or a clear table. Risk notes are optional; no R IDs or six-field blocks are required. Detailed case matrices, fixtures, observations, evidence reuse, independent probes and gate allocation belong in derived verification.md, not a renamed brief section.",
         "The opening explains in ordinary language what resume preserves or rejects before introducing artifact IDs, metadata, or evidence roles. Detailed cases remain in their owning section rather than being repeated in scope, ACs, and verification.",
         "The material cases explicitly include policy, manifest, attempt record, structured result, and closure rather than collapsing them into `each persisted artifact`.",
         "The material cases explicitly include execution, verification, decision, and ledger; all five legal publication prefixes; and every named contradictory orphan state rather than generic recovery prose.",
-        "Each applicable case exercises `evidence-runner resume --state <path>` and distinguishes pre-side-effect rejection of tampered or contradictory state from byte reuse plus only-next-stage publication for legal prefixes.",
-        "Each case separates implementation evidence from a distinct fresh independent-review probe and does not treat implementer self-checks as acceptance.",
-        "Gate ownership resolves for every case, either locally or by an explicit shared reference; the final fresh reviewer owns the aggregate suite after targeted correction evidence is green, and that suite is not required while targeted evidence is red.",
+        "Acceptance or precise cited authority retains the public `evidence-runner resume --state <path>` boundary, pre-side-effect refusal, legal byte reuse and only-next-stage publication; verification design owns the concrete exercises and observations.",
+        "The precise EVD-12 evidence authority remains accessible to verification, implementation and review; implementation fail-first/targeted evidence and distinct fresh independent corroboration remain separate responsibilities without a duplicate matrix in the brief.",
+        "A precise EVD-12 reference preserves final fresh reviewer aggregate ownership after targeted corrections pass and no aggregate while targeted evidence is red. Detailed case-to-gate allocation belongs in verification.",
         "The readiness route is `standalone guided preflight` with the concrete missing deterministic observer for pre-write and pre-process rejection; it is human-readable guidance and not a new metadata key.",
         "The verification-design recommendation is `separate` with a concrete reason tied to the finite artifact families, publication lifecycle, contradictory states, and real-boundary semantics.",
         "The brief does not invent unrelated generic corruption, fuzz, platform, performance, Cartesian-product, high-assurance ledger, or shared-harness requirements.",
@@ -173,7 +173,7 @@
     {
       "id": 7,
       "prompt": "Create the ordinary guided implementation brief `docs/tasks/EXPORT-2/brief.md` from `docs/requests/EXPORT-2.md`. Use the approved governing direction at `docs/project-direction.md`, keep the technical task detailed, and do task design only.",
-      "expected_output": "Creates a ready guided brief with a compact Direction trace that connects the technical export task to the approved portable-backup outcome, states its direct user effect, explains why it is the next demonstrable proof without inventing priority, cites exact governing decisions, records that no new direction decisions are required, and treats the supplied helper reuse as a consequence-neutral technical refinement. The brief leads with behavior and scope, places execution details later, and preserves the exact no-overwrite rule with its decision reference while omitting redundant approval history.",
+      "expected_output": "Creates a ready guided brief whose outcome and authority connect the technical export task to the approved portable-backup outcome, states its direct user effect, explains why it is the next demonstrable proof without inventing priority, cites exact governing decisions, records that no new direction decisions are required, and treats the supplied helper reuse as a consequence-neutral technical refinement. The brief leads with behavior and scope, places execution details later, and preserves the exact no-overwrite rule with its decision reference while omitting redundant approval history.",
       "files": [
         "evals/files/setup_fixture.py"
       ],
@@ -193,16 +193,16 @@
       },
       "expectations": [
         "The output creates only `docs/tasks/EXPORT-2/brief.md` and keeps status `ready` with proportionate guided metadata and standalone guided preflight after derived verification.",
-        "A `Direction trace` contains all five fields: Direction contribution, User-observable effect, Why now, Direction decisions used, and New direction decisions required.",
-        "The title, Outcome and Direction trace explain in short, concrete sentences what the owner can do and why export comes next. The reader does not need to decode plan IDs or unexplained technical terms; any necessary unfamiliar term is explained on first use. This replaces dense opening wording rather than adding a second owner summary, and preserves the detailed technical scope below.",
+        "Applicable direction contribution, direct user effect, sequence and exact decision references remain clear in outcome and authority. No separate Direction trace or five-field block is required; no new material direction decision may be invented.",
+        "The title and Outcome explain in short, concrete sentences what the owner can do and why export comes next. The reader does not need to decode plan IDs or unexplained technical terms; any necessary unfamiliar term is explained on first use. This replaces dense opening wording rather than adding a second owner summary, and preserves the detailed technical scope below.",
         "Direction contribution traces to the approved portable-backup outcome, and User-observable effect says the owner can create a restorable local export.",
         "Why now cites the approved first useful proof or the export-before-restore dependency without inventing a new priority.",
-        "Direction decisions used cites exact sections of `docs/project-direction.md`, and New direction decisions required is exactly `None`.",
+        "Authority cites exact governing sections of `docs/project-direction.md` and DEC-EXPORT-1; it introduces no new direction decision.",
         "Reusing the existing `LocalArchiveWriter` is treated as a permitted consequence-neutral technical refinement rather than a reason to request direction.",
         "The technical work remains bounded to the approved local export behavior and does not add hosted storage, automatic upload, new product behavior, implementation, tests, dependencies, or orchestrator state.",
         "Outcome and scope precede execution metadata and sizing. The opening makes clear that export creates an archive now and enables a later restore task; it does not claim that restore is implemented or proven.",
         "DEC-EXPORT-1 retains mandatory refusal of an existing destination before modification, unchanged destination bytes, and no overwrite option, with the exact approved-rule source reference. The brief does not retell the quoted owner answer, review-resolution chronology, or document-maintenance explanation.",
-        "The brief gives operating rules and launch settings one authoritative home. Direction trace, ACs, and evidence may refer to the outcome, approved rule, or case IDs for their distinct purpose rather than restating scope and policy paragraphs.",
+        "The brief gives operating rules and launch settings one authoritative home. Outcome, ACs, and evidence may refer to the outcome, approved rule, or case IDs for their distinct purpose rather than restating scope and policy paragraphs.",
         "The execution section explains that `ready` means the brief is prepared, identifies derived verification and ready preflight as pending prerequisites, and does not claim that checks passed or implementation may start now."
       ]
     },

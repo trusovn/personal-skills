@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import re
 import os
 import shutil
 import subprocess
@@ -487,6 +488,18 @@ class DevelopmentSkillInstallerTests(unittest.TestCase):
                 (ROOT / installer.PROFILE_SKILLS_README).read_bytes(),
                 installed_guide.read_bytes(),
             )
+
+            # Mandatory route authority must resolve in a fresh installation.
+            designer = (repo / ".agents/skills/task-implementation-flow/"
+                        "task-brief-designer/SKILL.md")
+            route_ref = re.search(r"\[shared submission route\]\(([^)]+)\)",
+                                  designer.read_text()).group(1)
+            route_path, anchor = route_ref.split("#", 1)
+            route = (designer.parent / route_path).resolve()
+            self.assertEqual(installed_guide.resolve(), route)
+            self.assertTrue(route.is_file(), route)
+            self.assertEqual("submission-route", anchor)
+            self.assertIn("## Submission route", route.read_text())
 
             agents_text = (repo / "AGENTS.md").read_text(encoding="utf-8")
             self.assertIn("# Project instructions", agents_text)

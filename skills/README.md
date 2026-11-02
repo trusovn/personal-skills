@@ -61,6 +61,20 @@ ownership, dependencies, scenario authority, isolation, oracle structure or
 harness behavior. An ordinary assertion edit alone does not require this review;
 a tests-only label never waives an affected required review.
 
+## Submission route
+
+Generated executable briefs may cite this shipped section instead of reciting
+the route. Resolve the guide from the same installation as the active skill;
+use a precise path from the task package.
+A prepared brief requires derived `verification.md`, then ready `preflight.md`,
+before implementation. Follow the applicable deterministic architecture gate,
+maintainability review and contract-registry synchronization required by repository policy.
+When independent review is required (including `review: immediate`), use fresh
+independent `task-review-discovery`, then a separate `task-acceptance-review`
+decision. Corrections re-enter affected conditional stages and fresh discovery
+before a fresh decision; current unaffected-stage evidence remains applicable.
+This reference does not authorize implementation or waive task-specific stops.
+
 ## Checking the installed profile
 
 The profile also installs the portable measurement runtime under `.agents/scripts/`:

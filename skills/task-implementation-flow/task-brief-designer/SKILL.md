@@ -68,7 +68,7 @@ concurrency, multi-writer, or similar risk.
 ### High assurance
 
 - Require exact authority, dependency, policy, and artifact paths.
-- Use the full template and status `ready_for_preflight` or `blocked_design`.
+- Use the applicable high-assurance addendum and status `ready_for_preflight` or `blocked_design`.
 - Design durable evidence, verification-capability disposition, and explicit
   downstream handoffs for separate preflight and acceptance stages.
 
@@ -139,7 +139,8 @@ material decision gap.
    direction, and the existing brief if present. Load only cited context needed
    to understand the task.
 2. State the smallest testable outcome. When governing direction is supplied,
-   prepare the direction trace described in the template. When a technical
+   retain the applicable direction decisions beside outcome and authority;
+   a separate direction trace is not required. When a technical
    artifact is an intermediate step in an approved end-to-end proof, state both
    its immediate user-observable result and the approved capability it enables;
    do not reduce the trace to a generic artifact property. Allow a task to have
@@ -207,23 +208,22 @@ material decision gap.
    contract below before finalizing any implementation-ready leaf.
    Verification prerequisite tasks are not a way to evade sizing, and sizing
    is not a way to hide unresolved authority or feasibility.
-5. Expand finite material risks when authority contains a universal or
-   lifecycle claim whose cases are both enumerable and consequential. Name
-   every approved artifact family, ordered publication prefix, exact
-   cardinality, retry/recovery state, tamper case, or bounded cleanup state
-   whose omission could permit false success. Do not expand open-ended quality
-   words, speculative abuse cases, or a generic test catalog.
-6. Define concise acceptance criteria. Include the positive behavior and the
-   most credible negative, unchanged-state, or failure behavior. For lifecycle
-   work—retry, resume, recovery, pagination, migration, repeated selection—name
-   the first legitimate state change and the next real occurrence.
-7. Design evidence using the finite-risk contract and verification defaults
-   below. Classify verification reasoning as `inline` for obvious tests and
-   oracles, or `separate — <reason>` for non-obvious negative/lifecycle semantics,
-   finite cases, boundary behavior, or multiple plausible-wrong implementations.
-   This recommendation is for `task-verification-designer`; either value keeps
-   the required packaged preparation. Resolve ambiguous requirements with their
-   owner before verification design.
+5. Identify finite material requirements in universal or lifecycle claims.
+   Preserve every approved artifact family, legal publication prefix, exact
+   cardinality, retry/recovery state, tamper case, and bounded cleanup state
+   in acceptance or a precise authority reference. These values define the
+   contract; their detailed proof belongs to verification design.
+6. Define stable AC IDs with descriptive titles. Use prose for one cohesive
+   condition and short flat bullets or a clear table for independent obligations.
+   Include success, refusal, boundaries and unchanged state where required.
+   For lifecycle work, retain the first legitimate state change and next real
+   occurrence. Leave setup, assertions and implementation choices to their owners.
+7. Record only necessary evidence boundaries or capability uncertainties in
+   the brief. Risk notes are optional; use the content boundary below.
+   Classify verification reasoning as `inline` for obvious tests and oracles,
+   or `separate — <reason>` for non-obvious failure/lifecycle or finite cases.
+   Either recommendation keeps required packaged preparation. Resolve ambiguous
+   requirements with their owner before verification design.
 8. Apply sizing, then read `references/task-brief-template.md` and assemble the
    applicable form. Keep the four scalar launch keys `agent_tier`, `reasoning`,
    `review`, and `budget` for executable leaves only. Use authority-approved
@@ -231,13 +231,10 @@ material decision gap.
    Treat the budget as a soft checkpoint unless authority makes it hard.
    Add only the high-assurance fields needed for that profile.
 
-When `review: immediate`, include the ordered follow-on in new briefs and
-surgical gap-checks: immediately after implementation or correction and any
-applicable conditional stages, hand the completed bytes to a fresh independent
-`task-review-discovery` call, and hand its report to a separate
-`task-acceptance-review` decision. Following a review skill in the authoring or
-implementation session does not state independent acceptance. This follow-on
-comes after the preparation and implementation sequence, not in place of it.
+When `review: immediate`, cite the [shared submission route](../../README.md#submission-route)
+in the brief. Retain local exceptions and gate ownership in their owning artifact.
+A shared reference must preserve the route after implementation and corrections;
+it cannot imply same-session self-review is independent acceptance.
 
 ## Sizing and decomposition contract
 
@@ -280,7 +277,7 @@ command.
    `TASK-017.1`, `TASK-017.2`, and nested suffixes only when recursive
    decomposition is actually needed.
 5. Give every child the same executable-brief contract as an ordinary task:
-   authority, relevant direction trace, bounded scope, consumes/produces
+   authority, applicable direction decisions, bounded scope, consumes/produces
    relationships, interfaces/invariants, acceptance criteria, verification,
    stops, launch metadata, and sizing evidence. Preserve relevant stable
    project-plan IDs rather than inventing child-local replacements for flows,
@@ -332,50 +329,23 @@ merely to silence the trigger.
 
 ## Finite-risk coverage contract
 
-Use finite-risk cases only when workflow step 5 finds a finite, material
-dimension. Prefer one labelled block per risk ID, as shown in the template;
-a table is suitable when its cells remain short. Preserve these six meanings
-with each case:
+A risk section is optional. Include a consequential failure, invariant or
+essential proof boundary only when it adds information needed to interpret or
+safely execute the task. Do not require R IDs or six-field blocks in a brief.
+Keep existing supplied risk IDs traceable without duplicating their requirements.
 
-- the invariant;
-- the exact material dimensions or state transitions;
-- the decisive observable oracle and real boundary;
-- fail-first, targeted, or owning evidence the implementer must establish;
-- a distinct independent-review probe, or `N/A` with a reason; and
-- the gate owner and stage.
+Acceptance or precise cited authority owns finite values and allowed transitions.
+`verification.md` owns detailed scenario enumeration, fixtures, observations,
+evidence reuse, distinct independent probes, and gate owner/stage allocation.
+It derives these even when the brief has no risk rows. Do not reproduce that
+matrix under a different heading. An unresolved observer capability still needs
+its concise local uncertainty and preparation route.
 
-Cases may combine dimensions only when they share one invariant and oracle.
-This is a coverage contract, not a Cartesian-product requirement. Keep
-implementation evidence separate from review corroboration; an implementer
-self-check is not acceptance. For an immediate-review correction flow, state
-whether the correction implementer or final fresh reviewer owns the broader or
-aggregate gate. Keep targeted evidence first while it is red instead of
-requiring the same broad gate after every failed review. Shared gate ownership
-may be stated once with explicit case IDs. Keep risk IDs stable across
-corrections so later reviews can carry each case forward as
-`pass`, `fail`, `blocked`, or `unchecked`; prior status is not proof for
-corrected bytes.
-
-## Verification defaults carried by the brief
-
-The user should not need to repeat these instructions for every task:
-
-- For a bug, require a regression that fails for the intended reason before the
-  fix when feasible.
-- For changed behavior, prefer a focused test capable of rejecting the old or
-  faulty behavior.
-- Use the lowest reliable test level, adding a real-boundary check only when it
-  proves wiring, persistence, filesystem/database/process behavior, concurrency,
-  permissions, or compatibility that lower-level evidence cannot establish.
-- Name commands supplied by authority or local precedent. Guided command
-  discovery may stay with the implementer; unresolved high-assurance commands
-  belong to preflight.
-- Run the targeted check first, then the nearest owning suite, then only the
-  broader gate justified by blast radius and authorization.
-- Assign each broader or aggregate gate to an owner and stage; do not silently
-  duplicate it across correction and review.
-- Record skipped stronger checks and residual risk without presenting them as
-  passed evidence.
+The verification designer carries the testing defaults: fail-first where feasible,
+lowest reliable level, real-boundary proof where required, targeted checks before
+owning and justified broader gates, truthful skips, and separate implementation
+and independent-review evidence. Preserve task-authority exceptions, including
+final-reviewer aggregate ownership, by precise reference rather than repetition.
 
 ## Output contract
 
@@ -388,7 +358,7 @@ For a gap check, report only:
   is warranted;
 - whether verification design should stay inline or use a separate
   `task-verification-designer` pass, with the concrete reason when separate;
-  and the immediate-review follow-on above when applicable.
+  and the shared submission-route reference when review is immediate.
 
 When supplied direction does not authorize a needed product, priority,
 assurance, trust, intervention, or scope choice, return only:
@@ -411,9 +381,9 @@ when the user explicitly requests a separate direction-delta artifact path;
 never store it at the requested implementation-task path.
 
 For a durable brief, use `references/task-brief-template.md`. When governing
-direction was supplied, include its `Direction trace` section and require
-`New direction decisions required: None`; any other value requires the
-direction-delta-needed response instead of a ready brief. Use one status:
+direction was supplied, preserve its exact applicable decisions in outcome or
+authority without a mandatory separate trace. A new material direction decision
+requires the direction-delta-needed response instead of a ready brief. Use one status:
 
 - `ready`: an executable guided brief is prepared; execution still requires
   the preparation route above;
@@ -442,7 +412,9 @@ design task.
 Read the brief as a person unfamiliar with the design. They should be able to
 explain the result, what completion proves versus enables, the governing rules,
 and the pending execution prerequisite. Then check that compression preserved
-each approved obligation, exception, stable ID, evidence role, and handoff.
+each approved obligation, exception, stable ID, essential evidence boundary,
+and handoff. Remove empty fields, repeated summaries and workflow recitations;
+use no fixed word limit, section count or formatting quota.
 Apply the same check to child coverage and dependencies after decomposition.
 
 This skill owns brief design and the structural task-index entries it creates.

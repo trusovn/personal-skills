@@ -24,7 +24,7 @@
       },
       "expectations": [
         "The output creates only `docs/tasks/IMP-21/verification.md` and leaves the brief, authority, production code, tests, dependencies, and orchestration state unchanged.",
-        "The coverage summary connects named promises and brief links to AC-01 through AC-04, ROW-RESUME, ROW-INVALID, and ROW-LIMIT, with stable references that identify the required cases rather than only broad group headings.",
+        "The brief has no risk section or ROW IDs. The coverage summary maps AC-01 through AC-04 and their cited import-policy obligations to stable identifiable cases; it derives all material resume, invalid-input and limit variants without inventing requirements or treating missing risk rows as missing authority.",
         "First import and interruption/resume have distinct proofs. The resume sequence retains visible checkpoints after the first committed item and after the next invocation, with exact final item names, bytes, and absence of duplicates.",
         "Malformed-header and missing-manifest refusals are individually identifiable, reach the intended guard with other prerequisites satisfied, and expect invalid_header and missing_manifest respectively plus unchanged destination bytes. They cannot pass through unrelated exceptions.",
         "The two-, three-, and four-item cases are individually identifiable and state success, success, and too_many_items respectively, with concrete persisted or unchanged-state outcomes. The successful controls reject an implementation that always refuses.",

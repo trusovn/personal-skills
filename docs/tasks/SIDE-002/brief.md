@@ -104,8 +104,8 @@ force; update registry records only for an actual change to registered authority
   evidence, independent corroboration, and gate ownership/stage. Preserve
   negative, boundary, lifecycle, preservation, and interaction coverage where
   required; avoid speculative catalogs and unnecessary Cartesian products.
-- Retain traceability to ACs and any supplied risk IDs. Existing risk-rich briefs
-  remain usable without migration or duplicated restatement of their contents.
+- Retain traceability to ACs and any supplied risk IDs. Support for older brief
+  formats is not required; existing task artifacts remain unchanged.
 - Route an unresolved expected behavior back to task design or the owner.
   Verification may derive cases; it cannot invent requirements or settle scope.
 
@@ -130,9 +130,14 @@ force; update registry records only for an actual change to registered authority
 - Skill instructions, templates, examples, completion checks, and relevant
   tests/eval expectations follow the new boundary. Inspect existing coverage
   before changing it; preserve distinct scenarios when replacing format checks.
-- Downstream stages accept both the compact format and existing complete briefs.
-  They obtain verification detail from `verification.md` rather than requiring
+- Downstream stages accept the new compact format. They obtain verification
+  detail from `verification.md` rather than requiring
   every brief to carry risk matrices or fixed section headings.
+- Apply the content boundary to single executable tasks and split tasks. Keep
+  parent/child coverage, dependencies, and integration-proof ownership clear;
+  each executable child retains enough information to execute its own task.
+  Preserve required audit and freshness information in high-assurance briefs
+  without repeating verification detail.
 - Worked outputs show readable ACs, appropriate optional risks, and a concise
   execution section while retaining all source obligations. Smaller word counts
   or successful syntax checks alone do not establish this result.
@@ -152,7 +157,11 @@ Use `testing-discipline`; update existing facilities rather than add a harness.
 
 Use a simple task and an existing finite-risk task to inspect paired worked
 outputs. Compare their requirements with the source authority, including the
-case with no brief risk section. Keep illustrative/source-guided output review
+case with no brief risk section. Check that the compact brief and its verification
+design supply what preflight, implementation evidence mapping, discovery, and
+acceptance need. Include split-task and high-assurance forms in the output review
+to check the obligations in AC-06; older-format compatibility is not required.
+Keep illustrative/source-guided output review
 distinct from an executed skill eval. Live/model evaluation requires a separately
 approved budget; if absent, report generated behavior as unqualified.
 

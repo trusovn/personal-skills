@@ -345,6 +345,9 @@ architecture, repo policy may explicitly allow the maintainability stage to be
 skipped. A tests-only label alone never waives an affected required review;
 apply authorized exceptions only within their stated scope. Do not invent a
 gate or registry work for every test change.
+The canonical [submission route](../README.md#submission-route) is in the
+installed development-profile guide. Generated briefs cite that shipped authority.
+
 ## High-assurance profile
 
 Use high-assurance mode when explicitly requested, when an orchestrator or
@@ -396,7 +399,7 @@ remains normative; carrying the artifact through the packet must not promote it
 into a second requirements source.
 ## Task metadata
 
-Durable briefs put this compact block near the top:
+Executable briefs put this compact block in their execution section:
 
 ```yaml
 agent_tier: strong

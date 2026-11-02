@@ -86,8 +86,7 @@ Scope, `--output`, and `--baseline` paths are relative to `--root`, which defaul
 to the current working directory.
 Absolute paths inside that root also work. To measure a different repository,
 run this launcher's absolute path with `--root /path/to/repo`. Files must end in
-`.py`; an empty or missing scope is an error, except when comparing deleted files preserved in the
-baseline. Symlinks are not followed. Explicit excluded scopes
+`.py`; an empty or missing scope is an error, except for an explicitly selected existing empty folder in `baseline`, or deleted files preserved in the baseline. Symlinks are not followed. Explicit excluded scopes
 are rejected; excluded directories encountered during traversal are recorded.
 Folders are appropriate for a baseline: they also capture functions or files
 added later. Include deleted file paths in the after scope to report removals.
@@ -106,7 +105,7 @@ python3 scripts/measure_maintainability.py compare scripts/run_evidence.py tests
 `--output` to also save JSON and text reports. `baseline` requires `--output`
 because later comparisons need the saved measurement.
 Pass that report filename to the next skill. The after scope may be the same
-scope or a subset; new files must be under a baseline folder. Baseline records
+scope or a subset; new files must be under a baseline folder. An explicitly selected existing empty folder records known file absence, not numeric zero. Baseline records
 outside the after scope are not compared or reported as removals. Checks,
 tools, and settings must still match.
 
@@ -135,10 +134,7 @@ and major/minor version, analyzer versions, adapter, and settings, with the
 current relative scope covered by the baseline.
 The caller must select a baseline from the same logical project; a matching
 scope alone cannot establish project identity. Full root and Python version
-remain recorded as provenance. Reports now use format 4, with explicit Ruff
-collection limits and separate advisory targets. Older reports cannot
-serve as format 4 baselines. Capture a new baseline before edits, or remeasure
-exact pre-edit source bytes preserved in an older report with the current tool.
+remain recorded as provenance. Reports use format 5, with neutral `increased` and `decreased` labels. Older reports, including format 4, cannot serve as format 5 baselines. Capture a new baseline before edits, or remeasure verified exact preserved pre-edit source bytes with the current tool; do not use the edited tree as replacement before evidence.
 
 Exit **0** means the selected measurements completed and any requested
 comparison was compatible. Highlights are observations for agent judgment,
@@ -203,11 +199,11 @@ With `--output`, a run writes JSON and a short sibling `.txt` summary. The JSON 
 
 | Highlight | Meaning |
 |---|---|
-| `got_worse` | A matched numeric value increased, including below target |
-| `crossed_above_threshold` | A matched value moved from within target to above it; also marked `got_worse` |
+| `increased` | A matched numeric value increased, including below target |
+| `crossed_above_threshold` | A matched value moved from within target to above it; also marked `increased` |
 | `new_above_threshold` | A new complexity symbol exceeds the target |
 | `above_threshold` | A standalone hotspot or a newly appearing Ruff count above its advisory target |
-| `improved` | A matched numeric value decreased |
+| `decreased` | A matched numeric value decreased |
 | `needs_interpretation` | A symbol was added, removed, or ambiguous, or a Ruff diagnostic appeared or disappeared |
 
 Complexity decreases cannot offset increases elsewhere. Unchanged legacy

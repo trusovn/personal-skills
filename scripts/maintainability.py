@@ -23,7 +23,7 @@ import tomllib
 SCRIPTS = Path(__file__).resolve().parent
 DEFAULT_FILES = {"maintainability.toml": SCRIPTS / "maintainability-default.toml",
                  "ruff.toml": SCRIPTS / "maintainability-ruff-default.toml"}
-FORMAT_VERSION = 4
+FORMAT_VERSION = 5
 RUFF_COLLECTION_LIMITS = {"lint.pylint.max-args": 0, "lint.pylint.max-statements": 0}
 
 
@@ -88,7 +88,7 @@ def asset_group(path):
     return "implementation"
 
 
-def discover(root, scopes, excluded, known_files=()):
+def discover(root, scopes, excluded, known_files=(), allow_empty=False):
     files = set()
     skipped = set()
     for scope in scopes:
@@ -121,7 +121,7 @@ def discover(root, scopes, excluded, known_files=()):
                     skipped.add(child.relative_to(root).as_posix())
                 else:
                     files.add(child.relative_to(root).as_posix())
-    if not files and not known_files:
+    if not files and not known_files and not allow_empty:
         raise ValueError("Scope contains no included Python files")
     return sorted(files), sorted(skipped)
 
@@ -247,8 +247,8 @@ def symbol_key(item):
 
 def numeric_change(item, old):
     delta = item["value"] - old["value"]
-    classification = "worsened" if delta > 0 else "improved" if delta < 0 else "unchanged"
-    highlights = ["got_worse"] if delta > 0 else ["improved"] if delta < 0 else []
+    classification = "increased" if delta > 0 else "decreased" if delta < 0 else "unchanged"
+    highlights = ["increased"] if delta > 0 else ["decreased"] if delta < 0 else []
     if old["value"] <= item["target"] < item["value"]:
         highlights.append("crossed_above_threshold")
     return {"before": old["value"], "delta": delta, "classification": classification, "highlights": highlights}
@@ -370,7 +370,7 @@ def summarize(report):
     return "\n".join(lines) + "\n"
 
 
-def build_report(root, scopes, checks, baseline=None):
+def build_report(root, scopes, checks, baseline=None, allow_empty=False):
     root = root.resolve()
     effective, origins = settings(root)
     policy_bytes = effective["maintainability.toml"]
@@ -378,11 +378,11 @@ def build_report(root, scopes, checks, baseline=None):
     policy = tomllib.loads(policy_bytes.decode())
     context = git_context(root)
     known_files = baseline.get("files", {}) if baseline else ()
-    paths, skipped = discover(root, scopes, set(policy["exclude_directories"]), known_files)
+    paths, skipped = discover(root, scopes, set(policy["exclude_directories"]), known_files, allow_empty)
     sources = capture(root, paths)
     results = measure(sources, checks, policy, ruff_bytes)
     errors = []
-    after_paths, _ = discover(root, scopes, set(policy["exclude_directories"]), known_files)
+    after_paths, _ = discover(root, scopes, set(policy["exclude_directories"]), known_files, allow_empty)
     if paths != after_paths or sources != capture(root, after_paths):
         errors.append("Source inputs changed during scanning; remeasure before comparison")
     after_context = git_context(root)
@@ -451,7 +451,9 @@ def main(argv=None):
         checks = sorted(set(args.checks or default_checks))
         if not checks or set(checks) - {"complexity", "ruff"}:
             raise ValueError("Profile must select supported checks: complexity, ruff")
-        report = build_report(root, sorted(set(scopes)), checks, baseline=baseline)
+        report = build_report(root, sorted(set(scopes)), checks, baseline=baseline,
+                              allow_empty=args.operation == "baseline" and bool(args.paths)
+                              and all((root / scope).is_dir() for scope in scopes))
         report["operation"] = args.operation
         report["baseline_path"] = str(args.baseline.resolve()) if args.baseline else None
         report["comparison"] = comparison(report, baseline)

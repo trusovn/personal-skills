@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "id": "measurement",
-  "summary": "Portable advisory Python measurement runtime and target-aware settings/setup, implemented by T-001.1. This is partial IF-001 materialization: neutral labels and valid empty folder baselines remain T-001.2 work.",
+  "summary": "Portable advisory Python measurement runtime and target-aware settings/setup from T-001.1, with T-001.2 format-5 neutral reports and explicit empty-folder baselines. This records implemented tool capabilities, not later workflow integration or T-001.3 installed-composition qualification.",
   "owner_paths": ["scripts/measure_maintainability.py", "scripts/maintainability.py", "scripts/maintainability_env.py", "scripts/maintainability-default.toml", "scripts/maintainability-ruff-default.toml", "scripts/maintainability-requirements.txt"],
   "provides": [
     {
       "name": "portable-measurement-cli",
       "kind": "cli",
-      "summary": "Source and installed launchers use adjacent runtime resources without a source-checkout or global fallback. Preserve baseline/compare/measure, --root, file/folder scopes and --output. setup --root explicitly provisions target-native pinned dependencies; measurement never provisions them. Complete breached measurements exit 0; invalid, incomplete or incompatible measurements exit 2. IF-001 remains partial as stated above.",
+      "summary": "Source and installed launchers use adjacent runtime resources without a source-checkout or global fallback. Preserve baseline/compare/measure, --root, file/folder scopes and --output. setup --root explicitly provisions target-native pinned dependencies; measurement never provisions them. Format-5 JSON/text reports use neutral increased/decreased classifications and highlights while retaining threshold and interpretation signals; older formats are incompatible baselines. baseline accepts explicitly selected existing directories with an empty included Python inventory; ordinary empty measure, missing/excluded scopes and comparisons outside captured coverage fail. Complete breached measurements exit 0; invalid, incomplete or incompatible measurements exit 2.",
       "plan_refs": ["IF-001"],
       "declarations": ["scripts/measure_maintainability.py", "scripts/maintainability_env.py", "scripts/maintainability.py", "tests/test_maintainability.py"]
     }
@@ -18,6 +18,12 @@
       "summary": "The launcher, helpers, flat defaults and pins are installation-local. Each target .quality/maintainability.toml and .quality/ruff.toml independently replaces its shipped default when present; invalid present settings fail without fallback. Effective maintainability policy requires a non-empty profile string, a non-empty list of supported checks (complexity, ruff), a non-negative integer complexity_target excluding Booleans, and an exclude_directories list of non-empty strings. Invalid policy fails before scanning or report publication, with the settings path and invalid field in the diagnostic. Unrelated root Ruff configuration is ignored. identity.settings records origin, path and SHA-256 for each effective file; effective contents, not provenance paths/origins, determine settings compatibility.",
       "plan_refs": ["ART-001"],
       "declarations": ["scripts/maintainability.py", "scripts/maintainability-default.toml", "scripts/maintainability-ruff-default.toml", "scripts/maintainability-requirements.txt", "tests/test_maintainability.py"]
+    },
+    {
+      "name": "original-baseline-report",
+      "summary": "The tool portion of ART-002 is a named format-5 JSON report and sibling text summary containing captured source snapshots/hashes, folder coverage and measurement identity. An explicitly selected existing empty folder captures known absence; later covered additions have unknown numeric before/delta values rather than zero. Repeated comparisons can retain the same original baseline with fresh output names; a collision with either report sibling refuses overwrite. Capture-before-edit and retention through corrections remain caller workflow obligations, not enforced workflow integration.",
+      "plan_refs": ["ART-002"],
+      "declarations": ["scripts/maintainability.py", "tests/test_maintainability.py"]
     }
   ],
   "state_owned": [

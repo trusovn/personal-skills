@@ -21,6 +21,33 @@
       "max_tokens": 16384,
       "timeout_seconds": 900
     },
+    "glm-low": {
+      "model": "glm-5.3:cloud",
+      "think": "low",
+      "context_length": 65536,
+      "temperature": 0,
+      "top_p": 1,
+      "max_tokens": 16384,
+      "timeout_seconds": 900
+    },
+    "glm-flash-high": {
+      "model": "glm-5.3-flash:cloud",
+      "think": "high",
+      "context_length": 32768,
+      "temperature": 0,
+      "top_p": 1,
+      "max_tokens": 8192,
+      "timeout_seconds": 900
+    },
+    "glm-flash-max": {
+      "model": "glm-5.3-flash:cloud",
+      "think": "max",
+      "context_length": 32768,
+      "temperature": 0,
+      "top_p": 1,
+      "max_tokens": 8192,
+      "timeout_seconds": 900
+    },
     "glm-flash": {
       "model": "glm-5.3-flash:cloud",
       "think": "low",

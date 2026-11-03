@@ -56,6 +56,278 @@
       "parent": null,
       "children": [],
       "depends_on": []
+    },
+    "SIDE-003": {
+      "kind": "composite",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003/brief.md",
+      "parent": null,
+      "children": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6",
+        "SIDE-003.7",
+        "SIDE-003.8",
+        "SIDE-003.9",
+        "SIDE-003.10",
+        "SIDE-003.11",
+        "SIDE-003.12",
+        "SIDE-003.13",
+        "SIDE-003.14",
+        "SIDE-003.15",
+        "SIDE-003.16",
+        "SIDE-003.17",
+        "SIDE-003.18"
+      ],
+      "depends_on": []
+    },
+    "SIDE-003.1": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.1/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": []
+    },
+    "SIDE-003.2": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.2/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": ["SIDE-003.1"]
+    },
+    "SIDE-003.3": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.3/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": ["SIDE-003.1"]
+    },
+    "SIDE-003.4": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.4/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": ["SIDE-003.1"]
+    },
+    "SIDE-003.5": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.5/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": ["SIDE-003.1"]
+    },
+    "SIDE-003.6": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.6/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5"
+      ]
+    },
+    "SIDE-003.7": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.7/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6"
+      ]
+    },
+    "SIDE-003.8": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.8/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6"
+      ]
+    },
+    "SIDE-003.9": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.9/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6"
+      ]
+    },
+    "SIDE-003.10": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.10/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6"
+      ]
+    },
+    "SIDE-003.11": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.11/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6"
+      ]
+    },
+    "SIDE-003.12": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.12/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6"
+      ]
+    },
+    "SIDE-003.13": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.13/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6"
+      ]
+    },
+    "SIDE-003.14": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.14/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6"
+      ]
+    },
+    "SIDE-003.15": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.15/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6"
+      ]
+    },
+    "SIDE-003.16": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.16/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6"
+      ]
+    },
+    "SIDE-003.17": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.17/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6"
+      ]
+    },
+    "SIDE-003.18": {
+      "kind": "executable",
+      "source_plan_task": null,
+      "brief": "docs/tasks/SIDE-003.18/brief.md",
+      "parent": "SIDE-003",
+      "children": [],
+      "depends_on": [
+        "SIDE-003.1",
+        "SIDE-003.2",
+        "SIDE-003.3",
+        "SIDE-003.4",
+        "SIDE-003.5",
+        "SIDE-003.6",
+        "SIDE-003.7",
+        "SIDE-003.8",
+        "SIDE-003.9",
+        "SIDE-003.10",
+        "SIDE-003.11",
+        "SIDE-003.12",
+        "SIDE-003.13",
+        "SIDE-003.14",
+        "SIDE-003.15",
+        "SIDE-003.16",
+        "SIDE-003.17"
+      ]
     }
   }
 }

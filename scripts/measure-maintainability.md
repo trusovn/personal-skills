@@ -3,8 +3,13 @@
 The entry point is `python3 scripts/measure_maintainability.py`. It measures
 Python source without importing or executing it. This is a standalone
 measurement runtime included in the development installation profile. Its metrics
-are advisory and do not change CI or acceptance rules. The design context is in
-[`docs/advisory-code-maintainability-signals.md`](../docs/advisory-code-maintainability-signals.md).
+are advisory and do not change CI or acceptance rules. Current feedback policy is
+[project plan section 5](../docs/project-plan.md#5-lifecycle-and-decision-rules):
+growth at or below target is information only; retained affected breaches need
+proportionate rationale. Targets remain 10/50/5. Use the
+[implementer guidance](../skills/task-implementation-flow/bounded-task-implementer/SKILL.md#starting-evidence-final-comparison-and-native-duties)
+for baseline validation, direct capture, corrections and native obligations.
+Earlier proposals are historical design context.
 
 ## Setup
 

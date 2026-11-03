@@ -94,6 +94,110 @@ and current Git state. Ask only when a missing product, architecture,
 compatibility, scope, ownership, or permission decision could materially change
 the result.
 
+## Starting evidence, final comparison and native duties
+
+Use one original code baseline for this bounded task. Measurement is advisory;
+it neither replaces required native checks nor adds an otherwise optional review
+stage. Preserve the profile-specific entry/freshness rules above and below.
+
+### Before the first implementation edit
+
+For packaged guided and high-assurance work, consume the preflight's
+[starting-evidence and native-obligation handoff](../task-preflight/references/execution-packet-template.md#starting-evidence-and-native-obligations-both-profiles).
+Validate the supplied baseline against the logical project, exact included file
+inventory and current source hashes, effective tool/settings/selected-check
+identities, and governed folder coverage. Check actual bytes, including dirty
+and untracked code; matching short-status text is insufficient. Material changes
+to those facts route to focused `task-preflight` reconsideration before editing.
+Do not silently capture a replacement or repeat broad readiness discovery.
+High-assurance report preparation precedes the exact packet baseline; preserve
+all separate index/worktree and packet-only-delta checks.
+
+For conversational direct work, perform the same capture during self-preflight
+after resolving authorized scope and report-write permission. Use the active
+installation's sibling `scripts/measure_maintainability.py` and an already
+prepared pinned interpreter; never borrow another installation or run setup
+implicitly. Attempt `baseline <folders> --root <repo> --output <fresh-json>`
+before edits to supported Python. Cover relevant production, tests, evals,
+fixtures and harness folders under existing exclusions/asset groups. An existing
+empty parent can cover future Python files; do not create a parent to manufacture
+before evidence. Capture actual worktree bytes, including staged/unstaged
+differences and untracked code, without resetting, stashing, staging or refreshing
+the real index. Create no task package or formal identity solely for measurement.
+Keep the exact JSON/text pair, scope, project binding and capture origin.
+
+Consume the packaged native inventory; direct self-preflight discovers the same
+exact commands, governed scope, policy reference, requiredness and existing
+owner/stage from a registry/equivalent or documented commands. Record none when
+none exists; invent no lint/typecheck command. Required entry evidence must be
+usable before editing; later-stage duties remain with their existing owner.
+
+### Before submission and after corrections
+
+Compare final changed, added and deleted Python paths within original folder
+coverage, including relevant tests/harnesses, using
+`compare <affected-paths> --root <repo> --baseline <original-json> --output <fresh-json>`.
+Use the diff and local context to identify actual behavioral, structural or
+responsibility changes. File membership, formatting and line movement alone do
+not make untouched siblings affected. Explain rename/move/extraction relationships;
+assess extracted responsibilities with their helpers. Unmatched symbols and
+missing native counts remain unknown, never invented numeric deltas or zeros.
+Do not build a change-attribution analyzer.
+
+Apply proportionate reasoning using effective targets (provisionally complexity
+10, statements 50, arguments 5):
+
+| Affected function condition | Required response |
+|---|---|
+| Growth remains at or below target, including equality | Information only; no individual defense or metric-driven refactor. |
+| New function exceeds target or existing function newly crosses it | Explain retained structure and useful local alternatives. |
+| Existing breach worsens | Explicitly assess and justify the increase. |
+| Materially edited hotspot remains above target, equal or improved | Consider useful local cleanup and briefly explain retention; reaching target is not mandatory. |
+| Hotspot reaches target or is untouched | No retained-breach rationale; untouched legacy debt is context only. |
+| Numbers fall but ownership, names or navigation worsen | Address the semantic cost; assess helpers together. |
+
+Each required rationale names report, function, metric, known before/after,
+why the decisions belong together and the cost of a plausible alternative.
+Group related metrics when one explanation suffices. Recover missing required
+rationale before claiming completion. A bare threshold is not an automatic
+rejection. Do not split cohesive code, hide arguments, tune exclusions/targets
+or expand cleanup scope to improve numbers. Preserve existing semantic duties.
+
+Keep original baseline B and all prior comparisons through corrections. Compare
+corrected bytes to B at new paths, never to the preceding comparison. Changed
+bytes stale affected reports/native evidence/verdicts; retain unaffected proof
+only when applicable. Subsequent tasks capture their own actual starting code.
+Unexpected scope expansion needs authorized scope resolution and verified exact
+preserved pre-edit evidence for supplemental coverage, or an explicit
+unrecoverable before-state gap. Never relabel edited code as the original.
+Check both JSON and sibling text paths for collisions; choose fresh names,
+never delete/replace reports. For isolated consumers name exact JSON/text source
+files and receiving paths to transfer: ignored reports do not travel with commits.
+
+Record docs-only/unsupported measurement as N/A. Missing, partial, stale,
+incompatible or uncovered evidence cannot claim a clean/complete comparison.
+Attempt recoverable current measurement at fresh paths before declaring evidence
+absent; if the original is lost, measure current code and disclose the before gap.
+Compatible remeasurement of before code requires verified exact preserved bytes.
+Unavailable tools do not authorize provisioning. Advisory absence blocks only
+when explicit authority makes that evidence indispensable; name the authority,
+recovery owner and next action. Other required checks keep their failure policy.
+
+Execute applicable required native checks under existing ownership and governed
+scope, including whole-project checks outside the measured subset. Carry current
+native evidence (ART-008) beside metrics: exact command, scope/policy,
+checked-byte identity, result and producer/stage. Reuse aggregate evidence only
+when constituent coverage, scope, policy and current bytes are established;
+do not rerun constituents solely for reporting. Missing/stale required evidence
+remains owed to its real owner. Native hard failures keep their consequences
+even when metrics succeed or are N/A. Record corrected successful evidence with
+new checked-byte identity while retaining historical failure.
+
+Measurement availability is separate from optional instrumentation availability.
+An actual comparison may use the existing run-evidence wrapper once; do not
+duplicate measurement or create another lifecycle. The availability, skip-once
+and strict-contract rules below remain unchanged.
+
 ## Optional run evidence
 
 When the canonical run-evidence shared tooling for this skill installation is
@@ -330,6 +434,9 @@ Implemented: READY_FOR_REVIEW
 - Influenced sibling surfaces: <contract-implied cases and current evidence or remaining owner>
 - Attempts and discarded hypotheses: <exact probes/results and retained partial diff, or none>
 - Current scoped diff: <changed paths and concise diff summary>
+- Measurement: <original JSON/text, current fresh comparison JSON/text, coverage/status and gaps; retained prior comparisons; affected-function relationships and required rationale>
+- Native evidence: <command, governed scope/policy, checked-byte identity, result, producer/stage; reused aggregate constituent coverage or owed duty/owner>
+- Report transfer: <exact JSON/text source and receiving paths for isolated consumers, or shared paths>
 - Coverage ledger:
   - <row identity> — prior status: <status>; implementation evidence: <command, setup/oracle and result, or none>; Incomplete reason: <reason or none>; next owner/status: <owner and unchanged reviewer status>
 - Reviewer reproducer: `<exact command>` — <implementation outcome>
@@ -494,6 +601,9 @@ Implemented: <outcome, READY_FOR_REVIEW, or non-complete status>
 - Verified: <exact commands and results>
 - AC evidence: <every verification scenario ID mapped to its current command, setup/oracle, and result, or an explicit blocked/unchecked reason and next owner>
 - Preflight/context reference: <exact paths of the consumed readiness and context artifacts>
+- Measurement: <original JSON/text and current comparison JSON/text; governed/affected scope, status or N/A reason, gaps/recovery owner, affected functions/relationships and required retained-breach rationale>
+- Native evidence: <command, governed scope/policy, checked-byte identity, result and producer/stage; aggregate coverage/reuse or owed duties/owner; none discovered when applicable>
+- Report transfer: <exact source and receiving JSON/text paths for isolated consumers, or shared paths>
 - Remaining obligations: <unfinished task obligations carried forward, or none>
 - Residual risks / skipped checks: <none or specifics>
 - Next: <the first outstanding applicable stage and complete ordered remainder through fresh task-review-discovery evidence to the separate task-acceptance-review decision, user decision, fresh preflight, or complete>
@@ -540,6 +650,10 @@ For the existing worker-result schema:
   fresh `task-acceptance-review` decision.
 
 ## Boundaries and routing
+
+For machine results, preserve measurement/rationale, transfer references and
+native obligations in existing summary, verification, risks and next-action
+fields or an authorized linked artifact. Never extend a strict result schema.
 
 - Current-state executability failures route to `task-preflight` when a durable
   re-check is needed.

@@ -1161,7 +1161,12 @@ SCENARIOS = {
     "review-cases": review_cases,
 }
 
-if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:
-    raise SystemExit(f"usage: {sys.argv[0]} <{'|'.join(SCENARIOS)}>")
-RUNS.mkdir(parents=True, exist_ok=True)
-SCENARIOS[sys.argv[1]]()
+if __name__ == "__main__":
+    RUNS.mkdir(parents=True, exist_ok=True)
+    if len(sys.argv) == 2 and sys.argv[1].startswith("measurement:"):
+        from measurement_fixture import prepare
+        prepare(sys.argv[1].split(":", 1)[1])
+    elif len(sys.argv) == 2 and sys.argv[1] in SCENARIOS:
+        SCENARIOS[sys.argv[1]]()
+    else:
+        raise SystemExit(f"usage: {sys.argv[0]} <{'|'.join(SCENARIOS)}|measurement:<case>>")

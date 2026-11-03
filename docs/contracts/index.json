@@ -7,14 +7,26 @@
     "ART-002": [
       "measurement"
     ],
+    "ART-003": [
+      "implementer-feedback"
+    ],
+    "ART-004": [
+      "implementer-feedback"
+    ],
     "ART-006": [
       "measurement"
     ],
     "ART-007": [
       "measurement"
     ],
+    "ART-008": [
+      "implementer-feedback"
+    ],
     "CAP-002": [
       "measurement"
+    ],
+    "CAP-003": [
+      "implementer-feedback"
     ],
     "FLOW-002-S01": [
       "measurement"
@@ -24,6 +36,9 @@
     ],
     "IF-002": [
       "measurement"
+    ],
+    "IF-003": [
+      "implementer-feedback"
     ],
     "IF-004": [
       "measurement"
@@ -37,11 +52,17 @@
     "INV-003": [
       "measurement"
     ],
+    "INV-005": [
+      "implementer-feedback"
+    ],
     "INV-006": [
       "measurement"
     ],
     "INV-007": [
       "measurement"
+    ],
+    "INV-008": [
+      "implementer-feedback"
     ],
     "INV-009": [
       "measurement"
@@ -66,6 +87,13 @@
         "tests/test_foundation_tools.py",
         "tools/check_contracts.py",
         "tools/verify.py"
+      ]
+    },
+    {
+      "contract": "implementer-feedback.json",
+      "id": "implementer-feedback",
+      "owner_paths": [
+        "skills/task-implementation-flow/bounded-task-implementer"
       ]
     },
     {

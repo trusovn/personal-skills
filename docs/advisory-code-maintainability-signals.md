@@ -2,6 +2,10 @@
 
 Date: 2026-10-23
 
+Policy precedence: [project plan section 5](project-plan.md#5-lifecycle-and-decision-rules)
+supersedes this proposal's every-increase defense and preferred-refactor policy.
+Below-target growth is information only. Historical observations below are retained.
+
 This note proposes a shared maintainability feedback flow for repository setup,
 task preparation, implementation, and independent review. It is a design note,
 not an implementation plan, an acceptance decision, or active skill policy.

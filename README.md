@@ -243,6 +243,9 @@ python3 scripts/measure_maintainability.py measure scripts tests
 ```
 
 See [setup, baseline comparison, report fields, and verification](scripts/measure-maintainability.md).
+Use [plan section 5](docs/project-plan.md#5-lifecycle-and-decision-rules) for current
+feedback policy: below-target growth is information only; retained affected
+breaches need proportionate rationale. Native required checks keep their policy.
 The development profile installs this runtime as `.agents/scripts/measure_maintainability.py`
 with adjacent helpers, shipped defaults and installation-owned pins. Each target
 `.quality/maintainability.toml` or `.quality/ruff.toml` overrides its corresponding

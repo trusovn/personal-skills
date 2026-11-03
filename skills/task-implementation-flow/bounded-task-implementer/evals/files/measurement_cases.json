@@ -1,0 +1,660 @@
+[
+  {
+    "id": "V-01a",
+    "scenario": "V-01a",
+    "variant": "",
+    "situation": "Guided package; project, inventory, hashes, tools/settings/checks and governed folders match",
+    "oracle": "Validate the supplied capture before the first code edit; consume it without replacement capture or broad readiness discovery. Remain guided."
+  },
+  {
+    "id": "V-01b",
+    "scenario": "V-01b",
+    "variant": "",
+    "situation": "High-assurance package; all exact freshness and packet-only delta checks match",
+    "oracle": "Validate capture applicability and the existing exact packet contract before editing. Preserve schema/result obligations. Measurement reports are part of the recorded pre-packet state."
+  },
+  {
+    "id": "V-01c",
+    "scenario": "V-01c",
+    "variant": "",
+    "situation": "Different logical project despite compatible relative paths",
+    "oracle": "Stop implementation entry and route focused preflight reconsideration; no code edit or silent new baseline."
+  },
+  {
+    "id": "V-01d",
+    "scenario": "V-01d",
+    "variant": "",
+    "situation": "Captured file bytes change while short-status text stays the same",
+    "oracle": "Detect the source-hash mismatch before editing; route focused preflight, without resetting user work."
+  },
+  {
+    "id": "V-01f-tools",
+    "scenario": "V-01f",
+    "variant": "tools",
+    "situation": "Change one effective tool, settings or selected-check identity at a time",
+    "oracle": "Detect each material identity mismatch; route focused preflight, without a replacement capture."
+  },
+  {
+    "id": "V-01f-settings",
+    "scenario": "V-01f",
+    "variant": "settings",
+    "situation": "Change one effective tool, settings or selected-check identity at a time",
+    "oracle": "Detect each material identity mismatch; route focused preflight, without a replacement capture."
+  },
+  {
+    "id": "V-01f-checks",
+    "scenario": "V-01f",
+    "variant": "checks",
+    "situation": "Change one effective tool, settings or selected-check identity at a time",
+    "oracle": "Detect each material identity mismatch; route focused preflight, without a replacement capture."
+  },
+  {
+    "id": "V-01g",
+    "scenario": "V-01g",
+    "variant": "",
+    "situation": "Planned Python edit falls outside governed folder coverage",
+    "oracle": "Resolve scope/readiness before editing that scope; do not claim it is covered."
+  },
+  {
+    "id": "V-01h",
+    "scenario": "V-01h",
+    "variant": "",
+    "situation": "High-assurance index blob changes but worktree hash and status text match",
+    "oracle": "Preserve the existing exact freshness refusal and schema-valid non-complete result; no implementation edit."
+  },
+  {
+    "id": "V-02a",
+    "scenario": "V-02a",
+    "variant": "",
+    "situation": "Capture the dirty/staged/untracked scope before the first edit",
+    "oracle": "Capture actual worktree bytes, including the untracked file; preserve the staged index bytes and user work. Include all relevant asset groups under existing exclusions. Use fresh report paths and the installation-local runtime. Create no task package or formal identity solely for measurement."
+  },
+  {
+    "id": "V-02b",
+    "scenario": "V-02b",
+    "variant": "",
+    "situation": "Capture the selected existing empty parent, then add its first Python file",
+    "oracle": "Baseline records valid empty inventory. Comparison treats the added file as absent before capture, not as having numeric zero metrics."
+  },
+  {
+    "id": "V-02c",
+    "scenario": "V-02c",
+    "variant": "",
+    "situation": "Measurement runtime or pinned tools unavailable; no indispensable-evidence requirement",
+    "oracle": "Record unavailable evidence and owner/recovery; continue otherwise authorized work. Do not install tools, switch installations or invent a baseline."
+  },
+  {
+    "id": "V-02d",
+    "scenario": "V-02d",
+    "variant": "",
+    "situation": "Same unavailable capability with explicit indispensable starting-evidence authority",
+    "oracle": "Stop before editing; name the authority, capability owner and recovery action. No clean comparison claim."
+  },
+  {
+    "id": "V-03a",
+    "scenario": "V-03a",
+    "variant": "",
+    "situation": "Change a function, add a file, delete a captured file; include relevant test/harness changes",
+    "oracle": "Final comparison names changed, added and deleted Python paths within coverage. Submission references exact original JSON/text and current JSON/text paths, scope and measurement status. Required asset groups are not omitted."
+  },
+  {
+    "id": "V-03b",
+    "scenario": "V-03b",
+    "variant": "",
+    "situation": "Edit one function; shift or format the untouched hotspot sibling",
+    "oracle": "Only the actually changed responsibility is affected. The sibling remains context, without mandatory cleanup or rationale merely from file membership, line movement or formatting."
+  },
+  {
+    "id": "V-03c-rename",
+    "scenario": "V-03c",
+    "variant": "rename",
+    "situation": "Rename or move a function, or extract part into helpers",
+    "oracle": "Explain each actual relationship from diff/context. Assess the original responsibility with its helpers. Leave unmatched numeric before/after values unknown; invent no delta or attribution analyzer."
+  },
+  {
+    "id": "V-03c-move",
+    "scenario": "V-03c",
+    "variant": "move",
+    "situation": "Rename or move a function, or extract part into helpers",
+    "oracle": "Explain each actual relationship from diff/context. Assess the original responsibility with its helpers. Leave unmatched numeric before/after values unknown; invent no delta or attribution analyzer."
+  },
+  {
+    "id": "V-03c-extract",
+    "scenario": "V-03c",
+    "variant": "extract",
+    "situation": "Rename or move a function, or extract part into helpers",
+    "oracle": "Explain each actual relationship from diff/context. Assess the original responsibility with its helpers. Leave unmatched numeric before/after values unknown; invent no delta or attribution analyzer."
+  },
+  {
+    "id": "V-03d",
+    "scenario": "V-03d",
+    "variant": "",
+    "situation": "Native diagnostic/count absent on one side, such as an exempt override method",
+    "oracle": "Missing value stays unknown, even if another metric is complete. Do not infer zero or numeric improvement from diagnostic disappearance."
+  },
+  {
+    "id": "V-03e-docs",
+    "scenario": "V-03e",
+    "variant": "docs",
+    "situation": "Docs-only task; separately an unsupported-language task",
+    "oracle": "Record measurement N/A with its reason; native-check duties still apply."
+  },
+  {
+    "id": "V-03e-unsupported",
+    "scenario": "V-03e",
+    "variant": "unsupported",
+    "situation": "Docs-only task; separately an unsupported-language task",
+    "oracle": "Record measurement N/A with its reason; native-check duties still apply."
+  },
+  {
+    "id": "V-04a-complexity",
+    "scenario": "V-04a",
+    "variant": "complexity",
+    "situation": "Complexity 6 \u2192 8",
+    "oracle": "Information only. No per-increase rationale or metric-driven refactor is required."
+  },
+  {
+    "id": "V-04a-statements",
+    "scenario": "V-04a",
+    "variant": "statements",
+    "situation": "Complexity 6 \u2192 8",
+    "oracle": "Information only. No per-increase rationale or metric-driven refactor is required."
+  },
+  {
+    "id": "V-04a-arguments",
+    "scenario": "V-04a",
+    "variant": "arguments",
+    "situation": "Complexity 6 \u2192 8",
+    "oracle": "Information only. No per-increase rationale or metric-driven refactor is required."
+  },
+  {
+    "id": "V-04b-complexity",
+    "scenario": "V-04b",
+    "variant": "complexity",
+    "situation": "Complexity 9 \u2192 10",
+    "oracle": "Equality is within target. No breach rationale or metric-driven refactor is required."
+  },
+  {
+    "id": "V-04b-statements",
+    "scenario": "V-04b",
+    "variant": "statements",
+    "situation": "Complexity 9 \u2192 10",
+    "oracle": "Equality is within target. No breach rationale or metric-driven refactor is required."
+  },
+  {
+    "id": "V-04b-arguments",
+    "scenario": "V-04b",
+    "variant": "arguments",
+    "situation": "Complexity 9 \u2192 10",
+    "oracle": "Equality is within target. No breach rationale or metric-driven refactor is required."
+  },
+  {
+    "id": "V-04c-complexity",
+    "scenario": "V-04c",
+    "variant": "complexity",
+    "situation": "New function has complexity 11",
+    "oracle": "Explain retained structure and useful local alternatives. Exceeding the target alone does not reject the submission."
+  },
+  {
+    "id": "V-04c-statements",
+    "scenario": "V-04c",
+    "variant": "statements",
+    "situation": "New function has complexity 11",
+    "oracle": "Explain retained structure and useful local alternatives. Exceeding the target alone does not reject the submission."
+  },
+  {
+    "id": "V-04c-arguments",
+    "scenario": "V-04c",
+    "variant": "arguments",
+    "situation": "New function has complexity 11",
+    "oracle": "Explain retained structure and useful local alternatives. Exceeding the target alone does not reject the submission."
+  },
+  {
+    "id": "V-04d-complexity",
+    "scenario": "V-04d",
+    "variant": "complexity",
+    "situation": "Existing function 10 \u2192 11",
+    "oracle": "Explain the newly crossed breach; the target is advisory."
+  },
+  {
+    "id": "V-04d-statements",
+    "scenario": "V-04d",
+    "variant": "statements",
+    "situation": "Existing function 10 \u2192 11",
+    "oracle": "Explain the newly crossed breach; the target is advisory."
+  },
+  {
+    "id": "V-04d-arguments",
+    "scenario": "V-04d",
+    "variant": "arguments",
+    "situation": "Existing function 10 \u2192 11",
+    "oracle": "Explain the newly crossed breach; the target is advisory."
+  },
+  {
+    "id": "V-04e-complexity",
+    "scenario": "V-04e",
+    "variant": "complexity",
+    "situation": "Existing hotspot 11 \u2192 12",
+    "oracle": "Explicitly assess and justify worsening the breach."
+  },
+  {
+    "id": "V-04e-statements",
+    "scenario": "V-04e",
+    "variant": "statements",
+    "situation": "Existing hotspot 11 \u2192 12",
+    "oracle": "Explicitly assess and justify worsening the breach."
+  },
+  {
+    "id": "V-04e-arguments",
+    "scenario": "V-04e",
+    "variant": "arguments",
+    "situation": "Existing hotspot 11 \u2192 12",
+    "oracle": "Explicitly assess and justify worsening the breach."
+  },
+  {
+    "id": "V-04f-complexity",
+    "scenario": "V-04f",
+    "variant": "complexity",
+    "situation": "Materially edited hotspot 11 \u2192 11",
+    "oracle": "Consider useful local cleanup and briefly explain retention. No obligation to reach 10."
+  },
+  {
+    "id": "V-04f-statements",
+    "scenario": "V-04f",
+    "variant": "statements",
+    "situation": "Materially edited hotspot 11 \u2192 11",
+    "oracle": "Consider useful local cleanup and briefly explain retention. No obligation to reach 10."
+  },
+  {
+    "id": "V-04f-arguments",
+    "scenario": "V-04f",
+    "variant": "arguments",
+    "situation": "Materially edited hotspot 11 \u2192 11",
+    "oracle": "Consider useful local cleanup and briefly explain retention. No obligation to reach 10."
+  },
+  {
+    "id": "V-04g-complexity",
+    "scenario": "V-04g",
+    "variant": "complexity",
+    "situation": "Materially edited hotspot 12 \u2192 11",
+    "oracle": "Explain retained over-target structure despite improvement; no obligation to reach 10."
+  },
+  {
+    "id": "V-04g-statements",
+    "scenario": "V-04g",
+    "variant": "statements",
+    "situation": "Materially edited hotspot 12 \u2192 11",
+    "oracle": "Explain retained over-target structure despite improvement; no obligation to reach 10."
+  },
+  {
+    "id": "V-04g-arguments",
+    "scenario": "V-04g",
+    "variant": "arguments",
+    "situation": "Materially edited hotspot 12 \u2192 11",
+    "oracle": "Explain retained over-target structure despite improvement; no obligation to reach 10."
+  },
+  {
+    "id": "V-04h",
+    "scenario": "V-04h",
+    "variant": "",
+    "situation": "Materially edited hotspot 11 \u2192 10",
+    "oracle": "No retained breach remains. No breach rationale is required solely because the starting value exceeded target. Semantic duties still apply."
+  },
+  {
+    "id": "V-04i",
+    "scenario": "V-04i",
+    "variant": "",
+    "situation": "Untouched hotspot remains 11 while its sibling changes",
+    "oracle": "Context only; no required rationale or cleanup for the untouched function."
+  },
+  {
+    "id": "V-04j",
+    "scenario": "V-04j",
+    "variant": "",
+    "situation": "Metric falls after extraction, but ownership, names or navigation worsen",
+    "oracle": "Address the concrete semantic cost; smaller numbers do not excuse it. Assess helpers together. Do not accept splitting cohesive code, opaque argument containers or tuned exclusions as proof of better design."
+  },
+  {
+    "id": "V-04k",
+    "scenario": "V-04k",
+    "variant": "",
+    "situation": "Required breach rationale is missing",
+    "oracle": "Recover the explanation before claiming the submission complete. Each rationale identifies report, function, metric, known before/after, why decisions belong together and the cost of a plausible alternative."
+  },
+  {
+    "id": "V-05a-advisory",
+    "scenario": "V-05a",
+    "variant": "advisory",
+    "situation": "Original report pair missing after edits; current tools usable",
+    "oracle": "Measure current code at fresh paths, disclose missing before evidence and avoid a clean or complete comparison claim. Never recapture edited code as original."
+  },
+  {
+    "id": "V-05a-required",
+    "scenario": "V-05a",
+    "variant": "required",
+    "situation": "Original report pair missing after edits; current tools usable",
+    "oracle": "Measure current code at fresh paths, disclose missing before evidence and avoid a clean or complete comparison claim. Never recapture edited code as original."
+  },
+  {
+    "id": "V-05b-advisory",
+    "scenario": "V-05b",
+    "variant": "advisory",
+    "situation": "Partial report, including missing native numeric evidence",
+    "oracle": "Retain available facts and per-check limits. Attempt recoverable current measurement; unknown values remain unknown and partial evidence is not complete coverage."
+  },
+  {
+    "id": "V-05b-required",
+    "scenario": "V-05b",
+    "variant": "required",
+    "situation": "Partial report, including missing native numeric evidence",
+    "oracle": "Retain available facts and per-check limits. Attempt recoverable current measurement; unknown values remain unknown and partial evidence is not complete coverage."
+  },
+  {
+    "id": "V-05c-advisory",
+    "scenario": "V-05c",
+    "variant": "advisory",
+    "situation": "Current report is stale after a further code edit",
+    "oracle": "Produce a new comparison for current bytes against the original baseline if possible. Keep the stale report as history, not current proof."
+  },
+  {
+    "id": "V-05c-required",
+    "scenario": "V-05c",
+    "variant": "required",
+    "situation": "Current report is stale after a further code edit",
+    "oracle": "Produce a new comparison for current bytes against the original baseline if possible. Keep the stale report as history, not current proof."
+  },
+  {
+    "id": "V-05d-advisory",
+    "scenario": "V-05d",
+    "variant": "advisory",
+    "situation": "Original format, tool or settings identity is incompatible",
+    "oracle": "Disclose incompatibility. Use verified exact preserved pre-edit bytes for compatible remeasurement only if available; otherwise measure current code and retain the before-state gap."
+  },
+  {
+    "id": "V-05d-required",
+    "scenario": "V-05d",
+    "variant": "required",
+    "situation": "Original format, tool or settings identity is incompatible",
+    "oracle": "Disclose incompatibility. Use verified exact preserved pre-edit bytes for compatible remeasurement only if available; otherwise measure current code and retain the before-state gap."
+  },
+  {
+    "id": "V-05e-advisory",
+    "scenario": "V-05e",
+    "variant": "advisory",
+    "situation": "An edited path is outside captured coverage",
+    "oracle": "Do not report it as compared. Apply the authorized added-scope recovery in V-07; disclose any unrecoverable before-state gap."
+  },
+  {
+    "id": "V-05e-required",
+    "scenario": "V-05e",
+    "variant": "required",
+    "situation": "An edited path is outside captured coverage",
+    "oracle": "Do not report it as compared. Apply the authorized added-scope recovery in V-07; disclose any unrecoverable before-state gap."
+  },
+  {
+    "id": "V-05f-advisory",
+    "scenario": "V-05f",
+    "variant": "advisory",
+    "situation": "Launcher/analyzers unavailable at submission",
+    "oracle": "Report unavailable measurement, the actual attempted action or established capability failure, and owner/recovery. No implicit provisioning or fabricated report."
+  },
+  {
+    "id": "V-05f-required",
+    "scenario": "V-05f",
+    "variant": "required",
+    "situation": "Launcher/analyzers unavailable at submission",
+    "oracle": "Report unavailable measurement, the actual attempted action or established capability failure, and owner/recovery. No implicit provisioning or fabricated report."
+  },
+  {
+    "id": "V-07a",
+    "scenario": "V-07a",
+    "variant": "",
+    "situation": "Unexpected new scope; authorization resolved and exact preserved pre-edit bytes exist",
+    "oracle": "Resolve authorized scope before editing it. Add coverage from verified pre-edit evidence without replacing the original covered baseline or relabeling current edits as starting code. Record original and supplemental references."
+  },
+  {
+    "id": "V-07b",
+    "scenario": "V-07b",
+    "variant": "",
+    "situation": "Unexpected scope was edited and no exact pre-edit evidence exists",
+    "oracle": "Disclose an unrecoverable before-state gap; attempt current measurement. Do not invent a clean comparison. Required-evidence policy determines whether advancement must stop, as in V-05."
+  },
+  {
+    "id": "V-07c",
+    "scenario": "V-07c",
+    "variant": "",
+    "situation": "Requested JSON output or its sibling text path already exists",
+    "oracle": "Preserve both existing files. Choose fresh output paths rather than delete or replace reports."
+  },
+  {
+    "id": "V-07d",
+    "scenario": "V-07d",
+    "variant": "",
+    "situation": "Submit to an isolated clone that lacks ignored reports",
+    "oracle": "Name exact JSON/text source files and receiving paths needed by the consumer. Supply transfer instructions; a commit is not report transfer. With transferred files, retain the same logical project and compatibility checks despite absolute-root changes."
+  },
+  {
+    "id": "V-08a",
+    "scenario": "V-08a",
+    "variant": "",
+    "situation": "Registry supplies required native commands",
+    "oracle": "Preserve all inventory fields and execute applicable implementer-owned obligations at their governed scope. A changed-file metric comparison does not narrow a whole-project check."
+  },
+  {
+    "id": "V-08b",
+    "scenario": "V-08b",
+    "variant": "",
+    "situation": "No registry; native command is documented",
+    "oracle": "Discover and retain the documented command/policy/owner. Do not require a registry or invent a replacement command."
+  },
+  {
+    "id": "V-08c",
+    "scenario": "V-08c",
+    "variant": "",
+    "situation": "No native check exists",
+    "oracle": "Record none discovered. Do not invent lint/typecheck commands."
+  },
+  {
+    "id": "V-08d",
+    "scenario": "V-08d",
+    "variant": "",
+    "situation": "Current aggregate establishes constituent command coverage, scope, policy and checked bytes",
+    "oracle": "Reuse it with explicit ART-008 references. Do not run constituents again solely to fill a report section."
+  },
+  {
+    "id": "V-08e",
+    "scenario": "V-08e",
+    "variant": "",
+    "situation": "Aggregate omits the constituent command or required scope",
+    "oracle": "Do not claim constituent coverage. Recover missing required evidence through its real owner or an authorized focused execution."
+  },
+  {
+    "id": "V-08f",
+    "scenario": "V-08f",
+    "variant": "",
+    "situation": "Checked bytes or governed policy changed",
+    "oracle": "Reject stale evidence reuse; recover affected required proof through its owner. Retain unchanged applicable proof without blanket reruns."
+  },
+  {
+    "id": "V-08g",
+    "scenario": "V-08g",
+    "variant": "",
+    "situation": "Required proof missing or command unavailable",
+    "oracle": "Carry the unresolved duty and recovery owner. An entry prerequisite prevents editing; a later-stage duty remains due at that stage. Do not claim completion of a required implementer check."
+  },
+  {
+    "id": "V-08h",
+    "scenario": "V-08h",
+    "variant": "",
+    "situation": "Native hard failure while advisory comparison completes successfully",
+    "oracle": "Preserve the native failure and its policy consequence. Measurement success cannot authorize advancement past that failure."
+  },
+  {
+    "id": "V-08i",
+    "scenario": "V-08i",
+    "variant": "",
+    "situation": "Native hard failure while measurement is N/A",
+    "oracle": "Preserve the same native failure policy and owner; N/A metrics do not waive it."
+  },
+  {
+    "id": "V-08j",
+    "scenario": "V-08j",
+    "variant": "",
+    "situation": "Correct the native failure and rerun its required check on current bytes",
+    "oracle": "Record current successful native evidence with new byte identity; retain historical failure. Success can satisfy that duty without converting advisory metrics into a design verdict."
+  },
+  {
+    "id": "V-09a",
+    "scenario": "V-09a",
+    "variant": "",
+    "situation": "Installation-local evidence helper is available",
+    "oracle": "Preserve the existing single invocation lifecycle. Wrapping the actual comparison is permitted; do not run it twice for capture or create a new lifecycle."
+  },
+  {
+    "id": "V-09b",
+    "scenario": "V-09b",
+    "variant": "",
+    "situation": "Helper unavailable or first best-effort operation fails",
+    "oracle": "Skip instrumentation for the remainder of this invocation without repeated probes. Continue otherwise authorized measurement/work; report instrumentation unavailable separately from measurement status."
+  },
+  {
+    "id": "V-09c",
+    "scenario": "V-09c",
+    "variant": "",
+    "situation": "Explicit contract requires instrumentation; helper unavailable/fails",
+    "oracle": "Retain the strict blocking/non-complete outcome. Do not downgrade to best-effort because metrics work."
+  },
+  {
+    "id": "V-09d",
+    "scenario": "V-09d",
+    "variant": "",
+    "situation": "Instrumentation available but measurement unavailable",
+    "oracle": "Report those two facts separately. An evidence-run record is not a successful comparison."
+  },
+  {
+    "id": "V-10a",
+    "scenario": "V-10a",
+    "variant": "",
+    "situation": "Legacy direct brief, relabeled package, missing/blocked/stale readiness, foreign verification or non-executable parent",
+    "oracle": "Preserve each existing refusal and its earlier owner. Do not bypass preparation to capture measurements."
+  },
+  {
+    "id": "V-10b",
+    "scenario": "V-10b",
+    "variant": "",
+    "situation": "Immediate review or otherwise explicitly required independent review",
+    "oracle": "Guided submission stops at READY_FOR_REVIEW; machine contract retains its schema-defined submission status. Name only outstanding applicable conditional stages, then fresh discovery and separate acceptance. Do not perform or claim independent review in the implementer invocation."
+  },
+  {
+    "id": "V-10c",
+    "scenario": "V-10c",
+    "variant": "",
+    "situation": "Review remains optional; advisory warnings only",
+    "oracle": "Preserve the existing milestone/no-review result and conditional policy. Warnings alone create no new required review stage."
+  },
+  {
+    "id": "V-10d-significant",
+    "scenario": "V-10d",
+    "variant": "significant",
+    "situation": "Significant test/eval/fixture/harness change; separately a trivial tests-only change",
+    "oracle": "Preserve the respective existing maintainability/registry applicability and stage order. Include affected Python assets in measurement without promoting every tests-only change into a mandatory review."
+  },
+  {
+    "id": "V-10d-trivial",
+    "scenario": "V-10d",
+    "variant": "trivial",
+    "situation": "Significant test/eval/fixture/harness change; separately a trivial tests-only change",
+    "oracle": "Preserve the respective existing maintainability/registry applicability and stage order. Include affected Python assets in measurement without promoting every tests-only change into a mandatory review."
+  },
+  {
+    "id": "V-10e",
+    "scenario": "V-10e",
+    "variant": "",
+    "situation": "Interrupted or two-strike stopped task",
+    "oracle": "Preserve non-complete status, actual attempts, unfinished scenario rows and next owners. Do not claim a final comparison or completed review that did not occur."
+  },
+  {
+    "id": "V-11a",
+    "scenario": "V-11a",
+    "variant": "",
+    "situation": "Follow current guidance and links, including superseded proposals",
+    "oracle": "Current instructions lead to plan section 5 and retain targets 10/50/5. Conflicting every-increase defense/new-stage policy is clearly superseded. Historical experiment evidence remains unchanged. Naming, ownership, test/harness and abstraction duties remain intact."
+  },
+  {
+    "id": "V-11b",
+    "scenario": "V-11b",
+    "variant": "",
+    "situation": "Reconcile eval definitions and generated inputs with V-01\u2013V-10",
+    "oracle": "Every material row has supplied inputs, usable tools or an intentional capability fault, authorized report writes and a decisive oracle. Both entry paths, threshold decisions, correction continuity, missing evidence and native failure/reuse are reachable. Distinct original eval scenarios survive."
+  },
+  {
+    "id": "V-11c",
+    "scenario": "V-11c",
+    "variant": "",
+    "situation": "Inspect installer membership, profile guide, shared-file list, focused tests and README installation instructions",
+    "oracle": "Synchronize only entries made stale by this task. Preserve narrow managed ownership and installation-local dependencies. Use disposable installs for changed projection evidence; do not refresh this active invocation."
+  },
+  {
+    "id": "V-11d",
+    "scenario": "V-11d",
+    "variant": "",
+    "situation": "Reconcile implementation evidence and contract changes",
+    "oracle": "Register only implemented current contracts at the designated registry-updater stage. Report actual checks, skips, failures and profile drift. Do not label fixture setup, syntax checks or scripted tool runs as agent qualification."
+  },
+  {
+    "id": "V-06-1",
+    "scenario": "V-06",
+    "variant": "1",
+    "situation": "Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger.",
+    "oracle": "Before correction edits, map every supplied ledger row exactly once to planned implementation evidence or fresh-review coverage. Prior passes are navigation, not current corrected-byte proof. Preserve the failed reviewer regression."
+  },
+  {
+    "id": "V-06-2",
+    "scenario": "V-06",
+    "variant": "2",
+    "situation": "Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger.",
+    "oracle": "Make the bounded correction. Changed bytes stale affected comparison, native evidence and verdicts. Keep unaffected evidence only when still applicable."
+  },
+  {
+    "id": "V-06-3",
+    "scenario": "V-06",
+    "variant": "3",
+    "situation": "Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger.",
+    "oracle": "Run the reviewer regression first, then the nearest owning suite. Leave the reviewer-owned aggregate decision with its owner; report implementation checks separately."
+  },
+  {
+    "id": "V-06-4",
+    "scenario": "V-06",
+    "variant": "4",
+    "situation": "Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger.",
+    "oracle": "Create C2 at new JSON/text paths, comparing corrected bytes to B, not C1. Update applicable rationale. B and C1 remain byte-for-byte unchanged."
+  },
+  {
+    "id": "V-06-5",
+    "scenario": "V-06",
+    "variant": "5",
+    "situation": "Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger.",
+    "oracle": "Submit every ledger row, stable ID, incomplete reason and owner. Keep blocked and unchecked coverage visible. Name the first outstanding conditional stage and full remaining route to fresh discovery and separate acceptance. Do not mark reviewer rows passed or emit an independent verdict."
+  },
+  {
+    "id": "V-06-6",
+    "scenario": "V-06",
+    "variant": "6",
+    "situation": "Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger.",
+    "oracle": "For a subsequent task, capture that task's actual starting code. Do not reuse B as a permanent allowance for high values."
+  },
+  {
+    "id": "V-01e-added",
+    "scenario": "V-01e",
+    "variant": "added",
+    "situation": "A relevant included file is added or removed after capture",
+    "oracle": "Detect the changed inventory; route focused preflight, without accepting the old inventory as current."
+  },
+  {
+    "id": "V-01e-removed",
+    "scenario": "V-01e",
+    "variant": "removed",
+    "situation": "A relevant included file is added or removed after capture",
+    "oracle": "Detect the changed inventory; route focused preflight, without accepting the old inventory as current."
+  }
+]

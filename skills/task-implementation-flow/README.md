@@ -1,5 +1,17 @@
 # Task implementation flow
 
+Implementers consume preflight's original Python baseline or capture it during
+direct self-preflight, then compare final affected code against that same start.
+Corrections retain the original pair and use fresh comparison paths. Current
+policy follows [plan section 5](../../docs/project-plan.md#5-lifecycle-and-decision-rules)
+and the [implementer contract](bounded-task-implementer/SKILL.md#starting-evidence-final-comparison-and-native-duties):
+growth at or below the provisional 10/50/5 targets needs no individual defense;
+retained affected breaches need proportionate rationale. Unknown counts stay
+unknown. Carry native-check scope, policy, current checked bytes and owner beside
+advisory reports; metrics cannot waive required checks. Measurement warnings
+alone create no new review stage. Source eval preparation does not qualify live
+agent behavior or the full installed journey.
+
 These eight task skills provide a reusable implementation discipline without
 making every task carry an orchestration-grade artifact chain. The default is a
 lightweight guided flow. Repositories that enable maintainability guardrails can

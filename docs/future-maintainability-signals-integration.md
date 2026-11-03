@@ -1,5 +1,10 @@
 ## Proposed changes to `measure_maintainability.py`
 
+Policy precedence: [project plan sections 1 and 5](project-plan.md#5-lifecycle-and-decision-rules)
+supersede this proposal's separate deterministic stage and warning for every
+increase. Use existing stages and proportionate retained-breach reasoning.
+The proposal below remains historical context.
+
 Goal: Run a deterministic maintainability check immediately after `bounded-task-implementer`, independently of the implementing agent. Produce evidence for `task-maintainability-review`, without making arbitrary complexity thresholds automatic acceptance failures.
 
 Based on `t-o-new-flow-2` (`f17b93a`), I would make the following changes.

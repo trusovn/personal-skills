@@ -41,6 +41,14 @@
       "children": [],
       "depends_on": ["T-001"]
     },
+    "T-003": {
+      "kind": "executable",
+      "source_plan_task": "T-003",
+      "brief": "docs/tasks/T-003/brief.md",
+      "parent": null,
+      "children": [],
+      "depends_on": ["T-002"]
+    },
     "SIDE-002": {
       "kind": "executable",
       "source_plan_task": null,

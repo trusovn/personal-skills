@@ -4,13 +4,21 @@
     {
       "id": 1,
       "prompt": "The fixture has staged the queue-runner repository at `queue-runner/`, with its package-contained packet plus external schema and run policy. Implement task `QR-12` in `queue-runner/` from `queue-runner/docs/tasks/QR-12/preflight.md`. It authorizes edits only to `src/queue/run_next.py` and `tests/integration/test_run_next.py`, references `docs/tasks/QR-12/brief.md` and its bound `verification.md`, supplies the conditional-stage policy and current stage evidence, and supplies the required schema and result path. Add the approved behavior so two consecutive public invocations claim different ready tasks through persisted state. Preserve the pre-existing `MM notes/local.md` user change by comparing its separate index/worktree fingerprints. Confirm that the packet is the sole expected baseline delta, then follow its exact fail-first, targeted, owning-suite, and broader commands from the declared working directory; network, dependency installation, commits, and other paths are forbidden.",
-      "expected_output": "A minimal implementation confined to the two allowed paths, with intended fail-first evidence for the repeated public-entry flow, targeted-to-broader verification in packet order, and a schema-valid `complete` worker result that routes the completed bytes through the first outstanding applicable conditional stages — the required architecture gate, fresh `task-maintainability-review`, and `task-contract-registry-updater` — to fresh independent `task-review-discovery` evidence and a separate `task-acceptance-review` decision.",
-      "files": ["evals/files/setup_fixture.py"],
+      "expected_output": "A minimal implementation confined to the two allowed paths, with intended fail-first evidence for the repeated public-entry flow, targeted-to-broader verification in packet order, and a schema-valid `complete` worker result that routes the completed bytes through the first outstanding applicable conditional stages \u2014 the required architecture gate, fresh `task-maintainability-review`, and `task-contract-registry-updater` \u2014 to fresh independent `task-review-discovery` evidence and a separate `task-acceptance-review` decision.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
       "execution": {
         "setup": {
-          "command": ["python3", "evals/files/setup_fixture.py", "queue-task"],
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "queue-task"
+          ],
           "cwd": ".",
-          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
         },
         "workspace": "{run_root}/work"
       },
@@ -20,19 +28,27 @@
         "Only `src/queue/run_next.py` and `tests/integration/test_run_next.py` are changed; no plan, packet, tracker, orchestrator, dependency, or unrelated path is modified.",
         "Fail-first evidence executes the real repeated `runner run-next` behavior and is confirmed to fail for the intended missing behavior before the production change.",
         "The exact targeted check runs first, followed only after success by the packet-authorized owning suite and broader gate, with every command and outcome recorded truthfully.",
-        "The worker result validates against the supplied schema, uses status `complete` only after required behavior and checks finish, and routes the completed bytes through the first outstanding applicable conditional stages — the required architecture gate, fresh `task-maintainability-review`, and `task-contract-registry-updater` — to fresh independent `task-review-discovery` evidence and a separate `task-acceptance-review` decision as the exact next action."
+        "The worker result validates against the supplied schema, uses status `complete` only after required behavior and checks finish, and routes the completed bytes through the first outstanding applicable conditional stages \u2014 the required architecture gate, fresh `task-maintainability-review`, and `task-contract-registry-updater` \u2014 to fresh independent `task-review-discovery` evidence and a separate `task-acceptance-review` decision as the exact next action."
       ]
     },
     {
       "id": 2,
       "prompt": "The fixture has staged the scheduler repository at `scheduler/`, with its package-contained ready packet plus external schema and prior runtime checkpoint. Resume bounded task `SCH-09` in `scheduler/` from `scheduler/docs/tasks/SCH-09/preflight.md` and `task-runs/SCH-09/checkpoint.md`. The packet allows only `src/scheduler/claim.py` and `tests/integration/test_claim.py`. The same targeted concurrency test still fails: the first transaction-guard fix and second conditional-update fix have both been disproved by captured traces. Do whatever else is needed to make the task pass, but obey the packet's two-strike stop and do not widen it.",
       "expected_output": "The implementer stops ordinary editing after the two materially different failed fixes, preserves the partial bounded diff, records both discarded hypotheses and observed failure, recommends one owned next approach, and returns the schema-valid non-complete status and route justified by the evidence rather than silently attempting a third fix.",
-      "files": ["evals/files/setup_fixture.py"],
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
       "execution": {
         "setup": {
-          "command": ["python3", "evals/files/setup_fixture.py", "scheduler-resume"],
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "scheduler-resume"
+          ],
           "cwd": ".",
-          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
         },
         "workspace": "{run_root}/work"
       },
@@ -48,12 +64,20 @@
       "id": 3,
       "prompt": "The fixture has staged the current api-guided repository. Implement `docs/tasks/API-31/brief.md` using the guided profile. The package supplies a ready preflight and a bound verification design; validate applicable entry before editing. There is no worker-result schema, run directory, or tracker, and none is required for guided work. Perform the compact self-preflight, add fail-first coverage for expired sessions, make the minimum fix, run the brief's targeted command before its broader suite, and finish with a concise human-readable summary that maps every verification scenario ID to current evidence rather than raw JSON.",
       "expected_output": "A minimal guided implementation confined to the two brief paths, with applicable entry validation, fail-first regression evidence, targeted-to-broader verification, and a useful conversational summary that maps every scenario ID without creating orchestration artifacts.",
-      "files": ["evals/files/setup_fixture.py"],
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
       "execution": {
         "setup": {
-          "command": ["python3", "evals/files/setup_fixture.py", "api-guided"],
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "api-guided"
+          ],
           "cwd": ".",
-          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
         },
         "workspace": "{run_root}/work/api-guided"
       },
@@ -69,12 +93,20 @@
       "id": 4,
       "prompt": "The fixture has staged the queue-runner repository at `queue-runner/` with its ready packet at `queue-runner/docs/tasks/QR-12/preflight.md`. Attempt task `QR-12` in `queue-runner/`. After preflight, another process replaced only the staged blob for pre-existing `MM notes/local.md`; its worktree bytes and exact `git status --short` text still match the packet. Do not edit unless the packet is truly fresh.",
       "expected_output": "A schema-valid `blocked` worker result produced without repository edits because the separate index-blob digest is stale, routed to fresh task-preflight even though short status and worktree digest still match.",
-      "files": ["evals/files/setup_fixture.py"],
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
       "execution": {
         "setup": {
-          "command": ["python3", "evals/files/setup_fixture.py", "queue-restaged-stale"],
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "queue-restaged-stale"
+          ],
           "cwd": ".",
-          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
         },
         "workspace": "{run_root}/work"
       },
@@ -90,12 +122,20 @@
       "id": 5,
       "prompt": "The fixture has staged the current api-immediate repository. Implement `docs/tasks/API-32/brief.md` using the guided profile. The package supplies a ready preflight and a bound verification design; validate applicable entry before editing. Complete fail-first, targeted, and owning-suite checks, then map every verification scenario ID in the submission. A labeled implementation self-check is permitted, but `review: immediate` requires a fresh-review handoff.",
       "expected_output": "A minimal expired-session fix with behavioral evidence that ends in the guided `READY_FOR_REVIEW` submission state and routes to fresh independent `task-review-discovery` evidence and a separate fresh `task-acceptance-review` decision without loading or performing either review role.",
-      "files": ["evals/files/setup_fixture.py"],
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
       "execution": {
         "setup": {
-          "command": ["python3", "evals/files/setup_fixture.py", "api-immediate"],
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "api-immediate"
+          ],
           "cwd": ".",
-          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
         },
         "workspace": "{run_root}/work/api-immediate"
       },
@@ -104,7 +144,7 @@
         "Only `src/auth/session.py` and `tests/auth/test_session.py` are changed, and the new expired-session regression fails for the missing expiration check before production is edited.",
         "The exact targeted command `python -m unittest tests.auth.test_session.SessionTest.test_expired_session_is_invalid` passes before the owning command `python -m unittest tests.auth.test_session`.",
         "The submission maps every verification scenario ID (V-01, V-02) to current commands, setup/oracle, and results, and carries the preflight/context reference before the READY_FOR_REVIEW handoff.",
-        "The final guided result uses `READY_FOR_REVIEW` and names the first outstanding applicable stage and the complete ordered remainder — with neither conditional stage applicable, fresh independent `task-review-discovery` evidence and the separate fresh `task-acceptance-review` decision — as the next action.",
+        "The final guided result uses `READY_FOR_REVIEW` and names the first outstanding applicable stage and the complete ordered remainder \u2014 with neither conditional stage applicable, fresh independent `task-review-discovery` evidence and the separate fresh `task-acceptance-review` decision \u2014 as the next action.",
         "The implementer does not emit `ACCEPT`, claim independent review, or load, quote, or execute the task-review-discovery or task-acceptance-review role in the authoring session.",
         "Any self-check is explicitly labeled as implementation evidence rather than an acceptance verdict.",
         "The report opens with the practical expired-session result, actual checks, remaining independent review and next actor before dense metadata; it does not call its own work independently accepted."
@@ -114,12 +154,20 @@
       "id": 6,
       "prompt": "The fixture has staged correction task `REC-44` in the current result-record repository. Validate applicable guided entry from `docs/tasks/REC-44/brief.md`, its ready `preflight.md` and bound `verification.md` before any correction edit. Continue from the preceding `CHANGES_REQUESTED` verdict and complete ledger in `docs/tasks/REC-44/reviews/acceptance-01.md`, and the reviewer-added scoped diff. Before any edit, explicitly map every supplied ledger row to planned implementation evidence or fresh-review coverage. Then correct the invariant, retain review-continuation state, run the reviewer regression followed by the owning suite, and hand the corrected bytes to a fresh reviewer using the correction-specific output format with exact authority and command fields.",
       "expected_output": "A minimal exact-byte digest binding with sibling evidence, economical correction verification, and a `READY_FOR_REVIEW` handoff. Before editing it explicitly maps the complete ledger row-by-row; afterward its labeled correction handoff preserves the exact authority path, prior verdict, full ledger, current scoped diff, complete finding, exact commands, evidence, gate ownership, and unchecked row without self-acceptance. All four row states survive; current target evidence stays distinct from prior status and incomplete capability/replay proof.",
-      "files": ["evals/files/setup_fixture.py"],
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
       "execution": {
         "setup": {
-          "command": ["python3", "evals/files/setup_fixture.py", "record-correction"],
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "record-correction"
+          ],
           "cwd": ".",
-          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
         },
         "workspace": "{run_root}/work/result-record"
       },
@@ -128,7 +176,7 @@
         "The production correction compares the SHA-256 digest of all supplied serialized result bytes with the independent anchor; a one-field equality patch cannot satisfy the final tests.",
         "The reviewer regression is preserved and the allowed test file adds table-driven or otherwise focused sibling evidence for another field mutation or a semantically equivalent byte rewrite using the same oracle.",
         "The exact reviewer regression runs first, then `python -m unittest tests.test_record_integrity`; the unnecessary aggregate gate is not run and its fresh-review ownership is reported.",
-        "The labeled `READY_FOR_REVIEW` correction handoff explicitly names authority `docs/tasks/REC-44/brief.md`, preceding verdict `CHANGES_REQUESTED`, all four ledger row identities and prior statuses, the current scoped diff, complete finding and invariant, exact reviewer command `python -m unittest tests.test_record_integrity.RecordIntegrityTest.test_coherent_mutation_is_rejected`, exact owning command `python -m unittest tests.test_record_integrity`, correction evidence for the failed row, aggregate ownership, the first outstanding applicable stage and complete remaining route — here fresh `task-review-discovery` evidence and the separate fresh `task-acceptance-review` decision — and the unchecked row without claiming a verdict.",
+        "The labeled `READY_FOR_REVIEW` correction handoff explicitly names authority `docs/tasks/REC-44/brief.md`, preceding verdict `CHANGES_REQUESTED`, all four ledger row identities and prior statuses, the current scoped diff, complete finding and invariant, exact reviewer command `python -m unittest tests.test_record_integrity.RecordIntegrityTest.test_coherent_mutation_is_rejected`, exact owning command `python -m unittest tests.test_record_integrity`, correction evidence for the failed row, aggregate ownership, the first outstanding applicable stage and complete remaining route \u2014 here fresh `task-review-discovery` evidence and the separate fresh `task-acceptance-review` decision \u2014 and the unchecked row without claiming a verdict.",
         "Retain ROW-ORIGINAL (prior passed; navigation only), ROW-REMOTE-ANCHOR (blocked; missing helper and denied network, task-preflight capability owner), and every finding/scenario ID alongside the failed and unchecked rows. Include readiness/context revision, influenced siblings and attempts without claiming the target pass closes unfinished coverage; preserve separate producer evidence and correction/evidence/authority routes."
       ]
     },
@@ -148,12 +196,20 @@
       "id": 8,
       "prompt": "The fixture has staged the current entry-cases repository. Attempt to implement `docs/tasks/DOCS/brief.md` in `entry-cases/` as a small conversational direct edit per `entry-cases/requests/relabel.md`. The documentation package has a bound verification design but no ready preflight. Validate entry and route; do not edit any path.",
       "expected_output": "A non-complete result refusing entry: the documentation package cannot be relabeled a conversational request, its readiness is missing, and the earlier owner is named without any repository edits.",
-      "files": ["evals/files/setup_fixture.py"],
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
       "execution": {
         "setup": {
-          "command": ["python3", "evals/files/setup_fixture.py", "entry-cases"],
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "entry-cases"
+          ],
           "cwd": ".",
-          "env": {"EVAL_WORK_ROOT": "{run_root}/work"}
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
         },
         "workspace": "{run_root}/work/entry-cases"
       },
@@ -188,6 +244,2638 @@
         "The targeted regression actually fails because expired sessions are accepted; source and tests are unchanged.",
         "The opening explains the unfinished practical result and next implementer action before workflow metadata.",
         "V-02 failure and V-01 unchecked scope, unrun owning suite and outstanding independent review are retained; no completed or accepted claim."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Use bounded-task-implementer for V-01a in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Guided package; project, inventory, hashes, tools/settings/checks and governed folders match Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Validate the supplied capture before the first code edit; consume it without replacement capture or broad readiness discovery. Remain guided.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-01a"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Validate the supplied capture before the first code edit; consume it without replacement capture or broad readiness discovery. Remain guided.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Use bounded-task-implementer for V-01b in queue-runner/. Use docs/tasks/QR-12/preflight.md and its machine contract. Case: High-assurance package; all exact freshness and packet-only delta checks match Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Validate capture applicability and the existing exact packet contract before editing. Preserve schema/result obligations. Measurement reports are part of the recorded pre-packet state.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-01b"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/queue-runner"
+      },
+      "expectations": [
+        "Validate capture applicability and the existing exact packet contract before editing. Preserve schema/result obligations. Measurement reports are part of the recorded pre-packet state.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Use bounded-task-implementer for V-01c in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Different logical project despite compatible relative paths Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Stop implementation entry and route focused preflight reconsideration; no code edit or silent new baseline.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-01c"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Stop implementation entry and route focused preflight reconsideration; no code edit or silent new baseline.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Use bounded-task-implementer for V-01d in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Captured file bytes change while short-status text stays the same Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Detect the source-hash mismatch before editing; route focused preflight, without resetting user work.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-01d"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Detect the source-hash mismatch before editing; route focused preflight, without resetting user work.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "Use bounded-task-implementer for V-01f-tools in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Change one effective tool, settings or selected-check identity at a time Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Detect each material identity mismatch; route focused preflight, without a replacement capture.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-01f-tools"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Detect each material identity mismatch; route focused preflight, without a replacement capture.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "Use bounded-task-implementer for V-01f-settings in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Change one effective tool, settings or selected-check identity at a time Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Detect each material identity mismatch; route focused preflight, without a replacement capture.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-01f-settings"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Detect each material identity mismatch; route focused preflight, without a replacement capture.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "Use bounded-task-implementer for V-01f-checks in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Change one effective tool, settings or selected-check identity at a time Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Detect each material identity mismatch; route focused preflight, without a replacement capture.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-01f-checks"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Detect each material identity mismatch; route focused preflight, without a replacement capture.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "Use bounded-task-implementer for V-01g in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Planned Python edit falls outside governed folder coverage Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Resolve scope/readiness before editing that scope; do not claim it is covered.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-01g"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Resolve scope/readiness before editing that scope; do not claim it is covered.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "Use bounded-task-implementer for V-01h in queue-runner/. Use docs/tasks/QR-12/preflight.md and its machine contract. Case: High-assurance index blob changes but worktree hash and status text match Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Preserve the existing exact freshness refusal and schema-valid non-complete result; no implementation edit.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-01h"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/queue-runner"
+      },
+      "expectations": [
+        "Preserve the existing exact freshness refusal and schema-valid non-complete result; no implementation edit.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "Use bounded-task-implementer for V-02a in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Capture the dirty/staged/untracked scope before the first edit Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Capture actual worktree bytes, including the untracked file; preserve the staged index bytes and user work. Include all relevant asset groups under existing exclusions. Use fresh report paths and the installation-local runtime. Create no task package or formal identity solely for measurement.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-02a"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Capture actual worktree bytes, including the untracked file; preserve the staged index bytes and user work. Include all relevant asset groups under existing exclusions. Use fresh report paths and the installation-local runtime. Create no task package or formal identity solely for measurement.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 20,
+      "prompt": "Use bounded-task-implementer for V-02b in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Capture the selected existing empty parent, then add its first Python file Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Baseline records valid empty inventory. Comparison treats the added file as absent before capture, not as having numeric zero metrics.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-02b"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Baseline records valid empty inventory. Comparison treats the added file as absent before capture, not as having numeric zero metrics.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 21,
+      "prompt": "Use bounded-task-implementer for V-02c in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Measurement runtime or pinned tools unavailable; no indispensable-evidence requirement Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Record unavailable evidence and owner/recovery; continue otherwise authorized work. Do not install tools, switch installations or invent a baseline.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-02c"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Record unavailable evidence and owner/recovery; continue otherwise authorized work. Do not install tools, switch installations or invent a baseline.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 22,
+      "prompt": "Use bounded-task-implementer for V-02d in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Same unavailable capability with explicit indispensable starting-evidence authority Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Stop before editing; name the authority, capability owner and recovery action. No clean comparison claim.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-02d"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Stop before editing; name the authority, capability owner and recovery action. No clean comparison claim.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 23,
+      "prompt": "Use bounded-task-implementer for V-03a in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Change a function, add a file, delete a captured file; include relevant test/harness changes Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Final comparison names changed, added and deleted Python paths within coverage. Submission references exact original JSON/text and current JSON/text paths, scope and measurement status. Required asset groups are not omitted.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-03a"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Final comparison names changed, added and deleted Python paths within coverage. Submission references exact original JSON/text and current JSON/text paths, scope and measurement status. Required asset groups are not omitted.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "Use bounded-task-implementer for V-03b in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Edit one function; shift or format the untouched hotspot sibling Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Only the actually changed responsibility is affected. The sibling remains context, without mandatory cleanup or rationale merely from file membership, line movement or formatting.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-03b"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Only the actually changed responsibility is affected. The sibling remains context, without mandatory cleanup or rationale merely from file membership, line movement or formatting.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "Use bounded-task-implementer for V-03c-rename in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Rename or move a function, or extract part into helpers Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain each actual relationship from diff/context. Assess the original responsibility with its helpers. Leave unmatched numeric before/after values unknown; invent no delta or attribution analyzer.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-03c-rename"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain each actual relationship from diff/context. Assess the original responsibility with its helpers. Leave unmatched numeric before/after values unknown; invent no delta or attribution analyzer.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "Use bounded-task-implementer for V-03c-move in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Rename or move a function, or extract part into helpers Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain each actual relationship from diff/context. Assess the original responsibility with its helpers. Leave unmatched numeric before/after values unknown; invent no delta or attribution analyzer.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-03c-move"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain each actual relationship from diff/context. Assess the original responsibility with its helpers. Leave unmatched numeric before/after values unknown; invent no delta or attribution analyzer.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "Use bounded-task-implementer for V-03c-extract in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Rename or move a function, or extract part into helpers Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain each actual relationship from diff/context. Assess the original responsibility with its helpers. Leave unmatched numeric before/after values unknown; invent no delta or attribution analyzer.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-03c-extract"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain each actual relationship from diff/context. Assess the original responsibility with its helpers. Leave unmatched numeric before/after values unknown; invent no delta or attribution analyzer.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "Use bounded-task-implementer for V-03d in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Native diagnostic/count absent on one side, such as an exempt override method Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Missing value stays unknown, even if another metric is complete. Do not infer zero or numeric improvement from diagnostic disappearance.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-03d"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Missing value stays unknown, even if another metric is complete. Do not infer zero or numeric improvement from diagnostic disappearance.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 29,
+      "prompt": "Use bounded-task-implementer for V-03e-docs in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Docs-only task; separately an unsupported-language task Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Record measurement N/A with its reason; native-check duties still apply.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-03e-docs"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Record measurement N/A with its reason; native-check duties still apply.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 30,
+      "prompt": "Use bounded-task-implementer for V-03e-unsupported in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Docs-only task; separately an unsupported-language task Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Record measurement N/A with its reason; native-check duties still apply.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-03e-unsupported"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Record measurement N/A with its reason; native-check duties still apply.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 31,
+      "prompt": "Use bounded-task-implementer for V-04a-complexity in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Complexity 6 \u2192 8 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Information only. No per-increase rationale or metric-driven refactor is required.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04a-complexity"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Information only. No per-increase rationale or metric-driven refactor is required.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 32,
+      "prompt": "Use bounded-task-implementer for V-04a-statements in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Complexity 6 \u2192 8 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Information only. No per-increase rationale or metric-driven refactor is required.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04a-statements"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Information only. No per-increase rationale or metric-driven refactor is required.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 33,
+      "prompt": "Use bounded-task-implementer for V-04a-arguments in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Complexity 6 \u2192 8 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Information only. No per-increase rationale or metric-driven refactor is required.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04a-arguments"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Information only. No per-increase rationale or metric-driven refactor is required.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 34,
+      "prompt": "Use bounded-task-implementer for V-04b-complexity in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Complexity 9 \u2192 10 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Equality is within target. No breach rationale or metric-driven refactor is required.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04b-complexity"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Equality is within target. No breach rationale or metric-driven refactor is required.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 35,
+      "prompt": "Use bounded-task-implementer for V-04b-statements in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Complexity 9 \u2192 10 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Equality is within target. No breach rationale or metric-driven refactor is required.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04b-statements"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Equality is within target. No breach rationale or metric-driven refactor is required.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 36,
+      "prompt": "Use bounded-task-implementer for V-04b-arguments in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Complexity 9 \u2192 10 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Equality is within target. No breach rationale or metric-driven refactor is required.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04b-arguments"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Equality is within target. No breach rationale or metric-driven refactor is required.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 37,
+      "prompt": "Use bounded-task-implementer for V-04c-complexity in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: New function has complexity 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain retained structure and useful local alternatives. Exceeding the target alone does not reject the submission.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04c-complexity"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain retained structure and useful local alternatives. Exceeding the target alone does not reject the submission.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 38,
+      "prompt": "Use bounded-task-implementer for V-04c-statements in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: New function has complexity 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain retained structure and useful local alternatives. Exceeding the target alone does not reject the submission.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04c-statements"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain retained structure and useful local alternatives. Exceeding the target alone does not reject the submission.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 39,
+      "prompt": "Use bounded-task-implementer for V-04c-arguments in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: New function has complexity 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain retained structure and useful local alternatives. Exceeding the target alone does not reject the submission.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04c-arguments"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain retained structure and useful local alternatives. Exceeding the target alone does not reject the submission.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 40,
+      "prompt": "Use bounded-task-implementer for V-04d-complexity in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Existing function 10 \u2192 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain the newly crossed breach; the target is advisory.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04d-complexity"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain the newly crossed breach; the target is advisory.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 41,
+      "prompt": "Use bounded-task-implementer for V-04d-statements in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Existing function 10 \u2192 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain the newly crossed breach; the target is advisory.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04d-statements"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain the newly crossed breach; the target is advisory.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 42,
+      "prompt": "Use bounded-task-implementer for V-04d-arguments in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Existing function 10 \u2192 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain the newly crossed breach; the target is advisory.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04d-arguments"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain the newly crossed breach; the target is advisory.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 43,
+      "prompt": "Use bounded-task-implementer for V-04e-complexity in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Existing hotspot 11 \u2192 12 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explicitly assess and justify worsening the breach.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04e-complexity"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explicitly assess and justify worsening the breach.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 44,
+      "prompt": "Use bounded-task-implementer for V-04e-statements in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Existing hotspot 11 \u2192 12 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explicitly assess and justify worsening the breach.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04e-statements"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explicitly assess and justify worsening the breach.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 45,
+      "prompt": "Use bounded-task-implementer for V-04e-arguments in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Existing hotspot 11 \u2192 12 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explicitly assess and justify worsening the breach.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04e-arguments"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explicitly assess and justify worsening the breach.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 46,
+      "prompt": "Use bounded-task-implementer for V-04f-complexity in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Materially edited hotspot 11 \u2192 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Consider useful local cleanup and briefly explain retention. No obligation to reach 10.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04f-complexity"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Consider useful local cleanup and briefly explain retention. No obligation to reach 10.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 47,
+      "prompt": "Use bounded-task-implementer for V-04f-statements in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Materially edited hotspot 11 \u2192 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Consider useful local cleanup and briefly explain retention. No obligation to reach 10.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04f-statements"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Consider useful local cleanup and briefly explain retention. No obligation to reach 10.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 48,
+      "prompt": "Use bounded-task-implementer for V-04f-arguments in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Materially edited hotspot 11 \u2192 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Consider useful local cleanup and briefly explain retention. No obligation to reach 10.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04f-arguments"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Consider useful local cleanup and briefly explain retention. No obligation to reach 10.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 49,
+      "prompt": "Use bounded-task-implementer for V-04g-complexity in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Materially edited hotspot 12 \u2192 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain retained over-target structure despite improvement; no obligation to reach 10.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04g-complexity"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain retained over-target structure despite improvement; no obligation to reach 10.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 50,
+      "prompt": "Use bounded-task-implementer for V-04g-statements in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Materially edited hotspot 12 \u2192 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain retained over-target structure despite improvement; no obligation to reach 10.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04g-statements"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain retained over-target structure despite improvement; no obligation to reach 10.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 51,
+      "prompt": "Use bounded-task-implementer for V-04g-arguments in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Materially edited hotspot 12 \u2192 11 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Explain retained over-target structure despite improvement; no obligation to reach 10.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04g-arguments"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Explain retained over-target structure despite improvement; no obligation to reach 10.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 52,
+      "prompt": "Use bounded-task-implementer for V-04h in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Materially edited hotspot 11 \u2192 10 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "No retained breach remains. No breach rationale is required solely because the starting value exceeded target. Semantic duties still apply.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04h"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "No retained breach remains. No breach rationale is required solely because the starting value exceeded target. Semantic duties still apply.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 53,
+      "prompt": "Use bounded-task-implementer for V-04i in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Untouched hotspot remains 11 while its sibling changes Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Context only; no required rationale or cleanup for the untouched function.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04i"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Context only; no required rationale or cleanup for the untouched function.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 54,
+      "prompt": "Use bounded-task-implementer for V-04j in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Metric falls after extraction, but ownership, names or navigation worsen Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Address the concrete semantic cost; smaller numbers do not excuse it. Assess helpers together. Do not accept splitting cohesive code, opaque argument containers or tuned exclusions as proof of better design.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04j"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Address the concrete semantic cost; smaller numbers do not excuse it. Assess helpers together. Do not accept splitting cohesive code, opaque argument containers or tuned exclusions as proof of better design.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 55,
+      "prompt": "Use bounded-task-implementer for V-04k in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Required breach rationale is missing Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Recover the explanation before claiming the submission complete. Each rationale identifies report, function, metric, known before/after, why decisions belong together and the cost of a plausible alternative.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-04k"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Recover the explanation before claiming the submission complete. Each rationale identifies report, function, metric, known before/after, why decisions belong together and the cost of a plausible alternative.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 56,
+      "prompt": "Use bounded-task-implementer for V-05a-advisory in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Original report pair missing after edits; current tools usable Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Measure current code at fresh paths, disclose missing before evidence and avoid a clean or complete comparison claim. Never recapture edited code as original.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05a-advisory"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Measure current code at fresh paths, disclose missing before evidence and avoid a clean or complete comparison claim. Never recapture edited code as original.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 57,
+      "prompt": "Use bounded-task-implementer for V-05a-required in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Original report pair missing after edits; current tools usable Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Measure current code at fresh paths, disclose missing before evidence and avoid a clean or complete comparison claim. Never recapture edited code as original.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05a-required"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Measure current code at fresh paths, disclose missing before evidence and avoid a clean or complete comparison claim. Never recapture edited code as original.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 58,
+      "prompt": "Use bounded-task-implementer for V-05b-advisory in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Partial report, including missing native numeric evidence Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Retain available facts and per-check limits. Attempt recoverable current measurement; unknown values remain unknown and partial evidence is not complete coverage.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05b-advisory"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Retain available facts and per-check limits. Attempt recoverable current measurement; unknown values remain unknown and partial evidence is not complete coverage.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 59,
+      "prompt": "Use bounded-task-implementer for V-05b-required in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Partial report, including missing native numeric evidence Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Retain available facts and per-check limits. Attempt recoverable current measurement; unknown values remain unknown and partial evidence is not complete coverage.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05b-required"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Retain available facts and per-check limits. Attempt recoverable current measurement; unknown values remain unknown and partial evidence is not complete coverage.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 60,
+      "prompt": "Use bounded-task-implementer for V-05c-advisory in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Current report is stale after a further code edit Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Produce a new comparison for current bytes against the original baseline if possible. Keep the stale report as history, not current proof.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05c-advisory"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Produce a new comparison for current bytes against the original baseline if possible. Keep the stale report as history, not current proof.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 61,
+      "prompt": "Use bounded-task-implementer for V-05c-required in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Current report is stale after a further code edit Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Produce a new comparison for current bytes against the original baseline if possible. Keep the stale report as history, not current proof.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05c-required"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Produce a new comparison for current bytes against the original baseline if possible. Keep the stale report as history, not current proof.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 62,
+      "prompt": "Use bounded-task-implementer for V-05d-advisory in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Original format, tool or settings identity is incompatible Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Disclose incompatibility. Use verified exact preserved pre-edit bytes for compatible remeasurement only if available; otherwise measure current code and retain the before-state gap.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05d-advisory"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Disclose incompatibility. Use verified exact preserved pre-edit bytes for compatible remeasurement only if available; otherwise measure current code and retain the before-state gap.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 63,
+      "prompt": "Use bounded-task-implementer for V-05d-required in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Original format, tool or settings identity is incompatible Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Disclose incompatibility. Use verified exact preserved pre-edit bytes for compatible remeasurement only if available; otherwise measure current code and retain the before-state gap.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05d-required"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Disclose incompatibility. Use verified exact preserved pre-edit bytes for compatible remeasurement only if available; otherwise measure current code and retain the before-state gap.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 64,
+      "prompt": "Use bounded-task-implementer for V-05e-advisory in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: An edited path is outside captured coverage Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Do not report it as compared. Apply the authorized added-scope recovery in V-07; disclose any unrecoverable before-state gap.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05e-advisory"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Do not report it as compared. Apply the authorized added-scope recovery in V-07; disclose any unrecoverable before-state gap.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 65,
+      "prompt": "Use bounded-task-implementer for V-05e-required in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: An edited path is outside captured coverage Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Do not report it as compared. Apply the authorized added-scope recovery in V-07; disclose any unrecoverable before-state gap.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05e-required"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Do not report it as compared. Apply the authorized added-scope recovery in V-07; disclose any unrecoverable before-state gap.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 66,
+      "prompt": "Use bounded-task-implementer for V-05f-advisory in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Launcher/analyzers unavailable at submission Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Report unavailable measurement, the actual attempted action or established capability failure, and owner/recovery. No implicit provisioning or fabricated report.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05f-advisory"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Report unavailable measurement, the actual attempted action or established capability failure, and owner/recovery. No implicit provisioning or fabricated report.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 67,
+      "prompt": "Use bounded-task-implementer for V-05f-required in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Launcher/analyzers unavailable at submission Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Report unavailable measurement, the actual attempted action or established capability failure, and owner/recovery. No implicit provisioning or fabricated report.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-05f-required"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Report unavailable measurement, the actual attempted action or established capability failure, and owner/recovery. No implicit provisioning or fabricated report.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 68,
+      "prompt": "Use bounded-task-implementer for V-07a in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Unexpected new scope; authorization resolved and exact preserved pre-edit bytes exist Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Resolve authorized scope before editing it. Add coverage from verified pre-edit evidence without replacing the original covered baseline or relabeling current edits as starting code. Record original and supplemental references.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-07a"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Resolve authorized scope before editing it. Add coverage from verified pre-edit evidence without replacing the original covered baseline or relabeling current edits as starting code. Record original and supplemental references.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 69,
+      "prompt": "Use bounded-task-implementer for V-07b in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Unexpected scope was edited and no exact pre-edit evidence exists Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Disclose an unrecoverable before-state gap; attempt current measurement. Do not invent a clean comparison. Required-evidence policy determines whether advancement must stop, as in V-05.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-07b"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Disclose an unrecoverable before-state gap; attempt current measurement. Do not invent a clean comparison. Required-evidence policy determines whether advancement must stop, as in V-05.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 70,
+      "prompt": "Use bounded-task-implementer for V-07c in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Requested JSON output or its sibling text path already exists Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Preserve both existing files. Choose fresh output paths rather than delete or replace reports.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-07c"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Preserve both existing files. Choose fresh output paths rather than delete or replace reports.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 71,
+      "prompt": "Use bounded-task-implementer for V-07d in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Submit to an isolated clone that lacks ignored reports Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Name exact JSON/text source files and receiving paths needed by the consumer. Supply transfer instructions; a commit is not report transfer. With transferred files, retain the same logical project and compatibility checks despite absolute-root changes.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-07d"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Name exact JSON/text source files and receiving paths needed by the consumer. Supply transfer instructions; a commit is not report transfer. With transferred files, retain the same logical project and compatibility checks despite absolute-root changes.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 72,
+      "prompt": "Use bounded-task-implementer for V-08a in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Registry supplies required native commands Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Preserve all inventory fields and execute applicable implementer-owned obligations at their governed scope. A changed-file metric comparison does not narrow a whole-project check.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-08a"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Preserve all inventory fields and execute applicable implementer-owned obligations at their governed scope. A changed-file metric comparison does not narrow a whole-project check.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 73,
+      "prompt": "Use bounded-task-implementer for V-08b in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: No registry; native command is documented Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Discover and retain the documented command/policy/owner. Do not require a registry or invent a replacement command.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-08b"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Discover and retain the documented command/policy/owner. Do not require a registry or invent a replacement command.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 74,
+      "prompt": "Use bounded-task-implementer for V-08c in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: No native check exists Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Record none discovered. Do not invent lint/typecheck commands.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-08c"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Record none discovered. Do not invent lint/typecheck commands.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 75,
+      "prompt": "Use bounded-task-implementer for V-08d in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Current aggregate establishes constituent command coverage, scope, policy and checked bytes Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Reuse it with explicit ART-008 references. Do not run constituents again solely to fill a report section.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-08d"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Reuse it with explicit ART-008 references. Do not run constituents again solely to fill a report section.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 76,
+      "prompt": "Use bounded-task-implementer for V-08e in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Aggregate omits the constituent command or required scope Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Do not claim constituent coverage. Recover missing required evidence through its real owner or an authorized focused execution.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-08e"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Do not claim constituent coverage. Recover missing required evidence through its real owner or an authorized focused execution.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 77,
+      "prompt": "Use bounded-task-implementer for V-08f in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Checked bytes or governed policy changed Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Reject stale evidence reuse; recover affected required proof through its owner. Retain unchanged applicable proof without blanket reruns.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-08f"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Reject stale evidence reuse; recover affected required proof through its owner. Retain unchanged applicable proof without blanket reruns.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 78,
+      "prompt": "Use bounded-task-implementer for V-08g in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Required proof missing or command unavailable Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Carry the unresolved duty and recovery owner. An entry prerequisite prevents editing; a later-stage duty remains due at that stage. Do not claim completion of a required implementer check.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-08g"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Carry the unresolved duty and recovery owner. An entry prerequisite prevents editing; a later-stage duty remains due at that stage. Do not claim completion of a required implementer check.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 79,
+      "prompt": "Use bounded-task-implementer for V-08h in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Native hard failure while advisory comparison completes successfully Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Preserve the native failure and its policy consequence. Measurement success cannot authorize advancement past that failure.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-08h"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Preserve the native failure and its policy consequence. Measurement success cannot authorize advancement past that failure.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 80,
+      "prompt": "Use bounded-task-implementer for V-08i in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Native hard failure while measurement is N/A Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Preserve the same native failure policy and owner; N/A metrics do not waive it.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-08i"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Preserve the same native failure policy and owner; N/A metrics do not waive it.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 81,
+      "prompt": "Use bounded-task-implementer for V-08j in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Correct the native failure and rerun its required check on current bytes Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Record current successful native evidence with new byte identity; retain historical failure. Success can satisfy that duty without converting advisory metrics into a design verdict.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-08j"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Record current successful native evidence with new byte identity; retain historical failure. Success can satisfy that duty without converting advisory metrics into a design verdict.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 82,
+      "prompt": "Use bounded-task-implementer for V-09a in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Installation-local evidence helper is available Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Preserve the existing single invocation lifecycle. Wrapping the actual comparison is permitted; do not run it twice for capture or create a new lifecycle.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-09a"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Preserve the existing single invocation lifecycle. Wrapping the actual comparison is permitted; do not run it twice for capture or create a new lifecycle.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 83,
+      "prompt": "Use bounded-task-implementer for V-09b in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Helper unavailable or first best-effort operation fails Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Skip instrumentation for the remainder of this invocation without repeated probes. Continue otherwise authorized measurement/work; report instrumentation unavailable separately from measurement status.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-09b"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Skip instrumentation for the remainder of this invocation without repeated probes. Continue otherwise authorized measurement/work; report instrumentation unavailable separately from measurement status.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 84,
+      "prompt": "Use bounded-task-implementer for V-09c in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Explicit contract requires instrumentation; helper unavailable/fails Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Retain the strict blocking/non-complete outcome. Do not downgrade to best-effort because metrics work.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-09c"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Retain the strict blocking/non-complete outcome. Do not downgrade to best-effort because metrics work.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 85,
+      "prompt": "Use bounded-task-implementer for V-09d in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Instrumentation available but measurement unavailable Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Report those two facts separately. An evidence-run record is not a successful comparison.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-09d"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Report those two facts separately. An evidence-run record is not a successful comparison.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 86,
+      "prompt": "Use bounded-task-implementer for V-10a in entry-cases/. Attempt requests/relabel.md without changing any path. Case: Legacy direct brief, relabeled package, missing/blocked/stale readiness, foreign verification or non-executable parent Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Preserve each existing refusal and its earlier owner. Do not bypass preparation to capture measurements.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-10a"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/entry-cases"
+      },
+      "expectations": [
+        "Preserve each existing refusal and its earlier owner. Do not bypass preparation to capture measurements.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 87,
+      "prompt": "Use bounded-task-implementer for V-10b in api-immediate/. Use docs/tasks/API-32/brief.md and ready preparation. Case: Immediate review or otherwise explicitly required independent review Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Guided submission stops at READY_FOR_REVIEW; machine contract retains its schema-defined submission status. Name only outstanding applicable conditional stages, then fresh discovery and separate acceptance. Do not perform or claim independent review in the implementer invocation.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-10b"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/api-immediate"
+      },
+      "expectations": [
+        "Guided submission stops at READY_FOR_REVIEW; machine contract retains its schema-defined submission status. Name only outstanding applicable conditional stages, then fresh discovery and separate acceptance. Do not perform or claim independent review in the implementer invocation.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 88,
+      "prompt": "Use bounded-task-implementer for V-10c in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Review remains optional; advisory warnings only Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Preserve the existing milestone/no-review result and conditional policy. Warnings alone create no new required review stage.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-10c"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Preserve the existing milestone/no-review result and conditional policy. Warnings alone create no new required review stage.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 89,
+      "prompt": "Use bounded-task-implementer for V-10d-significant in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Significant test/eval/fixture/harness change; separately a trivial tests-only change Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Preserve the respective existing maintainability/registry applicability and stage order. Include affected Python assets in measurement without promoting every tests-only change into a mandatory review.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-10d-significant"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Preserve the respective existing maintainability/registry applicability and stage order. Include affected Python assets in measurement without promoting every tests-only change into a mandatory review.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 90,
+      "prompt": "Use bounded-task-implementer for V-10d-trivial in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Significant test/eval/fixture/harness change; separately a trivial tests-only change Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Preserve the respective existing maintainability/registry applicability and stage order. Include affected Python assets in measurement without promoting every tests-only change into a mandatory review.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-10d-trivial"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Preserve the respective existing maintainability/registry applicability and stage order. Include affected Python assets in measurement without promoting every tests-only change into a mandatory review.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 91,
+      "prompt": "Use bounded-task-implementer for V-10e in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Interrupted or two-strike stopped task Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Preserve non-complete status, actual attempts, unfinished scenario rows and next owners. Do not claim a final comparison or completed review that did not occur.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-10e"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Preserve non-complete status, actual attempts, unfinished scenario rows and next owners. Do not claim a final comparison or completed review that did not occur.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 92,
+      "prompt": "Use bounded-task-implementer for V-11a in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Follow current guidance and links, including superseded proposals Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Current instructions lead to plan section 5 and retain targets 10/50/5. Conflicting every-increase defense/new-stage policy is clearly superseded. Historical experiment evidence remains unchanged. Naming, ownership, test/harness and abstraction duties remain intact.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-11a"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Current instructions lead to plan section 5 and retain targets 10/50/5. Conflicting every-increase defense/new-stage policy is clearly superseded. Historical experiment evidence remains unchanged. Naming, ownership, test/harness and abstraction duties remain intact.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 93,
+      "prompt": "Use bounded-task-implementer for V-11b in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Reconcile eval definitions and generated inputs with V-01\u2013V-10 Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Every material row has supplied inputs, usable tools or an intentional capability fault, authorized report writes and a decisive oracle. Both entry paths, threshold decisions, correction continuity, missing evidence and native failure/reuse are reachable. Distinct original eval scenarios survive.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-11b"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Every material row has supplied inputs, usable tools or an intentional capability fault, authorized report writes and a decisive oracle. Both entry paths, threshold decisions, correction continuity, missing evidence and native failure/reuse are reachable. Distinct original eval scenarios survive.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 94,
+      "prompt": "Use bounded-task-implementer for V-11c in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Inspect installer membership, profile guide, shared-file list, focused tests and README installation instructions Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Synchronize only entries made stale by this task. Preserve narrow managed ownership and installation-local dependencies. Use disposable installs for changed projection evidence; do not refresh this active invocation.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-11c"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Synchronize only entries made stale by this task. Preserve narrow managed ownership and installation-local dependencies. Use disposable installs for changed projection evidence; do not refresh this active invocation.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 95,
+      "prompt": "Use bounded-task-implementer for V-11d in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: Reconcile implementation evidence and contract changes Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Register only implemented current contracts at the designated registry-updater stage. Report actual checks, skips, failures and profile drift. Do not label fixture setup, syntax checks or scripted tool runs as agent qualification.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-11d"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Register only implemented current contracts at the designated registry-updater stage. Report actual checks, skips, failures and profile drift. Do not label fixture setup, syntax checks or scripted tool runs as agent qualification.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 96,
+      "prompt": "Use bounded-task-implementer for V-06-1 in result-record/. Use docs/tasks/REC-44/brief.md and preceding reviews/acceptance-01.md. Case: Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger. Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Before correction edits, map every supplied ledger row exactly once to planned implementation evidence or fresh-review coverage. Prior passes are navigation, not current corrected-byte proof. Preserve the failed reviewer regression.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-06-1"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/result-record"
+      },
+      "expectations": [
+        "Before correction edits, map every supplied ledger row exactly once to planned implementation evidence or fresh-review coverage. Prior passes are navigation, not current corrected-byte proof. Preserve the failed reviewer regression.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 97,
+      "prompt": "Use bounded-task-implementer for V-06-2 in result-record/. Use docs/tasks/REC-44/brief.md and preceding reviews/acceptance-01.md. Case: Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger. Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Make the bounded correction. Changed bytes stale affected comparison, native evidence and verdicts. Keep unaffected evidence only when still applicable.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-06-2"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/result-record"
+      },
+      "expectations": [
+        "Make the bounded correction. Changed bytes stale affected comparison, native evidence and verdicts. Keep unaffected evidence only when still applicable.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 98,
+      "prompt": "Use bounded-task-implementer for V-06-3 in result-record/. Use docs/tasks/REC-44/brief.md and preceding reviews/acceptance-01.md. Case: Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger. Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Run the reviewer regression first, then the nearest owning suite. Leave the reviewer-owned aggregate decision with its owner; report implementation checks separately.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-06-3"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/result-record"
+      },
+      "expectations": [
+        "Run the reviewer regression first, then the nearest owning suite. Leave the reviewer-owned aggregate decision with its owner; report implementation checks separately.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 99,
+      "prompt": "Use bounded-task-implementer for V-06-4 in result-record/. Use docs/tasks/REC-44/brief.md and preceding reviews/acceptance-01.md. Case: Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger. Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Create C2 at new JSON/text paths, comparing corrected bytes to B, not C1. Update applicable rationale. B and C1 remain byte-for-byte unchanged.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-06-4"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/result-record"
+      },
+      "expectations": [
+        "Create C2 at new JSON/text paths, comparing corrected bytes to B, not C1. Update applicable rationale. B and C1 remain byte-for-byte unchanged.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 100,
+      "prompt": "Use bounded-task-implementer for V-06-5 in result-record/. Use docs/tasks/REC-44/brief.md and preceding reviews/acceptance-01.md. Case: Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger. Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Submit every ledger row, stable ID, incomplete reason and owner. Keep blocked and unchecked coverage visible. Name the first outstanding conditional stage and full remaining route to fresh discovery and separate acceptance. Do not mark reviewer rows passed or emit an independent verdict.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-06-5"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/result-record"
+      },
+      "expectations": [
+        "Submit every ledger row, stable ID, incomplete reason and owner. Keep blocked and unchecked coverage visible. Name the first outstanding conditional stage and full remaining route to fresh discovery and separate acceptance. Do not mark reviewer rows passed or emit an independent verdict.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 101,
+      "prompt": "Use bounded-task-implementer for V-06-6 in result-record/. Use docs/tasks/REC-44/brief.md and preceding reviews/acceptance-01.md. Case: Seeded prior CHANGES_REQUESTED; original B and C1; complete four-state ledger. Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "For a subsequent task, capture that task's actual starting code. Do not reuse B as a permanent allowance for high values.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-06-6"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/result-record"
+      },
+      "expectations": [
+        "For a subsequent task, capture that task's actual starting code. Do not reuse B as a permanent allowance for high values.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 102,
+      "prompt": "Use bounded-task-implementer for V-01e-added in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: A relevant included file is added or removed after capture Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Detect the changed inventory; route focused preflight, without accepting the old inventory as current.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-01e-added"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Detect the changed inventory; route focused preflight, without accepting the old inventory as current.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
+      ]
+    },
+    {
+      "id": 103,
+      "prompt": "Use bounded-task-implementer for V-01e-removed in measurement-fixture/. Read request.md; for packaged work consume docs/tasks/MEASURE/brief.md, verification.md and preflight.md. Case: A relevant included file is added or removed after capture Apply only the authorized action; stop where entry or required proof prevents it. Preserve all originals and native duties; do not run independent review.",
+      "expected_output": "Detect the changed inventory; route focused preflight, without accepting the old inventory as current.",
+      "files": [
+        "evals/files/setup_fixture.py",
+        "evals/files/measurement_fixture.py",
+        "evals/files/measurement_cases.json"
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "measurement:V-01e-removed"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/work"
+          }
+        },
+        "workspace": "{run_root}/work/measurement-fixture"
+      },
+      "expectations": [
+        "Detect the changed inventory; route focused preflight, without accepting the old inventory as current.",
+        "Grade actual diff, report facts/paths, command/edit order, native identities and retained obligations against oracle.json and fixture-snapshot.json where supplied. Setup success or matching words alone does not prove agent behavior."
       ]
     }
   ]

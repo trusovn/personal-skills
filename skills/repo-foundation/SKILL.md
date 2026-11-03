@@ -1,12 +1,10 @@
 ---
 name: repo-foundation
-description: >
-  Use this skill when creating, restructuring, or standardizing repository architecture, top-level
-  project layout, module boundaries, repo-local tools, scripts, lint/test/typecheck commands, CI
-  gates, repo-local agent instructions, architecture/project maps, ADRs, module docs, or "where
-  should this live?" decisions. Use it when an implementation needs new top-level folders, modules,
-  tooling, generated-code flows, or durable placement rules. This skill is especially important
-  when future LLM agents will maintain the repo and token-efficient navigation matters.
+description: >-
+  Create, restructure or standardize repository architecture, layout, module boundaries,
+  tools/scripts, lint/test/typecheck commands, CI, agent instructions, maps, ADRs and
+  module docs. Use for new folders/modules/tooling, generated-code flows or placement
+  rules, especially for future LLM maintainers.
 ---
 # Repo Foundation
 

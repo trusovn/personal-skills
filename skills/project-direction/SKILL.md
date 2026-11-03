@@ -1,14 +1,11 @@
 ---
 name: project-direction
 description: >-
-  Create, extract, audit, or rebaseline a plain-language governing direction
-  for a project, product, feature, system, or workflow before or during
-  technical planning. Use when the user wants to decide or clarify the desired
-  experience, ordered priorities, first useful proof, scope, non-goals, trust
-  boundaries, intervention boundaries, or decision ownership; when existing
-  plans are too technical for the owner to govern; or when a mid-project change
-  needs a direction delta. Produce an owner-editable direction, not research,
-  architecture, a PRD, or an implementation plan.
+  Create, extract, audit, or rebaseline owner-editable direction for a project, product,
+  feature, system, or workflow before/during technical planning or mid-project change.
+  Clarify experience, priorities, first proof, scope/non-goals, trust/intervention
+  boundaries and decision ownership; translate plans too technical to govern. Excludes
+  research, architecture, PRDs and implementation plans.
 ---
 
 # Project Direction

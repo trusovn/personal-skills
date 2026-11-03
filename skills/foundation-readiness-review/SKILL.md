@@ -1,11 +1,10 @@
 ---
 name: foundation-readiness-review
-description: >
-  Use after repo-level foundation changes are materialized and BEFORE detailed product planning or
-  implementation. Independently verify that an unfamiliar agent can navigate, bootstrap, run, test,
-  inspect failures, and follow repo rules from persisted artifacts. Also recommend the cheapest safe
-  next delivery route: PERSONAL_FLOW, SDD_QUICK, SDD_STANDARD, or SDD_FULL. Produces
-  docs/foundation-review.md. Do not review product functionality here.
+description: >-
+  Independently review materialized repo foundations before detailed product planning or
+  implementation: can an unfamiliar agent navigate, bootstrap, run, test, inspect
+  failures and follow persisted rules? Recommend the cheapest safe next delivery route.
+  Excludes product functionality review.
 ---
 # Foundation Readiness Review
 

@@ -1,14 +1,10 @@
 ---
 name: project-bootstrap
-description: >
-  Use at the very beginning of a software project, after a high-level
-  objective and repository/scaffold are available but BEFORE detailed product specification,
-  architecture design, roadmap creation, task decomposition, or implementation. Establish the
-  minimum project charter and engineering-foundation plan another agent needs to work effectively.
-  Produces docs/project-charter.md and docs/foundation-plan.md. When the product or runtime itself
-  includes model-dependent behavior, route through ai-flow-foundation before handing repo-level
-  materialization to repo-foundation; otherwise route directly to repo-foundation. Do not use this
-  skill to plan features.
+description: >-
+  Establish the initial project charter and engineering-foundation plan once an
+  objective and repository/scaffold exist, before specification, architecture, roadmap,
+  task planning or implementation. For product/runtime AI, route via ai-flow-foundation
+  to repo-foundation; otherwise directly. Not feature planning.
 ---
 # Project Bootstrap
 

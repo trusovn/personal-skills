@@ -1,12 +1,11 @@
 ---
 name: architecture-guardrails
-description: >
-  Use when a repository needs new or repaired deterministic architecture/maintainability guardrails:
-  dependency-direction rules, forbidden imports, cycle/boundary checks, a canonical architecture
-  command, legacy no-regression baselines, or a short agent-facing maintainability contract. Usually
-  invoked during repo-foundation materialization or an explicit foundation change. Encode existing or
-  deliberately chosen invariants; do not redesign product architecture or turn heuristic
-  size/complexity metrics into universal hard failures.
+description: >-
+  Create or repair deterministic architecture/maintainability guardrails:
+  dependency/import/cycle/boundary rules, a canonical command, legacy no-regression
+  baselines or an agent contract. Use during repo-foundation or explicit foundation
+  changes for chosen invariants; exclude product redesign and universal heuristic
+  size/complexity failures.
 ---
 # Architecture Guardrails
 

@@ -1,12 +1,10 @@
 ---
 name: ai-flow-foundation
-description: >
-  Use during pre-planning foundation work when the product or runtime itself will call an AI/LLM/model
-  as part of its data or process flow. Establish testable boundaries, deterministic validation,
-  fake/provider seams, eval/trace locations, retry/idempotency constraints, and safe side-effect
-  boundaries BEFORE detailed prompt/workflow/feature design. Produces docs/ai-foundation.md. Do not
-  use merely because coding agents will develop or maintain the repository; repo-foundation owns
-  agent-legible repository setup. Do not use to optimize prompts or design detailed agent behavior.
+description: >-
+  Establish testable AI boundaries during pre-planning when the product/runtime calls a
+  model in its data/process flow, before prompt, workflow or feature design. Not prompt
+  optimization or detailed agent design; not merely because
+  coding agents will develop or maintain the repo (use repo-foundation).
 ---
 
 # AI Flow Foundation

@@ -215,6 +215,13 @@ requires no digest ledger or machine schema. Strict high-assurance checks remain
 
 ### When standalone preflight adds value
 
+Source `task-preflight` now carries original Python measurement references and
+native-check obligations in both readiness profiles. See the
+[producer contract](../../docs/contracts/measurement.json) for its boundary
+and [packet template](task-preflight/references/execution-packet-template.md)
+for the handoff fields. This producer guidance does not establish downstream
+consumer execution or live agent compliance.
+
 Use ready standalone `task-preflight` for an executable task package. An
 unpackaged direct edit may use the implementer's compact self-preflight. The
 standalone pass resolves readiness facts such as:

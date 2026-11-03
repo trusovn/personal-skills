@@ -13,7 +13,16 @@
     "ART-007": [
       "measurement"
     ],
+    "CAP-002": [
+      "measurement"
+    ],
+    "FLOW-002-S01": [
+      "measurement"
+    ],
     "IF-001": [
+      "measurement"
+    ],
+    "IF-002": [
       "measurement"
     ],
     "IF-004": [
@@ -75,7 +84,8 @@
         "scripts/maintainability-ruff-default.toml",
         "scripts/maintainability.py",
         "scripts/maintainability_env.py",
-        "scripts/measure_maintainability.py"
+        "scripts/measure_maintainability.py",
+        "skills/task-implementation-flow/task-preflight"
       ]
     },
     {

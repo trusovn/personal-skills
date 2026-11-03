@@ -49,6 +49,32 @@ reconsideration; expected implementation/report effects alone do not force full
 rediscovery. Requirement changes return to task design. None of these guided
 rules relax the high-assurance addendum below.
 
+## Starting evidence and native obligations (both profiles)
+
+- Measurement: `<complete / partial / missing / incompatible / unavailable / N/A;
+  reason, explicit indispensable-evidence policy if any, owner/recovery>`.
+- Original JSON / text: `<exact fresh paths; retain both through corrections>`.
+- Scope / origin / project: `<governed folders and exclusions/asset groups,
+  actual pre-edit worktree capture origin, logical project binding>`.
+- Report facts: `<references to files inventory/source hashes, identity,
+  effective settings, measurement_status and full_profile; no second dossier>`.
+- Consumer check: `<before first edit verify project, included inventory and hashes,
+  effective tools/settings/checks and folder coverage; mismatch requires focused
+  readiness reconsideration, not silent recapture>`.
+- Correction / added scope: `<original retained; authorized expansion and exact
+  preserved pre-edit evidence, or explicit unrecoverable gap>`.
+- Clone transfer: `<exact JSON/text source and receiving paths; ignored files
+  require explicit transfer, not commits>`.
+
+| Native command | Governed scope | Policy reference / requiredness | Existing owner / stage | Current evidence / checked bytes / constituent coverage | Owed duty / recovery |
+|---|---|---|---|---|---|
+| `<exact command or none discovered>` | `<including whole-project scope>` | `<entry prerequisite or later duty>` | `<existing owner>` | `<current applicable evidence or gap>` | `<owner/action; entry failure blocks>` |
+
+Do not run all gates to populate this table. Reuse aggregate evidence only with
+established command coverage, scope, policy and current bytes. Advisory evidence
+cannot discharge native duties. High-assurance capture occurs before its exact
+baseline; the packet-only delta rule below remains unchanged.
+
 ## Warnings, blockers, and next action
 
 | Condition | Effect | Owner | Smallest next action |

@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "id": "measurement",
-  "summary": "Portable advisory Python measurement runtime, target-aware settings/setup, format-5 neutral reports and empty-folder baselines, with T-001.3 foundation discovery guidance and installed-composition test authority. Later task-flow integration and live agent compliance remain outside this record.",
-  "owner_paths": ["scripts/measure_maintainability.py", "scripts/maintainability.py", "scripts/maintainability_env.py", "scripts/maintainability-default.toml", "scripts/maintainability-ruff-default.toml", "scripts/maintainability-requirements.txt"],
+  "summary": "Portable advisory Python measurement runtime, foundation discovery and standalone preflight producer guidance. Downstream implementer/reviewer consumption and live agent compliance remain unqualified.",
+  "owner_paths": ["scripts/measure_maintainability.py", "scripts/maintainability.py", "scripts/maintainability_env.py", "scripts/maintainability-default.toml", "scripts/maintainability-ruff-default.toml", "scripts/maintainability-requirements.txt", "skills/task-implementation-flow/task-preflight"],
   "provides": [
     {
       "name": "portable-measurement-cli",
@@ -17,6 +17,31 @@
       "summary": "Foundation guidance discovers native checks once through an existing registry/equivalent or documented commands and exposes enabled installed advisory measurement beside them. Carry command, governed scope, policy reference, requiredness and declared stage owner. Preserve whole-project scope and existing review duties; reuse aggregate evidence only for matching scope, policy and checked bytes. Missing/stale required proof retains its native owner and recovery route. No new linter, typechecker, mandatory registry, runner or review stage is introduced. This is foundation guidance, not completed downstream task-flow integration or agent-compliance qualification.",
       "plan_refs": ["IF-004"],
       "declarations": ["skills/repo-foundation/SKILL.md", "skills/architecture-guardrails/SKILL.md"]
+    },
+    {
+      "name": "starting-evidence-producer",
+      "kind": "skill-guidance",
+      "summary": "After resolving scope, ownership and write permission, attempt installation-local baseline capture for authorized supported Python work before edits. Cover relevant production, test, eval, fixture and harness folders, including existing empty parents. Use fresh JSON/text paths and actual dirty/staged/untracked worktree bytes without changing source or the real index. No implicit setup or helper fallback. This implements the standalone preflight producer portion only.",
+      "plan_refs": [
+        "IF-002",
+        "CAP-002",
+        "FLOW-002-S01"
+      ],
+      "declarations": [
+        "skills/task-implementation-flow/task-preflight/SKILL.md"
+      ]
+    },
+    {
+      "name": "native-obligations-handoff",
+      "kind": "skill-guidance",
+      "summary": "Discover native commands through current registry/equivalent or documented policy; record none when absent. Carry exact command, governed scope, policy, requiredness, existing stage owner, current evidence and owed duties. Reuse aggregate evidence only with established constituent coverage, scope, policy and checked bytes. Later-owner duties remain owed; failed or unavailable required entry evidence blocks. Do not run all gates merely to populate readiness.",
+      "plan_refs": [
+        "IF-004"
+      ],
+      "declarations": [
+        "skills/task-implementation-flow/task-preflight/SKILL.md",
+        "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md"
+      ]
     }
   ],
   "artifacts": [
@@ -43,6 +68,18 @@
       "summary": "Reusable local tests exercise a disposable installation from an unrelated cwd after deleting its source distribution: dirty/staged/untracked capture, edits/additions/deletions, empty-folder capture, settings and refusal cases, report/source/index preservation, managed-resource drift/refresh, and real native F401 failure beside successful advisory measurement. Real analyzer cases require pinned tools; skips do not qualify them. T-001.3 results record implementation execution claims and limits, not independent acceptance or live agent behavior.",
       "plan_refs": ["ART-006"],
       "declarations": ["tests/test_maintainability.py", "tests/test_install_development_skills.py", "docs/tasks/T-001.3/results.md"]
+    },
+    {
+      "name": "starting-evidence-readiness-reference",
+      "summary": "Both readiness profiles reference the original JSON/text pair, governed folders, capture origin, logical project binding and report inventory/hash/identity/settings/status facts. The consumer is instructed to verify current applicability before its first edit. Corrections retain the original; added scope requires authorized exact preserved pre-edit evidence or an explicit gap. Clone transfer names both source files and receiving paths. High-assurance report preparation precedes its exact packet baseline without relaxing packet-only freshness checks.",
+      "plan_refs": [
+        "ART-002",
+        "ART-006"
+      ],
+      "declarations": [
+        "skills/task-implementation-flow/task-preflight/SKILL.md",
+        "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md"
+      ]
     }
   ],
   "state_owned": [
@@ -57,7 +94,21 @@
     {"statement": "Measurement captures actual dirty, staged and untracked source bytes without changing source or the real index; saved JSON/text reports are not overwritten. Retaining one original task baseline across corrections remains a workflow obligation.", "plan_refs": ["INV-002", "INV-007"]},
     {"statement": "Comparison requires compatible tool/settings/scope identity; missing native numeric evidence remains unknown rather than zero.", "plan_refs": ["INV-003"]},
     {"statement": "Installed runtime resources and pins come from one installation; refresh preserves unrelated target files, target policy, native environments and reports.", "plan_refs": ["INV-006"]},
-    {"statement": "Measurement never installs packages and colocated hashes do not establish tamper resistance.", "plan_refs": ["INV-007"]}
+    {"statement": "Measurement never installs packages and colocated hashes do not establish tamper resistance.", "plan_refs": ["INV-007"]},
+    {
+      "statement": "Original reports and source/index bytes are preserved; edited code is never relabeled as starting evidence. Applicability requires project, inventory, hashes, identity and coverage checks, not equal short-status text.",
+      "plan_refs": [
+        "INV-002",
+        "INV-003",
+        "INV-007"
+      ]
+    },
+    {
+      "statement": "Docs-only or unsupported-language measurement is N/A. Missing, partial or incompatible evidence remains visible; advisory gaps block only under explicit indispensable-evidence policy. Native entry prerequisites and whole-project scope remain binding regardless of advisory status.",
+      "plan_refs": [
+        "INV-009"
+      ]
+    }
   ],
-  "module_docs": ["scripts/measure-maintainability.md", "skills/README.md", "README.md"]
+  "module_docs": ["scripts/measure-maintainability.md", "skills/README.md", "README.md", "skills/task-implementation-flow/README.md"]
 }

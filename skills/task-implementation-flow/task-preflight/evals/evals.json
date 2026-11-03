@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "First run `python3 evals/files/setup_fixture.py queue-ready` to create the supplied real Git fixture. Preflight task brief `docs/tasks/QR-12/brief.md` in `/work/queue-runner` and write the packet to `docs/tasks/QR-12/preflight.md`. Dependency `QR-11` is complete in `.runner/tracker.json`, and run policy `/work/task-runs/policies/local-medium-v1.json` permits cheap local tests, the canonical packet write, but no network or commits. The brief cites helper `tests/helpers/queue_state.py` and candidate test `test_second_selection` in `tests/integration/test_run_next.py`; this repository requires `uv run pytest`, and the parametrized node id contains spaces and square brackets. Resolve the real helper interface and exact invocation from the tree, run only the authorized targeted baseline, and make no repository change except the packet.",
+      "prompt": "First run `python3 evals/files/setup_fixture.py queue-ready` to create the supplied real Git fixture. Preflight task brief `docs/tasks/QR-12/brief.md` in `/work/queue-runner` and write the packet to `docs/tasks/QR-12/preflight.md`. Dependency `QR-11` is complete in `.runner/tracker.json`, and run policy `/work/task-runs/policies/local-medium-v1.json` permits cheap local tests, the canonical packet write, but no network or commits. The brief cites helper `tests/helpers/queue_state.py` and candidate test `test_second_selection` in `tests/integration/test_run_next.py`; this repository requires `uv run pytest`, and the parametrized node id contains spaces and square brackets. Resolve the real helper interface and exact invocation from the tree, run only the authorized targeted baseline, and permit only the packet and authorized fresh .quality/reports JSON/text baseline writes; preserve earlier reports.",
       "expected_output": "A fresh `ready` packet that records all baseline, policy, and task-local verification-design digests; confirms the helper, AC/scenario oracles, and supplies the exact quoted copy-pasteable pytest node invocation with working directory, environment, expected signal, and truthful baseline result.",
       "files": [
         "evals/files/setup_fixture.py"
@@ -14,7 +14,7 @@
         "The command record includes working directory, required environment, purpose, expected signal, cost/authorization, whether it ran, and its truthful result.",
         "The packet records the brief, dependency source, applicable instructions, run policy, HEAD, exact Git status, and required content digests.",
         "The packet records `docs/tasks/QR-12/verification.md` and its lowercase SHA-256, treats it as derived guidance under the brief, and maps V-01 and V-02 to commands or explicit oracles without dropping either scenario.",
-        "The packet records exact pre-write and post-write Git status, attributes only `docs/tasks/QR-12/preflight.md`, and confirms every non-packet identity is unchanged.",
+        "The packet records exact pre-write and post-write Git status, attributes only `docs/tasks/QR-12/preflight.md` after authorized report preparation precedes the exact baseline, and confirms every non-packet identity is unchanged.",
         "The output does not edit source, tests, helpers, tracker state, task-orchestrator, or dependencies."
       ],
       "execution": {
@@ -101,7 +101,7 @@
     },
     {
       "id": 5,
-      "prompt": "First run `python3 evals/files/setup_fixture.py queue-guided` to create the clean fixture at `/work/queue-runner`. Perform a guided packaged preflight for `docs/tasks/QR-12/brief.md`; no packet path, run policy file, digest ledger, result schema, or durable artifact is requested. Confirm scope and ownership, resolve the targeted command and relevant helper, and assess whether the existing test actually proves the repeated public behavior. The allowed test file may be extended by implementation with fail-first coverage. Write only canonical docs/tasks/QR-12/preflight.md; preserve all other paths.",
+      "prompt": "First run `python3 evals/files/setup_fixture.py queue-guided` to create the clean fixture at `/work/queue-runner`. Perform a guided packaged preflight for `docs/tasks/QR-12/brief.md`; no packet path, run policy file, digest ledger, result schema, or durable artifact is requested. Confirm scope and ownership, resolve the targeted command and relevant helper, and assess whether the existing test actually proves the repeated public behavior. The allowed test file may be extended by implementation with fail-first coverage. Write only canonical docs/tasks/QR-12/preflight.md and authorized fresh .quality/reports JSON/text pairs; preserve old reports and all other paths.",
       "expected_output": "A compact canonical docs/tasks/QR-12/preflight.md with status ready and standalone_preflight_value: material, bound to brief/scope/verification revision and context. The existing seed-only test cannot prove repeated public behavior; planned in-scope proof is feasible, not already passed.",
       "files": [
         "evals/files/setup_fixture.py"
@@ -113,7 +113,7 @@
         "It reads the task-local verification design as derived guidance and accounts for V-01 and V-02 in the command/oracle handoff without turning them into new requirements.",
         "It states that the exact uncertainty resolved is the current passing test's failure to prove two public invocations and requires fail-first repeated-flow evidence before the production change.",
         "It states that standalone preflight added enough value to recommend it for the next materially similar oracle-uncertain task.",
-        "It writes only canonical preflight.md and preserves source, tests, brief, verification, policy and tracker."
+        "It writes only canonical preflight.md plus authorized fresh baseline pairs and preserves source, tests, brief, verification, policy and tracker."
       ],
       "execution": {
         "setup": {
@@ -127,7 +127,7 @@
     },
     {
       "id": 6,
-      "prompt": "First run `python3 evals/files/setup_fixture.py api-routine` to create the supplied clean fixture at `/work/api-routine`. Perform a guided packaged preflight for `docs/tasks/API-07/brief.md`; no durable packet, run-policy file, digest ledger, result schema, or high-assurance artifact is requested. The brief recommends preflight to confirm its local test command, but re-evaluate that route against current repository state. Resolve ownership, the exact targeted command, and its observable validity oracle, writing only canonical docs/tasks/API-07/preflight.md and running no broad test baseline. Return a compact handoff for a separate implementer session.",
+      "prompt": "First run `python3 evals/files/setup_fixture.py api-routine` to create the supplied clean fixture at `/work/api-routine`. Perform a guided packaged preflight for `docs/tasks/API-07/brief.md`; no durable packet, run-policy file, digest ledger, result schema, or high-assurance artifact is requested. The brief recommends preflight to confirm its local test command, but re-evaluate that route against current repository state. Resolve ownership, the exact targeted command, and its observable validity oracle, writing only canonical docs/tasks/API-07/preflight.md and authorized fresh report pairs and running no broad test baseline. Return a compact handoff for a separate implementer session.",
       "expected_output": "Compact canonical docs/tasks/API-07/preflight.md, ready and standalone_preflight_value: marginal, with source brief/scope/verification revision, per-scenario feasibility, referenced decision context and one implementer handoff. Routine packages still require durable readiness; suggest self-preflight only for similar unpackaged direct requests.",
       "files": [
         "evals/files/setup_fixture.py"
@@ -137,9 +137,9 @@
         "It fulfills the direct preflight request by inspecting applicable instructions, confirming the exact allowed paths and clean Git ownership, and resolving `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.auth.test_session.SessionTest.test_unexpired_session_is_valid` with working directory and observable true-result oracle.",
         "It re-evaluates the brief's readiness route against current facts instead of treating the recommendation as proof that preflight is material.",
         "It contains one compact `Implementer handoff` block with the resolved deltas, confirmed local capability, explicit implementation stops (none beyond the bounded scope), and the exact next action without repeating the task's outcome and acceptance prose.",
-        "It runs no broad baseline and writes only compact canonical preflight.md; no digest ledger, machine schema or instrumentation is required.",
+        "It runs no broad baseline and writes only compact canonical preflight.md and authorized fresh baseline pairs; no digest ledger, machine schema or instrumentation is required.",
         "It explains marginal value without waiving packaged readiness; self-preflight is recommended only for similar unpackaged requests.",
-        "It reports clean ownership and exact bytecode-neutral command/oracle, preserving all paths except canonical preflight.md."
+        "It reports clean ownership and exact bytecode-neutral command/oracle, preserving all paths except canonical preflight.md and authorized fresh baseline pairs."
       ],
       "execution": {
         "setup": {
@@ -173,7 +173,7 @@
       "expectations": [
         "Account for every AC/scenario authority, setup, decisive boundary, command feasibility, dependency, permission and ownership.",
         "Run only the stdlib baseline if useful; never claim the absent future test passed.",
-        "Do not repair verification, create missing capabilities or widen scope. Write only canonical package preflight.md."
+        "Do not repair verification, create missing capabilities or widen scope. Write only canonical package preflight.md and authorized fresh baseline pairs."
       ],
       "execution": {
         "setup": {
@@ -267,6 +267,29 @@
             "python3",
             "evals/files/setup_fixture.py",
             "readiness-cases"
+          ]
+        }
+      }
+    },
+    {
+      "id": 13,
+      "prompt": "Run setup_fixture.py starting-evidence with EVAL_MEASUREMENT_LAUNCHER set to the active installation launcher and a prepared pinned Python interpreter. Preflight each independent /work/starting-evidence/V-* package using producer-input.json, AGENTS.md and native-policy.json if present. These files supply upstream history and row-specific scope/policy; do not change negative inputs. For V-07 transfer only the named JSON/text pair to the receiving .quality/reports paths. Grade all variants separately using grading.md. Do not run later-owner gates to manufacture evidence. No live-agent qualification follows from setup success.",
+      "expected_output": "Canonical readiness for every row, with actual fresh reports where applicable and authorized; gaps and native obligations retained under their supplied policy.",
+      "files": [
+        "evals/files/setup_fixture.py"
+      ],
+      "expectations": [
+        "Account for every V-01 through V-10 variant named in producer-input.json; inspect actual reports, inventory/source identities, index preservation, decisions and command history against its oracle.",
+        "Do not count upstream seeded reports as agent capture; retain original pair/history and exact clone transfer references.",
+        "V-08 A variants can be ready with gaps; R variants block. Native entry failure/unavailability still blocks; later-owner duties remain owed.",
+        "Preserve original evals 1\u201312 readiness distinctions (V-11); optional report writes do not waive any existing prerequisite."
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "starting-evidence"
           ]
         }
       }

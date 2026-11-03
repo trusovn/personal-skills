@@ -36,7 +36,7 @@ def commit(root: Path) -> None:
 
 
 def common(root: Path, task_id: str) -> None:
-    write(root, "AGENTS.md", "# Fixture rules\n\nPreflight may write only the canonical `docs/tasks/<TASK-ID>/preflight.md` packet. Preserve every other repository path.")
+    write(root, "AGENTS.md", "# Fixture rules\n\nPreflight may write only the canonical `docs/tasks/<TASK-ID>/preflight.md` packet and fresh .quality/reports/*.json and *.txt baseline pairs. Preserve earlier reports and every other repository path.")
     write(root, ".runner/tracker.json", json.dumps({"complete": [task_id]}, indent=2))
     write(root, "pyproject.toml", "[project]\nname = \"eval-fixture\"\nversion = \"0.0.0\"\nrequires-python = \">=3.11\"")
     policy = RUNS / "policies/local-medium-v1.json"
@@ -44,7 +44,7 @@ def common(root: Path, task_id: str) -> None:
     policy.write_text(json.dumps({
         "id": "local-medium-v1",
         "runtime_root": str(RUNS),
-        "allow": ["cheap local tests", "canonical task-package preflight write"],
+        "allow": ["cheap local tests", "canonical task-package preflight write", "fresh .quality/reports JSON/text baseline writes"],
         "deny": ["network", "dependency installation", "commits", "other repository writes during preflight"],
     }, indent=2) + "\n", encoding="utf-8")
 
@@ -221,7 +221,7 @@ def api_routine() -> None:
     write(
         root,
         "AGENTS.md",
-        "# Fixture rules\n\nPreflight may write only docs/tasks/API-07/preflight.md. Preserve every other path. Use the exact targeted unittest command in the task brief.",
+        "# Fixture rules\n\nPreflight may write only docs/tasks/API-07/preflight.md and fresh .quality/reports/*.json and *.txt pairs. Preserve old reports and every other path. Use the exact targeted unittest command in the task brief.",
     )
     write(
         root,
@@ -276,7 +276,7 @@ def api_routine() -> None:
 def readiness_base(name: str) -> Path:
     root = WORK / name
     initialize(root)
-    write(root, "AGENTS.md", "Preflight may write only docs/tasks/*/preflight.md. Preserve other paths; no network, installation or commits.")
+    write(root, "AGENTS.md", "Preflight may write only docs/tasks/*/preflight.md and fresh .quality/reports/*.json and *.txt pairs. Preserve old reports and other paths; no network, installation or commits.")
     write(root, "docs/direction.md", """
         # Approved direction, revision 1
         Internal offline session checker; Python standard library, local CLI.
@@ -481,7 +481,177 @@ def freshness_change() -> None:
     write(root, path, "def is_valid(session):\n    # later user work, same MM status\n    return False")
 
 
+def starting_evidence() -> None:
+    """Prepare independent producer cases; never count seeded reports as agent output."""
+    launcher = Path(os.environ["EVAL_MEASUREMENT_LAUNCHER"]).resolve()
+    if not launcher.is_file():
+        raise SystemExit("Supply one installed measurement launcher; no implicit setup")
+    base = readiness_base("starting-evidence-seed")
+    readiness_package(base, "CURRENT")
+    write(base, ".gitignore", ".quality/reports/\n")
+    for folder in ("evals", "fixtures", "harness", "unrelated", "vendor"):
+        write(base, f"{folder}/sample.py", "def sample():\n    return 1")
+    (base / "empty").mkdir()
+    write(base, "AGENTS.md", """
+        Preflight may write canonical docs/tasks/CURRENT/preflight.md and fresh
+        .quality/reports/*.json and *.txt only. Preserve all other paths and
+        earlier reports. No network, setup, dependency installation or commits.
+        Dirty source is supplied task-owned starting work; measurement is authorized.
+        Logical project: starting-evidence-fixture. Use producer-input.json for supplied scope, capability and evidence policy. Native policy: native-policy.json when present; otherwise no native check exists.
+    """)
+    commit(base)
+    write(base, "src/session.py", "def is_valid(session, now):\n    return True")
+    subprocess.run(["git", "-C", str(base), "add", "src/session.py"], check=True)
+    write(base, "src/session.py", "def is_valid(session, now):\n    return False")
+    write(base, "src/new.py", "def new():\n    return 2")
+    pair = base / ".quality/reports/original.json"
+    result = subprocess.run([sys.executable, str(launcher), "baseline", "src", "tests",
+                             "evals", "fixtures", "harness", "--root", str(base),
+                             "--output", str(pair)], capture_output=True, text=True)
+    if result.returncode:
+        raise SystemExit(result.stdout + result.stderr)
+    rows = {
+        "V-01": "Capture all five asset folders, actual dirty/untracked bytes; preserve index/exclusions/unrelated.",
+        "V-02a": "Capture existing empty parent; empty inventory, no numeric zero.",
+        "V-02b": "Capture empty parent, then permitted probe adds Python; compare as new with unknown before/delta.",
+        "V-02c": "Missing parent: evidence gap, no fabricated parent.",
+        "V-02d": "Excluded vendor parent: evidence gap, exclusion retained.",
+        "V-03a": "JSON-only collision retained; choose fresh pair; successful control.",
+        "V-03b": "Text-only collision retained; choose fresh pair; successful control.",
+        "V-03c": "Both siblings retained; choose fresh pair; successful control.",
+        "V-04a": "Guided exact pair and report facts, compact applicability.",
+        "V-04b": "High assurance exact pair and unchanged full freshness duties.",
+        "V-05a": "Unchanged project/inventory/identity: original applicable.",
+        "V-05b": "Same MM text, changed hash: focused reconsideration.",
+        "V-05c": "Added included file: detect inventory mismatch.",
+        "V-05d": "Deleted captured file: detect inventory mismatch.",
+        "V-05e": "Different logical project: reject original applicability.",
+        "V-05f": "Incompatible tools: gap and focused reconsideration.",
+        "V-05g": "Incompatible effective settings: gap and focused reconsideration.",
+        "V-05h": "Added folder outside coverage: authorized resolution needed.",
+        "V-06a": "Correction: retain original, never recapture edited start.",
+        "V-06b": "Added scope: exact preserved bytes available; authorization then added evidence.",
+        "V-06c": "Added scope: no preserved bytes; explicit before gap.",
+        "V-07": "Separate clone: transfer exact ignored pair; no silent recapture.",
+        "V-08a": "Docs only: N/A, native duties retained.",
+        "V-08b": "Unsupported language: N/A, native duties retained.",
+        "V-09a": "Registry native command/policy/scope/owner retained.",
+        "V-09b": "No registry: documented native command suffices.",
+        "V-09c": "No native command: record none, invent no checker.",
+        "V-10a": "Current aggregate covers command/scope/policy/bytes: reuse without rerun.",
+        "V-10b": "Later-stage missing evidence remains owed; ready otherwise.",
+        "V-10c": "Stale byte identity: reject reuse, later owner duty retained.",
+        "V-10d": "Aggregate omits native command: reject constituent reuse.",
+        "V-10e": "Entry native F401 failure blocks despite advisory success.",
+        "V-10f": "Entry native unavailable blocks despite advisory unavailability.",
+        "V-10g": "Entry native unavailable blocks despite measurement N/A.",
+    }
+    for fault in "cdef":
+        for policy in "AR":
+            rows[f"V-08{fault}-{policy}"] = (
+                {"c": "Absent launcher", "d": "Missing original", "e": "Incompatible tools",
+                 "f": "Partial upstream report, Ruff unavailable"}[fault]
+                + (": advisory gap, ready otherwise." if policy == "A" else
+                   ": indispensable entry evidence, blocked; capability owner recovery."))
+    matrix = WORK / "starting-evidence"
+    matrix.mkdir(exist_ok=True)
+    for row, oracle in rows.items():
+        root = matrix / row
+        if root.exists():
+            shutil.rmtree(root)
+        shutil.copytree(base, root)
+        evidence = root / ".quality/reports/original.json"
+        report = json.loads(evidence.read_text())
+        if row in {"V-05b", "V-06a"}:
+            write(root, "src/session.py", "def is_valid(session, now):\n    return None")
+        if row == "V-05c":
+            write(root, "src/added.py", "x = 1")
+        if row == "V-05d":
+            (root / "src/session.py").unlink()
+        if row == "V-05g":
+            write(root, ".quality/ruff.toml", "target-version = 'py312'")
+        if row == "V-05e":
+            write(root, "project-identity.md", "Different logical project; original belongs to starting-evidence-fixture.")
+        if row in {"V-05h", "V-06b", "V-06c"}:
+            write(root, "scope-extension.md", "Requested additional scope: unrelated. Authorization pending.")
+            if row == "V-06b":
+                write(root, "preserved/unrelated/sample.py", (root / "unrelated/sample.py").read_text())
+            elif row == "V-06c":
+                write(root, "scope-extension.md", "Requested additional scope: uncaptured. Its pre-edit bytes were not retained anywhere; authorization pending.")
+                write(root, "uncaptured/edited.py", "def edited():\n    return 3")
+        if row.startswith("V-08d") or row == "V-07":
+            evidence.unlink()
+            evidence.with_suffix(".txt").unlink()
+        if row == "V-05f" or row.startswith("V-08e"):
+            report["identity"]["tools"]["ruff"] = "incompatible"
+            evidence.write_text(json.dumps(report))
+        if row.startswith("V-08f"):
+            report["measurement_status"] = "incomplete"
+            report["checks"]["ruff"]["status"] = "unavailable"
+            evidence.write_text(json.dumps(report))
+        if row.startswith("V-03"):
+            for suffix in ({"V-03a": ["json"], "V-03b": ["txt"], "V-03c": ["json", "txt"]}[row]):
+                write(root, f".quality/reports/occupied.{suffix}", "preserve sentinel")
+        command = f"{sys.executable} -m ruff check . --select F401"
+        native = {"command": command, "scope": "whole project", "policy": "native-policy.json",
+                  "required": True, "owner": "implementation", "entry": False}
+        if row in {"V-10e", "V-10f", "V-10g"}:
+            native.update(owner="preflight", entry=True)
+        if row in {"V-10f", "V-10g"}:
+            native["command"] = "./missing-native-check"
+        if row == "V-10e":
+            write(root, "unrelated/failure.py", "import os")
+        write(root, "native-policy.json", json.dumps(native))
+        if row == "V-09a":
+            write(root, "docs/contracts/index.json", json.dumps({"native": native}))
+        if row == "V-09c":
+            (root / "native-policy.json").unlink()
+        hashes = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
+                  for p in root.rglob("*.py") if ".git" not in p.parts}
+        if row in {"V-10a", "V-10c", "V-10d"}:
+            native_run = subprocess.run([sys.executable, "-m", "ruff", "check", ".", "--select", "F401"],
+                                        cwd=root, capture_output=True, text=True, check=True)
+            checked = dict(hashes)
+            if row == "V-10c":
+                write(root, "src/session.py", "def is_valid(session, now):\n    return 123")
+                hashes["src/session.py"] = hashlib.sha256((root / "src/session.py").read_bytes()).hexdigest()
+            write(root, "aggregate-evidence.json", json.dumps({
+                "exit": native_run.returncode, "stdout": native_run.stdout, "stderr": native_run.stderr, "commands": [] if row == "V-10d" else [native],
+                "checked_bytes": checked, "origin": "supplied upstream owner evidence"}))
+        write(root, "producer-input.json", json.dumps({
+            "scenario": row, "oracle": oracle, "source_hashes": hashes,
+            "existing_report_hashes": {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
+                                       for p in (root / ".quality/reports").glob("*") if p.is_file()},
+            "index_sha256": hashlib.sha256((root / ".git/index").read_bytes()).hexdigest(),
+            "launcher": str(root / "missing-launcher") if row.startswith("V-08c") or row == "V-10f" else str(launcher),
+            "evidence_required_at_entry": row.endswith("-R"),
+            "capability_owner": "fixture runtime owner",
+            "evidence_policy": "producer-input.json: evidence_required_at_entry; recover capability via fixture runtime owner, never implicit setup",
+            "original_pair": [str(pair), str(pair.with_suffix('.txt'))] if row == "V-07" else
+                             [".quality/reports/original.json", ".quality/reports/original.txt"],
+            "capture_origin": "supplied upstream fixture, not agent output",
+            "scope": ["empty"] if row in {"V-02a", "V-02b"} else ["missing"] if row == "V-02c" else
+                     ["vendor"] if row == "V-02d" else ["docs"] if row in {"V-08a", "V-10g"} else
+                     ["web"] if row == "V-08b" else ["src", "tests", "evals", "fixtures", "harness"],
+        }))
+        brief_path = root / "docs/tasks/CURRENT/brief.md"
+        with brief_path.open("a") as stream:
+            stream.write("\nProducer evaluation authority: producer-input.json supplies this independent row's measurement scope, history, entry policy and capability; these override generic measurement scope. Other implementation ACs remain feasible and unchanged.\n")
+        if row == "V-08b":
+            write(root, "web/main.js", "export const value = 1;")
+        if row == "V-04b":
+            path = root / "docs/tasks/CURRENT/brief.md"
+            path.write_text(path.read_text().replace("Status: ready", "Status: ready_for_preflight") +
+                            "\nDependency source: .runner/tracker.json; run policy: AGENTS.md.\n")
+            write(root, ".runner/tracker.json", '{"complete": ["PRIOR"]}')
+        if row == "V-02b":
+            with (root / "AGENTS.md").open("a") as stream:
+                stream.write("\nAfter empty capture only, a local coverage probe may create empty/new.py and compare; preserve original reports.\n")
+    write(matrix, "grading.md", "Grade actual readiness, reports and command history against each producer-input.json oracle. Verify source/index and old pair hashes independently. Seeded reports and aggregate evidence are inputs, never preflight execution proof. V-11 also requires preserved evals 1–12. No keyword-only qualification.")
+
+
 SCENARIOS = {
+    "starting-evidence": starting_evidence,
     "readiness-cases": readiness_cases,
     "revision-recovery": revision_recovery,
     "readiness-context": readiness_context,

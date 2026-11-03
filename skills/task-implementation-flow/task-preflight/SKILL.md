@@ -131,6 +131,74 @@ the route merely because the brief named it.
    oracle, scope/ownership and capability results, warnings/stops and next action.
    Blocked output includes evidence, owner and smallest next action.
 
+## Starting Python evidence and native obligations
+
+Apply this producer contract in both profiles, after authority, scope, ownership
+and write permissions are resolved, before implementation. This is advisory
+measurement, not a second static-check baseline or a new readiness stage.
+
+1. Resolve measurement from the active installation's sibling shared scripts
+   (`.agents/scripts/measure_maintainability.py` for a project-local installation).
+   Do not borrow global helpers or implicitly run setup. Select the smallest
+   relevant folders covering production, tests, evals, fixtures and harness code,
+   with existing explicit exclusions and asset groups. Folders cover future files.
+   An explicitly selected existing empty Python parent is valid before evidence;
+   missing or explicitly excluded parents are not. Never create a parent to
+   manufacture history or turn absent numeric evidence into zero.
+2. For authorized supported Python work, attempt
+   `python3 <resolved-launcher> baseline <folders> --root <repo> --output <fresh-json>`.
+   Use a unique task/run name under an authorized report directory. Check that
+   neither the JSON nor its `.txt` sibling exists. Preserve all older reports;
+   never use a mutable latest alias. Capture actual worktree bytes, including
+   relevant staged/unstaged differences and untracked Python; never reset, stash,
+   stage or refresh the real index. Permission to write readiness alone is not
+   permission to write reports: request the narrow authorization when needed.
+3. Carry the exact JSON/text pair, governed folders, capture origin and logical
+   project binding in the existing readiness handoff. Reference report facts:
+   `files` inventory and source hashes, `identity` tool/check/settings/scope facts,
+   effective settings and `measurement_status`/`full_profile`. Do not duplicate
+   them into a dossier. A valid shape or exit code alone does not prove complete
+   evidence. Colocated hashes establish consistency, not tamper resistance.
+4. Tell the consumer to check the logical project, exact included inventory and
+   current source hashes against the saved report before its first edit, plus
+   effective tool/settings/check identity and intended folder coverage. Equal
+   short-status text is insufficient. Added/deleted files, changed bytes, wrong
+   project, incompatible tools/settings or uncovered scope require focused
+   readiness reconsideration with cause and owner. Do not silently accept or
+   replace an inapplicable original baseline. This prepares T-003/T-004 consumption;
+   it does not claim that those consumers have executed.
+5. Retain the original pair through corrections. Later measurements use fresh
+   names. Unexpected scope expansion needs authorized scope resolution and exact
+   verified preserved pre-edit bytes for added coverage. If unrecoverable, retain
+   the before-evidence gap; current measurement cannot compare uncovered history.
+   Never relabel edited code as the start. For isolated clones name both files
+   and receiving paths explicitly: ignored reports do not travel with commits.
+6. Record docs-only/unsupported-language measurement as not applicable. Missing
+   tools or reports, incompatible evidence and partial capture stay visible,
+   never successful comparison evidence. Default advisory gaps do not create
+   unsolicited blockers or implicit setup. If explicit task/repository authority
+   makes evidence indispensable, block with that policy, capability owner and
+   smallest recovery action. Other readiness prerequisites remain binding.
+7. Discover native obligations once: current contract registry/equivalent, then
+   applicable instructions, project map and native task configuration as needed.
+   Documented commands suffice without a registry; when none exist record none.
+   The optional gates template is not an installed required checker. Carry exact
+   command, governed scope, policy reference, requiredness, existing stage owner,
+   current evidence and owed duties. Whole-project checks keep whole-project scope
+   even when Python measurement covers fewer folders or is unavailable/N/A.
+   Run only a justified authorized cheap readiness check under existing ownership.
+   Reuse current aggregate evidence only when constituent command coverage,
+   scope, policy and checked bytes are established. Stale or incomplete aggregate
+   evidence cannot discharge duties. Later-stage missing evidence stays owed to
+   that owner; required entry evidence that fails or is unavailable blocks.
+   Advisory success never masks native hard failure or changes execution duties.
+
+For high assurance, capture reports before establishing the exact packet baseline
+in step 3 below. Record report writes as attributed preparation, then apply all
+existing before/after packet-only freshness checks unchanged. An unexpected
+non-packet change during packet creation still blocks. Guided results keep compact
+references and current applicability; no full digest ledger is added.
+
 ## Decision context and current applicability
 
 Bind packaged readiness to the source brief and its revision (use a supplied
@@ -277,7 +345,8 @@ blocked packet is evidence, not authorization to implement.
 - Keep current-state failures—dirty overlap, dependency failure, missing path
   or helper, invalid command, environment, or permissions—here.
 - Route wider scope or shared infrastructure through brief design.
-- Write only canonical readiness for packages or an explicitly requested direct
+- Write only authorized fresh baseline JSON/text reports and canonical readiness
+  for packages or an explicitly requested direct
   readiness artifact. Do not edit other source/tests/docs/config/dependencies,
   implement, approve, update
   trackers, launch subagents, or modify orchestration state.

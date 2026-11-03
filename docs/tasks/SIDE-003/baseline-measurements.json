@@ -1,0 +1,2535 @@
+{
+  "basis": {
+    "body_bytes": "Everything after the closing frontmatter delimiter, including its following newline and whitespace.",
+    "conditional_no_extra_files": "Several conditional routes have the same files as ordinary routes because current branch instructions are inline; no background/unlinked resource was made mandatory.",
+    "description_characters": "Whitespace-normalized description scalar only (plain, > and >- source forms); other frontmatter fields excluded.",
+    "read_graph": "package_reference edges enumerate owned references without claiming mandatory reads. literal_link edges record resolvable Markdown destinations and inline-code paths among inventory files; these are possible read links, not automatic runtime traversal.",
+    "rendered_catalog": "Unobservable from repo-only source measurement: host wrapping, visible/truncated/omitted entries and session telemetry unknown.",
+    "repository_instruction_reads": "Every route includes AGENTS.md plus docs/project-map.md and docs/development.md, which its development-routing section tells repository agents to read. Task-specific contract/index data and project authorities remain scenario inputs outside this source-instruction estimate.",
+    "route_boundary": "Source skill instruction closure only: entry files, applicable references/templates, invoked sibling skill entries and references, package module docs, AGENTS.md. Task-specific project authorities, briefs, verification, preflight, runtime code, model output and execution traces are excluded. Routes are explicit scenarios, not an exhaustive Cartesian product.",
+    "route_cost": "Static unique-file estimate, file_bytes; entry cost is separately available in skills. Repeated reads, command output and session use are unobserved.",
+    "units": "UTF-8 bytes and normalized description characters; no tokenizer used and no token estimate",
+    "working_tree": "HEAD 2007ca53ef92e94b76719f70ebe6e87c6baa9b6b plus user-owned AGENTS.md instruction update. Source skills are unchanged from recording HEAD."
+  },
+  "command_prerequisites": {
+    "aggregate_command": "python3 tools/verify.py",
+    "common_structural_commands": [
+      "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_architecture.py",
+      "python3 tools/check_contracts.py --root .",
+      "python3 scripts/install_development_skills.py --check ."
+    ],
+    "discovery_roots": [
+      "skills/project-plan-verification/tests",
+      "skills/skill-creator/tests",
+      "skills/task-implementation-flow/task-brief-designer/tests",
+      "skills/task-orchestrator/tests",
+      "tests"
+    ],
+    "local_requirements": [
+      "Python 3 and Git on PATH",
+      "Temporary directories, local child processes and disposable Git repositories allowed",
+      "Standard library; no download or provider required"
+    ],
+    "optional_requirements": {
+      "analyzers": "Prepared pinned Radon/Ruff native environment; advisory; no implicit setup",
+      "containment": "macOS /usr/bin/sandbox-exec and host execution permission; unsupported hosts skip, supported-host denial fails",
+      "frontmatter_validation": "PyYAML; structural only; do not install here",
+      "live_evals": "Separate selected-check approval, Codex/provider authentication and fixture setup/grading; excluded from default gate"
+    },
+    "per_skill": [
+      {
+        "coverage_limit": "Local tests cover documented text/fixtures/runtime only; no agent behavior qualification. No dedicated local suite found.",
+        "eval_command": null,
+        "eval_files": [],
+        "eval_status": "No package evals.json found.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [],
+        "skill": "ai-flow-foundation",
+        "source": "skills/ai-flow-foundation/SKILL.md"
+      },
+      {
+        "coverage_limit": "Local tests cover documented text/fixtures/runtime only; no agent behavior qualification. No dedicated local suite found.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/architecture-guardrails --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/architecture-guardrails/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [],
+        "skill": "architecture-guardrails",
+        "source": "skills/architecture-guardrails/SKILL.md"
+      },
+      {
+        "coverage_limit": "Local tests cover documented text/fixtures/runtime only; no agent behavior qualification. No dedicated local suite found.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/ask-user-questions --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/ask-user-questions/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [],
+        "skill": "ask-user-questions",
+        "source": "skills/ask-user-questions/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/task-implementation-flow/bounded-task-implementer --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/task-implementation-flow/bounded-task-implementer/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [
+          "skills/task-implementation-flow/bounded-task-implementer/evals/files/setup_fixture.py"
+        ],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_bounded_task_implementer.py",
+            "path": "tests/test_bounded_task_implementer.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_run_evidence.py",
+            "path": "tests/test_run_evidence.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_run_evidence_availability.py",
+            "path": "tests/test_run_evidence_availability.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_maintainability.py",
+            "path": "tests/test_maintainability.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_review_composition.py",
+            "path": "tests/test_review_composition.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_preparation_contracts.py",
+            "path": "tests/test_task_preparation_contracts.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_flow_guides.py",
+            "path": "tests/test_task_flow_guides.py"
+          }
+        ],
+        "skill": "bounded-task-implementer",
+        "source": "skills/task-implementation-flow/bounded-task-implementer/SKILL.md"
+      },
+      {
+        "coverage_limit": "Local tests cover documented text/fixtures/runtime only; no agent behavior qualification. No dedicated local suite found.",
+        "eval_command": null,
+        "eval_files": [],
+        "eval_status": "No package evals.json found.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [],
+        "skill": "foundation-readiness-review",
+        "source": "skills/foundation-readiness-review/SKILL.md"
+      },
+      {
+        "coverage_limit": "Local tests cover documented text/fixtures/runtime only; no agent behavior qualification. No dedicated local suite found.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/idea-brief --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/idea-brief/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [],
+        "skill": "idea-brief",
+        "source": "skills/idea-brief/SKILL.md"
+      },
+      {
+        "coverage_limit": "Local tests cover documented text/fixtures/runtime only; no agent behavior qualification. No dedicated local suite found.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/idea-challenger --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/idea-challenger/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [],
+        "skill": "idea-challenger",
+        "source": "skills/idea-challenger/SKILL.md"
+      },
+      {
+        "coverage_limit": "Local tests cover documented text/fixtures/runtime only; no agent behavior qualification. No dedicated local suite found.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/idea-investigator --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/idea-investigator/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [],
+        "skill": "idea-investigator",
+        "source": "skills/idea-investigator/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": null,
+        "eval_files": [],
+        "eval_status": "No package evals.json found.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_ollama_delegate.py",
+            "path": "tests/test_ollama_delegate.py"
+          }
+        ],
+        "skill": "ollama-delegate",
+        "source": "skills/ollama-delegate/SKILL.md"
+      },
+      {
+        "coverage_limit": "Local tests cover documented text/fixtures/runtime only; no agent behavior qualification. No dedicated local suite found.",
+        "eval_command": null,
+        "eval_files": [],
+        "eval_status": "No package evals.json found.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [],
+        "skill": "project-bootstrap",
+        "source": "skills/project-bootstrap/SKILL.md"
+      },
+      {
+        "coverage_limit": "Local tests cover documented text/fixtures/runtime only; no agent behavior qualification. No dedicated local suite found.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/project-delivery-plan --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/project-delivery-plan/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [
+          "skills/project-delivery-plan/evals/files/setup_fixture.py"
+        ],
+        "focused_suites": [],
+        "skill": "project-delivery-plan",
+        "source": "skills/project-delivery-plan/SKILL.md"
+      },
+      {
+        "coverage_limit": "Local tests cover documented text/fixtures/runtime only; no agent behavior qualification. No dedicated local suite found.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/project-direction --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/project-direction/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [
+          "skills/project-direction/evals/files/setup_fixture.py"
+        ],
+        "focused_suites": [],
+        "skill": "project-direction",
+        "source": "skills/project-direction/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/project-plan-verification --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/project-plan-verification/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/project-plan-verification/tests -p 'test_*.py'",
+            "path": "skills/project-plan-verification/tests"
+          }
+        ],
+        "skill": "project-plan-verification",
+        "source": "skills/project-plan-verification/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": null,
+        "eval_files": [],
+        "eval_status": "No package evals.json found.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_install_development_skills.py",
+            "path": "tests/test_install_development_skills.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_foundation_tools.py",
+            "path": "tests/test_foundation_tools.py"
+          }
+        ],
+        "skill": "repo-foundation",
+        "source": "skills/repo-foundation/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/senior-code-review --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/senior-code-review/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_senior_review_discipline.py",
+            "path": "tests/test_senior_review_discipline.py"
+          }
+        ],
+        "skill": "senior-code-review",
+        "source": "skills/senior-code-review/SKILL.md"
+      },
+      {
+        "coverage_limit": "Local tests cover documented text/fixtures/runtime only; no agent behavior qualification. No dedicated local suite found.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/session-handoff --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/session-handoff/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [],
+        "skill": "session-handoff",
+        "source": "skills/session-handoff/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": null,
+        "eval_files": [],
+        "eval_status": "No package evals.json found.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/skill-creator/tests -p 'test_*.py'",
+            "path": "skills/skill-creator/tests"
+          }
+        ],
+        "skill": "skill-creator",
+        "source": "skills/skill-creator/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/task-implementation-flow/task-acceptance-review --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/task-implementation-flow/task-acceptance-review/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [
+          "skills/task-implementation-flow/task-acceptance-review/evals/files/setup_fixture.py"
+        ],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_acceptance_review.py",
+            "path": "tests/test_task_acceptance_review.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_review_composition.py",
+            "path": "tests/test_review_composition.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_contextual_export_risks.py",
+            "path": "tests/test_contextual_export_risks.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_contextual_known_issues.py",
+            "path": "tests/test_contextual_known_issues.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_contextual_uncertainty_inputs.py",
+            "path": "tests/test_contextual_uncertainty_inputs.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_preparation_contracts.py",
+            "path": "tests/test_task_preparation_contracts.py"
+          }
+        ],
+        "skill": "task-acceptance-review",
+        "source": "skills/task-implementation-flow/task-acceptance-review/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/task-implementation-flow/task-brief-designer --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/task-implementation-flow/task-brief-designer/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [
+          "skills/task-implementation-flow/task-brief-designer/evals/files/setup_fixture.py"
+        ],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_preparation_contracts.py",
+            "path": "tests/test_task_preparation_contracts.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_flow_guides.py",
+            "path": "tests/test_task_flow_guides.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/task-implementation-flow/task-brief-designer/tests -p 'test_*.py'",
+            "path": "skills/task-implementation-flow/task-brief-designer/tests"
+          }
+        ],
+        "skill": "task-brief-designer",
+        "source": "skills/task-implementation-flow/task-brief-designer/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": null,
+        "eval_files": [],
+        "eval_status": "No package evals.json found.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_flow_guides.py",
+            "path": "tests/test_task_flow_guides.py"
+          }
+        ],
+        "skill": "task-contract-registry-updater",
+        "source": "skills/task-implementation-flow/task-contract-registry-updater/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/task-implementation-flow/task-maintainability-review --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/task-implementation-flow/task-maintainability-review/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [
+          "skills/task-implementation-flow/task-maintainability-review/evals/files/setup_fixture.py"
+        ],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_maintainability_review.py",
+            "path": "tests/test_task_maintainability_review.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_maintainability.py",
+            "path": "tests/test_maintainability.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_review_composition.py",
+            "path": "tests/test_review_composition.py"
+          }
+        ],
+        "skill": "task-maintainability-review",
+        "source": "skills/task-implementation-flow/task-maintainability-review/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/task-orchestrator --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/task-orchestrator/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/task-orchestrator/tests -p 'test_*.py'",
+            "path": "skills/task-orchestrator/tests"
+          }
+        ],
+        "skill": "task-orchestrator",
+        "source": "skills/task-orchestrator/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/task-implementation-flow/task-preflight --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/task-implementation-flow/task-preflight/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [
+          "skills/task-implementation-flow/task-preflight/evals/files/setup_fixture.py"
+        ],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_preflight.py",
+            "path": "tests/test_task_preflight.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_preparation_contracts.py",
+            "path": "tests/test_task_preparation_contracts.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_maintainability.py",
+            "path": "tests/test_maintainability.py"
+          }
+        ],
+        "skill": "task-preflight",
+        "source": "skills/task-implementation-flow/task-preflight/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/task-implementation-flow/task-review-discovery --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/task-implementation-flow/task-review-discovery/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [
+          "skills/task-implementation-flow/task-review-discovery/evals/files/setup_fixture.py"
+        ],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_review_discovery.py",
+            "path": "tests/test_task_review_discovery.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_review_composition.py",
+            "path": "tests/test_review_composition.py"
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_preparation_contracts.py",
+            "path": "tests/test_task_preparation_contracts.py"
+          }
+        ],
+        "skill": "task-review-discovery",
+        "source": "skills/task-implementation-flow/task-review-discovery/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": "python3 skills/skill-creator/scripts/run_behavior_evals.py skills/task-implementation-flow/task-verification-designer --output-dir <fresh-disposable-output>",
+        "eval_files": [
+          "skills/task-implementation-flow/task-verification-designer/evals/evals.json"
+        ],
+        "eval_status": "Not run; setup depends on selected eval metadata and requires separately approved live execution and grading.",
+        "fixture_setup_scripts": [
+          "skills/task-implementation-flow/task-verification-designer/evals/files/setup_fixture.py"
+        ],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_preparation_contracts.py",
+            "path": "tests/test_task_preparation_contracts.py"
+          }
+        ],
+        "skill": "task-verification-designer",
+        "source": "skills/task-implementation-flow/task-verification-designer/SKILL.md"
+      },
+      {
+        "coverage_limit": "Inspect case oracles; text assertions and fixture checks alone do not qualify agent behavior.",
+        "eval_command": null,
+        "eval_files": [],
+        "eval_status": "No package evals.json found.",
+        "fixture_setup_scripts": [],
+        "focused_suites": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_task_maintainability_review.py",
+            "path": "tests/test_task_maintainability_review.py"
+          }
+        ],
+        "skill": "testing-discipline",
+        "source": "skills/testing-discipline/SKILL.md"
+      }
+    ],
+    "sources": [
+      "docs/development.md",
+      "docs/project-map.md",
+      "tools/verify.py",
+      "scripts/install_development_skills.py"
+    ]
+  },
+  "instruction_files": [
+    {
+      "file_bytes": 6452,
+      "path": "AGENTS.md",
+      "sha256": "c53da175135a5e451d06c2f3406c254c1bff15efda76126a462671738b497a17"
+    },
+    {
+      "file_bytes": 7118,
+      "path": "docs/development.md",
+      "sha256": "c8430d24c99373cbacf7099d26fcfb2694c5b6287c5e2620cf8f2cc3a616e548"
+    },
+    {
+      "file_bytes": 2808,
+      "path": "docs/project-map.md",
+      "sha256": "e68fb53a19376c37820c1781b474c4972a8b7020b0238d102923ceebd44f4648"
+    },
+    {
+      "file_bytes": 14156,
+      "path": "skills/README.md",
+      "sha256": "71df697cc3ee2cd21d44a7dafc8899dc6e45a4552be810a0ea342145bf3c7365"
+    },
+    {
+      "file_bytes": 8634,
+      "path": "skills/ai-flow-foundation/SKILL.md",
+      "sha256": "fc26141c335975d262c3e1978129e06abbb35f3027a2dff89a00d4c725d291d6"
+    },
+    {
+      "file_bytes": 2065,
+      "path": "skills/ai-flow-foundation/templates/ai-foundation.md",
+      "sha256": "ab8d1fc246a68ac081ed8a6a3704198732451ac5241acd61f9603cb60c2c15db"
+    },
+    {
+      "file_bytes": 17306,
+      "path": "skills/architecture-guardrails/SKILL.md",
+      "sha256": "0d3a759491bd4f8b069a4fa27a2c5cc809d6b8f5ccaa0a5e51cd37004896062c"
+    },
+    {
+      "file_bytes": 2684,
+      "path": "skills/architecture-guardrails/references/dotnet.md",
+      "sha256": "12609dc1e6c46a6372a7d37d0d48149b0eede0418944a4b2a37d5dddcb91bb48"
+    },
+    {
+      "file_bytes": 6419,
+      "path": "skills/architecture-guardrails/references/enforcement-model.md",
+      "sha256": "9fe3bf7d04e61b7859ba67d34c4825623c440c7ec948f2c4f6303cecc4e34885"
+    },
+    {
+      "file_bytes": 2808,
+      "path": "skills/architecture-guardrails/references/java.md",
+      "sha256": "d7647076d4d646857a69d9d7d6b015b8f5183c905e95ac2c18e4175267f229ab"
+    },
+    {
+      "file_bytes": 5520,
+      "path": "skills/architecture-guardrails/references/javascript-typescript.md",
+      "sha256": "dc4b59bff201c184798a27d33de1cea01fc656418cde9534aa9756235ca9db76"
+    },
+    {
+      "file_bytes": 3580,
+      "path": "skills/architecture-guardrails/references/python.md",
+      "sha256": "173a0dc18e2254082d980a1e518423b9ffeb01fde1864933cf17941657d5be20"
+    },
+    {
+      "file_bytes": 1451,
+      "path": "skills/architecture-guardrails/templates/gates.yaml",
+      "sha256": "3485e66b22a7273957bf0faf8a268549b5baf647d7507059910a7a0d352e44d5"
+    },
+    {
+      "file_bytes": 5345,
+      "path": "skills/ask-user-questions/SKILL.md",
+      "sha256": "34a5d62b9c5cd9d6b16db91dfb96f989a35688e690d1324a45db4b6d70ccc5a2"
+    },
+    {
+      "file_bytes": 9196,
+      "path": "skills/foundation-readiness-review/SKILL.md",
+      "sha256": "583235afffc4cc1685fd4b9b0b1e2fc7f0ac5a124dfafe013a3c473455fba844"
+    },
+    {
+      "file_bytes": 4977,
+      "path": "skills/foundation-readiness-review/references/delivery-routing.md",
+      "sha256": "3dd01ca2b63c33c3c591362430a61367332c178d056cb0a5bc28b1b47c9d53c7"
+    },
+    {
+      "file_bytes": 1816,
+      "path": "skills/foundation-readiness-review/templates/foundation-review.md",
+      "sha256": "cdc1fd4dec2325469d9e70ac79532b520ee94360b05d731eef1f2695f02775c2"
+    },
+    {
+      "file_bytes": 8097,
+      "path": "skills/idea-brief/SKILL.md",
+      "sha256": "578d193e366144498d65660b2d84f5f2ff6b277f6e92e624f0fb64e01936935f"
+    },
+    {
+      "file_bytes": 3312,
+      "path": "skills/idea-brief/references/vision-template.md",
+      "sha256": "179544e6e5ca597b553e107e22f0395caf2d800e1e497a16328181f1671bc1ab"
+    },
+    {
+      "file_bytes": 6735,
+      "path": "skills/idea-challenger/SKILL.md",
+      "sha256": "ef6d1ca29716e4310ce6a58ccc3311285ad44d9e445ea3b7cd71e98150481822"
+    },
+    {
+      "file_bytes": 10937,
+      "path": "skills/idea-investigator/SKILL.md",
+      "sha256": "7bed4519379691eb019a7eeadcd5c77ed5d8aa05cd493bee2858298d1991fa42"
+    },
+    {
+      "file_bytes": 6124,
+      "path": "skills/ollama-delegate/SKILL.md",
+      "sha256": "bb775840081d3efe5ea4c50f4936f8539601c359b5555d396d8e8950d0ad75c9"
+    },
+    {
+      "file_bytes": 11663,
+      "path": "skills/project-bootstrap/SKILL.md",
+      "sha256": "f4a10ad767a37f383c6be87e5828c1cc65aac9b336f51abd78129b39b56c4ce3"
+    },
+    {
+      "file_bytes": 1337,
+      "path": "skills/project-bootstrap/templates/foundation-plan.md",
+      "sha256": "cb69fef2d25d3ba024fd44263fe84d5909eb8471267e224b1b884b4ae455110d"
+    },
+    {
+      "file_bytes": 778,
+      "path": "skills/project-bootstrap/templates/project-charter.md",
+      "sha256": "a964172375619bee52898e719e4076957008fe93c495be3a0d46f6bb16c03630"
+    },
+    {
+      "file_bytes": 17935,
+      "path": "skills/project-delivery-plan/SKILL.md",
+      "sha256": "46ec0fed8364f039ba27dace528ce607224f749e0695005e81d8289e5ef6ec3e"
+    },
+    {
+      "file_bytes": 5221,
+      "path": "skills/project-delivery-plan/references/project-plan-template.md",
+      "sha256": "4c35b60a1f1bb8999aa4ec5af564d646b8672f7ca25058ffd1fa1b2be84b7842"
+    },
+    {
+      "file_bytes": 3820,
+      "path": "skills/project-delivery-plan/references/task-map-contract.md",
+      "sha256": "390c85a439d334783e05685584937d64b4098e6d8258f0f967d4f4a80b29effc"
+    },
+    {
+      "file_bytes": 7936,
+      "path": "skills/project-direction/SKILL.md",
+      "sha256": "37d3dcbbdd554fa892486663d0a5b7dbc0ca438faeddfc6ed7f15bc8dd108d55"
+    },
+    {
+      "file_bytes": 3765,
+      "path": "skills/project-direction/references/direction-template.md",
+      "sha256": "c24e84d2f3663bae45bf0b9dcccd53f1fb1465f9ea137755c77ac495212cad5d"
+    },
+    {
+      "file_bytes": 14058,
+      "path": "skills/project-plan-verification/SKILL.md",
+      "sha256": "8f7100d365ff4ae61a4936917e1c9279ea515d0844cadde8d0232fa63b05c4f4"
+    },
+    {
+      "file_bytes": 2349,
+      "path": "skills/project-plan-verification/references/plan-verification-report-template.md",
+      "sha256": "a99edffaaaa97e670c77f17fc9b9ce8b331dc4d63b74d5fc977662a3f9da0a8b"
+    },
+    {
+      "file_bytes": 2270,
+      "path": "skills/project-plan-verification/references/review-checklist.md",
+      "sha256": "001171e14aebc28f3948ac2f77154f2032787df7fa6018c4039bc1152fb7e92f"
+    },
+    {
+      "file_bytes": 22269,
+      "path": "skills/repo-foundation/SKILL.md",
+      "sha256": "ed0036f5dd996ec2213547204999530d92b313a93c5d7733ad020f7b5558a19b"
+    },
+    {
+      "file_bytes": 1144,
+      "path": "skills/repo-foundation/references/contract-index.schema.json",
+      "sha256": "20909763d0dd62ca41a5c501cf08c1b1f2858427beeb47a829c91daaf94df846"
+    },
+    {
+      "file_bytes": 4071,
+      "path": "skills/repo-foundation/references/contract-registry.md",
+      "sha256": "e3de6c72ae09b3344a486bcea27b0a41542e5034c5d6bac69c21b66ec8939c31"
+    },
+    {
+      "file_bytes": 2451,
+      "path": "skills/repo-foundation/references/subsystem-contract.schema.json",
+      "sha256": "c7b243da6f3772f9fe1b3e5e03180c3ff271beee0a2990f634c66b5ad207ac6d"
+    },
+    {
+      "file_bytes": 9387,
+      "path": "skills/senior-code-review/SKILL.md",
+      "sha256": "9974ca642d3c562eef36ce085f5d07127b7fa902acf2f1d27764988293ced85d"
+    },
+    {
+      "file_bytes": 6399,
+      "path": "skills/senior-code-review/references/review-dimensions.md",
+      "sha256": "b79f2118e427c42129c6830f0bf4dc8bdf389b52b2aed9a3cc685527fb91e442"
+    },
+    {
+      "file_bytes": 8307,
+      "path": "skills/session-handoff/SKILL.md",
+      "sha256": "eea77fa4f445c545cef8847452fc583aeb5221ea24ae991c2e69d52406057516"
+    },
+    {
+      "file_bytes": 34440,
+      "path": "skills/skill-creator/SKILL.md",
+      "sha256": "949b7cc1a614a44bdcd0d143314e3923c630c5cd51378d4a1bbce91684318ac6"
+    },
+    {
+      "file_bytes": 10376,
+      "path": "skills/skill-creator/agents/analyzer.md",
+      "sha256": "bf68f4cac5a56c673a928c2e6d619586c5b93ea364026ab37547772cb45a663a"
+    },
+    {
+      "file_bytes": 7287,
+      "path": "skills/skill-creator/agents/comparator.md",
+      "sha256": "fe1fc9787c495d864c5d6eada47396478572325fde1b33a96d78bf4b849b7a3e"
+    },
+    {
+      "file_bytes": 9049,
+      "path": "skills/skill-creator/agents/grader.md",
+      "sha256": "57134da0c1a4eea33fbd74a1c9c44aa814f07d6bc64de303edb586f941e5d21a"
+    },
+    {
+      "file_bytes": 7058,
+      "path": "skills/skill-creator/assets/eval_review.html",
+      "sha256": "ce477dcc74dc1c0d1d3352646a79167b5a63634e936b1019160025065974e452"
+    },
+    {
+      "file_bytes": 12996,
+      "path": "skills/skill-creator/references/schemas.md",
+      "sha256": "b868d48f33dba6049870d1e2206d6dace266affb1e1a686c72d56613fd835aa8"
+    },
+    {
+      "file_bytes": 41936,
+      "path": "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+      "sha256": "cb0dda461950c2dac1a38986827e7411489d0c3876e645d798fa852fdf458f99"
+    },
+    {
+      "file_bytes": 32281,
+      "path": "skills/task-implementation-flow/task-acceptance-review/SKILL.md",
+      "sha256": "95712d1f82a93f47e42bd7282cbf7a8d14b676aba13354bb05fefb3b67421ad8"
+    },
+    {
+      "file_bytes": 15062,
+      "path": "skills/task-implementation-flow/task-acceptance-review/references/acceptance-report-template.md",
+      "sha256": "66a99eb3577f5eda8454dfbc5c3daa787a52222f3a6e0f07ced55d99e81a7784"
+    },
+    {
+      "file_bytes": 2932,
+      "path": "skills/task-implementation-flow/task-acceptance-review/references/tests-only-reproducer.md",
+      "sha256": "e74b95d43c8d6123c7d95e64556db88ac21df5e21f5dac0b3949c8589b0d6276"
+    },
+    {
+      "file_bytes": 26051,
+      "path": "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+      "sha256": "28661285cbe74b7ed684fe2e7ef92315ce371e1c42ea8d413242818b1515d9c7"
+    },
+    {
+      "file_bytes": 5388,
+      "path": "skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md",
+      "sha256": "6cc29bbfbecdebf835bce4605a8a4d66fd4f4ea675bdfde30ab30e02534a87a2"
+    },
+    {
+      "file_bytes": 9040,
+      "path": "skills/task-implementation-flow/task-brief-designer/references/task-brief-template.md",
+      "sha256": "797607edfb0e9115d94e8308c850a9160ba34bd3b40dc5432f47b4f77e50c6e4"
+    },
+    {
+      "file_bytes": 703,
+      "path": "skills/task-implementation-flow/task-brief-designer/references/task-sizing.yaml",
+      "sha256": "832e48267d8579a5183f4c7543dae2eea06bc44b65cce7b3bce15c917b917b7c"
+    },
+    {
+      "file_bytes": 6998,
+      "path": "skills/task-implementation-flow/task-contract-registry-updater/SKILL.md",
+      "sha256": "2cf8535599465000056d7ce8145febd81d52a1a3d0b300b4651a9ff4460f2cf9"
+    },
+    {
+      "file_bytes": 21497,
+      "path": "skills/task-implementation-flow/task-maintainability-review/SKILL.md",
+      "sha256": "b3bf1d348ef25d93d37fc50072f29c34d97249858c2cf5a04f14a8fd182fd5ea"
+    },
+    {
+      "file_bytes": 22142,
+      "path": "skills/task-implementation-flow/task-preflight/SKILL.md",
+      "sha256": "e544d392b4181ea9f78ef0c4b0861e28e8bb15a859eeacd39b01067ae6f6f2ae"
+    },
+    {
+      "file_bytes": 8257,
+      "path": "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md",
+      "sha256": "8cfda5cd7c229d8be5dca22fbb9e36a23f5cd75e809a1399622964048a1b9170"
+    },
+    {
+      "file_bytes": 16195,
+      "path": "skills/task-implementation-flow/task-review-discovery/SKILL.md",
+      "sha256": "200e789cffdf1f72fe5b3ecf2aab6688e587674f137542fe3f80805cd09ba910"
+    },
+    {
+      "file_bytes": 10007,
+      "path": "skills/task-implementation-flow/task-review-discovery/references/discovery-report-template.md",
+      "sha256": "bcd0db3b8e8d59cf145ae2e430b70cf67c218e3a2d44bca368d50864b6015605"
+    },
+    {
+      "file_bytes": 15620,
+      "path": "skills/task-implementation-flow/task-verification-designer/SKILL.md",
+      "sha256": "fdd9eaad9e559482c3d2fd4b080a652651a449ac3cfbfb1203af03898fb7ca21"
+    },
+    {
+      "file_bytes": 7005,
+      "path": "skills/task-orchestrator/SKILL.md",
+      "sha256": "e3ccc8993f0c9370149512a8ab6775a7b9fc79973c5016a2efdf5ae8df52e771"
+    },
+    {
+      "file_bytes": 2497,
+      "path": "skills/task-orchestrator/assets/examples/minimal-run-policy.json",
+      "sha256": "56d17cb21665de6ec2917705f51dfc579240cc6bdac15c0e1d5524fe363d164b"
+    },
+    {
+      "file_bytes": 414,
+      "path": "skills/task-orchestrator/assets/examples/minimal-task-manifest.json",
+      "sha256": "e91bd5f8d80a8b7cf48cdd5954b42e46c43014063671dfcd2e286119c06e1c3e"
+    },
+    {
+      "file_bytes": 4525,
+      "path": "skills/task-orchestrator/assets/run-policy.schema.json",
+      "sha256": "93a8622df0c7da8dcc43fc8255352a00570f8d333c2d88c19900883d61374b21"
+    },
+    {
+      "file_bytes": 1525,
+      "path": "skills/task-orchestrator/assets/task-manifest.schema.json",
+      "sha256": "72fe5dd9612aec182f376da4f4f1807c123436780202efc2394ef488f00fd78b"
+    },
+    {
+      "file_bytes": 828,
+      "path": "skills/task-orchestrator/docs/README.md",
+      "sha256": "351fd384a58d9096fd18171c6b19cb77c66c27ddef2115cbc4d1701df789cc05"
+    },
+    {
+      "file_bytes": 6849,
+      "path": "skills/task-orchestrator/docs/direction-local-harness.md",
+      "sha256": "0d17e2787866e1f4872705d6df2ec18e6289e15b97c42cf5e94b6196b3e17f2e"
+    },
+    {
+      "file_bytes": 36795,
+      "path": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+      "sha256": "9e32bc96f8dad2776e94b995aaf2831ef8c788b120ebf8a218a95354a4a811e2"
+    },
+    {
+      "file_bytes": 34999,
+      "path": "skills/task-orchestrator/docs/local-harness-task-map.json",
+      "sha256": "a669e740ee1fcb4a71b9b705d60f2b710e7619bd93ac46023f34534aed7b9082"
+    },
+    {
+      "file_bytes": 5261,
+      "path": "skills/task-orchestrator/references/architecture-map.md",
+      "sha256": "9f88a73f0f0e45ac465f150b386d45cfbce33142fd7669a2af6e09f616602397"
+    },
+    {
+      "file_bytes": 1435,
+      "path": "skills/task-orchestrator/references/index.md",
+      "sha256": "5c898785e42002f7bf98365ec999e0528822aa5c4c80f60c3dc849138e76dba4"
+    },
+    {
+      "file_bytes": 3826,
+      "path": "skills/task-orchestrator/references/operator-guide.md",
+      "sha256": "f4ddd2d4c4f49829083e2f8aae83838976fc49c16e982f49dd5ccd5c6b46c496"
+    },
+    {
+      "file_bytes": 16898,
+      "path": "skills/testing-discipline/SKILL.md",
+      "sha256": "d5bd5f57520e35468beded6c3107461c332f91f2f705309add8bdfd6f551becb"
+    },
+    {
+      "file_bytes": 13210,
+      "path": "skills/testing-discipline/references/test-catalog.md",
+      "sha256": "05b9b5369d90d45aee1f15bdb96ac2e5f1be24c4b796e2c2ef219ab851e49b9d"
+    }
+  ],
+  "plan_comparison": {
+    "differences": [],
+    "plan_commit": "aa94e28eaf170b68b30300b3f7cb183943698076",
+    "plan_skill_count": 26
+  },
+  "read_graph": [
+    {
+      "from": "AGENTS.md",
+      "kind": "literal_link",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": "AGENTS.md",
+      "kind": "literal_link",
+      "to": "docs/development.md"
+    },
+    {
+      "from": "AGENTS.md",
+      "kind": "literal_link",
+      "to": "docs/project-map.md"
+    },
+    {
+      "from": "docs/development.md",
+      "kind": "literal_link",
+      "to": "docs/project-map.md"
+    },
+    {
+      "from": "docs/development.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/references/operator-guide.md"
+    },
+    {
+      "from": "docs/project-map.md",
+      "kind": "literal_link",
+      "to": "docs/development.md"
+    },
+    {
+      "from": "docs/project-map.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/references/architecture-map.md"
+    },
+    {
+      "from": "docs/project-map.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/references/operator-guide.md"
+    },
+    {
+      "from": "skills/README.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/bounded-task-implementer/SKILL.md"
+    },
+    {
+      "from": "skills/README.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-acceptance-review/SKILL.md"
+    },
+    {
+      "from": "skills/architecture-guardrails/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/architecture-guardrails/references/dotnet.md"
+    },
+    {
+      "from": "skills/architecture-guardrails/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/architecture-guardrails/references/dotnet.md"
+    },
+    {
+      "from": "skills/architecture-guardrails/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/architecture-guardrails/references/enforcement-model.md"
+    },
+    {
+      "from": "skills/architecture-guardrails/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/architecture-guardrails/references/enforcement-model.md"
+    },
+    {
+      "from": "skills/architecture-guardrails/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/architecture-guardrails/references/java.md"
+    },
+    {
+      "from": "skills/architecture-guardrails/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/architecture-guardrails/references/java.md"
+    },
+    {
+      "from": "skills/architecture-guardrails/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/architecture-guardrails/references/javascript-typescript.md"
+    },
+    {
+      "from": "skills/architecture-guardrails/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/architecture-guardrails/references/javascript-typescript.md"
+    },
+    {
+      "from": "skills/architecture-guardrails/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/architecture-guardrails/references/python.md"
+    },
+    {
+      "from": "skills/architecture-guardrails/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/architecture-guardrails/references/python.md"
+    },
+    {
+      "from": "skills/architecture-guardrails/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/architecture-guardrails/templates/gates.yaml"
+    },
+    {
+      "from": "skills/foundation-readiness-review/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/foundation-readiness-review/references/delivery-routing.md"
+    },
+    {
+      "from": "skills/foundation-readiness-review/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/foundation-readiness-review/references/delivery-routing.md"
+    },
+    {
+      "from": "skills/foundation-readiness-review/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/foundation-readiness-review/templates/foundation-review.md"
+    },
+    {
+      "from": "skills/idea-brief/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/idea-brief/references/vision-template.md"
+    },
+    {
+      "from": "skills/idea-brief/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/idea-brief/references/vision-template.md"
+    },
+    {
+      "from": "skills/ollama-delegate/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/ollama-delegate/SKILL.md"
+    },
+    {
+      "from": "skills/project-bootstrap/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/project-bootstrap/templates/foundation-plan.md"
+    },
+    {
+      "from": "skills/project-bootstrap/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/project-bootstrap/templates/project-charter.md"
+    },
+    {
+      "from": "skills/project-delivery-plan/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/project-delivery-plan/references/project-plan-template.md"
+    },
+    {
+      "from": "skills/project-delivery-plan/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/project-delivery-plan/references/project-plan-template.md"
+    },
+    {
+      "from": "skills/project-delivery-plan/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/project-delivery-plan/references/task-map-contract.md"
+    },
+    {
+      "from": "skills/project-delivery-plan/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/project-delivery-plan/references/task-map-contract.md"
+    },
+    {
+      "from": "skills/project-direction/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/project-direction/references/direction-template.md"
+    },
+    {
+      "from": "skills/project-direction/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/project-direction/references/direction-template.md"
+    },
+    {
+      "from": "skills/project-plan-verification/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/project-plan-verification/references/plan-verification-report-template.md"
+    },
+    {
+      "from": "skills/project-plan-verification/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/project-plan-verification/references/plan-verification-report-template.md"
+    },
+    {
+      "from": "skills/project-plan-verification/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/project-plan-verification/references/review-checklist.md"
+    },
+    {
+      "from": "skills/repo-foundation/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/repo-foundation/references/contract-index.schema.json"
+    },
+    {
+      "from": "skills/repo-foundation/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/repo-foundation/references/contract-registry.md"
+    },
+    {
+      "from": "skills/repo-foundation/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/repo-foundation/references/contract-registry.md"
+    },
+    {
+      "from": "skills/repo-foundation/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/repo-foundation/references/subsystem-contract.schema.json"
+    },
+    {
+      "from": "skills/senior-code-review/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/senior-code-review/references/review-dimensions.md"
+    },
+    {
+      "from": "skills/senior-code-review/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/senior-code-review/references/review-dimensions.md"
+    },
+    {
+      "from": "skills/skill-creator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/skill-creator/agents/analyzer.md"
+    },
+    {
+      "from": "skills/skill-creator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/skill-creator/agents/comparator.md"
+    },
+    {
+      "from": "skills/skill-creator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/skill-creator/agents/grader.md"
+    },
+    {
+      "from": "skills/skill-creator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/skill-creator/assets/eval_review.html"
+    },
+    {
+      "from": "skills/skill-creator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/skill-creator/references/schemas.md"
+    },
+    {
+      "from": "skills/skill-creator/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/skill-creator/references/schemas.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/testing-discipline/SKILL.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-acceptance-review/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-acceptance-review/references/acceptance-report-template.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-acceptance-review/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/task-implementation-flow/task-acceptance-review/references/acceptance-report-template.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-acceptance-review/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-acceptance-review/references/tests-only-reproducer.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-acceptance-review/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/task-implementation-flow/task-acceptance-review/references/tests-only-reproducer.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-acceptance-review/references/acceptance-report-template.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-acceptance-review/references/tests-only-reproducer.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/README.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-brief-designer/references/task-brief-template.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/task-implementation-flow/task-brief-designer/references/task-brief-template.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-brief-designer/references/task-sizing.yaml"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/task-implementation-flow/task-brief-designer/references/task-sizing.yaml"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-brief-designer/references/task-brief-template.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-brief-designer/references/task-sizing.yaml"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-maintainability-review/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/testing-discipline/SKILL.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-preflight/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-preflight/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-review-discovery/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-review-discovery/references/discovery-report-template.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-review-discovery/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/task-implementation-flow/task-review-discovery/references/discovery-report-template.md"
+    },
+    {
+      "from": "skills/task-implementation-flow/task-verification-designer/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md"
+    },
+    {
+      "from": "skills/task-orchestrator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/assets/examples/minimal-run-policy.json"
+    },
+    {
+      "from": "skills/task-orchestrator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/assets/examples/minimal-task-manifest.json"
+    },
+    {
+      "from": "skills/task-orchestrator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/assets/run-policy.schema.json"
+    },
+    {
+      "from": "skills/task-orchestrator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/assets/task-manifest.schema.json"
+    },
+    {
+      "from": "skills/task-orchestrator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/docs/README.md"
+    },
+    {
+      "from": "skills/task-orchestrator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/references/architecture-map.md"
+    },
+    {
+      "from": "skills/task-orchestrator/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/task-orchestrator/references/architecture-map.md"
+    },
+    {
+      "from": "skills/task-orchestrator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/references/index.md"
+    },
+    {
+      "from": "skills/task-orchestrator/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/task-orchestrator/references/index.md"
+    },
+    {
+      "from": "skills/task-orchestrator/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/references/operator-guide.md"
+    },
+    {
+      "from": "skills/task-orchestrator/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/task-orchestrator/references/operator-guide.md"
+    },
+    {
+      "from": "skills/task-orchestrator/docs/README.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/docs/direction-local-harness.md"
+    },
+    {
+      "from": "skills/task-orchestrator/docs/README.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md"
+    },
+    {
+      "from": "skills/task-orchestrator/docs/README.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/docs/local-harness-task-map.json"
+    },
+    {
+      "from": "skills/task-orchestrator/docs/README.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/references/architecture-map.md"
+    },
+    {
+      "from": "skills/task-orchestrator/docs/README.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/references/operator-guide.md"
+    },
+    {
+      "from": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/docs/direction-local-harness.md"
+    },
+    {
+      "from": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/docs/local-harness-task-map.json"
+    },
+    {
+      "from": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/references/architecture-map.md"
+    },
+    {
+      "from": "skills/task-orchestrator/references/architecture-map.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/docs/README.md"
+    },
+    {
+      "from": "skills/task-orchestrator/references/index.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/assets/examples/minimal-run-policy.json"
+    },
+    {
+      "from": "skills/task-orchestrator/references/index.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/assets/examples/minimal-task-manifest.json"
+    },
+    {
+      "from": "skills/task-orchestrator/references/index.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/docs/README.md"
+    },
+    {
+      "from": "skills/task-orchestrator/references/index.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/references/architecture-map.md"
+    },
+    {
+      "from": "skills/task-orchestrator/references/index.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/references/operator-guide.md"
+    },
+    {
+      "from": "skills/task-orchestrator/references/operator-guide.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/assets/examples/minimal-run-policy.json"
+    },
+    {
+      "from": "skills/task-orchestrator/references/operator-guide.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/assets/examples/minimal-task-manifest.json"
+    },
+    {
+      "from": "skills/task-orchestrator/references/operator-guide.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/assets/run-policy.schema.json"
+    },
+    {
+      "from": "skills/task-orchestrator/references/operator-guide.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/assets/task-manifest.schema.json"
+    },
+    {
+      "from": "skills/task-orchestrator/references/operator-guide.md",
+      "kind": "literal_link",
+      "to": "skills/task-orchestrator/docs/README.md"
+    },
+    {
+      "from": "skills/testing-discipline/SKILL.md",
+      "kind": "literal_link",
+      "to": "skills/testing-discipline/references/test-catalog.md"
+    },
+    {
+      "from": "skills/testing-discipline/SKILL.md",
+      "kind": "package_reference",
+      "to": "skills/testing-discipline/references/test-catalog.md"
+    }
+  ],
+  "recording_commit": "2007ca53ef92e94b76719f70ebe6e87c6baa9b6b",
+  "routes": [
+    {
+      "authority": "SKILL.md: Guided inputs; Starting evidence, final comparison and native duties; Optional run evidence",
+      "condition": "Conversational bounded code edit, adding focused tests; optional evidence available. No durable task package.",
+      "file_bytes": 75212,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+        "skills/testing-discipline/SKILL.md"
+      ],
+      "id": "implementer-direct-guided",
+      "kind": "representative",
+      "skill": "bounded-task-implementer",
+      "task": "SIDE-003.7"
+    },
+    {
+      "authority": "SKILL.md: Guided inputs; Starting evidence, final comparison and native duties; Optional run evidence",
+      "condition": "Ready packaged code task with verification and preflight, adding focused tests; evidence available.",
+      "file_bytes": 83469,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+        "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md",
+        "skills/testing-discipline/SKILL.md"
+      ],
+      "id": "implementer-packaged-guided",
+      "kind": "representative",
+      "skill": "bounded-task-implementer",
+      "task": "SIDE-003.7"
+    },
+    {
+      "authority": "SKILL.md: Guided inputs; Starting evidence, final comparison and native duties; Optional run evidence; High-assurance inputs/additions",
+      "condition": "Packaged code task with explicit strict machine contract, tests and mandatory instrumentation. Task-specific packet/schema are scenario inputs.",
+      "file_bytes": 83469,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+        "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md",
+        "skills/testing-discipline/SKILL.md"
+      ],
+      "id": "implementer-high-assurance",
+      "kind": "representative",
+      "skill": "bounded-task-implementer",
+      "task": "SIDE-003.7"
+    },
+    {
+      "authority": "SKILL.md: Guided inputs; Starting evidence, final comparison and native duties; Optional run evidence; Correct at the invariant level; Correction handoff format",
+      "condition": "Authorized packaged code correction with findings and full ledger, focused regression tests, unchanged authority.",
+      "file_bytes": 83469,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+        "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md",
+        "skills/testing-discipline/SKILL.md"
+      ],
+      "id": "implementer-correction",
+      "kind": "representative",
+      "skill": "bounded-task-implementer",
+      "task": "SIDE-003.7"
+    },
+    {
+      "authority": "SKILL.md: Guided inputs; Starting evidence, final comparison and native duties; Optional run evidence",
+      "condition": "Direct code-and-test edit; evidence helpers available. Helpers are executed or probed, not instruction files read.",
+      "file_bytes": 75212,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+        "skills/testing-discipline/SKILL.md"
+      ],
+      "id": "implementer-evidence-available",
+      "kind": "representative",
+      "skill": "bounded-task-implementer",
+      "task": "SIDE-003.7"
+    },
+    {
+      "authority": "SKILL.md: Guided inputs; Starting evidence, final comparison and native duties; Optional run evidence",
+      "condition": "Direct code-and-test edit; evidence helpers unavailable. Helpers are executed or probed, not instruction files read.",
+      "file_bytes": 75212,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+        "skills/testing-discipline/SKILL.md"
+      ],
+      "id": "implementer-evidence-unavailable",
+      "kind": "representative",
+      "skill": "bounded-task-implementer",
+      "task": "SIDE-003.7"
+    },
+    {
+      "authority": "SKILL.md: Guided inputs; Output contract (guided report format is inline)",
+      "condition": "Independent guided decision for a ready package after published discovery; durable report, no post-verdict reproducer.",
+      "file_bytes": 48659,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-acceptance-review/SKILL.md"
+      ],
+      "id": "acceptance-guided",
+      "kind": "representative",
+      "skill": "task-acceptance-review",
+      "task": "SIDE-003.8"
+    },
+    {
+      "authority": "SKILL.md: High-assurance inputs; Output contract",
+      "condition": "Independent strict packet decision; full durable report template applies.",
+      "file_bytes": 63721,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-acceptance-review/SKILL.md",
+        "skills/task-implementation-flow/task-acceptance-review/references/acceptance-report-template.md"
+      ],
+      "id": "acceptance-high-assurance",
+      "kind": "representative",
+      "skill": "task-acceptance-review",
+      "task": "SIDE-003.8"
+    },
+    {
+      "authority": "SKILL.md: Conditional post-verdict tests-only reproducer",
+      "condition": "Guided CHANGES_REQUESTED verdict already fixed; current invocation explicitly authorizes a bounded tests-only reproducer.",
+      "file_bytes": 51591,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-acceptance-review/SKILL.md",
+        "skills/task-implementation-flow/task-acceptance-review/references/tests-only-reproducer.md"
+      ],
+      "id": "acceptance-tests-only-reproducer",
+      "kind": "representative",
+      "skill": "task-acceptance-review",
+      "task": "SIDE-003.8"
+    },
+    {
+      "authority": "SKILL.md: Load flow policy; Guided workflow step 8; Output contract",
+      "condition": "Create one guided durable executable brief without immediate-review metadata.",
+      "file_bytes": 57560,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+        "skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md",
+        "skills/task-implementation-flow/task-brief-designer/references/task-brief-template.md",
+        "skills/task-implementation-flow/task-brief-designer/references/task-sizing.yaml"
+      ],
+      "id": "brief-ordinary",
+      "kind": "ordinary",
+      "skill": "task-brief-designer",
+      "task": "SIDE-003.9"
+    },
+    {
+      "authority": "SKILL.md: Required-review handoff",
+      "condition": "Create one guided durable brief with review: immediate; consult the linked shared submission route.",
+      "file_bytes": 71716,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/README.md",
+        "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+        "skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md",
+        "skills/task-implementation-flow/task-brief-designer/references/task-brief-template.md",
+        "skills/task-implementation-flow/task-brief-designer/references/task-sizing.yaml"
+      ],
+      "id": "brief-immediate-review",
+      "kind": "conditional",
+      "skill": "task-brief-designer",
+      "task": "SIDE-003.9"
+    },
+    {
+      "authority": "SKILL.md: Choose the profile; Load flow policy",
+      "condition": "Create one high-assurance durable brief; exact profile additions are currently inline.",
+      "file_bytes": 57560,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+        "skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md",
+        "skills/task-implementation-flow/task-brief-designer/references/task-brief-template.md",
+        "skills/task-implementation-flow/task-brief-designer/references/task-sizing.yaml"
+      ],
+      "id": "brief-high-assurance",
+      "kind": "conditional",
+      "skill": "task-brief-designer",
+      "task": "SIDE-003.9"
+    },
+    {
+      "authority": "SKILL.md: Guided; Guided workflow",
+      "condition": "Standalone guided readiness for one executable package.",
+      "file_bytes": 46777,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-preflight/SKILL.md",
+        "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md"
+      ],
+      "id": "preflight-ordinary",
+      "kind": "ordinary",
+      "skill": "task-preflight",
+      "task": "SIDE-003.10"
+    },
+    {
+      "authority": "SKILL.md: High assurance; High-assurance workflow",
+      "condition": "Exact high-assurance execution packet; template includes its addendum.",
+      "file_bytes": 46777,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-preflight/SKILL.md",
+        "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md"
+      ],
+      "id": "preflight-high-assurance",
+      "kind": "conditional",
+      "skill": "task-preflight",
+      "task": "SIDE-003.10"
+    },
+    {
+      "authority": "SKILL.md: Scope; Protocol; Output contract",
+      "condition": "Independent review of production-only change with required architecture evidence.",
+      "file_bytes": 37875,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-maintainability-review/SKILL.md"
+      ],
+      "id": "maintainability-ordinary",
+      "kind": "ordinary",
+      "skill": "task-maintainability-review",
+      "task": "SIDE-003.11"
+    },
+    {
+      "authority": "SKILL.md: Scope (For test assets)",
+      "condition": "Review significant test/eval/harness changes; testing discipline applies, including broad evidence selection.",
+      "file_bytes": 67983,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-maintainability-review/SKILL.md",
+        "skills/testing-discipline/SKILL.md",
+        "skills/testing-discipline/references/test-catalog.md"
+      ],
+      "id": "maintainability-test-assets",
+      "kind": "conditional",
+      "skill": "task-maintainability-review",
+      "task": "SIDE-003.11"
+    },
+    {
+      "authority": "SKILL.md: Use the evidence workflow; Choose the test level",
+      "condition": "Focused unit/component test design or bug regression; no broad strategy or specialized evidence.",
+      "file_bytes": 33276,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/testing-discipline/SKILL.md"
+      ],
+      "id": "testing-ordinary",
+      "kind": "ordinary",
+      "skill": "testing-discipline",
+      "task": "SIDE-003.12"
+    },
+    {
+      "authority": "SKILL.md: Choose the test level (Read test-catalog when...)",
+      "condition": "Define broad strategy, release confidence or specialized functional/non-functional evidence.",
+      "file_bytes": 46486,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/testing-discipline/SKILL.md",
+        "skills/testing-discipline/references/test-catalog.md"
+      ],
+      "id": "testing-specialized-strategy",
+      "kind": "conditional",
+      "skill": "testing-discipline",
+      "task": "SIDE-003.12"
+    },
+    {
+      "authority": "SKILL.md: Core loop; Capture intent; Write the skill",
+      "condition": "Initial skill authoring before eval data, grading, benchmarks or description optimization.",
+      "file_bytes": 50818,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/skill-creator/SKILL.md"
+      ],
+      "id": "creator-ordinary",
+      "kind": "ordinary",
+      "skill": "skill-creator",
+      "task": "SIDE-003.13"
+    },
+    {
+      "authority": "SKILL.md: Test Cases; Step 4",
+      "condition": "Author evals.json or consult benchmark/grading artifact shapes.",
+      "file_bytes": 63814,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/skill-creator/SKILL.md",
+        "skills/skill-creator/references/schemas.md"
+      ],
+      "id": "creator-eval-schemas",
+      "kind": "conditional",
+      "skill": "skill-creator",
+      "task": "SIDE-003.13"
+    },
+    {
+      "authority": "SKILL.md: Step 4: Grade, aggregate, and launch the viewer",
+      "condition": "Completed eval runs, grade assertions, aggregate benchmarks, then analyst pass.",
+      "file_bytes": 83239,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/skill-creator/SKILL.md",
+        "skills/skill-creator/agents/analyzer.md",
+        "skills/skill-creator/agents/grader.md",
+        "skills/skill-creator/references/schemas.md"
+      ],
+      "id": "creator-grade-analyze",
+      "kind": "conditional",
+      "skill": "skill-creator",
+      "task": "SIDE-003.13"
+    },
+    {
+      "authority": "SKILL.md: Advanced: Blind comparison",
+      "condition": "Explicit rigorous blind A/B comparison, followed by post-hoc analysis.",
+      "file_bytes": 68481,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/skill-creator/SKILL.md",
+        "skills/skill-creator/agents/analyzer.md",
+        "skills/skill-creator/agents/comparator.md"
+      ],
+      "id": "creator-blind-comparison",
+      "kind": "conditional",
+      "skill": "skill-creator",
+      "task": "SIDE-003.13"
+    },
+    {
+      "authority": "SKILL.md: Description Optimization; Step 1",
+      "condition": "Description optimization accepted; read eval review HTML as instructed template.",
+      "file_bytes": 57876,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/skill-creator/SKILL.md",
+        "skills/skill-creator/assets/eval_review.html"
+      ],
+      "id": "creator-description-optimization",
+      "kind": "conditional",
+      "skill": "skill-creator",
+      "task": "SIDE-003.13"
+    },
+    {
+      "authority": "SKILL.md: Quick protocol; Scale documentation",
+      "condition": "Small placement decision without new guardrails or implemented-contract registry.",
+      "file_bytes": 38647,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/repo-foundation/SKILL.md"
+      ],
+      "id": "repo-ordinary",
+      "kind": "ordinary",
+      "skill": "repo-foundation",
+      "task": "SIDE-003.14"
+    },
+    {
+      "authority": "SKILL.md: Machine-readable implemented-contract discovery; references/contract-registry.md: Files",
+      "condition": "Foundation plan requires implemented reusable-contract discovery; schema shapes consulted to materialize records.",
+      "file_bytes": 46313,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/repo-foundation/SKILL.md",
+        "skills/repo-foundation/references/contract-index.schema.json",
+        "skills/repo-foundation/references/contract-registry.md",
+        "skills/repo-foundation/references/subsystem-contract.schema.json"
+      ],
+      "id": "repo-contract-registry",
+      "kind": "conditional",
+      "skill": "repo-foundation",
+      "task": "SIDE-003.14"
+    },
+    {
+      "authority": "SKILL.md: Quick protocol step 4; architecture-guardrails: enforcement mode and matching stack",
+      "condition": "Foundation guardrails marked ADD/REPAIR for a Python repo, CLEAN policy, no command registry template needed.",
+      "file_bytes": 65952,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/architecture-guardrails/SKILL.md",
+        "skills/architecture-guardrails/references/enforcement-model.md",
+        "skills/architecture-guardrails/references/python.md",
+        "skills/repo-foundation/SKILL.md"
+      ],
+      "id": "repo-python-guardrails",
+      "kind": "conditional",
+      "skill": "repo-foundation",
+      "task": "SIDE-003.14"
+    },
+    {
+      "authority": "SKILL.md: Required outputs",
+      "condition": "Produce lightweight end-to-end delivery plan and task map.",
+      "file_bytes": 43354,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/project-delivery-plan/SKILL.md",
+        "skills/project-delivery-plan/references/project-plan-template.md",
+        "skills/project-delivery-plan/references/task-map-contract.md"
+      ],
+      "id": "delivery-ordinary",
+      "kind": "ordinary",
+      "skill": "project-delivery-plan",
+      "task": "SIDE-003.15"
+    },
+    {
+      "authority": "SKILL.md: Inputs; Required outputs",
+      "condition": "Product includes model-dependent behavior; AI project authority is supplied scenario data. Both bundled planning resources still apply.",
+      "file_bytes": 43354,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/project-delivery-plan/SKILL.md",
+        "skills/project-delivery-plan/references/project-plan-template.md",
+        "skills/project-delivery-plan/references/task-map-contract.md"
+      ],
+      "id": "delivery-model-dependent",
+      "kind": "conditional",
+      "skill": "project-delivery-plan",
+      "task": "SIDE-003.15"
+    },
+    {
+      "authority": "SKILL.md: Classify repository enforcement mode (See enforcement-model)",
+      "condition": "Classify enforcement mode and establish deterministic policy before stack-specific mechanism selection.",
+      "file_bytes": 40103,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/architecture-guardrails/SKILL.md",
+        "skills/architecture-guardrails/references/enforcement-model.md"
+      ],
+      "id": "guardrails-ordinary",
+      "kind": "ordinary",
+      "skill": "architecture-guardrails",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: Choose the lightest enforcement mechanism",
+      "condition": "Choose mechanism for python only; no new machine command registry needed.",
+      "file_bytes": 43683,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/architecture-guardrails/SKILL.md",
+        "skills/architecture-guardrails/references/enforcement-model.md",
+        "skills/architecture-guardrails/references/python.md"
+      ],
+      "id": "guardrails-python",
+      "kind": "conditional",
+      "skill": "architecture-guardrails",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: Choose the lightest enforcement mechanism",
+      "condition": "Choose mechanism for javascript-typescript only; no new machine command registry needed.",
+      "file_bytes": 45623,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/architecture-guardrails/SKILL.md",
+        "skills/architecture-guardrails/references/enforcement-model.md",
+        "skills/architecture-guardrails/references/javascript-typescript.md"
+      ],
+      "id": "guardrails-javascript-typescript",
+      "kind": "conditional",
+      "skill": "architecture-guardrails",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: Choose the lightest enforcement mechanism",
+      "condition": "Choose mechanism for java only; no new machine command registry needed.",
+      "file_bytes": 42911,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/architecture-guardrails/SKILL.md",
+        "skills/architecture-guardrails/references/enforcement-model.md",
+        "skills/architecture-guardrails/references/java.md"
+      ],
+      "id": "guardrails-java",
+      "kind": "conditional",
+      "skill": "architecture-guardrails",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: Choose the lightest enforcement mechanism",
+      "condition": "Choose mechanism for dotnet only; no new machine command registry needed.",
+      "file_bytes": 42787,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/architecture-guardrails/SKILL.md",
+        "skills/architecture-guardrails/references/dotnet.md",
+        "skills/architecture-guardrails/references/enforcement-model.md"
+      ],
+      "id": "guardrails-dotnet",
+      "kind": "conditional",
+      "skill": "architecture-guardrails",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: Add compact machine-readable discovery only when useful",
+      "condition": "Python guardrails plus useful machine command registry with no existing equivalent; template used as shape guide.",
+      "file_bytes": 45134,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/architecture-guardrails/SKILL.md",
+        "skills/architecture-guardrails/references/enforcement-model.md",
+        "skills/architecture-guardrails/references/python.md",
+        "skills/architecture-guardrails/templates/gates.yaml"
+      ],
+      "id": "guardrails-command-registry",
+      "kind": "conditional",
+      "skill": "architecture-guardrails",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: Steps 6 and 7",
+      "condition": "Independent foundation readiness, delivery-route recommendation and report.",
+      "file_bytes": 32367,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/foundation-readiness-review/SKILL.md",
+        "skills/foundation-readiness-review/references/delivery-routing.md",
+        "skills/foundation-readiness-review/templates/foundation-review.md"
+      ],
+      "id": "readiness-ordinary",
+      "kind": "ordinary",
+      "skill": "foundation-readiness-review",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: AI/model-dependent checks; Steps 6 and 7",
+      "condition": "Readiness includes model-dependent product foundation; AI foundation document is project input, no extra bundled reference.",
+      "file_bytes": 32367,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/foundation-readiness-review/SKILL.md",
+        "skills/foundation-readiness-review/references/delivery-routing.md",
+        "skills/foundation-readiness-review/templates/foundation-review.md"
+      ],
+      "id": "readiness-model-product",
+      "kind": "conditional",
+      "skill": "foundation-readiness-review",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: Workflow step 9",
+      "condition": "Create full owner direction.",
+      "file_bytes": 28079,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/project-direction/SKILL.md",
+        "skills/project-direction/references/direction-template.md"
+      ],
+      "id": "direction-ordinary",
+      "kind": "ordinary",
+      "skill": "project-direction",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: Workflow step 9",
+      "condition": "Rebaseline a mid-project direction delta; same template supplies delta format.",
+      "file_bytes": 28079,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/project-direction/SKILL.md",
+        "skills/project-direction/references/direction-template.md"
+      ],
+      "id": "direction-delta",
+      "kind": "conditional",
+      "skill": "project-direction",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: Required outputs; Step 13",
+      "condition": "Independent full semantic review and durable report; unlinked review-checklist remains inventory-only.",
+      "file_bytes": 32785,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/project-plan-verification/SKILL.md",
+        "skills/project-plan-verification/references/plan-verification-report-template.md"
+      ],
+      "id": "plan-review-ordinary",
+      "kind": "ordinary",
+      "skill": "project-plan-verification",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: Inputs; Step 13",
+      "condition": "Review AI product plan using supplied AI authority; no extra bundled instruction reference is mandated.",
+      "file_bytes": 32785,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/project-plan-verification/SKILL.md",
+        "skills/project-plan-verification/references/plan-verification-report-template.md"
+      ],
+      "id": "plan-review-model-product",
+      "kind": "conditional",
+      "skill": "project-plan-verification",
+      "task": "SIDE-003.16"
+    },
+    {
+      "authority": "SKILL.md: Workflow step 6",
+      "condition": "Stabilize early idea with default vision output format.",
+      "file_bytes": 27787,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/idea-brief/SKILL.md",
+        "skills/idea-brief/references/vision-template.md"
+      ],
+      "id": "idea-ordinary",
+      "kind": "ordinary",
+      "skill": "idea-brief",
+      "task": "SIDE-003.17"
+    },
+    {
+      "authority": "SKILL.md: Read vision-template and follow structure unless user requested different format",
+      "condition": "User explicitly requests a different format; instruction still says read vision-template, then follow the user format.",
+      "file_bytes": 27787,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/idea-brief/SKILL.md",
+        "skills/idea-brief/references/vision-template.md"
+      ],
+      "id": "idea-custom-format",
+      "kind": "conditional",
+      "skill": "idea-brief",
+      "task": "SIDE-003.17"
+    },
+    {
+      "authority": "SKILL.md: Mandatory review-dimension read",
+      "condition": "Requested general code review; mandatory dimension reference before substantive reasoning.",
+      "file_bytes": 32164,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/senior-code-review/SKILL.md",
+        "skills/senior-code-review/references/review-dimensions.md"
+      ],
+      "id": "senior-review-ordinary",
+      "kind": "ordinary",
+      "skill": "senior-code-review",
+      "task": "SIDE-003.17"
+    },
+    {
+      "authority": "SKILL.md: Mandatory review-dimension read; Completion check",
+      "condition": "Review security-sensitive change; relevant dimensions selected after the same mandatory reference read.",
+      "file_bytes": 32164,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/senior-code-review/SKILL.md",
+        "skills/senior-code-review/references/review-dimensions.md"
+      ],
+      "id": "senior-review-security",
+      "kind": "conditional",
+      "skill": "senior-code-review",
+      "task": "SIDE-003.17"
+    },
+    {
+      "authority": "SKILL.md: Guided output contract",
+      "condition": "Independent direct review with inline evidence report, no durable report requested.",
+      "file_bytes": 32573,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-review-discovery/SKILL.md"
+      ],
+      "id": "discovery-ordinary",
+      "kind": "ordinary",
+      "skill": "task-review-discovery",
+      "task": "SIDE-003.17"
+    },
+    {
+      "authority": "SKILL.md: For durable discovery, read discovery-report-template",
+      "condition": "Publish durable independent evidence under task package reviews.",
+      "file_bytes": 42580,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-review-discovery/SKILL.md",
+        "skills/task-implementation-flow/task-review-discovery/references/discovery-report-template.md"
+      ],
+      "id": "discovery-durable",
+      "kind": "conditional",
+      "skill": "task-review-discovery",
+      "task": "SIDE-003.17"
+    },
+    {
+      "authority": "SKILL.md: Artifact location",
+      "condition": "Derive verification for an executable task package with standard artifact layout.",
+      "file_bytes": 37386,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md",
+        "skills/task-implementation-flow/task-verification-designer/SKILL.md"
+      ],
+      "id": "verification-ordinary",
+      "kind": "ordinary",
+      "skill": "task-verification-designer",
+      "task": "SIDE-003.17"
+    },
+    {
+      "authority": "SKILL.md: Authority, coverage, and revision; Visible variants and history",
+      "condition": "Task requires finite lifecycle/recovery cases; procedure remains inline, same artifact-layout reference.",
+      "file_bytes": 37386,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-implementation-flow/task-brief-designer/references/task-artifact-layout.md",
+        "skills/task-implementation-flow/task-verification-designer/SKILL.md"
+      ],
+      "id": "verification-lifecycle",
+      "kind": "conditional",
+      "skill": "task-verification-designer",
+      "task": "SIDE-003.17"
+    },
+    {
+      "authority": "SKILL.md: Read the smallest current reference",
+      "condition": "Explicit request to inspect an existing controller run.",
+      "file_bytes": 28644,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-orchestrator/SKILL.md",
+        "skills/task-orchestrator/references/index.md",
+        "skills/task-orchestrator/references/operator-guide.md"
+      ],
+      "id": "orchestrator-ordinary",
+      "kind": "ordinary",
+      "skill": "task-orchestrator",
+      "task": "SIDE-003.17"
+    },
+    {
+      "authority": "SKILL.md: Read architecture map before changing code",
+      "condition": "Explicit request to modify controller code, not plan future harness work.",
+      "file_bytes": 30079,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-orchestrator/SKILL.md",
+        "skills/task-orchestrator/references/architecture-map.md",
+        "skills/task-orchestrator/references/index.md"
+      ],
+      "id": "orchestrator-modify",
+      "kind": "conditional",
+      "skill": "task-orchestrator",
+      "task": "SIDE-003.17"
+    },
+    {
+      "authority": "SKILL.md: Read current development documents; docs/README.md: Read these documents in order",
+      "condition": "Explicit future harness planning: development README directs reading direction, plan and task map in order.",
+      "file_bytes": 104289,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-orchestrator/SKILL.md",
+        "skills/task-orchestrator/docs/README.md",
+        "skills/task-orchestrator/docs/direction-local-harness.md",
+        "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+        "skills/task-orchestrator/docs/local-harness-task-map.json",
+        "skills/task-orchestrator/references/index.md"
+      ],
+      "id": "orchestrator-plan-future",
+      "kind": "conditional",
+      "skill": "task-orchestrator",
+      "task": "SIDE-003.17"
+    },
+    {
+      "authority": "references/index.md: Construct current inputs; operator-guide.md: Prepare confirmed inputs",
+      "condition": "Construct confirmed controller run policy/manifest from existing examples and schemas.",
+      "file_bytes": 37605,
+      "files": [
+        "AGENTS.md",
+        "docs/development.md",
+        "docs/project-map.md",
+        "skills/task-orchestrator/SKILL.md",
+        "skills/task-orchestrator/assets/examples/minimal-run-policy.json",
+        "skills/task-orchestrator/assets/examples/minimal-task-manifest.json",
+        "skills/task-orchestrator/assets/run-policy.schema.json",
+        "skills/task-orchestrator/assets/task-manifest.schema.json",
+        "skills/task-orchestrator/references/index.md",
+        "skills/task-orchestrator/references/operator-guide.md"
+      ],
+      "id": "orchestrator-prepare-inputs",
+      "kind": "conditional",
+      "skill": "task-orchestrator",
+      "task": "SIDE-003.17"
+    }
+  ],
+  "schema_version": 1,
+  "skills": [
+    {
+      "body_bytes": 7994,
+      "description_characters": 580,
+      "development_profile": true,
+      "file_bytes": 8634,
+      "name": "ai-flow-foundation",
+      "path": "skills/ai-flow-foundation/SKILL.md",
+      "sha256": "fc26141c335975d262c3e1978129e06abbb35f3027a2dff89a00d4c725d291d6"
+    },
+    {
+      "body_bytes": 16708,
+      "description_characters": 533,
+      "development_profile": true,
+      "file_bytes": 17306,
+      "name": "architecture-guardrails",
+      "path": "skills/architecture-guardrails/SKILL.md",
+      "sha256": "0d3a759491bd4f8b069a4fa27a2c5cc809d6b8f5ccaa0a5e51cd37004896062c"
+    },
+    {
+      "body_bytes": 4559,
+      "description_characters": 720,
+      "development_profile": false,
+      "file_bytes": 5345,
+      "name": "ask-user-questions",
+      "path": "skills/ask-user-questions/SKILL.md",
+      "sha256": "34a5d62b9c5cd9d6b16db91dfb96f989a35688e690d1324a45db4b6d70ccc5a2"
+    },
+    {
+      "body_bytes": 8684,
+      "description_characters": 445,
+      "development_profile": true,
+      "file_bytes": 9196,
+      "name": "foundation-readiness-review",
+      "path": "skills/foundation-readiness-review/SKILL.md",
+      "sha256": "583235afffc4cc1685fd4b9b0b1e2fc7f0ac5a124dfafe013a3c473455fba844"
+    },
+    {
+      "body_bytes": 7439,
+      "description_characters": 620,
+      "development_profile": false,
+      "file_bytes": 8097,
+      "name": "idea-brief",
+      "path": "skills/idea-brief/SKILL.md",
+      "sha256": "578d193e366144498d65660b2d84f5f2ff6b277f6e92e624f0fb64e01936935f"
+    },
+    {
+      "body_bytes": 5890,
+      "description_characters": 797,
+      "development_profile": false,
+      "file_bytes": 6735,
+      "name": "idea-challenger",
+      "path": "skills/idea-challenger/SKILL.md",
+      "sha256": "ef6d1ca29716e4310ce6a58ccc3311285ad44d9e445ea3b7cd71e98150481822"
+    },
+    {
+      "body_bytes": 10344,
+      "description_characters": 548,
+      "development_profile": false,
+      "file_bytes": 10937,
+      "name": "idea-investigator",
+      "path": "skills/idea-investigator/SKILL.md",
+      "sha256": "7bed4519379691eb019a7eeadcd5c77ed5d8aa05cd493bee2858298d1991fa42"
+    },
+    {
+      "body_bytes": 5610,
+      "description_characters": 339,
+      "development_profile": true,
+      "file_bytes": 6124,
+      "name": "ollama-delegate",
+      "path": "skills/ollama-delegate/SKILL.md",
+      "sha256": "bb775840081d3efe5ea4c50f4936f8539601c359b5555d396d8e8950d0ad75c9"
+    },
+    {
+      "body_bytes": 10941,
+      "description_characters": 659,
+      "development_profile": true,
+      "file_bytes": 11663,
+      "name": "project-bootstrap",
+      "path": "skills/project-bootstrap/SKILL.md",
+      "sha256": "f4a10ad767a37f383c6be87e5828c1cc65aac9b336f51abd78129b39b56c4ce3"
+    },
+    {
+      "body_bytes": 17199,
+      "description_characters": 687,
+      "development_profile": true,
+      "file_bytes": 17935,
+      "name": "project-delivery-plan",
+      "path": "skills/project-delivery-plan/SKILL.md",
+      "sha256": "46ec0fed8364f039ba27dace528ce607224f749e0695005e81d8289e5ef6ec3e"
+    },
+    {
+      "body_bytes": 7299,
+      "description_characters": 573,
+      "development_profile": true,
+      "file_bytes": 7936,
+      "name": "project-direction",
+      "path": "skills/project-direction/SKILL.md",
+      "sha256": "37d3dcbbdd554fa892486663d0a5b7dbc0ca438faeddfc6ed7f15bc8dd108d55"
+    },
+    {
+      "body_bytes": 13356,
+      "description_characters": 649,
+      "development_profile": true,
+      "file_bytes": 14058,
+      "name": "project-plan-verification",
+      "path": "skills/project-plan-verification/SKILL.md",
+      "sha256": "8f7100d365ff4ae61a4936917e1c9279ea515d0844cadde8d0232fa63b05c4f4"
+    },
+    {
+      "body_bytes": 21649,
+      "description_characters": 563,
+      "development_profile": true,
+      "file_bytes": 22269,
+      "name": "repo-foundation",
+      "path": "skills/repo-foundation/SKILL.md",
+      "sha256": "ed0036f5dd996ec2213547204999530d92b313a93c5d7733ad020f7b5558a19b"
+    },
+    {
+      "body_bytes": 8584,
+      "description_characters": 638,
+      "development_profile": true,
+      "file_bytes": 9387,
+      "name": "senior-code-review",
+      "path": "skills/senior-code-review/SKILL.md",
+      "sha256": "9974ca642d3c562eef36ce085f5d07127b7fa902acf2f1d27764988293ced85d"
+    },
+    {
+      "body_bytes": 7578,
+      "description_characters": 515,
+      "development_profile": true,
+      "file_bytes": 8307,
+      "name": "session-handoff",
+      "path": "skills/session-handoff/SKILL.md",
+      "sha256": "eea77fa4f445c545cef8847452fc583aeb5221ea24ae991c2e69d52406057516"
+    },
+    {
+      "body_bytes": 34080,
+      "description_characters": 319,
+      "development_profile": false,
+      "file_bytes": 34440,
+      "name": "skill-creator",
+      "path": "skills/skill-creator/SKILL.md",
+      "sha256": "949b7cc1a614a44bdcd0d143314e3923c630c5cd51378d4a1bbce91684318ac6"
+    },
+    {
+      "body_bytes": 41369,
+      "description_characters": 515,
+      "development_profile": true,
+      "file_bytes": 41936,
+      "name": "bounded-task-implementer",
+      "path": "skills/task-implementation-flow/bounded-task-implementer/SKILL.md",
+      "sha256": "cb0dda461950c2dac1a38986827e7411489d0c3876e645d798fa852fdf458f99"
+    },
+    {
+      "body_bytes": 31632,
+      "description_characters": 599,
+      "development_profile": true,
+      "file_bytes": 32281,
+      "name": "task-acceptance-review",
+      "path": "skills/task-implementation-flow/task-acceptance-review/SKILL.md",
+      "sha256": "95712d1f82a93f47e42bd7282cbf7a8d14b676aba13354bb05fefb3b67421ad8"
+    },
+    {
+      "body_bytes": 25433,
+      "description_characters": 571,
+      "development_profile": true,
+      "file_bytes": 26051,
+      "name": "task-brief-designer",
+      "path": "skills/task-implementation-flow/task-brief-designer/SKILL.md",
+      "sha256": "28661285cbe74b7ed684fe2e7ef92315ce371e1c42ea8d413242818b1515d9c7"
+    },
+    {
+      "body_bytes": 6661,
+      "description_characters": 279,
+      "development_profile": true,
+      "file_bytes": 6998,
+      "name": "task-contract-registry-updater",
+      "path": "skills/task-implementation-flow/task-contract-registry-updater/SKILL.md",
+      "sha256": "2cf8535599465000056d7ce8145febd81d52a1a3d0b300b4651a9ff4460f2cf9"
+    },
+    {
+      "body_bytes": 20786,
+      "description_characters": 640,
+      "development_profile": true,
+      "file_bytes": 21497,
+      "name": "task-maintainability-review",
+      "path": "skills/task-implementation-flow/task-maintainability-review/SKILL.md",
+      "sha256": "b3bf1d348ef25d93d37fc50072f29c34d97249858c2cf5a04f14a8fd182fd5ea"
+    },
+    {
+      "body_bytes": 21647,
+      "description_characters": 453,
+      "development_profile": true,
+      "file_bytes": 22142,
+      "name": "task-preflight",
+      "path": "skills/task-implementation-flow/task-preflight/SKILL.md",
+      "sha256": "e544d392b4181ea9f78ef0c4b0861e28e8bb15a859eeacd39b01067ae6f6f2ae"
+    },
+    {
+      "body_bytes": 15652,
+      "description_characters": 494,
+      "development_profile": true,
+      "file_bytes": 16195,
+      "name": "task-review-discovery",
+      "path": "skills/task-implementation-flow/task-review-discovery/SKILL.md",
+      "sha256": "200e789cffdf1f72fe5b3ecf2aab6688e587674f137542fe3f80805cd09ba910"
+    },
+    {
+      "body_bytes": 15079,
+      "description_characters": 487,
+      "development_profile": true,
+      "file_bytes": 15620,
+      "name": "task-verification-designer",
+      "path": "skills/task-implementation-flow/task-verification-designer/SKILL.md",
+      "sha256": "fdd9eaad9e559482c3d2fd4b080a652651a449ac3cfbfb1203af03898fb7ca21"
+    },
+    {
+      "body_bytes": 6205,
+      "description_characters": 635,
+      "development_profile": false,
+      "file_bytes": 7005,
+      "name": "task-orchestrator",
+      "path": "skills/task-orchestrator/SKILL.md",
+      "sha256": "e3ccc8993f0c9370149512a8ab6775a7b9fc79973c5016a2efdf5ae8df52e771"
+    },
+    {
+      "body_bytes": 16262,
+      "description_characters": 590,
+      "development_profile": true,
+      "file_bytes": 16898,
+      "name": "testing-discipline",
+      "path": "skills/testing-discipline/SKILL.md",
+      "sha256": "d5bd5f57520e35468beded6c3107461c332f91f2f705309add8bdfd6f551becb"
+    }
+  ],
+  "totals": {
+    "all": {
+      "body_bytes": 388640,
+      "description_characters": 14448,
+      "file_bytes": 404992,
+      "skill_count": 26
+    },
+    "development_profile": {
+      "body_bytes": 320123,
+      "description_characters": 10809,
+      "file_bytes": 332433,
+      "skill_count": 20
+    }
+  }
+}

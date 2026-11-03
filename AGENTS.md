@@ -66,6 +66,9 @@ Do not omit an independent review merely because the named skill is unavailable,
   regenerate only with the explicit `--write-index` command. Repository-only
   foundation tools are not development-profile runtime dependencies.
 
+## Tool-output discipline
+Prefer narrow repository searches, targeted file ranges, and task-scoped diffs over full-file or repository-wide dumps. For verification, consume concise outcomes first and retrieve detailed logs only for failures or missing evidence. Keep authoritative raw logs on disk; don't discard evidence or hide failures.
+
 <!-- personal-skills:development-install:begin -->
 ## Skill installation resolution
 

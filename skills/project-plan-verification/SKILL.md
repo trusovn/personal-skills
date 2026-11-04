@@ -1,6 +1,6 @@
 ---
 name: project-plan-verification
-description: Use after `project-delivery-plan` (or an equivalent lightweight project plan) and before task implementation to independently verify that the plan is complete, coherent, and executable as a set of composing tasks. Run this as a fresh/separate reviewer agent. Reconstruct the required end-to-end data/process/state flows from authoritative project inputs, then check scope coverage, artifact producer/consumer closure, interfaces, lifecycle/state semantics, invariants, task placement/dependencies, and verification coverage. Emit a separate review report with ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE. Do not edit or repair the plan in this skill.
+description: Independently verify a delivery plan or equivalent lightweight plan before implementation, using a fresh reviewer. Check completeness, coherence and executable task composition against authoritative inputs; report ACCEPT, CHANGES_REQUESTED or INCONCLUSIVE. Do not edit/repair the plan or implement features.
 ---
 
 # Project Plan Verification

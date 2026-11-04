@@ -1,6 +1,6 @@
 ---
 name: task-brief-designer
-description: Create, tighten, or gap-check one bounded implementation task from a user request, issue, approved plan, specification, or existing brief. Use when asked to make work implementation-ready, define acceptance criteria and verification, estimate oversized work and split it into bounded child briefs only when coherent boundaries justify the split, prepare an agent handoff, or repair a task contract. Prefer a lightweight delta over rewriting an adequate brief. Do not implement, certify current repository readiness, or invent unresolved product or architecture decisions.
+description: Create, tighten or gap-check a bounded task from a request, issue, approved plan, specification or brief. Use for implementation readiness, acceptance/verification, sizing, justified splitting, handoff or contract repair. Prefer small deltas. Do not implement, certify repository readiness or invent product/architecture decisions.
 ---
 
 # Task Brief Designer

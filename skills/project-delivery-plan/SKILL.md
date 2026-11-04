@@ -1,6 +1,6 @@
 ---
 name: project-delivery-plan
-description: Use after the project foundation is ready and before detailed task planning/implementation when a small-to-medium project needs a coherent delivery plan without full SDD. Produce an end-to-end system plan plus a machine-readable task map that makes data/process/state flows, system interfaces, artifacts, invariants, producer/consumer relationships, and task placement explicit. Use this whenever multiple implementation tasks must compose into one working product, especially when downstream agents need to know what each task consumes and produces. Do not use this skill to implement features or to over-specify task-internal design that a strong reasoning agent can determine locally.
+description: Plan a small-to-medium project after foundation readiness and before task planning/implementation when multiple tasks must compose. Produce a lightweight system plan and machine-readable task map with explicit flows and cross-task contracts. Do not implement features or over-specify task-local design.
 ---
 
 # Project Delivery Plan

@@ -1,6 +1,6 @@
 ---
 name: task-preflight
-description: Check whether one bounded task is safe and executable against the current repository, then return a concise ready or blocked result. Use when asked to preflight, readiness-check, resolve task commands or ownership, or prepare a durable execution packet. Require derived verification and compact durable readiness for executable packages; keep direct requests inline and exact freshness for high-assurance work. Do not implement or redesign requirements.
+description: Check current execution readiness of one bounded task. Use for preflight, readiness checks, commands/ownership or execution packets. Require derived verification and durable readiness for packages; keep direct requests inline and high-assurance freshness exact. Return ready/blocked; do not implement or redesign requirements.
 ---
 
 # Task Preflight

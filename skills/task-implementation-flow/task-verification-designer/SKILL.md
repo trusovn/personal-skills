@@ -1,6 +1,6 @@
 ---
 name: task-verification-designer
-description: Design a compact, implementation-neutral verification specification for one executable task brief before implementation. A supplied executable task package always requires this stage; an unpackaged direct edit uses it when non-obvious acceptance or failure semantics, state/lifecycle behavior, finite material cases, or test-design burden justify it. Produce a separate verification.md in the task folder. Do not write tests or production code, invent requirements, or redesign the task.
+description: Design implementation-neutral verification scenarios/evidence for an executable task brief before implementation. Required for supplied executable packages; use for direct edits with non-obvious acceptance/failure, lifecycle behavior, finite material cases or test-design needs. Write verification.md, not tests/code; do not invent requirements or redesign the task.
 ---
 
 # Task Verification Designer

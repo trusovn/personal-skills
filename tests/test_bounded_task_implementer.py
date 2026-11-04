@@ -15,7 +15,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from review_fixture_support import FLOW, ROOT
+from review_fixture_support import FLOW, ROOT, normalized
 from staging_fixture_support import stage_setup
 
 IMPLEMENTER = FLOW / "bounded-task-implementer"
@@ -59,6 +59,36 @@ ROUTE_PART_TOKENS = {
 
 class ImplementerContractTest(unittest.TestCase):
 
+    def test_conditional_references_have_pre_action_loading_rules(self):
+        entry = (IMPLEMENTER / "SKILL.md").read_text()
+        self.assertIn("## Required reference loading", entry)
+        table = entry.split("## Required reference loading", 1)[1].split("## Choose the profile", 1)[0]
+        for reference, trigger in (
+            ("high-assurance.md", "Before validating or acting on"),
+            ("run-evidence.md", "Before the first evidence lifecycle operation"),
+            ("correction-protocol.md", "Before acting on a correction"),
+        ):
+            with self.subTest(reference=reference):
+                rows = [line for line in table.splitlines() if f"references/{reference}" in line]
+                self.assertEqual(1, len(rows), reference)
+                self.assertIn(trigger, rows[0])
+                self.assertTrue((IMPLEMENTER / "references" / reference).is_file())
+        for link in re.findall(r"\]\(([^)]+)\)", table):
+            relative, _, anchor = link.partition("#")
+            target = IMPLEMENTER / relative
+            self.assertTrue(target.is_file(), link)
+            content = target.read_text()
+            if anchor:
+                self.assertIn("## Starting evidence and native obligations (both profiles)", content)
+        owned = {path.name for path in (IMPLEMENTER / "references").glob("*.md")}
+        linked = {Path(link).name for link in re.findall(r"\]\((references/[^)]+)\)", table)}
+        self.assertEqual(owned, linked)
+        self.assertIn("before consuming packaged starting evidence", table)
+        self.assertIn("before adding or changing tests", table)
+        for rule in ("missing or unreadable", "stop the affected action",
+                     "report the exact gap", "Do not read every reference at startup"):
+            self.assertIn(rule, table)
+
     def test_reading_evals_supply_authority_and_conflicting_result_records(self):
         package = ROOT / "skills/project-delivery-plan"
         evals = json.loads((package / "evals/evals.json").read_text())["evals"]
@@ -95,7 +125,7 @@ class ImplementerContractTest(unittest.TestCase):
             ["git", "status", "--short"], cwd=root, text=True).strip())
 
     def test_correction_handoff_retains_evidence_provenance_and_separate_routes(self):
-        text = " ".join((IMPLEMENTER / "SKILL.md").read_text().split())
+        text = normalized(IMPLEMENTER / "SKILL.md", references=("references/correction-protocol.md",))
         for obligation in (
             "Preflight/context reference", "Incomplete reason", "Attempts and discarded hypotheses",
             "Influenced sibling surfaces", "Finding/scenario IDs", "owner and stage",
@@ -339,7 +369,7 @@ class ImplementerContractTest(unittest.TestCase):
 
 
     def test_direct_guided_and_high_assurance_routes_keep_their_limits(self):
-        skill = " ".join((IMPLEMENTER / "SKILL.md").read_text(encoding="utf-8").split())
+        skill = normalized(IMPLEMENTER / "SKILL.md", references=("references/high-assurance.md",))
         for obligation in (
             "Conversational direct edits",
             "compact self-preflight",

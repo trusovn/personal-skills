@@ -22,7 +22,7 @@
       "kind": "skill-guidance",
       "summary": "Implementer side of IF-003 only: existing initial/correction formats carry original/current report pairs, coverage/status/gaps, affected-function relationships, required rationale, transfer paths and current native evidence. Corrections preserve the original baseline and prior reports, use fresh comparisons and stale affected evidence/verdicts while retaining existing ledger identities and conditional stage order. Required native checks keep command, whole-project scope, policy and owner; aggregate reuse needs established constituent coverage and current bytes. Machine results use existing fields or authorized linked artifacts without schema extensions. Independent reviewer comparison/disposition is not implemented by this entry.",
       "plan_refs": ["IF-003"],
-      "declarations": ["skills/task-implementation-flow/bounded-task-implementer/SKILL.md"]
+      "declarations": ["skills/task-implementation-flow/bounded-task-implementer/SKILL.md", "skills/task-implementation-flow/bounded-task-implementer/references/correction-protocol.md", "skills/task-implementation-flow/bounded-task-implementer/references/high-assurance.md"]
     }
   ],
   "artifacts": [
@@ -30,13 +30,13 @@
       "name": "implementer-report-and-rationale-references",
       "summary": "Existing submission/correction artifacts reference exact original JSON/text and fresh current comparison pairs, governed/affected scope, status, gaps/recovery owner and retained-breach rationale. Direct capture supplies the same original-baseline contract. Scope expansion requires authorization and exact preserved pre-edit supplemental evidence or an explicit unrecoverable gap. Isolated consumers receive exact source/receiving paths for both siblings; ignored reports do not travel with commits.",
       "plan_refs": ["ART-003", "ART-004"],
-      "declarations": ["skills/task-implementation-flow/bounded-task-implementer/SKILL.md"]
+      "declarations": ["skills/task-implementation-flow/bounded-task-implementer/SKILL.md", "skills/task-implementation-flow/bounded-task-implementer/references/correction-protocol.md", "skills/task-implementation-flow/bounded-task-implementer/references/high-assurance.md"]
     },
     {
       "name": "implementer-native-evidence-reference",
       "summary": "Native evidence beside metrics carries exact command, governed scope/policy, checked-byte identity, result and producer/stage; aggregate coverage/reuse or owed duties/owner remain explicit. Direct self-preflight discovers the same obligations as packaged entry from existing policy or documented commands, recording none when absent. Successful or N/A metrics cannot waive required native failures or missing/stale proof. Optional run-evidence availability remains separate; wrapping a real comparison does not require duplicate measurement or a new lifecycle.",
       "plan_refs": ["ART-008"],
-      "declarations": ["skills/task-implementation-flow/bounded-task-implementer/SKILL.md"]
+      "declarations": ["skills/task-implementation-flow/bounded-task-implementer/SKILL.md", "skills/task-implementation-flow/bounded-task-implementer/references/correction-protocol.md", "skills/task-implementation-flow/bounded-task-implementer/references/high-assurance.md"]
     },
     {
       "name": "implementer-measurement-eval-preparation",

@@ -12,6 +12,21 @@ ACs, add tests, verify, and report” on every task.
 Repository and user instructions outrank this skill. Preserve pre-existing user
 work and never claim ownership of it.
 
+## Required reference loading
+
+Check applicability before the first dependent action. These references are
+required instructions when their condition applies. If a required reference is
+missing or unreadable, stop the affected action and report the exact gap;
+do not infer permission to bypass it. Do not read every reference at startup.
+
+| Reference | Loading condition and timing |
+|---|---|
+| [High-assurance and machine contracts](references/high-assurance.md) | Before validating or acting on an explicit high-assurance request or supplied strict machine contract; also before emitting a machine-contracted result or requested JSON artifact. |
+| [Run-evidence lifecycle and recovery](references/run-evidence.md) | Before the first evidence lifecycle operation when the installation-local availability path below succeeds, or before any evidence operation when instrumentation is explicitly required; includes interrupted-run recovery and closure. The cheap availability check stays inline. |
+| [Correction, resume and handoff](references/correction-protocol.md) | Before acting on a correction, resuming incomplete work, or preparing a correction handoff; before any correction production/test edit or ledger mapping. |
+| [Preflight starting-evidence handoff](../task-preflight/references/execution-packet-template.md#starting-evidence-and-native-obligations-both-profiles) | For packaged guided and high-assurance work, before consuming packaged starting evidence and before the first implementation edit. |
+| [Testing discipline](../../testing-discipline/SKILL.md) | For either profile, before adding or changing tests, evals or fixtures; inspect existing coverage and use its applicable guidance. |
+
 ## Choose the profile
 
 Use `guided` by default.
@@ -237,49 +252,11 @@ contract that requires instrumentation remains strict: an unavailable or failed
 availability check is then a blocking instrumentation failure rather than a
 best-effort skip.
 
-Do not create a task brief, task ID, task package, runtime identity, or other
-formal artifact solely for evidence collection. Pass task metadata only when it
-already exists. Runtime identity is optional and must come through the shared
-runtime-context contract, never model self-identification.
-
-After the compact self-preflight and before the first implementation edit, when
-evidence remains available:
-
-- query the current worktree for an active evidence run;
-- when taking over an open run whose original invocation never finished,
-  recover that run before starting a new one, preserving the recovery boundary
-  as uncertain rather than attributing all intervening changes to the prior
-  agent;
-- begin one new evidence run for this implementer invocation; and
-- if any best-effort evidence operation fails in guided mode, apply the
-  invocation-local skip above and continue the task.
-
-On normal completion, close the evidence run with outcome `completed`. When
-intentionally stopping or handing off before completion, close it with
-`reported_interrupted` or `failed` as factually appropriate. A killed agent
-may leave the run open; a later invocation may recover it before editing.
-
-When the flow already requires one canonical deterministic architecture command
-and an evidence run is active, that command may be executed once through
-`run_evidence.py check ... --kind architecture -- <command>` so raw command,
-timing, exit status, stdout, and stderr are captured. Do not add a duplicate
-architecture execution only for evidence.
-
-### High-assurance inputs
-
-Require:
-
-- one fresh preflight packet with status `ready`;
-- its referenced packaged `brief.md` and run policy; a packet that references a
-  direct legacy brief routes to `task-brief-designer` for normalization and
-  then fresh `task-preflight`;
-- its referenced verification-design artifact when the packet records one;
-- the supplied worker-result schema and durable result path; and
-- for correction, the acceptance findings and prior checkpoint/result.
-
-Missing or inconsistent high-assurance inputs return the schema-valid
-non-complete result required by the caller. Do not downgrade silently to guided
-mode.
+When evidence remains available, follow the required lifecycle reference:
+attempt instrumentation before edits, recover an open run before beginning a
+new one, and close the run with its factual outcome. Do not create formal
+artifacts solely for instrumentation. Unavailable tooling never authorizes
+provisioning or cross-installation fallback.
 
 ## Test and eval maintenance
 
@@ -336,121 +313,11 @@ ordinary small changes need no separate report or workflow stage.
    handoff rules. Review is required when task metadata says `immediate`, the
    user requested it, or risk warrants independent corroboration.
 
-## High-assurance additions
-
-Before editing, require the packet at the task package's `preflight.md` and
-recalculate every packet freshness field exactly: brief bytes,
-verification-design bytes when present, `HEAD`, the recorded post-packet short
-status, separate
-index/worktree identities for dirty paths, dependency/instruction/policy
-digests, and task-specific environment fingerprints. Any unexplained mismatch
-routes to fresh `task-preflight`.
-
-The packet's own creation is the one expected baseline delta: its recorded
-post-write status must equal current status before implementation, and all
-non-packet paths and identities must still match the pre-write baseline. Do not
-require the canonical packet to be ignored or status-neutral.
-
-Treat the packet as the discovery and permission boundary:
-
-- inspect and change only declared paths and cited context;
-- map every recorded verification scenario to planned implementation evidence
-  before editing, preserving blocked or unchecked coverage explicitly;
-- establish the packet's highest-risk fail-first evidence;
-- run its exact commands in order and record every attempted or required-but-
-  skipped command truthfully;
-- save logs and results only at authorized runtime paths; and
-- validate the result against the supplied schema.
-
-On a same-thread `CHANGES_REQUESTED` correction, preserve the bounded partial
-diff and apply only in-scope findings. Changed contract, scope, helpers,
-dependencies, permissions, or authority route through the owning earlier stage.
-
-## Correct at the invariant level
-
-For each reviewer finding, state the broken invariant before editing. Enumerate
-only credible sibling cases already implied by that invariant, the task
-contract, or an explicit finite matrix. Preserve the reviewer regression and
-make the smallest correction that protects the invariant instead of adding a
-field-specific, input-specific, or interleaving-specific exception. When
-several explicit values share one oracle, prefer a local table-driven or
-parameterized test over a reusable test framework.
-
-When a prior review supplies a coverage ledger, consume it completely and
-preserve every row identity and status. Prior passes are navigation context,
-not acceptance evidence for corrected bytes; leave unchecked and blocked rows
-for the fresh reviewer.
-
-Before any correction edit, write a concise row-to-evidence map for the complete
-supplied ledger. Include every row identity exactly once with its prior status,
-planned implementation evidence or navigation use, and next owner. Map failed
-rows to reviewer regressions and planned correction evidence; map unchecked or
-blocked rows to explicit fresh-review coverage; keep prior passes as navigation
-context only. This is a pre-edit gate: do not modify production or test bytes
-until the map is complete, and do not silently omit rows that implementation
-will not exercise.
-
-The correction handoff must carry:
-
-- the authoritative brief reference and preceding verdict;
-- the applicable verification revision and preflight/context references;
-- the first outstanding applicable conditional stage and the complete remaining
-  route;
-- the complete coverage ledger and complete findings;
-- stable finding/scenario IDs, incomplete reasons and separate correction,
-  evidence/capability and authority owners, including influenced sibling surfaces;
-- attempts, exact results and discarded hypotheses when correction has stopped;
-- the current scoped diff and reviewer reproducer commands;
-- correction evidence attached to the failed rows, separately from reviewer
-  row status;
-- the broad-gate decision and owner; and
-- every remaining unchecked or blocked row.
-
-Run reviewer regressions first and the nearest owning suite after they pass.
-Determine broad-gate ownership from the authority before editing. When it
-assigns a final reviewer, leave that reviewer's aggregate decision untouched.
-Run a broader or aggregate gate during correction only when the authority or
-blast radius assigns it to implementation, or when no final reviewer is
-assigned to own it. Report it only as implementation evidence. Never replace
-implementation checks with an acceptance pass.
-
-### Correction handoff format
-
-For guided correction work, use this explicit final structure. Preserve the
-labels and fill every field from the supplied review state; do not replace an
-exact authority path or command with prose such as “the task” or “the reviewer
-regression passed.”
-
-```markdown
-<Explain the correction's practical result, current evidence limits, and next actor in plain language.>
-
-Implemented: READY_FOR_REVIEW
-
-- Authority: <exact authoritative brief path>
-- Preflight/context reference: <exact readiness, verification revision and context paths>
-- Preceding verdict: <verdict>
-- Finding/scenario IDs: <complete stable inventories>
-- Complete findings and invariant: <findings and broken invariant>
-- Influenced sibling surfaces: <contract-implied cases and current evidence or remaining owner>
-- Attempts and discarded hypotheses: <exact probes/results and retained partial diff, or none>
-- Current scoped diff: <changed paths and concise diff summary>
-- Measurement: <original JSON/text, current fresh comparison JSON/text, coverage/status and gaps; retained prior comparisons; affected-function relationships and required rationale>
-- Native evidence: <command, governed scope/policy, checked-byte identity, result, producer/stage; reused aggregate constituent coverage or owed duty/owner>
-- Report transfer: <exact JSON/text source and receiving paths for isolated consumers, or shared paths>
-- Coverage ledger:
-  - <row identity> — prior status: <status>; implementation evidence: <command, setup/oracle and result, or none>; Incomplete reason: <reason or none>; next owner/status: <owner and unchanged reviewer status>
-- Reviewer reproducer: `<exact command>` — <implementation outcome>
-- Owning suite: `<exact command>` — <implementation outcome>
-- Broad/aggregate gate: <exact command, run-or-skipped decision, reason, owner and stage, current evidence>
-- Remaining reviewer coverage: <unchecked or blocked rows, or none>
-- Next: the first outstanding applicable stage and complete ordered remainder
-  through fresh independent `task-review-discovery` evidence to a fresh
-  `task-acceptance-review` decision
-```
-
-Report implementation outcomes separately from reviewer row status. Do not
-mark a row accepted, passed, or checked for the corrected bytes unless a fresh
-reviewer does so in a separate invocation.
+For correction or resume, load the correction procedure before acting. Preserve
+one original baseline and all prior reports; changed bytes stale affected
+reports, native evidence and verdicts. Complete any supplied ledger's pre-edit
+row-to-evidence map before changing production or tests. A fresh reviewer owns
+reviewer row status; implementation checks do not replace independent review.
 
 ## Name the complete ordered submission route
 
@@ -588,7 +455,7 @@ unfinished. Use ordinary language before task IDs and execution metadata.
 Inspect the existing explanation first: retain clear prose, move or rewrite it
 in place, and add only missing information. Keep detailed evidence in its owning
 record and link to it; do not create a parallel progress ledger or update the
-approved plan. This also applies to the correction handoff above.
+approved plan. This also applies to the required correction handoff reference.
 
 Return a concise human-readable summary, not raw JSON:
 
@@ -623,37 +490,7 @@ decision as next owner, then end the response without a review
 verdict. Retain the existing human result semantics for milestone or no-review
 work.
 
-### Machine-contracted invocation
-
-When the caller explicitly supplies an output schema or requires a machine-only
-response, return exactly one schema-conforming JSON object and no prose. When a
-conversational caller asks for a JSON artifact at a path, write and validate the
-artifact, then return the human summary with a link to it.
-
-Keep the JSON `summary` useful to a human: describe the implemented outcome and
-evidence. Do not prefix it with the skill name, timestamp, packet path, or other
-transport metadata unless the supplied schema explicitly requires that text.
-
-For the existing worker-result schema:
-
-- `status`: `complete`, `needs_input`, `blocked`, or `failed`; `complete` is a
-  submission, not acceptance. Keep `complete` for successful immediate-review
-  submissions; do not add `READY_FOR_REVIEW` or invent a machine field.
-- `files_changed`: task-owned repository-relative paths only.
-- `verification`: every run or required-but-unrun command with exact outcome.
-- `decisions`: local reversible task choices only.
-- `questions`: unresolved input/authority issues and whether they block.
-- `risks`: residual gaps or skipped stronger evidence.
-- `next_action`: one exact route. For immediate review, route to the first
-  outstanding applicable conditional stage and the complete ordered remainder
-  through fresh independent `task-review-discovery` evidence to the separate
-  fresh `task-acceptance-review` decision.
-
 ## Boundaries and routing
-
-For machine results, preserve measurement/rationale, transfer references and
-native obligations in existing summary, verification, risks and next-action
-fields or an authorized linked artifact. Never extend a strict result schema.
 
 - Current-state executability failures route to `task-preflight` when a durable
   re-check is needed.

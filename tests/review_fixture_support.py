@@ -41,8 +41,13 @@ CONTEXTUAL_CONTRAST_SETUPS = {
 
 
 
-def normalized(path: Path) -> str:
-    return re.sub(r"\s+", " ", path.read_text(encoding="utf-8")).strip()
+def normalized(path: Path, *, references=()) -> str:
+    text = path.read_text(encoding="utf-8")
+    for reference in references:
+        if f"({reference})" not in text:
+            raise AssertionError(f"Unlinked required reference: {reference}")
+        text += "\n" + (path.parent / reference).read_text(encoding="utf-8")
+    return re.sub(r"\s+", " ", text).strip()
 
 
 

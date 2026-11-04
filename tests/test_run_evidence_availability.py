@@ -202,6 +202,15 @@ class RunEvidenceAvailabilityTests(unittest.TestCase):
         self.assertIn("run_evidence.py --repo <worktree> availability", normalized)
         self.assertIn("do not retry evidence operations during this invocation", normalized)
         self.assertIn("explicit repository, user, or machine", normalized)
+        self.assertIn("(references/run-evidence.md)", text)
+        lifecycle = " ".join((SKILL / "references/run-evidence.md").read_text().split())
+        for obligation in (
+            "before the first implementation edit", "query the current worktree",
+            "recover that run before starting a new one", "boundary as uncertain",
+            "one new evidence run", "outcome `completed`", "`reported_interrupted` or `failed`",
+            "Do not add a duplicate architecture execution",
+        ):
+            self.assertIn(obligation, lifecycle)
 
 
 if __name__ == "__main__":

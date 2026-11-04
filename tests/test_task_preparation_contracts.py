@@ -15,7 +15,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from review_fixture_support import FLOW, ROOT
+from review_fixture_support import FLOW, ROOT, normalized
 
 CANONICAL = FLOW / "task-brief-designer"
 
@@ -152,9 +152,8 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
         layout = (CANONICAL / "references/task-artifact-layout.md").read_text(
             encoding="utf-8"
         )
-        implementer = (FLOW / "bounded-task-implementer" / "SKILL.md").read_text(
-            encoding="utf-8"
-        )
+        implementer = normalized(FLOW / "bounded-task-implementer" / "SKILL.md",
+                                 references=("references/high-assurance.md",))
         preflight = (FLOW / "task-preflight" / "SKILL.md").read_text(
             encoding="utf-8"
         )

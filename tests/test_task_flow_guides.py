@@ -243,7 +243,8 @@ class ComposedReviewFlowGuideTests(unittest.TestCase):
 
 
     def test_child_handoff_publishes_the_complete_ordered_submission_route(self):
-        implementer = normalized(BOUNDED_IMPLEMENTER_SKILL)
+        implementer = normalized(BOUNDED_IMPLEMENTER_SKILL, references=(
+            "references/correction-protocol.md", "references/high-assurance.md"))
         self.assertIn("Name the complete ordered submission route", implementer)
         section = implementer.split(
             "Name the complete ordered submission route", 1

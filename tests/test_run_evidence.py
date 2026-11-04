@@ -8,6 +8,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from review_fixture_support import normalized
+
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
@@ -211,7 +213,7 @@ class RunEvidenceTests(unittest.TestCase):
     def test_skill_keeps_ordinary_evidence_best_effort_and_task_metadata_optional(self):
         if not SKILL_PATH.exists():
             self.skipTest("skill source is not present in prototype workspace")
-        text = SKILL_PATH.read_text(encoding="utf-8")
+        text = normalized(SKILL_PATH, references=("references/run-evidence.md",))
         self.assertIn("best-effort", text)
         self.assertIn("does not invalidate an otherwise executable bounded task", text)
         self.assertIn("Do not create a task brief", text)

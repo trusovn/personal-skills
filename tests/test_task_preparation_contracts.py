@@ -175,6 +175,9 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
         self.assertIn("verification.md", implementer)
         self.assertIn("verification-design bytes when present", implementer)
         self.assertIn("Require the executable package's `verification.md`", preflight)
+        self.assertIn("[high-assurance.md#packet-fields](high-assurance.md#packet-fields)",
+                      packet_template)
+        packet_template += (FLOW / "task-preflight/references/high-assurance.md").read_text()
         self.assertIn("| Verification design |", packet_template)
         self.assertIn("implementation-neutral", verification)
         self.assertIn(
@@ -456,9 +459,8 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
 
 
     def test_high_assurance_artifacts_use_package_paths(self):
-        preflight = (FLOW / "task-preflight" / "SKILL.md").read_text(
-            encoding="utf-8"
-        )
+        preflight = normalized(FLOW / "task-preflight/SKILL.md",
+                               references=("references/high-assurance.md",))
         packet = (
             FLOW / "task-preflight" / "references/execution-packet-template.md"
         ).read_text(encoding="utf-8")
@@ -469,6 +471,8 @@ class TaskBriefDesignerPackageTest(unittest.TestCase):
             FLOW / "task-maintainability-review" / "SKILL.md"
         ).read_text(encoding="utf-8")
 
+        self.assertIn("[high-assurance.md#packet-fields](high-assurance.md#packet-fields)", packet)
+        packet += (FLOW / "task-preflight/references/high-assurance.md").read_text()
         self.assertIn("package's `preflight.md`", preflight)
         self.assertIn("Post-write `git status --short`", packet)
         self.assertIn("reviews/acceptance-NN.md", acceptance)

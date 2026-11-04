@@ -78,7 +78,8 @@
       ],
       "declarations": [
         "skills/task-implementation-flow/task-preflight/SKILL.md",
-        "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md"
+        "skills/task-implementation-flow/task-preflight/references/execution-packet-template.md",
+        "skills/task-implementation-flow/task-preflight/references/high-assurance.md"
       ]
     }
   ],

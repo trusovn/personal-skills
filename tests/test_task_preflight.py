@@ -14,7 +14,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from review_fixture_support import FLOW, ROOT
+from review_fixture_support import FLOW, ROOT, normalized
 
 
 class PreflightContractTest(unittest.TestCase):
@@ -165,6 +165,39 @@ class PreflightContractTest(unittest.TestCase):
             self.assertEqual("", subprocess.check_output(["git", "status", "--short"], cwd=root, text=True))
 
 
+    def test_conditional_loading_keeps_guided_rules_and_strict_packet_closure(self):
+        package = FLOW / "task-preflight"
+        entry = (package / "SKILL.md").read_text()
+        for reference, trigger in (
+            ("high-assurance.md", "Before validating or acting on a high-assurance input"),
+            ("execution-packet-template.md", "Before producing a package's execution packet"),
+        ):
+            self.assertIn(f"[references/{reference}](references/{reference})", entry)
+            self.assertIn(trigger, entry)
+            self.assertTrue((package / "references" / reference).is_file())
+        self.assertIn("missing or unreadable", entry)
+        self.assertIn("stop the affected action", entry)
+        self.assertIn("Do not read every reference at startup", entry)
+        strict = (package / "references/high-assurance.md").read_text()
+        template = (package / "references/execution-packet-template.md").read_text()
+        self.assertIn("## High-assurance packet addendum", template)
+        self.assertIn("[high-assurance.md#packet-fields](high-assurance.md#packet-fields)", template)
+        self.assertIn("Before assembling a high-assurance packet", template)
+        self.assertNotIn("### Repository baseline and dirty ownership", template)
+        self.assertNotIn("## High-assurance workflow", entry)
+        for text in ("separate index-blob and worktree digests/states",
+                     "Any change beyond that one packet artifact",
+                     "any changed non-packet", "### Artifact identity and inputs",
+                     "### Repository baseline and dirty ownership", "### Exact command records",
+                     "### Helper and capability inventory", "### Implementer contract",
+                     "Any unexplained freshness mismatch routes to fresh preflight."):
+            self.assertIn(text, " ".join(strict.split()))
+        for text in ("Missing or mismatched verification", "affected obsolete readiness",
+                     "Changed requirements", "ownership overlap", "## Guided blockers and warnings",
+                     "whole-project scope", "## Decision context and current applicability"):
+            self.assertIn(text, entry)
+
+
     def test_packaged_readiness_requires_complete_feasible_derived_coverage(self):
         skill = (FLOW / "task-preflight/SKILL.md").read_text(encoding="utf-8")
         guided = skill.split("### Guided", 1)[1].split("### High assurance", 1)[0]
@@ -182,8 +215,11 @@ class PreflightContractTest(unittest.TestCase):
 
 
     def test_context_revision_and_strict_freshness_are_distinct(self):
-        skill = " ".join((FLOW / "task-preflight/SKILL.md").read_text(encoding="utf-8").split())
+        skill = normalized(FLOW / "task-preflight/SKILL.md",
+                           references=("references/high-assurance.md",))
         packet = (FLOW / "task-preflight/references/execution-packet-template.md").read_text(encoding="utf-8")
+        self.assertIn("[high-assurance.md#packet-fields](high-assurance.md#packet-fields)", packet)
+        packet += (FLOW / "task-preflight/references/high-assurance.md").read_text(encoding="utf-8")
         for obligation in (
             "operating envelope", "failure consequences", "business priorities",
             "required consumers", "planned changes", "mitigations", "unknowns",

@@ -11,6 +11,18 @@ that can change the task or make an edit unsafe, not on artifact ceremony.
 Repository and user instructions outrank this skill. Preserve existing user
 work and never claim ownership of it.
 
+## Reference loading
+
+Read only the references required by the selected route, at the time below.
+
+| Reference | Read condition and timing |
+|---|---|
+| [references/high-assurance.md](references/high-assurance.md) | Before validating or acting on a high-assurance input, including an orchestrator-required strict packet; follow its exact freshness workflow and packet fields. |
+| [references/execution-packet-template.md](references/execution-packet-template.md) | Before producing a package's execution packet (`preflight.md`), guided or high-assurance; also before an explicitly requested direct readiness artifact. Inline direct readiness uses the entry output contract. |
+
+If a required reference is missing or unreadable, stop the affected action and
+report the exact gap; do not infer a bypass. Do not read every reference at startup.
+
 ## Choose the profile
 
 Use `guided` by default.
@@ -194,8 +206,9 @@ measurement, not a second static-check baseline or a new readiness stage.
    Advisory success never masks native hard failure or changes execution duties.
 
 For high assurance, capture reports before establishing the exact packet baseline
-in step 3 below. Record report writes as attributed preparation, then apply all
-existing before/after packet-only freshness checks unchanged. An unexpected
+in the high-assurance reference, workflow step 3. Record report writes as
+attributed preparation, then apply all existing before/after packet-only
+freshness checks unchanged. An unexpected
 non-packet change during packet creation still blocks. Guided results keep compact
 references and current applicability; no full digest ledger is added.
 
@@ -260,48 +273,6 @@ gate for guided work. Direct requests need no durable artifact. Packages require
 verification and canonical readiness; missing verification is a coverage gap,
 not optional paperwork. Record relevant uncertainty and let implementation resolve
 ordinary in-scope details, including feasible future tests.
-
-## High-assurance workflow
-
-1. Read the complete brief, required packaged task-local verification design,
-   cited authority, applicable instructions, dependency source, and run policy.
-   Confirm status `ready_for_preflight`. Treat verification design as derived
-   guidance under the brief rather than independent requirements authority.
-   Apply the same complete coverage, feasibility and context checks as guided
-   packages; feasible absent future tests never waive required capabilities or
-   the exact freshness checks below.
-2. Resolve the durable packet path first. It must be the executable task
-   package's `preflight.md`. A different path is a contract error: return
-   blocked content without writing it and route package normalization or a
-   corrected invocation to the owner.
-3. Capture before checks:
-   - brief bytes and lowercase SHA-256;
-   - applicable verification-design path and lowercase SHA-256, or explicit
-     `none`;
-   - `HEAD` or `unborn` and exact `git status --short`;
-   - separate index-blob and worktree digests/states for every pre-existing
-     dirty path, including absent/deleted/not-applicable states;
-   - dependency, instruction, and run-policy source digests; and
-   - task-specific environment/tool fingerprints when executability depends on
-     them.
-4. Confirm dependencies, exact allowed paths, dirty ownership, permissions,
-   commit policy, public entry points, helpers, fixtures, oracles, and legacy
-   assumptions named by the brief. An absent required capability is a blocker,
-   not new implementation scope.
-5. Resolve every required targeted and broader command as copy-pasteable text
-   with working directory, environment, purpose, expected signal, cost,
-   authorization, whether it ran, and truthful result. When verification design
-   applies, map its scenario IDs to those commands/oracles and leave any blocked
-   or not-yet-executable scenario visible rather than silently dropping it.
-6. Run only authorized cheap local baselines, narrowest first. Record incidental
-   artifacts and do not claim a clean baseline until their disposition is
-   explicit.
-7. Recapture all freshness values before and after packet creation. Record both
-   exact status snapshots and attribute the new/modified `preflight.md` entry.
-   Any change beyond that one packet artifact, or any changed non-packet
-   identity, blocks readiness. The packet need not be ignored or status-neutral.
-8. Write exactly one packet using
-   `references/execution-packet-template.md`.
 
 ## Evidence integrity
 

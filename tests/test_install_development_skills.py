@@ -364,6 +364,42 @@ def build_relocated_source_distribution(base: Path) -> tuple[Path, Path]:
     return source, scripts_dir / INSTALLER_PATH.name
 
 
+def assert_repo_foundation_loading(case: unittest.TestCase, package: Path) -> None:
+    entry = (package / "SKILL.md").read_text(encoding="utf-8")
+    routes = {
+        "contract-registry.md": "Before deciding registry inclusion or materializing/updating discovery",
+        "subsystem-contract.schema.json": "Before composing or editing a subsystem record",
+        "contract-index.schema.json": "Before composing or editing the generated index shape",
+    }
+    for name, condition in routes.items():
+        case.assertIn(f"[references/{name}](references/{name}) | {condition}", entry)
+        case.assertTrue((package / "references" / name).is_file(), name)
+    case.assertIn("Do not read every reference at startup", entry)
+    case.assertIn("missing or unreadable, stop the affected action and report the exact gap", entry)
+    registry = (package / "references/contract-registry.md").read_text(encoding="utf-8")
+    case.assertIn("### Foundation materialization", registry)
+    case.assertNotIn("The reusable validator template", entry)
+    for phrase in (
+        "The reusable validator template is `scripts/check_contracts.py`",
+        "python3 tools/check_contracts.py --root . --write-index",
+        "### Documentation-ownership exception for the bounded task flow",
+        "Record a surface when later work may legitimately depend on it",
+        "Exclude:",
+        "Unplanned but legitimate contracts may be registered without fabricated plan IDs.",
+    ):
+        case.assertIn(phrase, registry)
+    # These common placement and native/advisory duties must stay in the entry.
+    for phrase in (
+        "Put thin human-invoked wrappers in `scripts/`.",
+        "### Module documentation",
+        "`docs/adr/` | decisions with real blast radius",
+        "### Discover native checks and enabled advisory measurement",
+        "Advisory success cannot waive a native hard failure",
+        "--baseline <original.json>",
+    ):
+        case.assertIn(phrase, entry)
+
+
 class DevelopmentSkillInstallerTests(unittest.TestCase):
     def test_profile_contains_repo_stage_and_bounded_delivery_skills(self):
         for name in EXPECTED_MEASUREMENT_FILES:
@@ -1363,7 +1399,8 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
         source_before = source_projection_snapshot()
         resources = [f"scripts/{name}" for name in EXPECTED_MEASUREMENT_FILES]
         resources.extend(f"skills/{relative}" for relative in (
-            "repo-foundation/SKILL.md", "architecture-guardrails/SKILL.md",
+            "repo-foundation/SKILL.md", "repo-foundation/references/contract-registry.md",
+            "architecture-guardrails/SKILL.md",
             "architecture-guardrails/templates/gates.yaml", "README.md"))
         with tempfile.TemporaryDirectory() as temporary:
             repo = Path(temporary)
@@ -1372,6 +1409,11 @@ class DevelopmentProfileCheckTests(unittest.TestCase):
             result = run_installer(repo)
             self.assertEqual(0, result.returncode, result.stderr)
             agents = (repo / "AGENTS.md").read_bytes()
+            assert_repo_foundation_loading(self, repo / ".agents/skills/repo-foundation")
+            self.assertEqual(
+                collect_package_files(ROOT / "skills/repo-foundation"),
+                collect_package_files(repo / ".agents/skills/repo-foundation"),
+            )
             for relative in resources:
                 managed = repo / ".agents" / relative
                 self.assertEqual((ROOT / relative).read_bytes(), managed.read_bytes())

@@ -103,17 +103,25 @@ task or decision owner, or package normalization respectively.
 
 ## Load flow policy
 
-Before estimating a task that could become implementation-ready, read
-`references/task-sizing.yaml` and use its active profile. The numeric thresholds
-live there intentionally; do not copy them into this skill or silently replace
-them with personal defaults.
+Check these conditions before the first dependent action. Read only applicable
+references. Do not read every reference at startup. If required instructions are
+missing or unreadable, stop the affected action and report the exact gap; do not
+infer permission to bypass them.
 
-When creating or updating durable task artifacts, read
-`references/task-artifact-layout.md`. Repository or user authority may choose a
+| Reference | Required condition and timing |
+|---|---|
+| [Sizing policy](references/task-sizing.yaml) (`references/task-sizing.yaml`) | Before estimating a task that could become implementation-ready; use its active profile. |
+| [Artifact layout](references/task-artifact-layout.md) (`references/task-artifact-layout.md`) | Before creating or updating durable task artifacts. |
+| [Executable brief form](references/task-brief-template.md) | Before assembling a durable executable brief. |
+| [Decomposition package](references/decomposition.md) | After choosing a split, before writing any parent, child or structural index. |
+| [Exceptional output](references/exceptional-output.md) | Before returning a direction-delta-needed or blocked-design response. |
+| [High-assurance fields](references/high-assurance.md) | Before assembling high-assurance fields or the addendum. |
+
+Numeric thresholds live in the sizing policy; do not copy them here or silently
+replace them with personal defaults. Repository or user authority may choose a
 different task-package root or directory name, but every durable task must keep
 its `brief.md` and required preparation artifacts inside one dedicated package
-directory.
-Do not create or consume direct briefs under the shared task root.
+directory. Do not create or consume direct briefs under the shared task root.
 
 ## Minimum inputs
 
@@ -179,7 +187,7 @@ material decision gap.
      to draft a substitute implementation task.
    - Treat silence as unresolved for a material consequence, not as permission.
      If approval is absent, sources conflict, or the boundary cannot be
-     established, return the direction-delta-needed form below in the
+     established, return the direction-delta-needed form from `references/exceptional-output.md` in the
      conversation and stop without creating or modifying the requested task
      artifact.
    Preserve adequate sections verbatim or by reference. For other material
@@ -224,8 +232,8 @@ material decision gap.
    or `separate — <reason>` for non-obvious failure/lifecycle or finite cases.
    Either recommendation keeps required packaged preparation. Resolve ambiguous
    requirements with their owner before verification design.
-8. Apply sizing, then read `references/task-brief-template.md` and assemble the
-   applicable form. Keep the four scalar launch keys `agent_tier`, `reasoning`,
+8. Apply sizing, then load the applicable form from the table above and assemble
+   the brief. Keep the four scalar launch keys `agent_tier`, `reasoning`,
    `review`, and `budget` for executable leaves only. Use authority-approved
    values as intended launch guidance, not observed runtime configuration.
    Treat the budget as a soft checkpoint unless authority makes it hard.
@@ -271,27 +279,11 @@ command.
    component/layer split alone is not sufficient evidence. Do not split by
    arbitrary file halves, architectural layers, equal call counts, or a
    detached "write tests" task merely to force estimates below a threshold.
-4. The original task becomes a `composite` parent with status `decomposed`.
-   It is a coordination/coverage contract and is never a launch target for
-   `bounded-task-implementer`. Give child IDs stable numeric suffixes such as
-   `TASK-017.1`, `TASK-017.2`, and nested suffixes only when recursive
-   decomposition is actually needed.
-5. Give every child the same executable-brief contract as an ordinary task:
-   authority, applicable direction decisions, bounded scope, consumes/produces
-   relationships, interfaces/invariants, acceptance criteria, verification,
-   stops, launch metadata, and sizing evidence. Preserve relevant stable
-   project-plan IDs rather than inventing child-local replacements for flows,
-   artifacts, interfaces, or invariants.
-6. Re-estimate every child independently and recursively apply the active sizing
-   profile. Only leaf tasks may be handed to implementation. A decomposition is
-   not successful merely because the parent was renamed: it must reduce the
-   triggering work and leave each leaf within the active envelope, unless the
-   permitted no-split override below applies.
-7. If a parent-level acceptance criterion can only be proven after sibling work
-   composes, create a final executable integration child that owns that proof
-   and any required wiring. Do not invent a special composite-parent
-   implementation or acceptance-review stage.
-8. A triggered task may remain one executable leaf when concrete coupling or
+After choosing a split, read [decomposition package](references/decomposition.md)
+before writing any parent, child or structural index. Follow its complete child,
+integration, coverage and structural-index contract.
+
+4. A triggered task may remain one executable leaf when concrete coupling or
    coordination/rework costs favor keeping it whole, even without strict
    atomicity. Use this no-split decision only when the active sizing profile
    allows the override, and record `decomposition_override:
@@ -302,22 +294,9 @@ command.
    Respect explicit hard authority limits; the decision may not override an
    authority-declared hard constraint, and it stays within the active
    policy's override permission.
-9. Before writing the decomposition package, verify:
-   - children collectively cover the parent outcome and every parent AC;
-   - no approved requirement, invariant, interface, or contract impact
-     disappeared during splitting;
-   - every produced shared artifact/state/interface has one clear owning child;
-   - dependencies are acyclic and do not require a child to consume unavailable
-     work; and
-   - each leaf fits the active profile or carries the permitted explicit
-     override.
-10. For a multi-brief decomposition, use the artifact layout's composite/child
-    paths and create or update its structural `docs/tasks/index.json` unless
-    repository authority declares an equivalent index. This index describes
-    task structure only; do not mutate `docs/task-map.json`,
-    `docs/project-plan.md`, review history, or runtime orchestration state.
-    For an unsplit explicit-path gap-check, do not create or migrate an index
-    merely for ceremony.
+
+For an unsplit explicit-path gap-check, do not create or migrate an index
+merely for ceremony.
 
 For surgical gap-checks of an existing executable brief, sizing remains
 mandatory. Add the execution-sizing evidence as the smallest local addition;
@@ -360,27 +339,11 @@ For a gap check, report only:
   `task-verification-designer` pass, with the concrete reason when separate;
   and the shared submission-route reference when review is immediate.
 
-When supplied direction does not authorize a needed product, priority,
-assurance, trust, intervention, or scope choice, return only:
+For direction-delta-needed and `blocked_design` responses, use
+[exceptional output](references/exceptional-output.md) before returning the
+response. Direction gaps retain precedence and leave the task path unchanged.
 
-```markdown
-# Direction delta needed: `<requested task>`
-
-- Governing direction: `<exact source and relevant section>`
-- Missing decision: `<plain-language choice the task cannot make>`
-- Why it matters: `<practical consequence for the owner or user>`
-- Options: `<concise choices and their practical tradeoffs>`
-- Recommendation: `<optional and clearly non-authoritative, or none>`
-- Downstream impact: `<briefs or plans that may need review>`
-- Owner action: `<smallest decision or direction update needed>`
-```
-
-This is a routing response, not a task brief. Return it in the conversation and
-leave the requested task path absent or unchanged. Write a durable delta only
-when the user explicitly requests a separate direction-delta artifact path;
-never store it at the requested implementation-task path.
-
-For a durable brief, use `references/task-brief-template.md`. When governing
+For a durable executable brief, use `references/task-brief-template.md`. When governing
 direction was supplied, preserve its exact applicable decisions in outcome or
 authority without a mandatory separate trace. A new material direction decision
 requires the direction-delta-needed response instead of a ready brief. Use one status:
@@ -396,13 +359,6 @@ requires the direction-delta-needed response instead of a ready brief. Use one s
 Use task kind `executable` with `ready` / `ready_for_preflight`, and
 `composite` with `decomposed`. Do not attach executable launch metadata to a
 composite parent.
-
-For `blocked_design`, return only the requested outcome as stated, the missing
-decisions or authority, their owner, and the smallest planning action. Omit
-launch metadata, readiness routing, proposed architecture, implementation
-scope or paths, work items, implementation ACs, finite-risk coverage,
-verification obligations, and implementation handoff language. Those details
-would turn an unapproved premise into apparent authority.
 
 Never update an official master plan merely to record completion of this
 design task.

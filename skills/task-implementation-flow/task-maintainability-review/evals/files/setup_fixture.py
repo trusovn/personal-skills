@@ -891,6 +891,11 @@ SCENARIOS = {
     "semantic-control": lambda: semantic_assets("control"),
 }
 
+if len(sys.argv) == 2 and sys.argv[1].startswith("review:"):
+    from review_fixture import prepare
+    prepare(sys.argv[1].split(":", 1)[1])
+    raise SystemExit(0)
+
 if len(sys.argv) != 2 or sys.argv[1] not in SCENARIOS:
     raise SystemExit(f"usage: {sys.argv[0]} <{'|'.join(SCENARIOS)}>")
 SCENARIOS[sys.argv[1]]()

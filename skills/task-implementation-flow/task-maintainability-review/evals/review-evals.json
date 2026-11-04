@@ -1,0 +1,155 @@
+{
+  "skill_name": "task-maintainability-review",
+  "evals": [
+    {
+      "id": 11,
+      "prompt": "The fixture is staged in this workspace before your fresh session. Read review-request.md and perform the requested independent maintainability review for V-01b. Use only this workspace and its installation. Keep setup, case definitions and task-runs oracles held back. Preserve the declared report/source/index boundaries.",
+      "expected_output": "Independent comparison on stale author evidence",
+      "files": [],
+      "expectations": [
+        "Grade actual report, diff, byte identities, invocation history, all required rationale dispositions and native policy/evidence against the held-back case oracle. Keywords alone cannot pass.",
+        "Retain explicit gaps/owners and the complete ordered outstanding route. Do not equate successful setup/measurement or maintainability verdict with functional acceptance."
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "review:V-01b"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/measurement-fixture"
+      }
+    },
+    {
+      "id": 12,
+      "prompt": "The fixture is staged in this workspace before your fresh session. Read review-request.md and perform the requested independent maintainability review for V-03c. Use only this workspace and its installation. Keep setup, case definitions and task-runs oracles held back. Preserve the declared report/source/index boundaries.",
+      "expected_output": "Justified breach acceptance control",
+      "files": [],
+      "expectations": [
+        "Grade actual report, diff, byte identities, invocation history, all required rationale dispositions and native policy/evidence against the held-back case oracle. Keywords alone cannot pass.",
+        "Retain explicit gaps/owners and the complete ordered outstanding route. Do not equate successful setup/measurement or maintainability verdict with functional acceptance."
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "review:V-03c"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/measurement-fixture"
+      }
+    },
+    {
+      "id": 13,
+      "prompt": "The fixture is staged in this workspace before your fresh session. Read review-request.md and perform the requested independent maintainability review for V-07a. Use only this workspace and its installation. Keep setup, case definitions and task-runs oracles held back. Preserve the declared report/source/index boundaries.",
+      "expected_output": "Complete uncapped obligations and findings",
+      "files": [],
+      "expectations": [
+        "Grade actual report, diff, byte identities, invocation history, all required rationale dispositions and native policy/evidence against the held-back case oracle. Keywords alone cannot pass.",
+        "Retain explicit gaps/owners and the complete ordered outstanding route. Do not equate successful setup/measurement or maintainability verdict with functional acceptance."
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "review:V-07a"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/maintainability"
+      }
+    },
+    {
+      "id": 14,
+      "prompt": "The fixture is staged in this workspace before your fresh session. Read review-request.md and perform the requested independent maintainability review for V-06f. Use only this workspace and its installation. Keep setup, case definitions and task-runs oracles held back. Preserve the declared report/source/index boundaries.",
+      "expected_output": "Current native aggregate reuse",
+      "files": [],
+      "expectations": [
+        "Grade actual report, diff, byte identities, invocation history, all required rationale dispositions and native policy/evidence against the held-back case oracle. Keywords alone cannot pass.",
+        "Retain explicit gaps/owners and the complete ordered outstanding route. Do not equate successful setup/measurement or maintainability verdict with functional acceptance."
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "review:V-06f"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/measurement-fixture"
+      }
+    },
+    {
+      "id": 15,
+      "prompt": "The fixture is staged in this workspace before your fresh session. Read review-request.md and perform the requested independent maintainability review for V-08b. Use only this workspace and its installation. Keep setup, case definitions and task-runs oracles held back. Preserve the declared report/source/index boundaries.",
+      "expected_output": "Correction continuity against original B",
+      "files": [],
+      "expectations": [
+        "Grade actual report, diff, byte identities, invocation history, all required rationale dispositions and native policy/evidence against the held-back case oracle. Keywords alone cannot pass.",
+        "Retain explicit gaps/owners and the complete ordered outstanding route. Do not equate successful setup/measurement or maintainability verdict with functional acceptance."
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "review:V-08b"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/maintainability-correction"
+      }
+    },
+    {
+      "id": 16,
+      "prompt": "The fixture is staged in this workspace before your fresh session. Read review-request.md and perform the requested independent maintainability review for V-10a. Use only this workspace and its installation. Keep setup, case definitions and task-runs oracles held back. Preserve the declared report/source/index boundaries.",
+      "expected_output": "Conditional downstream consumption",
+      "files": [],
+      "expectations": [
+        "Grade actual report, diff, byte identities, invocation history, all required rationale dispositions and native policy/evidence against the held-back case oracle. Keywords alone cannot pass.",
+        "Retain explicit gaps/owners and the complete ordered outstanding route. Do not equate successful setup/measurement or maintainability verdict with functional acceptance."
+      ],
+      "execution": {
+        "setup": {
+          "command": [
+            "python3",
+            "evals/files/setup_fixture.py",
+            "review:V-10a"
+          ],
+          "cwd": ".",
+          "env": {
+            "EVAL_WORK_ROOT": "{run_root}/fixture",
+            "PYTHONDONTWRITEBYTECODE": "1"
+          }
+        },
+        "workspace": "{run_root}/fixture/measurement-fixture"
+      }
+    }
+  ]
+}

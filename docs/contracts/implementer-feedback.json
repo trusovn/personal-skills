@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "implementer-feedback",
-  "summary": "Source implementer guidance for original-baseline consumption/direct capture, proportionate feedback and submission/correction evidence. Reviewer integration, live agent compliance and the full installed journey remain unqualified.",
+  "summary": "Source implementer guidance for original-baseline consumption/direct capture, proportionate feedback and submission/correction evidence. The reviewer-feedback record owns source reviewer/downstream integration; live agent compliance and the full installed journey remain unqualified.",
   "owner_paths": ["skills/task-implementation-flow/bounded-task-implementer"],
   "provides": [
     {

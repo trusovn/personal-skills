@@ -627,3 +627,23 @@ Ownership is intentionally separated:
 
 Reference-only acceptance failures return to `task-contract-registry-updater` and then fresh acceptance. Implementation defects return through the normal implementation/review path. Planned/current semantic mismatches return to the planning owner rather than being normalized by the updater.
 <!-- contract-registry-flow:task-flow-readme:end -->
+
+### Independent measurement in maintainability review
+
+When maintainability review applies, supply original B and implementer I JSON/text
+pairs, affected-function attribution, required rationale and native-obligation
+handoff. The fresh reviewer invokes its own R against B for actual submitted
+changed/added/deleted Python assets, including relevant tests/evals/harnesses.
+The numbered report retains current scope/byte identities, every required
+rationale disposition, native policy/evidence and gaps outside the optional
+three-warning cap. Justified breaches can be accepted; bare thresholds cannot
+request changes. Metrics do not waive required native failures or certify
+functional acceptance. See the [review protocol](task-maintainability-review/references/measurement-review.md).
+
+Corrections retain B and all prior reports and stale only affected proof.
+Downstream consumers validate current evidence without repeating general review.
+The outstanding route stays applicable registry synchronization → fresh discovery
+→ separate acceptance, with affected conditional gates/review re-entered when
+needed and absent/current unaffected stages omitted. No advisory signal adds a
+stage. Source guidance and local eval setup are preparation evidence; live agent
+compliance and T-005's installed composition remain separately qualified.

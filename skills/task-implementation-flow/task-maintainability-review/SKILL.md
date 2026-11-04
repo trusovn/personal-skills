@@ -69,6 +69,16 @@ Required when available:
 - canonical architecture-gate command and current policy/config/tests
 - `.quality/gates.yaml` or repo-equivalent command registry when present
 - current architecture-gate output
+- original baseline JSON/text pair B, implementer comparison pair I, affected-function
+  attribution and required design rationale (or explicit availability gaps)
+- native-obligation handoff: exact commands, governed scope, policy, requiredness,
+  owner/stage and saved evidence with checked-byte identity/result/producer
+
+For original-baseline comparison, attribution, rationale dispositions, native
+checks and correction continuity, follow the required
+[measurement and evidence protocol](references/measurement-review.md).
+Read it before the first measurement or verdict. It extends this protocol and
+report; it does not create a review stage or replace semantic review.
 
 When a durable task brief is supplied, require the package form
 `<task-package>/brief.md`; route a direct legacy brief to
@@ -81,7 +91,9 @@ Read immediate neighboring modules/interfaces only when needed to understand the
 
 Do **not** begin with a repo-wide architecture survey.
 
-Review is read-only except the permitted new durable report. Do not edit
+Review is read-only except the permitted new durable report and authorized fresh
+measurement JSON/text reports. Record both report siblings before writing; never
+overwrite either. These diagnostic writes do not authorize source/index edits. Do not edit
 production, test/eval/fixture/harness assets, install tools, or execute downstream
 stages as reviewer actions.
 
@@ -109,7 +121,12 @@ Find the canonical architecture command from repo authority, preferably:
 3. project/architecture map;
 4. package/build/task-runner config only if the command is not documented elsewhere.
 
-If repo policy says the gate is required, run it against the current bytes when feasible.
+If repo policy says the gate is required, run it against current bytes when feasible,
+or validate trustworthy current saved evidence under that policy. Reuse an
+aggregate only when constituent commands, whole governed scope, policy and
+checked bytes are established. Do not rerun constituents only to fill sections.
+Preserve any stricter policy that requires reviewer execution. Validate other
+native obligations through their existing owner; this is not functional review.
 Do not create a gate when policy does not require one.
 
 Interpret results as follows:
@@ -217,25 +234,19 @@ justified trade-offs; reject preferences and speculative redesigns. Report each
 root cause once across dimensions. A small rename can resolve a material
 contract trap; correction size does not determine impact.
 
-### 8. Use automated signals as leads, not verdicts
+### 8. Independently compare and dispose of rationale
 
-Examples:
-
-```text
-file LOC:             330 -> 520
-cyclomatic complexity: 8 -> 16
-direct dependencies:   7 -> 14
-new generic helper:     yes
-```
-
-For each warning ask:
-
-1. What concrete design change caused the delta?
-2. Does it correspond to one of the review-contract problems above?
-3. Was that problem introduced/worsened by this task?
-4. Is there a smaller correction that preserves requested behavior?
-
-If not, keep it in `WARNINGS` or omit it.
+Use the [measurement protocol](references/measurement-review.md) to compare
+actual submitted bytes against the original baseline and verify affected
+responsibilities from the diff and local context. The implementer's comparison
+alone is not independent evidence. Apply the 10/50/5 advisory targets
+proportionately: growth through equality is information only; retained affected
+breaches need explicit rationale dispositions. Explain agreement or a concrete
+counterargument with future maintenance cost and the smallest correction.
+Numbers alone never justify `CHANGES_REQUESTED`, nor excuse worse ownership,
+names or navigation. For each signal ask whether it exposes a concrete
+introduced/worsened design problem. If not, keep it in `WARNINGS` or omit it. Missing evidence and native hard failures retain separate
+status, policy and recovery ownership.
 
 ### 9. Report every confirmed blocker
 
@@ -272,7 +283,10 @@ Use when:
 
 - any required deterministic architecture gate passes for the current bytes;
 - no concrete maintainability regression introduced/materially worsened by the task remains;
-- unresolved warnings are non-blocking.
+- all required rationale obligations have a disposition and mandatory proof is current;
+- unresolved warnings are non-blocking. Justified retained breaches can be accepted;
+  advisory measurement absence alone does not prevent a semantic verdict unless
+  explicit authority makes that evidence indispensable.
 
 `ACCEPT` means only maintainability review accepted these bytes. It does **not** mean the task works or satisfies the specification.
 
@@ -305,6 +319,18 @@ Return this compact form:
 ```text
 VERDICT: ACCEPT | CHANGES_REQUESTED | INCONCLUSIVE
 ARCHITECTURE_GATE: PASS | FAIL | NOT_AVAILABLE
+MEASUREMENT: complete | partial | missing | incompatible | unavailable | N/A
+- original B: <exact JSON/text paths and capture/project binding>
+- implementer I / independent reviewer R: <exact pairs; current applicability>
+- governed / affected scope and checked bytes: <identities, relationships, unknowns>
+RATIONALE_DISPOSITIONS:
+- <obligation ID; report/function/metric; known before/after; agreement or concrete
+  counterargument, cohesion/alternative cost; evidence or owed explanation/owner>
+NATIVE_EVIDENCE:
+- <command; whole governed scope; policy/requiredness; checked-byte identity;
+  result; producer/stage; aggregate coverage/reuse, or gap and recovery owner>
+COVERAGE_AND_GAPS:
+- <all obligations and outstanding rows, stop reason, separate evidence/correction owners>
 
 BLOCKERS:
 <one numbered entry per confirmed blocker, ordered by architectural impact, or NONE>
@@ -316,7 +342,11 @@ BLOCKERS:
    - Current disposition: <confirmed, or resolved/corrected with current evidence>
 
 WARNINGS:
-- <non-blocking evidence worth carrying forward, max 3, or NONE>
+- <optional non-blocking observations only, max 3, or NONE>
+
+NEXT:
+- <first outstanding stage and full ordered remainder; or bounded correction / evidence owner>
+- <exact report transfer source/receiving paths when isolated>
 
 REVIEWED:
 - changed implementation scope: <production/test/eval/fixture/harness paths and reviewed-byte identities>
@@ -335,7 +365,8 @@ REVIEWED:
 - <actual implementation assets and reviewed-byte identities>
 ```
 
-and do not issue an independent verdict.
+and do not issue an independent verdict. Carry the same measurement, rationale,
+native-evidence and gap fields when applicable, clearly labeled author self-checks.
 
 When repository/user authority requires a durable report, store this output at
 the canonical numbered path above. Record exact Git status before and after the
@@ -347,6 +378,8 @@ For `CHANGES_REQUESTED`:
 
 1. send the complete concise blocker report to the implementation/correction agent;
 2. the implementation/correction agent fixes only the blockers without changing requested behavior unnecessarily;
+   retain original B and all historical report pairs, use fresh I/R against B,
+   and update affected rationale/native proof for corrected bytes;
 3. rerun the canonical architecture gate when required and affected;
 4. use a **fresh** `task-maintainability-review` session on the corrected bytes;
 5. only after `ACCEPT`, name the first outstanding stage and the complete
@@ -382,6 +415,10 @@ registry work for every test change.
 - Required deterministic architecture gate was run or a truthful reason for `INCONCLUSIVE` is recorded.
 - Existing untouched debt is not relitigated as a task blocker.
 - Hard failures are separated from advisory signals.
+- Independent current comparison, affected responsibilities and every required
+  rationale disposition are recorded, or their exact limits/owners are explicit.
+- Required dispositions, evidence gaps and confirmed blockers remain outside the
+  optional warning cap; an early decisive finding cannot truncate them.
 - Semantic review is limited to the changed design and immediate architectural impact.
 - Every confirmed concrete blocker in the reviewed scope is reported; count is neither a limit nor a quota.
 - Functional/specification acceptance was left to the functional reviewer.

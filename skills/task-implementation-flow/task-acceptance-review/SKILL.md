@@ -34,6 +34,26 @@ whether this session authored any production bytes in the reviewed diff.
   bytes require a new reviewer; the reproducer-writing session cannot accept
   them.
 
+
+## Maintainability evidence consumption
+
+When this conditional stage applies, consume the current numbered maintainability
+report, its reviewer-owned comparison against original B, required rationale
+dispositions and native-check references. Check reviewed scope/byte identities,
+measurement limits, native policy/whole-scope coverage, current result and
+producer/stage; a prior ACCEPT label or successful metrics cannot close stale,
+incomplete proof or an unresolved applicable blocker. Preserve every gap/finding
+ID and separate evidence, correction and decision owners. Request focused proof
+from the owning stage; do not repeat general maintainability review.
+
+Keep the first outstanding stage and complete ordered remainder: affected required
+architecture/maintainability duties, applicable outstanding registry synchronization,
+fresh discovery, then separate acceptance. Omit only absent or demonstrably current
+unaffected stages. Significant test/eval/harness corrections re-enter affected
+conditional duties; an explicit trivial-change exception applies only to its
+authorized scope. Advisory warnings alone add no stage. Naming a route does not
+execute or delegate it; discovery evidence and acceptance decisions stay separate.
+
 ## Choose the profile
 
 Use `guided` by default. Use `high-assurance` when explicitly requested or when

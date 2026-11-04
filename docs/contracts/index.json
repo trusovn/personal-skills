@@ -13,6 +13,9 @@
     "ART-004": [
       "implementer-feedback"
     ],
+    "ART-005": [
+      "reviewer-feedback"
+    ],
     "ART-006": [
       "measurement"
     ],
@@ -27,6 +30,12 @@
     ],
     "CAP-003": [
       "implementer-feedback"
+    ],
+    "CAP-004": [
+      "reviewer-feedback"
+    ],
+    "CAP-005": [
+      "reviewer-feedback"
     ],
     "FLOW-002-S01": [
       "measurement"
@@ -51,6 +60,9 @@
     ],
     "INV-003": [
       "measurement"
+    ],
+    "INV-004": [
+      "reviewer-feedback"
     ],
     "INV-005": [
       "implementer-feedback"
@@ -114,6 +126,15 @@
         "scripts/maintainability_env.py",
         "scripts/measure_maintainability.py",
         "skills/task-implementation-flow/task-preflight"
+      ]
+    },
+    {
+      "contract": "reviewer-feedback.json",
+      "id": "reviewer-feedback",
+      "owner_paths": [
+        "skills/task-implementation-flow/task-acceptance-review",
+        "skills/task-implementation-flow/task-maintainability-review",
+        "skills/task-implementation-flow/task-review-discovery"
       ]
     },
     {

@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "reviewer-feedback",
+  "summary": "Source reviewer/downstream side of IF-003: independent maintainability comparison, rationale dispositions and evidence consumption, with executable local eval preparation. Shared ART-003/ART-008 remain indexed under implementer-feedback; ART-006 and IF-004 remain indexed under measurement. Live actor compliance and T-005 installed composition remain unqualified; source presence does not establish active installation parity.",
+  "owner_paths": ["skills/task-implementation-flow/task-maintainability-review", "skills/task-implementation-flow/task-review-discovery", "skills/task-implementation-flow/task-acceptance-review"],
+  "provides": [
+    {
+      "name": "independent-original-baseline-review",
+      "kind": "skill-guidance",
+      "summary": "A fresh reviewer invokes its own installation-local comparison of actual submitted changed/added/deleted Python assets against original B, including relevant test/eval/fixture/harness assets. Verify project, coverage, tools/settings/check compatibility and current byte identity; author I alone is insufficient. Recover current evidence where feasible without relabeling edited bytes as before state. Same-session authors retain SELF_CHECK_ONLY. Review permits only the authorized new numbered report and fresh measurement siblings, with no source/index edits, implicit setup or cross-installation fallback.",
+      "plan_refs": ["CAP-004"],
+      "declarations": ["skills/task-implementation-flow/task-maintainability-review/SKILL.md", "skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
+    },
+    {
+      "name": "proportionate-rationale-disposition",
+      "kind": "skill-guidance",
+      "summary": "Verify affected responsibilities through diff and local context, including rename/extraction helpers, rather than file membership or line movement. Dispose of new/newly crossed, worsening and materially edited retained breaches, naming known report/function/metric values, cohesion and alternative cost. Below/equal-target growth and untouched debt require no individual defense. Agreement can retain a justified breach; correction requires a concrete maintenance problem or hard-rule violation. Unknown counts remain unknown, and lower metrics do not excuse worse ownership, names or navigation.",
+      "plan_refs": ["CAP-004"],
+      "declarations": ["skills/task-implementation-flow/task-maintainability-review/SKILL.md", "skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
+    },
+    {
+      "name": "native-evidence-consumption-and-recovery",
+      "kind": "skill-guidance",
+      "summary": "Review retains native command, whole governed scope, policy, requiredness, owner/stage, checked bytes, result and producer. Validate current saved proof or recover through its owner/authorized focused execution, respecting stricter reviewer-run architecture policy. Aggregate reuse requires established constituent coverage, scope, policy and current bytes. Missing required proof and hard failures remain distinct from advisory status; no new static command, registry requirement, review stage or functional review is introduced.",
+      "plan_refs": ["CAP-005"],
+      "declarations": ["skills/task-implementation-flow/task-maintainability-review/SKILL.md", "skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
+    },
+    {
+      "name": "downstream-maintainability-evidence-handoff",
+      "kind": "skill-guidance",
+      "summary": "Discovery and separate acceptance validate current numbered review scope/bytes, reviewer comparison, dispositions, native coverage and remaining gaps without repeating general maintainability review. Preserve finding IDs and distinct evidence/correction/decision owners. Name the first outstanding stage and full applicable remainder: affected conditional duties, outstanding registry synchronization, fresh discovery, then separate acceptance. Omit only absent/current unaffected stages; significant test/eval/harness corrections stale affected proof. Naming a route executes no downstream stage.",
+      "declarations": ["skills/task-implementation-flow/task-review-discovery/SKILL.md", "skills/task-implementation-flow/task-acceptance-review/SKILL.md", "skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "independent-comparison-reference",
+      "summary": "Reviewer-owned fresh R JSON/text paths accompany original B and author I, governed/affected scope, source identity, tool/settings/check completeness, gaps and recovery owner. Preserve every pair; isolated review transfers both siblings with exact source/receiving paths because ignored reports do not travel in commits. The portable measurement record owns report production and format.",
+      "declarations": ["skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
+    },
+    {
+      "name": "numbered-maintainability-review-and-dispositions",
+      "summary": "Existing numbered review reports carry measurement status/references, current reviewed scope/bytes, every rationale disposition, native evidence, gaps/owners and the complete outstanding route. Required dispositions, gaps and confirmed blockers stay outside the optional three-warning cap. Genuine stops retain outstanding coverage. ACCEPT binds reviewed maintainability bytes only; it cannot close missing mandatory proof or certify functional acceptance. Corrections preserve surviving/resolved finding IDs and reconcile the whole ledger.",
+      "plan_refs": ["ART-005"],
+      "declarations": ["skills/task-implementation-flow/task-maintainability-review/SKILL.md", "skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
+    },
+    {
+      "name": "review-native-check-evidence-reference",
+      "summary": "The review and downstream handoff retain existing native policy and current execution evidence with whole-scope coverage, command, checked-byte identity, result and producer/stage. Required failures and stale/missing proof retain their owner and recovery route regardless of successful/N/A advisory measurement. This is evidence consumption, not a new evidence store or check policy.",
+      "declarations": ["skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md", "skills/task-implementation-flow/task-review-discovery/SKILL.md", "skills/task-implementation-flow/task-acceptance-review/SKILL.md"]
+    },
+    {
+      "name": "independent-review-eval-preparation",
+      "summary": "Opt-in actor definitions and a finite catalog prepare 82 unique selectable variants across 62 scenario IDs, with real comparison/native inputs, preserved histories and held-back artifact oracles. Setup reuses existing fixtures through an explicit source distribution and prepared pinned interpreter; installation targets only disposable authorized roots and never provisions dependencies. The local checker rejects duplicate dispatch IDs and truncated returned case fields, exercises all preparations and selected real comparison/native/correction controls. It executes no actor and supplies no live verdict/disposition/route qualification; T-005 complete installed composition remains separate.",
+      "declarations": ["skills/task-implementation-flow/task-maintainability-review/evals/review-evals.json", "skills/task-implementation-flow/task-maintainability-review/evals/files/review_cases.json", "skills/task-implementation-flow/task-maintainability-review/evals/files/setup_fixture.py", "skills/task-implementation-flow/task-maintainability-review/evals/files/review_fixture.py", "skills/task-implementation-flow/task-maintainability-review/evals/files/check_review_fixture.py", "tests/test_task_maintainability_review.py"]
+    }
+  ],
+  "invariants": [
+    {"statement": "Metrics are advisory; justified breaches can be accepted and bare thresholds cannot request correction. Required native failures and missing mandatory proof retain their own policy and owner."},
+    {"statement": "Keep original pre-edit B and every historical pair through corrections. Preserve source/index and authorized write boundaries; never recapture edited bytes as original or implicitly install tools."},
+    {"statement": "Applicability requires compatible project/coverage/tool/settings/check identities and current submitted bytes. Unknown counts remain unknown; stale/incomplete/uncovered evidence cannot claim a clean comparison."},
+    {"statement": "Independent review requires a fresh session and its own comparison; author self-checks and prepared fixture histories do not establish independent review. Native policy remains authoritative.", "plan_refs": ["INV-004"]},
+    {"statement": "Rationale follows actually affected responsibilities and concrete maintenance cost, not untouched debt, formatting or threshold compliance alone."},
+    {"statement": "Changed bytes stale affected verdicts and proof; retain stable finding identities and conditional stage order through fresh discovery and separate acceptance. Advisory warnings add no stage."}
+  ],
+  "depends_on": ["measurement", "implementer-feedback", "installation", "runtime-evidence"],
+  "module_docs": ["skills/task-implementation-flow/README.md", "skills/task-implementation-flow/task-maintainability-review/evals/README.md", "scripts/measure-maintainability.md", "README.md"]
+}

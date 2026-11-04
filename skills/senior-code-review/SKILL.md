@@ -1,6 +1,6 @@
 ---
 name: senior-code-review
-description: Perform a rigorous, read-only code review with the judgment and risk focus expected from a senior engineer or tech lead. Use whenever the user asks to review a pull request, branch, commit, working-tree diff, patch, or named source files; assess merge readiness; audit an implementation for bugs, regressions, security, data integrity, concurrency, performance, architecture, API compatibility, or test adequacy; or asks for a second set of eyes before shipping. Prefer a more specific workflow review skill when the user explicitly invokes one. Do not trigger for merely explaining code or implementing a change without a review request.
+description: Perform rigorous, read-only review of PRs, branches, commits, working-tree diffs, patches or named files on request; assess merge readiness or provide pre-shipping second eyes. Audit bugs, regressions, security, data integrity, concurrency, performance, architecture, API compatibility and test adequacy. Prefer an explicitly invoked workflow review skill. Excludes code explanation or implementation without a review request.
 compatibility: Requires read access to the repository and its instructions. Git is recommended for diff-based reviews.
 ---
 

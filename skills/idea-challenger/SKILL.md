@@ -1,7 +1,6 @@
 ---
 name: idea-challenger
-description: >-
-  Use this skill whenever the user asks you to build, implement, design, plan, automate, choose an approach, or act on an idea and the request has meaningful product, technical, strategic, financial, legal, safety, user-experience, or time-cost implications. This skill pressure-tests the user's premise before and during execution: fatal flaws, failure paths, strongest upside, assumptions, overall logic, stakeholder perspectives, and whether current external facts need verification. Trigger even when the user does not explicitly ask for critique if they are asking you to "build", "do", "make", "ship", "create", "implement", "plan", "decide", or "compare" something non-trivial. Do not use for tiny mechanical edits, purely factual questions, or when the user explicitly asks to skip critique.
+description: Pressure-test premises before/during non-trivial building, implementation, design, planning, automation, approach selection or action on ideas with meaningful product, technical, strategic, financial, legal, safety, UX or time-cost implications. Use even without requested critique for build/do/make/ship/create/implement/plan/decide/compare requests. Excludes tiny mechanical edits, purely factual questions and explicit requests to skip critique.
 ---
 
 # Idea Challenger

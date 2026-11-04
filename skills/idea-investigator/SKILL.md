@@ -1,6 +1,6 @@
 ---
 name: idea-investigator
-description: Investigate software, product, startup, monetization, automation, or project ideas using a STORM-inspired multi-perspective research loop. Use this skill whenever the user asks whether an idea is worth building, how to validate or monetize it, what is missing, what would it take for it to succeed, how it compares to alternatives, or wants an idea turned into an evidence-backed Markdown brief. Guide the user with concise questions and pros/cons when choices matter, then produce a decision-oriented report rather than a polished generic article.
+description: Investigate software, product, startup, monetization, automation or project ideas for evidence-backed decisions. Use for worth-building, validation, monetization, missing requirements, success conditions, alternatives comparisons or an evidence-backed Markdown brief. Produce a decision report rather than a generic article.
 ---
 
 # Idea Investigator

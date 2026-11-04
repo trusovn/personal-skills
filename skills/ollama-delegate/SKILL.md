@@ -1,6 +1,6 @@
 ---
 name: ollama-delegate
-description: Delegate a bounded repository analysis or review task to an Ollama-hosted cloud model through the local Ollama HTTP server. Use when a second model should independently inspect a repository using a selected personal skill, especially for reviews, challenge passes, or comparative analysis. The delegated agent is read-only in this version.
+description: Delegate bounded, read-only repository analysis or review to an Ollama-hosted cloud model via the local Ollama HTTP server. Use for independent second-model inspection with a selected personal skill, including reviews, challenge passes or comparative analysis.
 compatibility: Requires Python 3, access to the configured Ollama HTTP endpoint, and an Ollama model available through that server.
 ---
 

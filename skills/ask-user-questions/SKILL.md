@@ -1,15 +1,6 @@
 ---
 name: ask-user-questions
-description: >
-  Use whenever an agent needs user clarification before safely continuing, especially when
-  a task has multiple plausible interpretations, irreversible or high-blast-radius choices,
-  missing required inputs, or a decision should be explicitly confirmed. This skill provides
-  an AskUserQuestions-style interaction contract: ask the fewest useful questions, offer
-  clear recommended options when possible, explain the consequence of each choice, and then
-  continue from the user's answer. Use it for specs, implementation planning, code review
-  follow-ups, product decisions, migration choices, permissions, and any workflow that says
-  "AskUserQuestion", "AskUserQuestions", "clarify with the user", or "confirm before
-  proceeding".
+description: Clarify with the user before safely continuing when interpretations differ, choices are irreversible or high-impact, required inputs are missing or decisions need confirmation. Use for specs, implementation planning, review follow-ups, product/migration decisions, permissions and workflows requiring AskUserQuestion(s), clarification or confirmation.
 ---
 
 # Skill: ask-user-questions

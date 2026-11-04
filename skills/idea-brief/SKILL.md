@@ -1,6 +1,6 @@
 ---
 name: idea-brief
-description: Use to turn a raw idea, notes file, or early project thought into a portable Markdown idea brief before formal planning begins. Trigger whenever the user says they have an idea and wants to "stabilize it", "work on it", "make an initial document", "create a vision doc", "prepare it for planning", "prepare it for sdd-specify", "turn ideas/foo.md into docs/vision.md", or wants an interview-driven planning seed outside an existing repo. Use this instead of sdd-specify when there is no feature folder yet, no repo context, or the requested output is a general planning artifact rather than docs/features/<slug>/spec.md.
+description: Turn raw ideas, notes files or early project thoughts into portable Markdown briefs before formal planning. Use to stabilize/work on ideas, create initial/vision docs, prepare for planning or sdd-specify, or interview for a planning seed outside a repo. Prefer over sdd-specify when no feature folder or repo context exists, or a general planning artifact rather than a feature spec is wanted.
 ---
 
 # Idea Brief

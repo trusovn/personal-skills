@@ -1,6 +1,6 @@
 ---
 name: task-orchestrator
-description: Use only when the user explicitly asks for task orchestration or names the task-orchestrator. It operates and reasons about the task-orchestrator's controller-backed local run flow for an approved task manifest, including initializing, operating, inspecting, diagnosing, or modifying that flow; retrieving its controller contract or module owner; and assessing its recovery or planned local harness work. Do not use it for generic requests to run, implement, or finish tasks, and do not use it to invent product requirements or imply that the unfinished automatic acceptance, recovery, plan-preparation, or advance flow already exists.
+description: Use only for explicit task-orchestration requests or named task-orchestrator invocation. Operate, inspect, diagnose or modify its controller-backed local run flow for approved manifests; initialize runs, retrieve controller contracts/module owners, assess recovery or planned local harness work. Excludes generic run/implement/finish-task requests and inventing product requirements. Do not imply unfinished automatic acceptance, recovery, plan-preparation or advance flows exist.
 compatibility: Requires Python 3, Git, repository access, and a Codex CLI compatible with the bundled internal adapter.
 ---
 

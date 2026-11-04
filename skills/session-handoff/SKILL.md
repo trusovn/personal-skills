@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: Create context-preserving handoff packets so work can continue after clearing, compacting, or moving an AI session. Use this skill whenever the user asks to hand off a session, summarize current work for another agent, prepare to clear context, make a continuation prompt, preserve decisions/files/results, or resume work in a new chat. It produces a copy/paste-ready packet with goals, decisions, changed files, commands, verification, blockers, risks, and next actions, plus optional filesystem artifact guidance.
+description: Preserve session context for continuation after clearing, compacting or moving it. Use for requested session handoffs, current-work summaries for another agent, context-clear preparation, continuation prompts, preserving decisions/files/results or resuming in a new chat.
 compatibility: Works in coding agents and chat agents. Filesystem and shell access are optional but useful for verifying paths, git status, and durable handoff artifacts.
 ---
 

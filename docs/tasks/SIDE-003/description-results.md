@@ -546,3 +546,161 @@ are navigation context only; the two review-skill FULL rows need to confirm that
 verdict mechanics remain in the bodies. No registry or maintainability stage
 applies to these metadata-only edits. SIDE-003.18 retains `python3 tools/verify.py`
 and live-routing qualification; no live-model budget was spent here.
+
+
+## SIDE-003.5 — Boundary groups 7–8
+
+Completed with the user-authorized lightweight editing workflow on 2026-11-04. This invocation covers SIDE-003.5 only; SIDE-003.6 remains unchanged. Only the four source description scalars and this section changed. Names, paths, invocation identities, bodies, other frontmatter, prior results and installed skills are unchanged. The advisory 150–300-character range does not override routing preservation.
+
+### Wording and retained boundaries
+
+#### senior-code-review
+
+Characters: 638 → 426 (−212).
+
+Old: Perform a rigorous, read-only code review with the judgment and risk focus expected from a senior engineer or tech lead. Use whenever the user asks to review a pull request, branch, commit, working-tree diff, patch, or named source files; assess merge readiness; audit an implementation for bugs, regressions, security, data integrity, concurrency, performance, architecture, API compatibility, or test adequacy; or asks for a second set of eyes before shipping. Prefer a more specific workflow review skill when the user explicitly invokes one. Do not trigger for merely explaining code or implementing a change without a review request.
+
+New: Perform rigorous, read-only review of PRs, branches, commits, working-tree diffs, patches or named files on request; assess merge readiness or provide pre-shipping second eyes. Audit bugs, regressions, security, data integrity, concurrency, performance, architecture, API compatibility and test adequacy. Prefer an explicitly invoked workflow review skill. Excludes code explanation or implementation without a review request.
+
+Clause comparison: rigorous senior-level risk judgment → rigorous review plus the retained risk dimensions; read-only → read-only; requested PR/branch/commit/working-tree diff/patch/named source files → the same six scopes (PRs and named files abbreviate pull requests and named source files); merge readiness → merge readiness; second eyes before shipping → pre-shipping second eyes; bugs/regressions/security/data integrity/concurrency/performance/architecture/API compatibility/test adequacy → all nine retained. Explicitly invoked specific workflow review retains precedence. Mere explanation or implementation without a review request remains excluded. This stays requested general code review, distinct from test design/maintenance. No procedure or output mechanics removed.
+
+#### testing-discipline
+
+Characters: 590 → 482 (−108).
+
+Old: Define, create, review, and maintain risk-based software tests and QA evidence. Use whenever you are asked to add, update, or review tests; fix a bug; validate a feature or refactor; choose test levels; improve coverage, assertions, test data, fixtures, mocks, determinism, or flakiness; define acceptance or release confidence; or plan functional or non-functional testing. Also use during implementation when a behavioral change needs new or changed test evidence even if tests are not explicitly requested. Pair with repo-foundation for test placement, canonical commands, and CI wiring.
+
+New: Define, create, review and maintain risk-based tests and QA evidence. Use to add/update/review tests, fix bugs, validate features/refactors, choose test levels, improve coverage/assertions/data/fixtures/mocks/determinism/flakiness, plan functional/non-functional testing or establish acceptance/release confidence. Also use during behavioral implementation needing new/changed test evidence without an explicit test request. Pair with repo-foundation for placement, commands and CI.
+
+Clause comparison: define/create/review/maintain risk-based software tests and QA evidence → all retained; add/update/review tests → retained; fix a bug → fix bugs; validate feature/refactor → features/refactors; choose test levels → retained; improve coverage/assertions/test data/fixtures/mocks/determinism/flakiness → all seven retained (data means test data in this context); acceptance/release confidence → retained; functional/non-functional test planning → retained. During implementation, behavioral changes needing new/changed evidence still activate without an explicit test request. Pairing with repo-foundation for test placement, canonical commands and CI wiring remains as placement, commands and CI. This remains evidence design/maintenance, rather than requested general code review. No procedure or output mechanics removed.
+
+#### ollama-delegate
+
+Characters: 339 → 260 (−79).
+
+Old: Delegate a bounded repository analysis or review task to an Ollama-hosted cloud model through the local Ollama HTTP server. Use when a second model should independently inspect a repository using a selected personal skill, especially for reviews, challenge passes, or comparative analysis. The delegated agent is read-only in this version.
+
+New: Delegate bounded, read-only repository analysis or review to an Ollama-hosted cloud model via the local Ollama HTTP server. Use for independent second-model inspection with a selected personal skill, including reviews, challenge passes or comparative analysis.
+
+Clause comparison: bounded repository analysis or review → retained; Ollama-hosted cloud model via local Ollama HTTP server → retained; a second model independently inspecting a repository → independent second-model inspection; selected personal skill → retained; reviews/challenge passes/comparative analysis → all retained; read-only in this version → read-only, matching the unchanged body. This remains configured-runtime model delegation, distinct from preserving a session for continuation. No procedure or output mechanics removed.
+
+#### session-handoff
+
+Characters: 515 → 271 (−244).
+
+Old: Create context-preserving handoff packets so work can continue after clearing, compacting, or moving an AI session. Use this skill whenever the user asks to hand off a session, summarize current work for another agent, prepare to clear context, make a continuation prompt, preserve decisions/files/results, or resume work in a new chat. It produces a copy/paste-ready packet with goals, decisions, changed files, commands, verification, blockers, risks, and next actions, plus optional filesystem artifact guidance.
+
+New: Preserve session context for continuation after clearing, compacting or moving it. Use for requested session handoffs, current-work summaries for another agent, context-clear preparation, continuation prompts, preserving decisions/files/results or resuming in a new chat.
+
+Clause comparison: context-preserving packets for continuation after clearing/compacting/moving an AI session → preserve session context for continuation after clearing/compacting/moving; requested handoff → retained; current-work summary for another agent → retained; prepare to clear context → context-clear preparation; continuation prompt → retained; preserve decisions/files/results → retained; resume in a new chat → retained. This remains session continuation, distinct from model delegation. Removed packet format, field inventory and optional filesystem guidance already remain in Core Judgment, Workflow, Handoff Packet Template and Filesystem Companion. No activation route or exclusion was removed.
+
+### Measurements and lightweight checks
+
+The four descriptions total 2,082 → 1,439 characters, a reduction of 643. Counts are normalized description characters and UTF-8 bytes, not tokens, billing or observed catalog/session savings.
+
+| Scope | Description characters before → after | File bytes before → after | Body bytes before → after |
+|---|---:|---:|---:|
+| All 26 source packages | 11,202 → 10,559 (−643) | 401,713 → 401,070 (−643) | 388,640 → 388,640 |
+| Profile 20 source packages | 7,563 → 6,920 (−643) | 329,154 → 328,511 (−643) | 320,123 → 320,123 |
+
+`python3 tools/baseline_measure.py` ran before and after; final records are `/tmp/side0035-before.json` and `/tmp/side0035-after.json`. The original SIDE-003.1 record remains historical; the before counts match the existing SIDE-003.4 follow-up totals. Original package bytes and wording/count records are retained in `/tmp/side0035-originals/` and `/tmp/side0035-wording.json`.
+
+- Original/final clause comparison above preserves the routing boundaries editorially. No observed model routing is established.
+- Byte comparison after removing precisely the frontmatter description scalar passed for all four packages, including other frontmatter and bodies. The matcher consumes indented continuation lines for folded YAML blocks; these four descriptions use plain scalars. No continuation lines or adjacent fields were lost.
+- Available PyYAML: `python3 skills/skill-creator/scripts/quick_validate.py skills/<name>` passed for each of the four packages. An initial YAML check found an unquoted colon in the testing draft; it was corrected before the four successful validations. The after measurement was refreshed for that correction. These are structural checks.
+- Read the brief-named review/delegation tests and fixture helper; inspected existing test literals across repository and package tests. No removed wording is quoted by existing assertions. No tests required updates or execution; no wording-matching tests were added.
+- Inspected the canonical development-profile installer and delegation registry. Membership, shared dependencies and registered paths/contracts are unchanged; no installer or registry edit or installation refresh is needed.
+- Architecture command: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_architecture.py` passed once, 4 tests, no skips (`/tmp/side0035-architecture.log`).
+- Contract command: `python3 tools/check_contracts.py --root .` passed once, 7 subsystems and 22 indexed plan references (`/tmp/side0035-contracts.log`).
+- `git diff HEAD --check` passed after the source and results edits.
+
+Full/owning suites, live-model evaluations and aggregate/distribution checks were not run, as requested; SIDE-003.18 retains aggregate/distribution checks. No workflow artifacts or subagents were used. No unresolved editorial issue remains; model routing is unmeasured.
+
+
+## SIDE-003.6 — Boundary groups 9–10
+
+Completed with the user-authorized lightweight editing workflow on 2026-11-04. This invocation covers SIDE-003.6 only. Existing SIDE-003.5 work and all prior results are preserved byte for byte. Only the six source description scalars and this appended section changed; names, paths, invocation identities, bodies, other frontmatter and installed skills are unchanged. The 150–300-character range is advisory; longer descriptions retain valid routes and consequential boundaries.
+
+### Wording and retained boundaries
+
+#### idea-brief
+
+Characters: 620 → 393 (−227).
+
+Old: Use to turn a raw idea, notes file, or early project thought into a portable Markdown idea brief before formal planning begins. Trigger whenever the user says they have an idea and wants to "stabilize it", "work on it", "make an initial document", "create a vision doc", "prepare it for planning", "prepare it for sdd-specify", "turn ideas/foo.md into docs/vision.md", or wants an interview-driven planning seed outside an existing repo. Use this instead of sdd-specify when there is no feature folder yet, no repo context, or the requested output is a general planning artifact rather than docs/features/<slug>/spec.md.
+
+New: Turn raw ideas, notes files or early project thoughts into portable Markdown briefs before formal planning. Use to stabilize/work on ideas, create initial/vision docs, prepare for planning or sdd-specify, or interview for a planning seed outside a repo. Prefer over sdd-specify when no feature folder or repo context exists, or a general planning artifact rather than a feature spec is wanted.
+
+Clause comparison: Raw ideas, notes files and early project thoughts remain inputs; portable Markdown briefs before formal planning remain the job. Stabilize/work on an idea, initial documents, vision documents, preparation for planning/sdd-specify and interview-driven seeds outside a repository remain activation routes. The file-to-vision example is covered by notes-file input plus vision-document output. No feature folder, no repository context and a general planning artifact rather than a feature spec each still prefer this skill over sdd-specify. This remains idea stabilization rather than evidence-led viability research. The body retains Inputs, the interview protocol, output-path handling and the planning handoff.
+
+#### idea-investigator
+
+Characters: 548 → 324 (−224).
+
+Old: Investigate software, product, startup, monetization, automation, or project ideas using a STORM-inspired multi-perspective research loop. Use this skill whenever the user asks whether an idea is worth building, how to validate or monetize it, what is missing, what would it take for it to succeed, how it compares to alternatives, or wants an idea turned into an evidence-backed Markdown brief. Guide the user with concise questions and pros/cons when choices matter, then produce a decision-oriented report rather than a polished generic article.
+
+New: Investigate software, product, startup, monetization, automation or project ideas for evidence-backed decisions. Use for worth-building, validation, monetization, missing requirements, success conditions, alternatives comparisons or an evidence-backed Markdown brief. Produce a decision report rather than a generic article.
+
+Clause comparison: Software/product/startup/monetization/automation/project ideas remain the domain. Worth building, validation, monetization, missing requirements, conditions for success, comparison with alternatives and evidence-backed Markdown briefs all remain discoverable. The decision-report rather than generic-article distinction remains. The STORM-inspired multi-perspective loop, concise questions and pros/cons are procedures already retained in Adapted STORM workflow and How to guide the user; no body edits were needed. This remains investigation for a decision, distinct from initial idea stabilization and proportional critique.
+
+#### idea-challenger
+
+Characters: 797 → 448 (−349).
+
+Old: Use this skill whenever the user asks you to build, implement, design, plan, automate, choose an approach, or act on an idea and the request has meaningful product, technical, strategic, financial, legal, safety, user-experience, or time-cost implications. This skill pressure-tests the user's premise before and during execution: fatal flaws, failure paths, strongest upside, assumptions, overall logic, stakeholder perspectives, and whether current external facts need verification. Trigger even when the user does not explicitly ask for critique if they are asking you to "build", "do", "make", "ship", "create", "implement", "plan", "decide", or "compare" something non-trivial. Do not use for tiny mechanical edits, purely factual questions, or when the user explicitly asks to skip critique.
+
+New: Pressure-test premises before/during non-trivial building, implementation, design, planning, automation, approach selection or action on ideas with meaningful product, technical, strategic, financial, legal, safety, UX or time-cost implications. Use even without requested critique for build/do/make/ship/create/implement/plan/decide/compare requests. Excludes tiny mechanical edits, purely factual questions and explicit requests to skip critique.
+
+Clause comparison: Build/implement/design/plan/automate/choose an approach/act on an idea remain covered before and during execution. Product, technical, strategic, financial, legal, safety, user-experience (UX) and time-cost implications remain the stakes; costs were not substituted for implications. The implicit critique route retains build/do/make/ship/create/implement/plan/decide/compare requests without an explicit critique request. Tiny mechanical edits, purely factual questions and explicit requests to skip critique remain excluded. Fatal flaws, failure paths, strongest upside, assumptions, logic, stakeholder perspectives and current-fact verification remain in Initial Idea Mode, the execution/correction modes and External Data. These are critique dimensions rather than additional activation conditions; proportionality remains in Core stance. The description does not turn each small edit into a research task.
+
+#### ask-user-questions
+
+Characters: 720 → 351 (−369).
+
+Old: Use whenever an agent needs user clarification before safely continuing, especially when a task has multiple plausible interpretations, irreversible or high-blast-radius choices, missing required inputs, or a decision should be explicitly confirmed. This skill provides an AskUserQuestions-style interaction contract: ask the fewest useful questions, offer clear recommended options when possible, explain the consequence of each choice, and then continue from the user's answer. Use it for specs, implementation planning, code review follow-ups, product decisions, migration choices, permissions, and any workflow that says "AskUserQuestion", "AskUserQuestions", "clarify with the user", or "confirm before proceeding".
+
+New: Clarify with the user before safely continuing when interpretations differ, choices are irreversible or high-impact, required inputs are missing or decisions need confirmation. Use for specs, implementation planning, review follow-ups, product/migration decisions, permissions and workflows requiring AskUserQuestion(s), clarification or confirmation.
+
+Clause comparison: Needed user clarification before safely continuing remains the job. Multiple interpretations, irreversible/high-blast-radius choices, missing required inputs and decisions requiring explicit confirmation remain routes. Specs, implementation planning, code-review follow-ups, product decisions, migration choices and permissions remain examples. AskUserQuestion(s) abbreviates the two original named interaction patterns; workflow requirements to clarify or confirm remain explicit. Fewest useful questions, recommended options, consequences and continuation from the answer remain in Question Protocol and Autonomy Rules. The body also retains the cheap reversible assumption exclusion. This remains needed clarification, not skill authoring or generic task orchestration.
+
+#### skill-creator
+
+Characters: 319 → 203 (−116).
+
+Old: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.
+
+New: Create, edit, improve or optimize skills and measure their performance. Use for skill authoring, evals, performance benchmarks with variance analysis, or description optimization for triggering accuracy.
+
+Clause comparison: Create from scratch, edit, improve and optimize existing skills remain authoring routes. Measuring performance, running evals, benchmarking with variance analysis and description optimization for triggering accuracy remain explicit. No procedure or output inventory was removed; the body still owns drafting, evaluation and iteration. This remains skill creation and evaluation rather than user clarification or task orchestration.
+
+#### task-orchestrator
+
+Characters: 635 → 480 (−155).
+
+Old: Use only when the user explicitly asks for task orchestration or names the task-orchestrator. It operates and reasons about the task-orchestrator's controller-backed local run flow for an approved task manifest, including initializing, operating, inspecting, diagnosing, or modifying that flow; retrieving its controller contract or module owner; and assessing its recovery or planned local harness work. Do not use it for generic requests to run, implement, or finish tasks, and do not use it to invent product requirements or imply that the unfinished automatic acceptance, recovery, plan-preparation, or advance flow already exists.
+
+New: Use only for explicit task-orchestration requests or named task-orchestrator invocation. Operate, inspect, diagnose or modify its controller-backed local run flow for approved manifests; initialize runs, retrieve controller contracts/module owners, assess recovery or planned local harness work. Excludes generic run/implement/finish-task requests and inventing product requirements. Do not imply unfinished automatic acceptance, recovery, plan-preparation or advance flows exist.
+
+Clause comparison: The existing explicit-request-only boundary remains: an explicit task-orchestration request or named invocation is required. Approved-manifest controller-backed local flow remains the scope. Initializing, operating, inspecting, diagnosing, modifying, retrieving the controller contract or module owner, and assessing recovery or planned local harness work all remain discoverable. Operating/inspection/diagnosis/assessment preserve reasoning about that flow. Generic run/implement/finish-task requests and invented product requirements remain excluded. Automatic acceptance, recovery, plan-preparation and advance remain explicitly unfinished; no capability is promoted from a plan. The existing word only is retained, not introduced as a new restriction. The unchanged body retains public commands, authority, approved inputs and references for current versus unfinished work.
+
+### Measurements and lightweight checks
+
+The six descriptions total 3,639 → 2,199 characters, a reduction of 1,440. Counts are normalized description characters and UTF-8 bytes, not tokens, billing or observed catalog/session savings.
+
+| Scope | Description characters before → after | File bytes before → after | Body bytes before → after |
+|---|---:|---:|---:|
+| All 26 source packages | 10,559 → 9,119 | 401,070 → 399,605 | 388,640 → 388,640 |
+| Profile 20 source packages | 6,920 → 6,920 | 328,511 → 328,511 | 320,123 → 320,123 |
+
+`python3 tools/baseline_measure.py` ran before and after; records are `/tmp/side0036-edit/before.json` and `after.json`. Original package bytes, wording/count records and check logs are in that directory. The immediate before state includes the existing SIDE-003.5 edits. The frozen baseline remains historical: all-26 14,448 → 9,119 (−5,329), consisting of .2–.4 reductions of 3,246, .5 reduction of 643 and this leaf's reduction of 1,440. The profile-20 reduction remains 3,889, entirely from .2–.5. File-byte reduction for this leaf is 1,465; the extra 25 bytes reflect folded-block syntax, line breaks and indentation removed from idea-challenger and ask-user-questions, not additional body changes.
+
+- Original/final clause comparisons above preserve routing boundaries editorially. No observed model routing is established.
+- Complete-scalar byte masking passed for all six packages, consuming all folded continuation lines in the two original folded descriptions. Every non-description byte is identical to its invocation-start copy. The other 20 packages' hashes and measurements are unchanged. The Git index diff is byte-identical to the invocation-start copy.
+- Available PyYAML: `python3 skills/skill-creator/scripts/quick_validate.py skills/<name>` passed for each of the six changed packages. Logs are `/tmp/side0036-edit/<name>-validate.log`. These are structural checks.
+- Inspected description consumers and existing tests, including skill-creator's eval runner/tests and task-orchestrator's controller-state tests. An AST scan of 30 non-fixture test files found no removed description substring in string literals of at least 16 normalized characters; contextual inspection found no affected wording assertions. Consumers accept description content rather than asserting the old wording. No test edit or focused test execution was needed; no wording-matching tests were added.
+- Inspected the installer and task-orchestrator registry context. These six packages are outside the development profile; membership, shared runtime dependencies and registered paths/contracts are unchanged. No installer or registry update or installation refresh is needed.
+- Architecture command: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_architecture.py` passed once after the source edits, 4 tests, no skips (`/tmp/side0036-edit/architecture.log`).
+- Contract command: `PYTHONDONTWRITEBYTECODE=1 python3 tools/check_contracts.py --root .` passed once after the source edits, 7 subsystems and 22 indexed plan references (`/tmp/side0036-edit/contracts.log`).
+- `git diff HEAD --check` passed after the source and results edits.
+
+Full/owning suites, live-model evaluations and aggregate/distribution checks were not run, as requested; SIDE-003.18 retains aggregate/distribution verification. No workflow artifacts or subagents were used. No unresolved editorial issue remains; model routing is unmeasured. No changes were staged or committed.

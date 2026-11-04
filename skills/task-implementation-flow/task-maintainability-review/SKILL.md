@@ -1,13 +1,6 @@
 ---
 name: task-maintainability-review
-description: >
-  Use after implementation or correction, before functional task-acceptance-review, when repository
-  policy requires focused maintainability/architecture review or the user explicitly asks for it.
-  Independently review current changed implementation assets, including significant tests, evaluations,
-  fixtures and harness code, plus any required deterministic architecture
-  gate for concrete regressions in semantic clarity, state/rule ownership, cohesion, coupling,
-  change locality, testability, diagnosability, or abstraction cost. Return ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE. Do not
-  perform full specification/functional acceptance here.
+description: Use after implementation or correction, before functional acceptance, when repository policy requires focused maintainability/architecture review or the user explicitly asks for it. Independently review changed implementation assets, including significant tests, evaluations, fixtures and harness code, plus any required deterministic architecture gate. Do not perform full specification or functional acceptance.
 ---
 # Task Maintainability Review
 

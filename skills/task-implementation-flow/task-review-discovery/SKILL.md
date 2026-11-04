@@ -1,6 +1,6 @@
 ---
 name: task-review-discovery
-description: Independently publish current evidence and confirmed findings for one bounded implementation without deciding acceptance. Produces a complete or explicitly partial evidence report with facts, suggested severities, probe results, and a continuation block for a separate acceptance decision call. Use when a fresh session independent of production authorship must gather review evidence, especially when behavior crosses stateful, public, security, concurrency, recovery, or migration boundaries.
+description: From a fresh session independent of production authorship, gather and publish current evidence and confirmed findings for one bounded implementation without deciding acceptance — a complete or explicitly partial report for the separate acceptance decision call. Use especially when behavior crosses stateful, public, security, concurrency, recovery, or migration boundaries.
 ---
 
 # Task Review Discovery

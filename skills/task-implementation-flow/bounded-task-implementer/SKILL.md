@@ -1,6 +1,6 @@
 ---
 name: bounded-task-implementer
-description: Implement one bounded task from a clear user request, ready task brief, or high-assurance preflight packet. Use whenever asked to execute, resume, or correct a scoped implementation and the agent should automatically define missing acceptance criteria, add risk-based tests, verify progressively, preserve user work, and report evidence. Default to a lightweight guided flow with a human-readable result; require strict freshness and raw JSON only when an orchestrated packet or machine output contract is supplied.
+description: Implement, resume, or correct one bounded task from a request, ready task brief, or preflight packet — define missing acceptance criteria, add risk-based tests, verify progressively, preserve user work, report evidence. Guided by default; strict freshness and raw JSON for explicit high-assurance requests or supplied machine contracts; a packet alone stays guided.
 ---
 
 # Bounded Task Implementer

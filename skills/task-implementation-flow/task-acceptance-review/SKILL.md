@@ -1,6 +1,6 @@
 ---
 name: task-acceptance-review
-description: Decide whether one bounded implementation is safe to advance by admitting the current independent discovery evidence, submission claims, and applicable conditional evidence, then return ACCEPT, CHANGES_REQUESTED, or INCONCLUSIVE. Use after an independent discovery pass published its report, or with equivalent current evidence, especially when task metadata requires immediate review or behavior crosses stateful, public, security, concurrency, recovery, or migration boundaries. Default to a concise guided decision; require full packet/report reconstruction only for explicit high-assurance work.
+description: Decide whether one bounded implementation is safe to advance by admitting current independent discovery evidence, submission claims, and conditional evidence. Use after discovery published its report or with equivalent current evidence, especially for immediate-review metadata or behavior crossing stateful, public, security, concurrency, recovery, or migration boundaries. Concise guided decision by default; full packet/report reconstruction only for explicit high-assurance work.
 ---
 
 # Task Acceptance Review

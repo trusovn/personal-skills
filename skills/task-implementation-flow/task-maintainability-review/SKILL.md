@@ -82,8 +82,10 @@ report; it does not create a review stage or replace semantic review.
 
 When a durable task brief is supplied, require the package form
 `<task-package>/brief.md`; route a direct legacy brief to
-`task-brief-designer` for normalization. When a durable maintainability report
-is requested, write only the next unused
+`task-brief-designer` for normalization. When this skill is explicitly invoked
+and the review uses a formal task brief, always create a durable maintainability
+report; no separate report request is needed. Also create one when repository
+or user authority requires it. Write only the next unused
 `<task-package>/reviews/maintainability-NN.md`. Never overwrite a prior report
 or use an external runtime directory as the durable report location.
 
@@ -368,9 +370,11 @@ REVIEWED:
 and do not issue an independent verdict. Carry the same measurement, rationale,
 native-evidence and gap fields when applicable, clearly labeled author self-checks.
 
-When repository/user authority requires a durable report, store this output at
-the canonical numbered path above. Record exact Git status before and after the
-write and permit only the new report entry; the report does not review itself.
+When a durable report is required under the Inputs rules above, store this output
+at the canonical numbered path above, including for `INCONCLUSIVE` or
+`SELF_CHECK_ONLY`. Include the report path in the response. Record exact Git
+status before and after the write and permit only the new report entry; the
+report does not review itself.
 
 ## Correction loop
 

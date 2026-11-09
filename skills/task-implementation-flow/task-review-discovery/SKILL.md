@@ -209,7 +209,13 @@ ordinary happy-path and one-field corruption tests routinely miss.
 
 ## Output contract
 
-For guided discovery, default to a concise human-readable inline response:
+When this skill is explicitly invoked and the review uses a formal task brief,
+always create a durable discovery report; no separate report request is needed.
+This includes partial reports and `SELF_CHECK_ONLY`. Also create one when
+repository or user authority requires it. Include the report path in the response.
+
+For guided discovery, use this concise human-readable form, inline unless a
+durable report is required:
 
 ```markdown
 Discovery report: complete | partial — <reasons>

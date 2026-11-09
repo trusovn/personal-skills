@@ -102,8 +102,8 @@ docs/tasks/
     verification.md               # required before packaged implementation
     preflight.md                  # required ready preflight before implementation
     reviews/
-      maintainability-01.md       # only when a durable report is written
-      discovery-01.md             # only when discovery publishes durably
+      maintainability-01.md       # required for explicit review with a formal brief
+      discovery-01.md             # required for explicit review with a formal brief
       acceptance-01.md
 ```
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "reviewer-feedback",
-  "summary": "Source reviewer/downstream side of IF-003: independent maintainability comparison, rationale dispositions and evidence consumption, with executable local eval preparation. Shared ART-003/ART-008 remain indexed under implementer-feedback; ART-006 and IF-004 remain indexed under measurement. Live actor compliance and T-005 installed composition remain unqualified; source presence does not establish active installation parity.",
+  "summary": "Source reviewer/downstream side of IF-003: independent maintainability comparison, rationale dispositions and evidence consumption, with executable local eval preparation. Shared ART-003/ART-008 remain indexed under implementer-feedback; ART-006 and IF-004 remain indexed under measurement. Live actor compliance remains unqualified; measurement owns scripted installed-composition test authority (ART-006); source presence does not establish active installation parity.",
   "owner_paths": ["skills/task-implementation-flow/task-maintainability-review", "skills/task-implementation-flow/task-review-discovery", "skills/task-implementation-flow/task-acceptance-review"],
   "provides": [
     {
@@ -51,7 +51,7 @@
     },
     {
       "name": "independent-review-eval-preparation",
-      "summary": "Opt-in actor definitions and a finite catalog prepare 82 unique selectable variants across 62 scenario IDs, with real comparison/native inputs, preserved histories and held-back artifact oracles. Setup reuses existing fixtures through an explicit source distribution and prepared pinned interpreter; installation targets only disposable authorized roots and never provisions dependencies. The local checker rejects duplicate dispatch IDs and truncated returned case fields, exercises all preparations and selected real comparison/native/correction controls. It executes no actor and supplies no live verdict/disposition/route qualification; T-005 complete installed composition remains separate.",
+      "summary": "Opt-in actor definitions and a finite catalog prepare 82 unique selectable variants across 62 scenario IDs, with real comparison/native inputs, preserved histories and held-back artifact oracles. Setup reuses existing fixtures through an explicit source distribution and prepared pinned interpreter; installation targets only disposable authorized roots and never provisions dependencies. The local checker rejects duplicate dispatch IDs and truncated returned case fields, exercises all preparations and selected real comparison/native/correction controls. It executes no actor and supplies no live verdict/disposition/route qualification; scripted installed composition is separately discoverable under measurement ART-006 and does not qualify actor behavior.",
       "declarations": ["skills/task-implementation-flow/task-maintainability-review/evals/review-evals.json", "skills/task-implementation-flow/task-maintainability-review/evals/files/review_cases.json", "skills/task-implementation-flow/task-maintainability-review/evals/files/setup_fixture.py", "skills/task-implementation-flow/task-maintainability-review/evals/files/review_fixture.py", "skills/task-implementation-flow/task-maintainability-review/evals/files/check_review_fixture.py", "tests/test_task_maintainability_review.py"]
     }
   ],

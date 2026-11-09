@@ -122,6 +122,98 @@ class MeasurementTests(unittest.TestCase):
         for relative, content in before.items():
             self.assertEqual(content, after[relative], relative)
 
+    def test_complete_installed_handoff_retains_original_and_native_history(self):
+        launcher, cwd = self.installed_launcher()
+        # Copy prepared dependencies into the target: no global/source fallback.
+        native = environment.environment_path(self.root)
+        venv.EnvBuilder(with_pip=False).create(native)
+        site = next(native.glob("lib/python*/site-packages"))
+        shutil.copytree(sysconfig.get_path("purelib"), site, dirs_exist_ok=True)
+        shutil.copy2(Path(sysconfig.get_path("scripts")) / "ruff", native / "bin/ruff")
+        policy = self.root / "native-ruff.toml"
+        policy.write_text('[lint]\nselect = ["F401"]\n')
+        command = [str(environment.environment_python(native)), "-m", "ruff", "check",
+                   "--no-cache", "--config", str(policy), str(self.root)]
+        (self.root / "AGENTS.md").write_text(
+            "Native check: " + shlex.join(command) + "\n"
+            "Scope: whole project; policy: native-ruff.toml; required: true; owner: implementer.\n")
+        self.source.write_text(function("small", 2))
+        self.git("add", "sample.py")
+        self.source.write_text(function("small", 4))
+        (self.root / "untracked.py").write_text(function("untracked", 0))
+        index = (self.root / ".git/index").read_bytes()
+        history = {}
+        reports = {}
+        native_history = []
+
+        def preserved(action):
+            sources = {p.name: p.read_bytes() for p in self.root.glob("*.py")}
+            result = action()
+            self.assertEqual(sources, {p.name: p.read_bytes() for p in self.root.glob("*.py")})
+            self.assertEqual(index, (self.root / ".git/index").read_bytes())
+            self.assertEqual(history, {p: p.read_bytes() for p in history})
+            return result
+
+        baseline = self.root / ".quality/reports/B.json"
+
+        def capture(label, expected):
+            output = baseline if label == "B" else baseline.with_name(label + ".json")
+            args = (["baseline", "."] if label == "B" else
+                    ["compare", "sample.py", "--baseline", str(baseline)])
+            result = preserved(lambda: subprocess.run(
+                [sys._base_executable, str(launcher), *args, "--root", str(self.root),
+                 "--output", str(output)], cwd=cwd, capture_output=True, text=True,
+                env={k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "PYTHONHOME")}))
+            self.assertEqual(0, result.returncode, result.stderr + result.stdout)
+            report = json.loads(output.read_text())
+            self.assertEqual("complete", report["measurement_status"])
+            self.assertEqual(metrics.digest(self.source.read_bytes()), report["files"]["sample.py"]["sha256"])
+            self.assertEqual(["."] if label == "B" else ["sample.py"], report["identity"]["scope"])
+            self.assertEqual(str(environment.environment_python(native)), report["checks"]["ruff"]["raw"]["command"][0])
+            if label != "B":
+                self.assertEqual(str(baseline), report["baseline_path"])
+                self.assertEqual("compared", report["comparison"]["status"])
+                row, = report["comparison"]["complexity"]
+                self.assertEqual((5, expected, expected - 5), tuple(row[k] for k in ("before", "value", "delta")))
+                self.assertEqual(["increased"], row["highlights"])
+                for key in ("tools", "settings", "adapter_sha256"):
+                    self.assertEqual(reports["B"]["identity"][key], report["identity"][key])
+            for path in (output, output.with_suffix(".txt")):
+                self.assertTrue(path.is_file())
+                history[path] = path.read_bytes()
+            reports[label] = report
+
+        def check_native(label, expected):
+            result = preserved(lambda: subprocess.run(command, cwd=cwd, capture_output=True, text=True))
+            self.assertEqual(expected, result.returncode, result.stderr)
+            if expected:
+                self.assertIn("F401", result.stdout)
+            evidence = self.root / (label + "-native.json")
+            evidence.write_text(json.dumps(dict(command=command, scope="whole project",
+                policy=str(policy), required=True, producer="implementer", stage=label,
+                checked={p.name: metrics.digest(p.read_bytes()) for p in self.root.glob("*.py")},
+                result=result.returncode, stdout=result.stdout, stderr=result.stderr)))
+            history[evidence] = evidence.read_bytes()
+            native_history.append(evidence)
+
+        capture("B", 5)
+        self.assertIn("MM sample.py", reports["B"]["repository"]["status"])
+        self.assertIn("?? untracked.py", reports["B"]["repository"]["status"])
+        self.source.write_text("import os\n" + function("small", 6))
+        check_native("I", 1)
+        capture("I", 7)
+        capture("R", 7)
+        self.assertNotEqual(reports["I"]["invocation"], reports["R"]["invocation"])
+        self.assertEqual(reports["I"]["files"], reports["R"]["files"])
+        self.source.write_text(function("small", 5))
+        check_native("C", 0)
+        capture("C", 6)
+        self.assertNotEqual(reports["R"]["files"], reports["C"]["files"])
+        handoff = dict(baseline=str(baseline), comparisons={k: str(baseline.with_name(k + ".json"))
+                       for k in ("I", "R", "C")}, native=[str(p) for p in native_history])
+        (self.root / "handoff.json").write_text(json.dumps(handoff))
+        preserved(lambda: None)
+
     def test_real_complexity_boundaries_and_below_target_increase(self):
         self.source.write_text(function("small", 1) + function("at_target", 9)
                                + function("legacy", 10) + function("improves", 15))

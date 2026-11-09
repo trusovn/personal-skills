@@ -646,4 +646,6 @@ The outstanding route stays applicable registry synchronization → fresh discov
 → separate acceptance, with affected conditional gates/review re-entered when
 needed and absent/current unaffected stages omitted. No advisory signal adds a
 stage. Source guidance and local eval setup are preparation evidence; live agent
-compliance and T-005's installed composition remain separately qualified.
+compliance remains unqualified. The measurement contract record (ART-006) routes
+to the separate scripted installed-composition test and T-005 execution claims;
+scripted caller roles do not qualify agent judgment.

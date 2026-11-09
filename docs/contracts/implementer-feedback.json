@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "implementer-feedback",
-  "summary": "Source implementer guidance for original-baseline consumption/direct capture, proportionate feedback and submission/correction evidence. The reviewer-feedback record owns source reviewer/downstream integration; live agent compliance and the full installed journey remain unqualified.",
+  "summary": "Source implementer guidance for original-baseline consumption/direct capture, proportionate feedback and submission/correction evidence. The reviewer-feedback record owns source reviewer/downstream integration; live agent compliance remains unqualified; measurement owns scripted installed-journey test authority (ART-006).",
   "owner_paths": ["skills/task-implementation-flow/bounded-task-implementer"],
   "provides": [
     {
@@ -40,7 +40,7 @@
     },
     {
       "name": "implementer-measurement-eval-preparation",
-      "summary": "Task-owned finite scenario inputs and setup/check commands cover entry, thresholds, attribution, corrections, evidence gaps, native duties and optional instrumentation while retaining existing entry/route/review cases. Setup requires the source distribution, disposable authorized roots and an already pinned interpreter; it installs only into disposable targets and never provisions dependencies. Local fixture checks exercise supplied states, numeric comparisons and native success/failure/correction boundaries. Prepared artifact/diff/order/rationale oracles do not prove agent behavior; live evals and T-005 installed composition remain unqualified.",
+      "summary": "Task-owned finite scenario inputs and setup/check commands cover entry, thresholds, attribution, corrections, evidence gaps, native duties and optional instrumentation while retaining existing entry/route/review cases. Setup requires the source distribution, disposable authorized roots and an already pinned interpreter; it installs only into disposable targets and never provisions dependencies. Local fixture checks exercise supplied states, numeric comparisons and native success/failure/correction boundaries. Prepared artifact/diff/order/rationale oracles do not prove agent behavior; live evals remain unqualified; measurement owns the separate scripted installed-composition test authority (ART-006).",
       "declarations": ["skills/task-implementation-flow/bounded-task-implementer/evals/evals.json", "skills/task-implementation-flow/bounded-task-implementer/evals/files/measurement_cases.json", "skills/task-implementation-flow/bounded-task-implementer/evals/files/setup_fixture.py", "skills/task-implementation-flow/bounded-task-implementer/evals/files/measurement_fixture.py", "skills/task-implementation-flow/bounded-task-implementer/evals/files/check_measurement_fixture.py"]
     }
   ],

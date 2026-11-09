@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "measurement",
-  "summary": "Portable advisory Python measurement runtime, foundation discovery and standalone preflight producer guidance. Separate implementer-feedback and reviewer-feedback records own source consumer guidance; live agent compliance and complete installed task-flow composition remain unqualified.",
+  "summary": "Portable advisory Python measurement runtime, foundation discovery and standalone preflight producer guidance. Separate implementer-feedback and reviewer-feedback records own source consumer guidance; scripted installed task-flow composition has local test authority; live agent compliance remains unqualified.",
   "owner_paths": ["scripts/measure_maintainability.py", "scripts/maintainability.py", "scripts/maintainability_env.py", "scripts/maintainability-default.toml", "scripts/maintainability-ruff-default.toml", "scripts/maintainability-requirements.txt", "skills/task-implementation-flow/task-preflight"],
   "provides": [
     {
@@ -65,9 +65,9 @@
     },
     {
       "name": "installed-composition-verification-authority",
-      "summary": "Reusable local tests exercise a disposable installation from an unrelated cwd after deleting its source distribution: dirty/staged/untracked capture, edits/additions/deletions, empty-folder capture, settings and refusal cases, report/source/index preservation, managed-resource drift/refresh, and real native F401 failure beside successful advisory measurement. Real analyzer cases require pinned tools; skips do not qualify them. T-001.3 results record implementation execution claims and limits, not independent acceptance or live agent behavior.",
+      "summary": "Reusable local tests exercise a disposable installation from an unrelated cwd after deleting its source distribution: dirty/staged/untracked capture, edits/additions/deletions, empty-folder capture, settings and refusal cases, report/source/index preservation, managed-resource drift/refresh, and real native F401 failure beside successful advisory measurement. The complete installed journey retains original B through edited implementer I, separate scripted reviewer R and corrected C invocations, preserving source/index and prior report pairs, with required whole-project native F401 failure and recovery histories. Scripted roles do not establish independent agent judgment. Real analyzer cases require pinned tools; skips do not qualify them. T-001.3 and T-005 results record implementation execution claims and limits, not independent acceptance or live agent behavior.",
       "plan_refs": ["ART-006"],
-      "declarations": ["tests/test_maintainability.py", "tests/test_install_development_skills.py", "docs/tasks/T-001.3/results.md"]
+      "declarations": ["tests/test_maintainability.py", "tests/test_install_development_skills.py", "docs/tasks/T-001.3/results.md", "docs/tasks/T-005/results.md"]
     },
     {
       "name": "starting-evidence-readiness-reference",

@@ -5,7 +5,20 @@
   "$defs": {
     "planRefs": {
       "type": "array",
-      "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*-[A-Z0-9][A-Z0-9._-]*$"},
+      "items": {
+        "oneOf": [
+          {"type": "string", "pattern": "^[A-Z][A-Z0-9]*-[A-Z0-9][A-Z0-9._-]*$"},
+          {
+            "type": "object",
+            "required": ["plan", "id"],
+            "properties": {
+              "plan": {"type": "string", "minLength": 1},
+              "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*-[A-Z0-9][A-Z0-9._-]*$"}
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
       "uniqueItems": true
     },
     "paths": {

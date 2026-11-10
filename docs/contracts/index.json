@@ -1,83 +1,104 @@
 {
   "generated": true,
   "plan_refs": {
-    "ART-001": [
-      "measurement"
-    ],
-    "ART-002": [
-      "measurement"
-    ],
-    "ART-003": [
-      "implementer-feedback"
-    ],
-    "ART-004": [
-      "implementer-feedback"
-    ],
-    "ART-005": [
-      "reviewer-feedback"
-    ],
-    "ART-006": [
-      "measurement"
-    ],
-    "ART-007": [
-      "measurement"
-    ],
-    "ART-008": [
-      "implementer-feedback"
-    ],
-    "CAP-002": [
-      "measurement"
-    ],
-    "CAP-003": [
-      "implementer-feedback"
-    ],
-    "CAP-004": [
-      "reviewer-feedback"
-    ],
-    "CAP-005": [
-      "reviewer-feedback"
-    ],
     "FLOW-002-S01": [
       "measurement"
     ],
-    "IF-001": [
+    "docs/project-plan.md#ART-001": [
       "measurement"
     ],
-    "IF-002": [
+    "docs/project-plan.md#ART-002": [
       "measurement"
     ],
-    "IF-003": [
+    "docs/project-plan.md#ART-003": [
       "implementer-feedback"
     ],
-    "IF-004": [
-      "measurement"
+    "docs/project-plan.md#ART-004": [
+      "implementer-feedback"
     ],
-    "INV-001": [
-      "measurement"
-    ],
-    "INV-002": [
-      "measurement"
-    ],
-    "INV-003": [
-      "measurement"
-    ],
-    "INV-004": [
+    "docs/project-plan.md#ART-005": [
       "reviewer-feedback"
     ],
-    "INV-005": [
+    "docs/project-plan.md#ART-006": [
+      "measurement"
+    ],
+    "docs/project-plan.md#ART-007": [
+      "measurement"
+    ],
+    "docs/project-plan.md#ART-008": [
       "implementer-feedback"
     ],
-    "INV-006": [
+    "docs/project-plan.md#CAP-002": [
       "measurement"
     ],
-    "INV-007": [
-      "measurement"
-    ],
-    "INV-008": [
+    "docs/project-plan.md#CAP-003": [
       "implementer-feedback"
     ],
-    "INV-009": [
+    "docs/project-plan.md#CAP-004": [
+      "reviewer-feedback"
+    ],
+    "docs/project-plan.md#CAP-005": [
+      "reviewer-feedback"
+    ],
+    "docs/project-plan.md#IF-001": [
       "measurement"
+    ],
+    "docs/project-plan.md#IF-002": [
+      "measurement"
+    ],
+    "docs/project-plan.md#IF-003": [
+      "implementer-feedback"
+    ],
+    "docs/project-plan.md#IF-004": [
+      "measurement"
+    ],
+    "docs/project-plan.md#INV-001": [
+      "measurement"
+    ],
+    "docs/project-plan.md#INV-002": [
+      "measurement"
+    ],
+    "docs/project-plan.md#INV-003": [
+      "measurement"
+    ],
+    "docs/project-plan.md#INV-004": [
+      "reviewer-feedback"
+    ],
+    "docs/project-plan.md#INV-005": [
+      "implementer-feedback"
+    ],
+    "docs/project-plan.md#INV-006": [
+      "measurement"
+    ],
+    "docs/project-plan.md#INV-007": [
+      "measurement"
+    ],
+    "docs/project-plan.md#INV-008": [
+      "implementer-feedback"
+    ],
+    "docs/project-plan.md#INV-009": [
+      "measurement"
+    ],
+    "skills/task-orchestrator/docs/local-harness-orchestration-plan.md#ART-002": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/local-harness-orchestration-plan.md#ART-004": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/local-harness-orchestration-plan.md#ART-007": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/local-harness-orchestration-plan.md#ART-008": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/local-harness-orchestration-plan.md#IF-002": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/local-harness-orchestration-plan.md#IF-003": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/local-harness-orchestration-plan.md#IF-004": [
+      "task-orchestrator"
     ]
   },
   "schema_version": 1,

@@ -1,0 +1,17 @@
+...F..........
+======================================================================
+FAIL: test_v03_v08_v11_shared_corrections_repair_and_fresh_preflight (test_actor_operations.ActorOperationsTest.test_v03_v08_v11_shared_corrections_repair_and_fresh_preflight)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_actor_operations.py", line 297, in test_v03_v08_v11_shared_corrections_repair_and_fresh_preflight
+    self.assertEqual('reserved',r['status'],r)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'reserved' != 'refused'
+- reserved
++ refused
+ : {'status': 'refused', 'reason': 'authority_or_lock_unavailable', 'next_actions': ['intervene'], 'state_version': None, 'detail': 'correction step requires an active correction cycle'}
+
+----------------------------------------------------------------------
+Ran 14 tests in 6.602s
+
+FAILED (failures=1)

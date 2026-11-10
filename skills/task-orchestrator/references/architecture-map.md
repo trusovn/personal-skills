@@ -2,7 +2,7 @@
 
 Status: operator reference
 
-Freshness: 2026-10-22
+Freshness: 2026-11-09
 
 Read only the row that owns the requested behavior, then inspect its primary
 test. Use `controller.py` integration coverage when a public command or
@@ -14,6 +14,7 @@ cross-module flow changes.
 | State, validation, and durable record contracts | `scripts/controller_state.py` | `tests/test_controller_state.py` |
 | Git status, identity, scope, and drift evidence | `scripts/controller_git.py` | `tests/test_controller_git.py` |
 | Verification command planning and execution | `scripts/verification_runner.py` | `tests/test_verification_runner.py` |
+| Actor operations/public lifecycle | `scripts/controller.py` | `tests/test_actor_operations.py` |
 | Codex CLI transport and thread records | `scripts/codex_worker.py` | `tests/test_codex_worker.py` |
 | Current retrieval surface and examples | `SKILL.md`, `references/`, `assets/examples/` | `tests/test_retrieval_surface.py` |
 
@@ -21,9 +22,9 @@ cross-module flow changes.
 
 ```text
 controller.py init
-controller.py run-next
-controller.py inspect
-controller.py revise-flow
+controller.py status / reserve / launch / observe / stop / intervene
+controller.py revise-inputs
+# Legacy primitives: run-next (refusal stub), inspect, revise-flow
 ```
 
 `codex_worker.py` is an internal adapter. A new operator action belongs in the
@@ -96,8 +97,25 @@ not establish permissions or lifecycle support for a future harness adapter.
 
 ## Current limitations
 
-The public controller does not yet provide safe stop/recovery, the complete
+The public controller provides conservative stop requests and terminal observation,
+not automatic recovery or same-thread continuation. It does not provide the complete
 semantic review/correction loop, task commit finalization, atomic completion and
 dependency release, automatic advance, or plan preparation. See the
 [current development documents](../docs/README.md) for the desired behavior and
 proposed delivery. Inspect current code and useful tests before extending it.
+
+## Actor lifecycle boundary
+
+`controller.py` reserves under its lock, publishes no-relaunch intent before
+spawning the detached `codex_worker.py actor` supervisor, and owns one admission
+path (`observe_operation` → `_admit_actor_outcome`). The adapter records process
+and session observations and an exclusive terminal receipt. Missing receipt or
+unresolved group liveness blocks another actor. Stop requests do not signal a
+recorded PID. Only preflight semantics are admitted here; T-004/005 extend this
+same path for other roles. Runtime details and proof limits are in the
+[T-003 contract](../docs/tasks/T-003/controller-contract.md).
+
+The older macOS verification runner is a separate historical boundary; actor
+launch in the explicitly approved sbx/YOLO policy does not require its containment
+qualification. The adapter retains the legacy full-access refusal outside the
+authorized actor bridge. No provider identity or outer-system isolation is proved.

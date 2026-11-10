@@ -457,10 +457,14 @@ into the plan.
 
 `task-orchestrator` is an experimental, incomplete high-assurance execution
 path, not the default way to run the skills above. Its controller currently
-supports `init`, `run-next`, and `inspect` for an already approved manifest and
-run policy. It does **not** yet provide plan-to-manifest preparation, semantic
-review/correction loops, safe stop and recovery, atomic acceptance with
-dependency release/advance, or an unattended end-to-end runner.
+supports frozen-input initialization, status/reservation/revision, and reserved
+actor launch, observation, stop requests and intervention history. Terminal
+preflight can admit readiness; implementation, collection and acceptance outputs
+remain raw claims. `run-next` remains a legacy refusal/reporting stub. See the
+[operator guide](skills/task-orchestrator/references/operator-guide.md) for commands
+and qualification limits. Plan-to-manifest preparation, semantic review/correction
+loops, automatic recovery, completion and unattended end-to-end execution remain
+unimplemented.
 Use it only when its current controller contract is specifically needed and
 the required manifest/policy inputs already exist. Otherwise run the bounded
 flow directly under human coordination.
@@ -500,7 +504,7 @@ project-bootstrap
   -> acceptance review
 ```
 
-Planning artifacts (`project-plan.md`, `task-map.json`, task briefs) may describe future contracts. `docs/contracts/*.json` describes reusable contracts that are currently implemented. Stable plan IDs connect the two when a planned contract materializes. Executable declarations and code/tests remain the underlying authority.
+Planning artifacts (`project-plan.md`, `task-map.json`, task briefs) may describe future contracts. `docs/contracts/*.json` describes reusable contracts that are currently implemented. Stable plan IDs paired with their owning plan path connect the two when a planned contract materializes. The registry indexes these pairs as `<plan-path>#<id>` so separate plans can reuse short IDs. Executable declarations and code/tests remain the underlying authority.
 <!-- contract-registry-flow:root-readme:end -->
 
 ## Archived delivery documents

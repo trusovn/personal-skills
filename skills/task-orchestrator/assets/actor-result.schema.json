@@ -1,0 +1,231 @@
+{
+  "type": "object",
+  "properties": {
+    "assignment": {
+      "type": "object",
+      "properties": {
+        "run_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "operation_id": {
+          "type": "string"
+        },
+        "operation_key": {
+          "type": "string"
+        },
+        "stage": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "inputs_sha256": {
+          "type": "string"
+        },
+        "policy_sha256": {
+          "type": "string"
+        },
+        "flow_sha256": {
+          "type": "string"
+        },
+        "flow_revision": {
+          "type": "integer"
+        },
+        "candidate_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "correction_count": {
+          "type": "integer"
+        },
+        "can_repair": {
+          "type": "boolean"
+        },
+        "can_change_files": {
+          "type": "boolean"
+        },
+        "session_policy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "reasoning": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "model",
+            "reasoning"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "run_id",
+        "task_id",
+        "operation_id",
+        "operation_key",
+        "stage",
+        "role",
+        "reason",
+        "inputs_sha256",
+        "policy_sha256",
+        "flow_sha256",
+        "flow_revision",
+        "candidate_sha256",
+        "correction_count",
+        "can_repair",
+        "can_change_files",
+        "session_policy",
+        "actor"
+      ],
+      "additionalProperties": false
+    },
+    "session_id": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "blocked",
+        "failed",
+        "needs_input"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "readiness": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "blocked"
+          ]
+        },
+        "requirements_complete": {
+          "type": "boolean"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "passed",
+                  "blocked"
+                ]
+              },
+              "evidence": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "status",
+              "evidence"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "passed",
+                  "blocked"
+                ]
+              },
+              "evidence": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "status",
+              "evidence"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "passed",
+                  "blocked"
+                ]
+              },
+              "evidence": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "status",
+              "evidence"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "status",
+        "requirements_complete",
+        "tools",
+        "dependencies",
+        "skills"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "assignment",
+    "session_id",
+    "status",
+    "summary",
+    "readiness"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

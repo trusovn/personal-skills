@@ -1142,6 +1142,27 @@ def select_task(ledger: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any
     )
 
 
+def validate_actor_transport(operation: dict[str, Any]) -> None:
+    transport = operation["transport"]
+    _validate_exact_object(transport, ("configuration_sha256", "supervisor_pid", "outcome"), "actor transport")
+    _validate_sha256(transport["configuration_sha256"], "transport configuration")
+    pid = transport["supervisor_pid"]
+    if pid is not None and (type(pid) is not int or pid <= 0):
+        raise ValueError("Invalid supervisor identity")
+    outcome = transport["outcome"]
+    if outcome is not None:
+        _validate_exact_object(outcome, ("observed", "blocker", "raw_result_path", "terminal_path"), "actor outcome")
+        if operation["state"] != "terminal":
+            raise ValueError("Outcome requires terminal operation")
+        observed = outcome["observed"]
+        if not isinstance(observed, dict) or observed.get("assignment") != operation["assignment"]:
+            raise ValueError("Outcome assignment mismatch")
+        if observed.get("terminal_observed") is not True or observed.get("group_absent") is not True:
+            raise ValueError("Outcome requires observed process/group terminality")
+    if operation["state"] == "reserved":
+        raise ValueError("Launch intent cannot remain reserved")
+
+
 def validate_actor_operations(ledger: dict[str, Any]) -> None:
     operations = ledger.get("actor_operations", [])
     if not isinstance(operations, list):
@@ -1150,7 +1171,9 @@ def validate_actor_operations(ledger: dict[str, Any]) -> None:
     keys = set()
     count = 0
     for index, operation in enumerate(operations, 1):
-        _validate_exact_object(operation, ("operation_id", "state", "request", "assignment"), "actor operation")
+        _validate_exact_object({k: v for k, v in operation.items() if k != "transport"}, ("operation_id", "state", "request", "assignment"), "actor operation")
+        if "transport" in operation:
+            validate_actor_transport(operation)
         operation_id = f"operation-{index:03d}"
         if operation["operation_id"] != operation_id or operation["state"] not in {"reserved", "running", "unknown", "terminal"}:
             raise ValueError("Invalid actor operation identity/state")

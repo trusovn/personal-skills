@@ -2,44 +2,173 @@
   "schema_version": 1,
   "id": "task-orchestrator",
   "summary": "Current experimental controller primitives; not a complete accepted-task workflow.",
-  "owner_paths": ["skills/task-orchestrator"],
+  "owner_paths": [
+    "skills/task-orchestrator"
+  ],
   "provides": [
     {
       "name": "public-controller",
       "kind": "cli",
-      "summary": "init freezes validated policy/manifest and baseline; run-next launches one ready task; inspect records mechanical eligibility; revise-flow records an authorized safe-boundary flow revision.",
-      "declarations": ["skills/task-orchestrator/scripts/controller.py", "skills/task-orchestrator/tests/test_controller.py"]
+      "summary": "init freezes validated authority; status/reserve/revise-inputs expose single-task control; launch/observe/stop/intervene manage reserved actors. run-next remains a legacy refusal/reporting stub; inspect and revise-flow retain legacy behavior.",
+      "declarations": [
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/tests/test_controller.py"
+      ]
     },
     {
       "name": "validated-state-and-record-contracts",
       "kind": "python-api-and-schema",
-      "summary": "Pure state/record validation, closed flow profiles, cursor transitions, and assignment/outcome contracts. Data contracts do not establish a complete runnable workflow.",
-      "declarations": ["skills/task-orchestrator/scripts/controller_state.py", "skills/task-orchestrator/assets", "skills/task-orchestrator/tests/test_controller_state.py"]
+      "summary": "Pure state/record validation, closed flow profiles, cursor transitions, assignments and optional actor transport/outcome bindings. Data contracts do not establish a complete runnable workflow.",
+      "declarations": [
+        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/assets",
+        "skills/task-orchestrator/tests/test_controller_state.py"
+      ]
     },
     {
       "name": "codex-transport-test-seam",
       "kind": "internal-provider-boundary",
-      "summary": "codex_worker.py isolates process/thread/result handling; tests supply a fake executable. Internal resume does not provide safe public controller recovery.",
-      "declarations": ["skills/task-orchestrator/scripts/codex_worker.py", "skills/task-orchestrator/assets/worker-result.schema.json", "skills/task-orchestrator/tests/test_codex_worker.py"]
+      "summary": "codex_worker.py isolates process/thread/result handling with a fake-executable test seam. The authorized actor bridge starts fresh sessions and records terminal process/group observations; legacy start/resume remains separate from public controller recovery.",
+      "declarations": [
+        "skills/task-orchestrator/scripts/codex_worker.py",
+        "skills/task-orchestrator/assets/worker-result.schema.json",
+        "skills/task-orchestrator/tests/test_codex_worker.py",
+        "skills/task-orchestrator/assets/actor-result.schema.json",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
     },
     {
       "name": "verification-containment",
       "kind": "execution-boundary",
       "summary": "Plan and run authorized argv checks using macOS /usr/bin/sandbox-exec; unsupported configurations fail before launch, without unrestricted fallback.",
-      "declarations": ["skills/task-orchestrator/scripts/verification_runner.py", "skills/task-orchestrator/tests/test_verification_runner.py"]
+      "declarations": [
+        "skills/task-orchestrator/scripts/verification_runner.py",
+        "skills/task-orchestrator/tests/test_verification_runner.py"
+      ]
+    },
+    {
+      "name": "reserved-actor-lifecycle",
+      "kind": "python-api-and-cli",
+      "summary": "launch_operation binds a reserved assignment to frozen authority and durable no-relaunch intent; observe_operation collects terminal receipts idempotently. stop_operation requests adapter termination without signaling stored PIDs; record_intervention retains observed chat history without granting authority. IF-004 is stop/intervention only; completion is unimplemented.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "IF-002"
+        },
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "IF-004"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/codex_worker.py",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
+    },
+    {
+      "name": "terminal-preflight-readiness-admission",
+      "kind": "lifecycle-boundary",
+      "summary": "observe_operation owns the single outcome-admission path. Only complete current terminal preflight with structured prerequisite attestations admits readiness and the implement cursor. The controller validates attestations, not independent execution of every prerequisite. IF-003 is the preflight slice; implementation/collection/acceptance remain raw claims.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "IF-003"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/assets/actor-result.schema.json",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
     }
   ],
   "state_owned": [
     {
       "name": "external-controller-run-directory",
-      "summary": "Frozen inputs, ledger, attempts, process identity, structured results, and diagnostics remain outside worker-writable scope.",
-      "declarations": ["skills/task-orchestrator/scripts/controller.py", "skills/task-orchestrator/scripts/controller_state.py"]
+      "summary": "External controller run directory owns frozen authority, ledger, reservations, correction history, readiness and interventions; actors/operation-NNN holds launch/prompt, process/session diagnostics, raw result, terminal receipt and stop request. These are controller-owned records, without runtime tamper-resistance against authorized full-access actors.",
+      "declarations": [
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/controller_state.py"
+      ]
+    },
+    {
+      "name": "operation-readiness-status",
+      "summary": "Ledger operations retain optional configuration/PID/outcome transport records and one active operation; readiness binds current task/input/policy/flow/terminal preflight. Status exposes history, blocker and next actions; unknown liveness blocks another writer. ART-002 is implemented only for these current lifecycle surfaces.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "ART-002"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
+    },
+    {
+      "name": "intervention-history",
+      "summary": "Persist precise blockers, evidence and required action plus opened/relayed/response observations; replay is idempotent. ART-007 is intervention only: no external relay, completion or automatic recovery is implemented.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "ART-007"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
     }
   ],
   "invariants": [
-    {"statement": "Workers report claims and may edit authorized paths; they cannot grant permissions, commit authority, ledger ownership, or semantic acceptance."},
-    {"statement": "Missing output, process failure, timeout, or ambiguous liveness does not authorize completion or another writer."},
-    {"statement": "Safe public recovery, full semantic review/correction, finalization and automatic advancement remain unimplemented; planned interfaces are not current contracts."}
+    {
+      "statement": "Workers report claims and may edit authorized paths; they cannot grant permissions, commit authority, ledger ownership, or semantic acceptance."
+    },
+    {
+      "statement": "Missing output, process failure, timeout, or ambiguous liveness does not authorize completion or another writer."
+    },
+    {
+      "statement": "Automatic recovery, semantic candidate/check/collection/acceptance admission, completion and automatic advancement remain unimplemented. The authorized sbx/YOLO bridge assumes an owner-supplied environment; local fake-executable evidence does not qualify real sbx/provider/model behavior."
+    }
   ],
-  "module_docs": ["skills/task-orchestrator/references/architecture-map.md", "skills/task-orchestrator/references/operator-guide.md"]
+  "module_docs": [
+    "skills/task-orchestrator/references/architecture-map.md",
+    "skills/task-orchestrator/references/operator-guide.md"
+  ],
+  "artifacts": [
+    {
+      "name": "actor-assignment-and-observed-outcome",
+      "summary": "Exact assignment (including recursive JSON value types), observed session/configuration binding, raw result path and terminal adapter receipt are retained per operation; malformed results remain diagnostic. Actor-result envelope contains assignment, session_id, status, summary and readiness.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "ART-004"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/assets/actor-result.schema.json",
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/codex_worker.py",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
+    },
+    {
+      "name": "selected-runtime-contract-and-limitations",
+      "summary": "T-003 supplements historical T-001 runtime evidence with the authorized fresh-session Codex CLI bridge inside owner-supplied sbx, observed terminality rules and local fake-executable proof limits. Actual sbx/provider/model qualification remains unperformed; T-006 owns the live follow-up.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "ART-008"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/docs/tasks/T-001/harness-contract.md",
+        "skills/task-orchestrator/docs/tasks/T-003/controller-contract.md",
+        "skills/task-orchestrator/scripts/codex_worker.py",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
+    }
+  ]
 }

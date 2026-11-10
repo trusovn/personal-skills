@@ -111,6 +111,41 @@ def check_local_paths(root: Path, paths: list[str], where: str, errors: list[str
             errors.append(f"{where} path does not exist: {raw}")
 
 
+def qualified_plan_refs(root: Path, value: object, where: str, errors: list[str]) -> list[str]:
+    if not isinstance(value, list):
+        errors.append(f"{where} must be an array")
+        return []
+    refs = []
+    for item in value:
+        if isinstance(item, str):
+            stable_id = item
+            prefix = ""
+        elif isinstance(item, dict):
+            reject_unknown_keys(item, {"plan", "id"}, where, errors)
+            plan = expect_string(item.get("plan"), f"{where}.plan", errors, nonempty=True)
+            stable_id = item.get("id")
+            if not plan:
+                continue
+            if ("#" in plan or "\\" in plan or Path(plan).is_absolute()
+                    or ".." in Path(plan).parts or Path(plan).as_posix() != plan):
+                errors.append(f"{where}.plan must be a canonical relative repository path: {plan}")
+                continue
+            check_local_paths(root, [plan], f"{where}.plan", errors)
+            if (root / plan).exists() and not (root / plan).is_file():
+                errors.append(f"{where}.plan must name a file: {plan}")
+            prefix = plan + "#"
+        else:
+            errors.append(f"{where} entries must be stable IDs or plan/id objects")
+            continue
+        if not isinstance(stable_id, str) or not PLAN_REF_RE.fullmatch(stable_id):
+            errors.append(f"{where} has invalid stable ID: {stable_id}")
+            continue
+        refs.append(prefix + stable_id)
+    if len(refs) != len(set(refs)):
+        errors.append(f"{where} contains duplicate values")
+    return refs
+
+
 def validate_contract(root: Path, path: Path, data: object, errors: list[str]) -> dict | None:
     rel = path.relative_to(root)
     if not isinstance(data, dict):
@@ -162,11 +197,7 @@ def validate_contract(root: Path, path: Path, data: object, errors: list[str]) -
                 expect_string(entry.get("statement"), f"{loc}.statement", errors, nonempty=True)
             if "summary" in entry:
                 expect_string(entry["summary"], f"{loc}.summary", errors)
-            refs = expect_list_of_strings(entry.get("plan_refs", []), f"{loc}.plan_refs", errors)
-            for ref in refs:
-                if not PLAN_REF_RE.fullmatch(ref):
-                    errors.append(f"{loc}.plan_refs has invalid stable ID: {ref}")
-                plan_refs.add(ref)
+            plan_refs.update(qualified_plan_refs(root, entry.get("plan_refs", []), f"{loc}.plan_refs", errors))
             if section in SECTIONS_WITH_DECLARATIONS:
                 declarations = expect_list_of_strings(entry.get("declarations", []), f"{loc}.declarations", errors)
                 check_local_paths(root, declarations, f"{loc}.declarations", errors)

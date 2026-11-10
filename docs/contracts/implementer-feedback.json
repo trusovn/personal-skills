@@ -14,14 +14,14 @@
       "name": "proportionate-implementer-comparison",
       "kind": "skill-guidance",
       "summary": "Compare final changed/added/deleted Python paths against the original captured coverage. Attribute affected responsibilities from diff and context, assess extractions with helpers, and leave untouched siblings as context. Below-target growth needs no defense. Explain retained new/newly crossed breaches, worsening breaches and materially edited legacy hotspots still above target, naming report/function/metric, known before/after, cohesion and a plausible alternative's cost. Recover missing rationale without automatic threshold rejection or metric-driven splitting, hidden arguments, tuned settings or unrelated cleanup.",
-      "plan_refs": ["CAP-003"],
+      "plan_refs": [{"plan": "docs/project-plan.md", "id": "CAP-003"}],
       "declarations": ["skills/task-implementation-flow/bounded-task-implementer/SKILL.md"]
     },
     {
       "name": "implementer-submission-and-correction-handoff",
       "kind": "skill-guidance",
       "summary": "Implementer side of IF-003 only: existing initial/correction formats carry original/current report pairs, coverage/status/gaps, affected-function relationships, required rationale, transfer paths and current native evidence. Corrections preserve the original baseline and prior reports, use fresh comparisons and stale affected evidence/verdicts while retaining existing ledger identities and conditional stage order. Required native checks keep command, whole-project scope, policy and owner; aggregate reuse needs established constituent coverage and current bytes. Machine results use existing fields or authorized linked artifacts without schema extensions. Independent reviewer comparison/disposition is not implemented by this entry.",
-      "plan_refs": ["IF-003"],
+      "plan_refs": [{"plan": "docs/project-plan.md", "id": "IF-003"}],
       "declarations": ["skills/task-implementation-flow/bounded-task-implementer/SKILL.md", "skills/task-implementation-flow/bounded-task-implementer/references/correction-protocol.md", "skills/task-implementation-flow/bounded-task-implementer/references/high-assurance.md"]
     }
   ],
@@ -29,13 +29,13 @@
     {
       "name": "implementer-report-and-rationale-references",
       "summary": "Existing submission/correction artifacts reference exact original JSON/text and fresh current comparison pairs, governed/affected scope, status, gaps/recovery owner and retained-breach rationale. Direct capture supplies the same original-baseline contract. Scope expansion requires authorization and exact preserved pre-edit supplemental evidence or an explicit unrecoverable gap. Isolated consumers receive exact source/receiving paths for both siblings; ignored reports do not travel with commits.",
-      "plan_refs": ["ART-003", "ART-004"],
+      "plan_refs": [{"plan": "docs/project-plan.md", "id": "ART-003"}, {"plan": "docs/project-plan.md", "id": "ART-004"}],
       "declarations": ["skills/task-implementation-flow/bounded-task-implementer/SKILL.md", "skills/task-implementation-flow/bounded-task-implementer/references/correction-protocol.md", "skills/task-implementation-flow/bounded-task-implementer/references/high-assurance.md"]
     },
     {
       "name": "implementer-native-evidence-reference",
       "summary": "Native evidence beside metrics carries exact command, governed scope/policy, checked-byte identity, result and producer/stage; aggregate coverage/reuse or owed duties/owner remain explicit. Direct self-preflight discovers the same obligations as packaged entry from existing policy or documented commands, recording none when absent. Successful or N/A metrics cannot waive required native failures or missing/stale proof. Optional run-evidence availability remains separate; wrapping a real comparison does not require duplicate measurement or a new lifecycle.",
-      "plan_refs": ["ART-008"],
+      "plan_refs": [{"plan": "docs/project-plan.md", "id": "ART-008"}],
       "declarations": ["skills/task-implementation-flow/bounded-task-implementer/SKILL.md", "skills/task-implementation-flow/bounded-task-implementer/references/correction-protocol.md", "skills/task-implementation-flow/bounded-task-implementer/references/high-assurance.md"]
     },
     {
@@ -48,8 +48,8 @@
     {"statement": "Advisory metrics do not waive required native policy, scope or ownership. Aggregate evidence is reused only for established constituent coverage and current bytes; missing/stale required proof stays owed to its owner."},
     {"statement": "Keep one original actual pre-edit baseline through corrections and retain prior reports. Never overwrite either sibling or relabel edited code as starting evidence. Capture preserves source/index and never implicitly provisions tools."},
     {"statement": "Tool/settings/check/scope compatibility and exact report paths govern applicability. Missing counts and unmatched symbols remain unknown. Docs-only/unsupported scope is N/A; incomplete/stale/uncovered evidence cannot claim a clean comparison. Recover when feasible; advisory absence blocks only under explicit indispensable-evidence authority."},
-    {"statement": "Rationale follows actually affected responsibilities. Below-target growth and untouched debt require no metric-driven refactor; smaller numbers do not excuse worse ownership, names or navigation.", "plan_refs": ["INV-005"]},
-    {"statement": "Changed bytes stale affected evidence and verdicts; preserve existing conditional stage order and affected-scope re-entry. Measurement warnings add no review stage and implementation measurement is not independent review.", "plan_refs": ["INV-008"]}
+    {"statement": "Rationale follows actually affected responsibilities. Below-target growth and untouched debt require no metric-driven refactor; smaller numbers do not excuse worse ownership, names or navigation.", "plan_refs": [{"plan": "docs/project-plan.md", "id": "INV-005"}]},
+    {"statement": "Changed bytes stale affected evidence and verdicts; preserve existing conditional stage order and affected-scope re-entry. Measurement warnings add no review stage and implementation measurement is not independent review.", "plan_refs": [{"plan": "docs/project-plan.md", "id": "INV-008"}]}
   ],
   "depends_on": ["measurement", "installation", "runtime-evidence"],
   "module_docs": ["skills/task-implementation-flow/README.md", "skills/task-implementation-flow/bounded-task-implementer/evals/README.md", "scripts/measure-maintainability.md", "README.md"]

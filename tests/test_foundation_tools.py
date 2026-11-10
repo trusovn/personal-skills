@@ -64,6 +64,46 @@ class VerificationTests(unittest.TestCase):
 
 
 class ContractRegistryTests(unittest.TestCase):
+    def test_plan_scoped_identity(self):
+        for validator in (CHECK_CONTRACTS, ROOT / "skills/repo-foundation/scripts/check_contracts.py"):
+            with self.subTest(validator=validator), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                contracts = root / "docs/contracts"
+                contracts.mkdir(parents=True)
+                for plan in ("first.md", "second.md"):
+                    (root / plan).write_text("# Plan\n")
+                def save(sid, ref):
+                    (contracts / f"{sid}.json").write_text(json.dumps({
+                        "schema_version": 1, "id": sid, "owner_paths": ["first.md"],
+                        "provides": [{"name": "actor", "kind": "cli", "plan_refs": [ref]}],
+                    }))
+                def run():
+                    return subprocess.run([sys.executable, str(validator), "--root", str(root),
+                                           "--write-index"], capture_output=True, text=True)
+                save("first", {"plan": "first.md", "id": "IF-002"})
+                save("second", {"plan": "second.md", "id": "IF-002"})
+                save("legacy", "IF-002")
+                result = run()
+                self.assertEqual(0, result.returncode, result.stderr)
+                index = (contracts / "index.json").read_bytes()
+                self.assertEqual({"first.md#IF-002": ["first"], "second.md#IF-002": ["second"],
+                                  "IF-002": ["legacy"]}, json.loads(index)["plan_refs"])
+                self.assertEqual(0, run().returncode)
+                self.assertEqual(index, (contracts / "index.json").read_bytes())
+                for ref, message in (
+                    ({"plan": "first.md", "id": "IF-002"}, "mapped to multiple subsystems"),
+                    ({"plan": "missing.md", "id": "IF-002"}, "path does not exist"),
+                    ({"plan": "../escape.md", "id": "IF-002"}, "canonical"),
+                    ({"plan": "./first.md", "id": "IF-002"}, "canonical"),
+                    ({"plan": "first.md", "id": "bad"}, "invalid stable ID"),
+                    ({"id": "IF-002"}, "plan"),
+                ):
+                    save("second", ref)
+                    rejected = run()
+                    self.assertNotEqual(0, rejected.returncode)
+                    self.assertIn(message, rejected.stderr)
+                    self.assertEqual(index, (contracts / "index.json").read_bytes())
+
     def test_generated_index_and_broken_reference_failures(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

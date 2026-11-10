@@ -19,7 +19,7 @@
     {
       "name": "implemented-contract-registry",
       "kind": "cli-and-generated-index",
-      "summary": "Validate v1 subsystem records and local paths; --write-index regenerates the discovery router only when records validate.",
+      "summary": "Validate v1 subsystem records, local paths, and plan-qualified stable IDs (with legacy string support); --write-index regenerates the discovery router only when records validate.",
       "declarations": ["tools/check_contracts.py", "tests/test_foundation_tools.py"]
     }
   ],

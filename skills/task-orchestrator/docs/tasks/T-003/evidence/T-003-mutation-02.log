@@ -1,0 +1,37 @@
+test_v07_missing_each_prerequisite_reaches_specific_blocker (test_actor_operations.ActorOperationsTest.test_v07_missing_each_prerequisite_reaches_specific_blocker) ... 
+  test_v07_missing_each_prerequisite_reaches_specific_blocker (test_actor_operations.ActorOperationsTest.test_v07_missing_each_prerequisite_reaches_specific_blocker) (missing='tool') ... FAIL
+  test_v07_missing_each_prerequisite_reaches_specific_blocker (test_actor_operations.ActorOperationsTest.test_v07_missing_each_prerequisite_reaches_specific_blocker) (missing='dependency.py') ... FAIL
+  test_v07_missing_each_prerequisite_reaches_specific_blocker (test_actor_operations.ActorOperationsTest.test_v07_missing_each_prerequisite_reaches_specific_blocker) (missing='skill') ... FAIL
+
+======================================================================
+FAIL: test_v07_missing_each_prerequisite_reaches_specific_blocker (test_actor_operations.ActorOperationsTest.test_v07_missing_each_prerequisite_reaches_specific_blocker) (missing='tool')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_actor_operations.py", line 221, in test_v07_missing_each_prerequisite_reaches_specific_blocker
+    self.assertIsNotNone(outcome['blocker'])
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: unexpectedly None
+
+======================================================================
+FAIL: test_v07_missing_each_prerequisite_reaches_specific_blocker (test_actor_operations.ActorOperationsTest.test_v07_missing_each_prerequisite_reaches_specific_blocker) (missing='dependency.py')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_actor_operations.py", line 221, in test_v07_missing_each_prerequisite_reaches_specific_blocker
+    self.assertIsNotNone(outcome['blocker'])
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: unexpectedly None
+
+======================================================================
+FAIL: test_v07_missing_each_prerequisite_reaches_specific_blocker (test_actor_operations.ActorOperationsTest.test_v07_missing_each_prerequisite_reaches_specific_blocker) (missing='skill')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_actor_operations.py", line 221, in test_v07_missing_each_prerequisite_reaches_specific_blocker
+    self.assertIsNotNone(outcome['blocker'])
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: unexpectedly None
+
+----------------------------------------------------------------------
+Ran 1 test in 0.265s
+
+FAILED (failures=3)
+Controlled faulty readiness admission rejected by behavioral assertions; production bytes unchanged

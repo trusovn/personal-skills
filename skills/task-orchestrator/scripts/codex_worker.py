@@ -13,6 +13,7 @@ import signal
 import subprocess
 import sys
 import threading
+import time
 from typing import Any
 
 
@@ -146,8 +147,11 @@ def preflight_codex(
     *,
     sandbox: str,
     resume: bool = False,
+    execution_authorization: dict[str, Any] | None = None,
 ) -> None:
-    if sandbox == "danger-full-access":
+    if sandbox == "danger-full-access" and execution_authorization != {
+        "transport": "sbx", "yolo": True, "intervention": "active_chat",
+    }:
         raise ValueError(
             "danger-full-access requires persisted authorization not accepted by this adapter"
         )
@@ -250,7 +254,7 @@ def run_turn(
                 bufsize=1,
                 start_new_session=True,
             )
-            state.update(status="running", process_pid=process.pid)
+            state.update(status="running", process_pid=process.pid, observed_process_pid=process.pid)
             persist_state()
 
             assert process.stdout is not None
@@ -271,7 +275,7 @@ def run_turn(
             reader = threading.Thread(target=consume_stdout, daemon=True)
             reader.start()
             try:
-                exit_code = process.wait(timeout=timeout_seconds)
+                exit_code = _wait_turn(process, state, timeout_seconds)
             except subprocess.TimeoutExpired:
                 timed_out = True
                 terminate_process_group(process)
@@ -294,6 +298,8 @@ def run_turn(
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
         signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+    state["terminal_observed"] = process is not None and process.poll() is not None
+    state["group_absent"] = process is not None and _group_absent(process.pid)
     state["process_pid"] = None
     state["exit_code"] = process.returncode if process is not None else exit_code
     state["ended_at"] = datetime.now(timezone.utc).isoformat()
@@ -312,7 +318,7 @@ def run_turn(
         state["status"] = "resumable" if state.get("thread_id") else "stopped"
         wrapper_exit = exit_code
     else:
-        state["attempt_outcome"] = result_status(result_path) or "missing_result"
+        state["attempt_outcome"] = _turn_result_status(state, result_path) or "missing_result"
         if state["attempt_outcome"] == "complete":
             state["status"] = "awaiting_inspection"
             wrapper_exit = 0
@@ -344,6 +350,74 @@ def run_turn(
         )
     )
     return wrapper_exit
+
+
+def _group_absent(pid: int) -> bool:
+    try:
+        os.killpg(pid, 0)
+    except ProcessLookupError:
+        return True
+    except PermissionError:
+        pass
+    return False
+
+
+def _wait_turn(process: subprocess.Popen[str], state: dict[str, Any], timeout: float | None) -> int:
+    if not state.get("stop_request_path"):
+        return process.wait(timeout=timeout)
+    deadline = time.monotonic() + timeout if timeout is not None else None
+    while True:
+        if Path(state["stop_request_path"]).exists():
+            state["stop_requested"] = True
+            terminate_process_group(process)
+            return process.returncode
+        if deadline is not None and time.monotonic() >= deadline:
+            raise subprocess.TimeoutExpired(process.args, timeout)
+        try:
+            return process.wait(timeout=0.05)
+        except subprocess.TimeoutExpired:
+            continue
+
+
+def _turn_result_status(state: dict[str, Any], path: Path) -> str | None:
+    if not state.get("assignment"):
+        return result_status(path)
+    try:
+        status = read_json(path).get("status")
+        return status if status in RESULT_STATUSES else None
+    except (OSError, ValueError, TypeError):
+        return None
+
+
+def run_actor(args: argparse.Namespace) -> int:
+    """Internal fresh-session bridge; controller owns reservation and admission."""
+    config_path = Path(args.config).resolve()
+    config = read_json(config_path)
+    authorization = config["execution_authorization"]
+    cwd = Path(config["cwd"])
+    preflight_codex(config["codex_bin"], cwd, sandbox="danger-full-access",
+                    execution_authorization=authorization)
+    assignment = config["assignment"]
+    actor = assignment["actor"]
+    if actor not in ({"model": "gpt-6.1-sol", "reasoning": effort}
+                     for effort in ("low", "medium", "high")):
+        raise ValueError("Unsupported frozen actor")
+    directory = config_path.parent
+    result = directory / "result.json"
+    prompt = (directory / "prompt.txt").read_text()
+    command = [*safe_codex_prefix(config["codex_bin"]), "--json", "--sandbox", "danger-full-access",
+               "--model", actor["model"], "--config",
+               f'model_reasoning_effort="{actor["reasoning"]}"',
+               "--output-schema", str(Path(__file__).parents[1] / "assets" / "actor-result.schema.json"),
+               "-o", str(result), prompt]
+    state = {"version": 1, "turn": 1, "cwd": str(cwd), "thread_id": None,
+             "supervisor_pid": os.getpid(), "assignment": assignment,
+             "configuration_sha256": hashlib.sha256(config_path.read_bytes()).hexdigest(),
+             "configured_model": actor["model"], "observed_model": None,
+             "effective_command": command, "stop_request_path": str(directory / "stop.request.json")}
+    return run_turn(command=command, state_path=directory / "state.json", state=state,
+                    events_path=directory / "events.jsonl", stderr_path=directory / "stderr.log",
+                    result_path=result, timeout_seconds=config["timeout_seconds"])
 
 
 def start(args: argparse.Namespace) -> int:
@@ -516,6 +590,9 @@ def build_parser() -> argparse.ArgumentParser:
     resume_parser.add_argument("--codex-bin", default="codex", help=argparse.SUPPRESS)
     resume_parser.add_argument("--timeout-seconds", type=float)
     resume_parser.set_defaults(handler=resume)
+    actor_parser = subparsers.add_parser("actor", help=argparse.SUPPRESS)
+    actor_parser.add_argument("--config", required=True)
+    actor_parser.set_defaults(handler=run_actor)
     return parser
 
 

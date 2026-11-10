@@ -2381,7 +2381,8 @@ class ControllerReservationTest(unittest.TestCase):
             self.assertEqual("operation_key_conflict", self.reserve(run_dir, key="first", reason="retry")["reason"])
             status = load_controller().status_run(run_dir)
             self.assertEqual(state, status["operation"]["state"])
-            self.assertEqual(["observe_operation", "intervene"], status["next_actions"])
+            expected_actions = ["launch_operation", "stop_operation", "intervene"] if state == "reserved" else ["observe_operation", "stop_operation", "intervene"]
+            self.assertEqual(expected_actions, status["next_actions"])
             self.assertEqual("refused", controller.inspect_run(run_dir, 10)["status"])
             with self.assertRaisesRegex(ValueError, "Active actor"):
                 controller.update_ledger(run_dir, {}, expected_revision=ledger["revision"])

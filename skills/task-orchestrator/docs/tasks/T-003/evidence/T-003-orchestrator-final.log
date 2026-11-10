@@ -1,0 +1,227 @@
+..............................................................................E..EE.....F..E...EE...........................................................................................sssssssssssss.............sFFEFF.F
+======================================================================
+ERROR: test_authorized_gap_cannot_excuse_a_targeted_failure (test_controller.ControllerInspectionIntegrationTest.test_authorized_gap_cannot_excuse_a_targeted_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_controller.py", line 3653, in test_authorized_gap_cannot_excuse_a_targeted_failure
+    result = controller.inspect_run(run_dir, 10)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+ERROR: test_failed_verification_offers_resume_only_when_policy_escalates (test_controller.ControllerInspectionIntegrationTest.test_failed_verification_offers_resume_only_when_policy_escalates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_controller.py", line 3739, in test_failed_verification_offers_resume_only_when_policy_escalates
+    result = controller.inspect_run(run_dir, 10)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+ERROR: test_inspect_keeps_pending_semantic_review_non_accepting (test_controller.ControllerInspectionIntegrationTest.test_inspect_keeps_pending_semantic_review_non_accepting)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_controller.py", line 3078, in test_inspect_keeps_pending_semantic_review_non_accepting
+    result = controller.inspect_run(run_dir, 10)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+ERROR: test_repository_gate_authorized_gap_preserves_pending_review (test_controller.ControllerInspectionIntegrationTest.test_repository_gate_authorized_gap_preserves_pending_review)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_controller.py", line 3627, in test_repository_gate_authorized_gap_preserves_pending_review
+    result = controller.inspect_run(run_dir, 10)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+ERROR: test_verifier_created_content_drift_is_recorded_and_denies_accept (test_controller.ControllerInspectionIntegrationTest.test_verifier_created_content_drift_is_recorded_and_denies_accept)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_controller.py", line 3680, in test_verifier_created_content_drift_is_recorded_and_denies_accept
+    result = controller.inspect_run(run_dir, 10)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+ERROR: test_verifier_created_drift_replay_reuses_published_records (test_controller.ControllerInspectionIntegrationTest.test_verifier_created_drift_replay_reuses_published_records)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_controller.py", line 3710, in test_verifier_created_drift_replay_reuses_published_records
+    first = controller.inspect_run(run_dir, 10)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+ERROR: test_production_builds_the_adopted_sandbox_invocation (test_verification_runner.VerificationSandboxFailClosedTests.test_production_builds_the_adopted_sandbox_invocation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_verification_runner.py", line 470, in test_production_builds_the_adopted_sandbox_invocation
+    invocation = runner.build_sandbox_invocation(
+        ["/usr/bin/true"], permissions
+    )
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+FAIL: test_inspect_reuses_execution_after_crash_with_review_pending (test_controller.ControllerInspectionIntegrationTest.test_inspect_reuses_execution_after_crash_with_review_pending)
+----------------------------------------------------------------------
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_controller.py", line 3272, in test_inspect_reuses_execution_after_crash_with_review_pending
+    with self.assertRaisesRegex(RuntimeError, "injected crash"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "injected crash" does not match "sandbox-exec verification is supported only on macOS"
+
+======================================================================
+FAIL: test_incomplete_permission_envelope_is_rejected (test_verification_runner.VerificationSandboxFailClosedTests.test_incomplete_permission_envelope_is_rejected)
+----------------------------------------------------------------------
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_verification_runner.py", line 511, in test_incomplete_permission_envelope_is_rejected
+    with self.assertRaisesRegex(RuntimeError, "complete version 1"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "complete version 1" does not match "sandbox-exec verification is supported only on macOS"
+
+======================================================================
+FAIL: test_missing_writable_root_enforcement_is_rejected (test_verification_runner.VerificationSandboxFailClosedTests.test_missing_writable_root_enforcement_is_rejected)
+----------------------------------------------------------------------
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_verification_runner.py", line 498, in test_missing_writable_root_enforcement_is_rejected
+    with self.assertRaisesRegex(RuntimeError, "existing absolute directory"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "existing absolute directory" does not match "sandbox-exec verification is supported only on macOS"
+
+======================================================================
+FAIL: test_substituted_unrestricted_runner_is_rejected (test_verification_runner.VerificationSandboxFailClosedTests.test_substituted_unrestricted_runner_is_rejected)
+----------------------------------------------------------------------
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_verification_runner.py", line 488, in test_substituted_unrestricted_runner_is_rejected
+    with self.assertRaisesRegex(RuntimeError, "exact /usr/bin/sandbox-exec"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "exact /usr/bin/sandbox-exec" does not match "sandbox-exec verification is supported only on macOS"
+
+======================================================================
+FAIL: test_unauthorized_danger_full_access_is_rejected_before_launch (test_verification_runner.VerificationSandboxFailClosedTests.test_unauthorized_danger_full_access_is_rejected_before_launch)
+----------------------------------------------------------------------
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_verification_runner.py", line 504, in test_unauthorized_danger_full_access_is_rejected_before_launch
+    with self.assertRaisesRegex(RuntimeError, "lacks separate authorization"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "lacks separate authorization" does not match "sandbox-exec verification is supported only on macOS"
+
+======================================================================
+FAIL: test_unsupported_mode_is_rejected (test_verification_runner.VerificationSandboxFailClosedTests.test_unsupported_mode_is_rejected)
+----------------------------------------------------------------------
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/mtrusov/work/skill-sources/personal-skills/skills/task-orchestrator/tests/test_verification_runner.py", line 483, in test_unsupported_mode_is_rejected
+    with self.assertRaisesRegex(RuntimeError, "unsupported sandbox mode"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "unsupported sandbox mode" does not match "sandbox-exec verification is supported only on macOS"
+
+----------------------------------------------------------------------
+Ran 222 tests in 20.749s
+
+FAILED (failures=6, errors=7, skipped=14)

@@ -1,105 +1,109 @@
 # Task Orchestrator Operator Guide
 
 Status: operator reference
+Freshness: 2026-11-09
 
-Freshness: 2026-10-22
+Use the controller from inside an existing owner-approved Docker sbx on a
+separate branch. This is an operating assumption, not a containment guarantee.
+Start with the [run policy](../assets/examples/minimal-run-policy.json),
+[manifest](../assets/examples/minimal-task-manifest.json) and their schemas.
+Confirm one task, human-reviewed brief and verification, allowed paths, required
+checks and explicit `execution_authorization` (sbx, YOLO, active-chat intervention).
+Use commit mode `off`; actors never commit. No command provisions sbx.
 
-This guide covers only the public controller behavior implemented today.
+## Initialize and reserve
 
-## Prepare confirmed inputs
+Place the run directory outside the repository. Replace every placeholder:
 
-Start from:
-
-- [minimal-run-policy.json](../assets/examples/minimal-run-policy.json);
-- [minimal-task-manifest.json](../assets/examples/minimal-task-manifest.json);
-- [run-policy.schema.json](../assets/run-policy.schema.json); and
-- [task-manifest.schema.json](../assets/task-manifest.schema.json).
-
-Replace the example repository with its absolute Git top-level and use the same
-absolute path in `permissions.writable_roots`. Ensure every brief exists and
-every `allowed_paths` entry is repository-relative. Confirm the policy and
-manifest with the operator before initialization.
-
-The supported commit modes are `off` and `controller_exact_paths`. Workers do
-not commit. Because the current public commands do not complete controller-owned
-finalization, use `off` for the present controller-only flow.
-
-## Initialize
-
-Place the run directory outside the repository, then run:
-
-```bash
-python3 <skill-dir>/scripts/controller.py init \
-  --run-dir <external-run-dir> \
-  --policy <run-policy.json> \
-  --manifest <task-manifest.json> \
-  --repository <repository>
+```sh
+python3 <skill-dir>/scripts/controller.py init --run-dir <run> --policy <policy.json> --manifest <manifest.json> --repository <repo>
+python3 <skill-dir>/scripts/controller.py status --run-dir <run>
+python3 <skill-dir>/scripts/controller.py reserve --run-dir <run> --expected-version <current-version> --task-id <task> --stage preflight --role preflight --operation-key <unique-key>
 ```
 
-Initialization validates the inputs, requires the repository to be a Git
-top-level with a `HEAD`, records the initial Git state, and publishes immutable
-run inputs plus the controller ledger.
+Save the returned `assignment` object, without the surrounding response, as
+`assignment.json`. Inputs are frozen; mutable source documents do not replace
+them. A permitted `revise-inputs --request <owner-request.json>` requires an
+explicit owner decision bound to the entire revision and invalidates readiness.
+See the [current predecessor revision contract](../docs/tasks/T-002/controller-contract.md).
 
-## Launch one task
+## Launch and observe
 
-Confirm that the repository still matches the controller baseline:
-
-```bash
-python3 <skill-dir>/scripts/controller.py run-next \
-  --run-dir <external-run-dir> \
-  --timeout-seconds <seconds>
+```sh
+python3 <skill-dir>/scripts/controller.py launch --run-dir <run> --request <assignment.json> --timeout-seconds 300
+python3 <skill-dir>/scripts/controller.py observe --run-dir <run> --operation-id <operation-NNN>
 ```
 
-The controller selects one dependency-ready task and invokes the internal Codex
-transport. Do not call `scripts/codex_worker.py` directly.
+Launch returns after starting a detached supervisor. `observe` admits a complete
+terminal preflight bound to current inputs and the observed session. Preflight
+checks the tools, dependencies and installed skills required by the frozen task;
+source presence is not skill installation. Results attest completeness with
+explicit inventories and evidence. Admission validates that structured claim;
+it does not independently infer every prerequisite from prose or authenticate
+an actor's statements. Missing reported prerequisites block implementation.
 
-## Inspect one completed attempt
+After readiness, reserve `--stage implement --role implementer` at the current
+version, save its assignment, launch and observe it. The first implementation
+is cycle zero. An implementation outcome remains a claim. T-004/005 own the
+candidate/check/collection/acceptance admission pipeline; these commands do not
+complete a task. Review transport is available only after those prerequisites
+are admitted; hand-editing successor state is not an operator workflow.
 
-After `run-next` leaves the task in `awaiting_inspection`, run:
+Every actor uses a fresh session and frozen `gpt-6.1-sol` low/medium/high mapping.
+The authorized bridge passes approval-never and danger-full-access inside sbx.
+Configured model identity is not observed provider identity. Assignments prohibit
+reviewer implementation edits; runtime read-only enforcement is not claimed.
 
-```bash
-python3 <skill-dir>/scripts/controller.py inspect \
-  --run-dir <external-run-dir> \
-  --timeout-seconds <seconds>
-```
-
-Inspection validates controller-owned records, repository identity, allowed
-scope, structured worker results, and configured verification. A positive
-decision is mechanical eligibility, not semantic acceptance. The current CLI
-does not yet atomically accept the task, release dependencies, or advance.
-
-## Revise a flow at a safe boundary
-
-```bash
-python3 <skill-dir>/scripts/controller.py revise-flow \
-  --run-dir <external-run-dir> \
-  --flow <flow-profile.json>
-```
-
-The controller validates the closed profile and safe task boundary, then records
-a flow revision. This command does not provide a complete reviewed runner.
+Repeated launch with the exact assignment/configuration returns the original
+operation. Changed replay configuration or stale authority refuses. `observe`
+retains raw output and terminal observations once; repeated collection cannot
+charge another correction or replace the recorded outcome.
 
 ## Interruption and recovery
 
-The current public controller has no safe-stop or resume command. On an
-interrupted, timed-out, or ambiguous attempt:
+```sh
+python3 <skill-dir>/scripts/controller.py stop --run-dir <run> --operation-id <operation-NNN>
+python3 <skill-dir>/scripts/controller.py observe --run-dir <run> --operation-id <operation-NNN>
+python3 <skill-dir>/scripts/controller.py status --run-dir <run>
+```
 
-1. Do not launch another worker.
-2. Inspect the ledger, attempt record, stored process identity, current Git
-   state, and structured result if present.
-3. Determine whether the recorded process is live, absent, or ambiguous.
-4. Stop and report the evidence.
-5. Route implementation of safe reconciliation or same-thread continuation to
-   the recovery work in the proposed local harness plan; check its readiness in
-   the [current development documents](../docs/README.md).
+A stop request is a file the supervisor observes, not terminality proof. Only
+an adapter receipt recording a reaped actor and absent process group allows
+terminal admission. A dead/unpublished supervisor without that receipt leaves
+unknown ownership and prohibits retry or another writer. Preserve work and
+all records; an owner must resolve liveness. There is no automatic recovery,
+PID-based kill shortcut, same-thread continuation or power-loss guarantee.
+A reserved operation stopped before launch is known unlaunched and terminal.
 
-Do not use direct `codex_worker.py resume` to bypass missing controller
-reconciliation. That older route cannot provide the controller-owned process
-and state guarantees required by the current design.
+## Active-chat intervention
 
-## Current stop report
+Blocked/unknown outcomes retain blocker, evidence location, unresolved operation
+and required coordinator action in the ledger. Status exposes the records and
+relay action. Relay the precise blocker in the active coordinator chat; no
+external message tool is required. Record observed relay/response through:
 
-Report the run/task/attempt identifiers, ledger state, process evidence, Git
-state, structured result and verification paths, semantic-review status, and
-the next available controller command. If the required command does not exist,
-name the missing capability instead of inventing an operational workaround.
+```sh
+python3 <skill-dir>/scripts/controller.py intervene --run-dir <run> --request <intervention.json>
+```
+
+The request has string fields `key`, `blocker`, `evidence`, `operation_id`,
+`required_action`, `event`, `text`. `event` is `opened`, `relayed` or `response`;
+empty `operation_id` represents a blocker without a reserved operation. Preserve
+the same subject fields when appending an event to a key. Absent relay/response
+means unknown, not delivered or approved. Acknowledgement and silence grant no
+repair, revision, retry or completion authority. Environment repair uses the
+existing shared three-correction budget and requires a fresh preflight afterward.
+
+## Historical boundary and current stop report
+
+`scripts/controller.py run-next` remains a refusal/reporting stub for the former
+pipeline. `inspect` and `revise-flow` preserve older mechanical primitives; they
+do not collect or admit new actor outcomes. Do not call `codex_worker.py` directly
+or use its legacy resume command to bypass controller ownership.
+
+Report run/task/operation, stage/version, blocker, correction count, exact retained
+paths, current readiness and next permitted action. The
+[T-003 successor contract](../docs/tasks/T-003/controller-contract.md) documents
+payloads, raw handoffs and the ART-008 runtime supplement. Local fake actors prove
+control flow only. Real sbx/provider launch qualification remains unrun until
+separate approval; historical T-001 isolation limits remain historical limits.

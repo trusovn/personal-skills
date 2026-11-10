@@ -26,6 +26,7 @@
       }
     },
     "plan_refs": {
+      "description": "Keys are legacy IDs or canonical repository-relative plan paths followed by # and the stable ID.",
       "type": "object",
       "additionalProperties": {
         "type": "array",

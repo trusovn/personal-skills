@@ -102,16 +102,28 @@ When a contract materializes an ID already assigned by project planning, preserv
 {
   "name": "AnalysisResultReader",
   "kind": "service",
-  "plan_refs": ["IF-004"],
+  "plan_refs": [{"plan": "docs/project-plan.md", "id": "IF-004"}],
   "declarations": ["src/analysis/AnalysisResultReader.ts"]
 }
 ```
+
+Qualified references pair the unchanged stable ID with its owning plan's canonical
+repository-relative file path. The validator requires that file to exist, rejects
+absolute paths, traversal, aliases such as `./`, backslashes and `#` in plan paths,
+and indexes each pair as `<plan>#<id>`. Different plans may reuse an ID. The same
+pair may occur in several entries of one subsystem, but not in different subsystems.
+A plan move requires updating its qualified references.
+
+Legacy string references remain supported in the global unqualified namespace.
+For independently numbered plans, use qualified references; migrate existing
+strings only after confirming their owning authority. Unqualified and qualified
+references are distinct identities, with no automatic fallback between them.
 
 This creates a cheap join:
 
 ```text
 task-map consumes IF-004
-  -> index.json plan_refs[IF-004]
+  -> index.json plan_refs[docs/project-plan.md#IF-004]
   -> analysis.json
   -> declaration / module README
 ```

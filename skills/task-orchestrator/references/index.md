@@ -2,7 +2,7 @@
 
 Status: operator reference
 
-Freshness: 2026-10-22
+Freshness: 2026-11-09
 
 Use the operator guide for existing behavior, the architecture map for code and
 constraints, and the development index for intended changes.
@@ -17,8 +17,8 @@ constraints, and the development index for intended changes.
 | Construct current inputs | [minimal run policy](../assets/examples/minimal-run-policy.json), [minimal manifest](../assets/examples/minimal-task-manifest.json), then the schemas | hand-authored fields not in schemas |
 
 Current public entry point:
-`python3 scripts/controller.py {init,run-next,inspect,revise-flow}`.
+`python3 scripts/controller.py {init,status,reserve,launch,observe,stop,intervene,revise-inputs}`.
 
-Current limitation: the controller does not yet expose safe recovery, semantic
+Current limitation: the controller does not yet expose automatic recovery, semantic
 review/correction, atomic acceptance/release, automatic advance, or
 plan-to-manifest preparation.

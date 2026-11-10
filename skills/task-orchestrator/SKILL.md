@@ -10,8 +10,9 @@ Use the deterministic controller as the public operating surface. Treat
 `scripts/codex_worker.py` as an internal transport adapter; do not invoke it
 directly to operate or recover a controller-owned run.
 
-Freshness: 2026-10-22. The current public commands are `init`, `run-next`,
-`inspect`, and `revise-flow`.
+Freshness: 2026-11-09. Current actor commands are `init`, `status`, `reserve`,
+`launch`, `observe`, `stop`, `intervene`, and `revise-inputs`. Legacy `inspect`
+and `revise-flow` retain mechanical primitives; `run-next` reports pending work.
 
 ## Read the smallest current reference
 
@@ -22,7 +23,7 @@ Freshness: 2026-10-22. The current public commands are `init`, `run-next`,
   implementation behavior or selecting tests.
 - Read the [current development documents](docs/README.md) when planning
   unfinished work. The confirmed local harness direction governs the proposed
-  plan; that plan still needs fresh independent verification.
+  plan and its accepted review; implemented interfaces remain distinct from plans.
 
 ## Respect authority
 
@@ -76,21 +77,21 @@ python3 <skill-dir>/scripts/controller.py init \
   --repository <repository>
 ```
 
-Select and launch exactly one dependency-ready task:
+Reserve the permitted preflight using the version returned by status. Save the
+returned assignment object to a file, then launch and observe it:
 
 ```bash
-python3 <skill-dir>/scripts/controller.py run-next \
-  --run-dir <external-run-dir> \
-  --timeout-seconds <seconds>
+python3 <skill-dir>/scripts/controller.py status --run-dir <external-run-dir>
+python3 <skill-dir>/scripts/controller.py reserve --run-dir <external-run-dir> --expected-version <version> --task-id <task> --stage preflight --role preflight --operation-key <key>
+python3 <skill-dir>/scripts/controller.py launch --run-dir <external-run-dir> --request <assignment.json> --timeout-seconds 300
+python3 <skill-dir>/scripts/controller.py observe --run-dir <external-run-dir> --operation-id <operation-NNN>
 ```
 
-Inspect a completed worker attempt and run controller-owned verification:
-
-```bash
-python3 <skill-dir>/scripts/controller.py inspect \
-  --run-dir <external-run-dir> \
-  --timeout-seconds <seconds>
-```
+A complete, observed current preflight permits the first implementation
+reservation. Implementation and review outputs remain claims. Follow the
+operator guide for stop, revision and active-chat intervention. The legacy
+`scripts/controller.py run-next` command does not launch this flow;
+`scripts/controller.py inspect` does not admit these actor outcomes.
 
 Before every mutating command, inspect the repository and run records for
 pre-existing or unexpected changes. Keep the run sequential in one working
@@ -109,7 +110,7 @@ advance occurred.
 
 Current public commands do not yet provide:
 
-- safe stop and same-thread recovery;
+- automatic recovery or same-thread continuation;
 - semantic review and correction loops;
 - atomic acceptance, dependency release, and advance;
 - plan-to-manifest preparation; or

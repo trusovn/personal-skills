@@ -1,0 +1,7 @@
+env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_architecture.py
+Exit: 0
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.126s
+
+OK

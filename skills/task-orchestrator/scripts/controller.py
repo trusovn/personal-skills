@@ -1585,7 +1585,8 @@ def _evidence_view(ledger: dict[str, Any], stage: str) -> dict[str, Any]:
 def _reservation_options(ledger: dict[str, Any]) -> tuple[list[str], str | None]:
     active = _active_actor(ledger)
     if active:
-        return ["observe_operation", "intervene"], f"operation_{active['state']}"
+        actions = ["launch_operation", "stop_operation", "intervene"] if active["state"] == "reserved" else ["observe_operation", "stop_operation", "intervene"]
+        return actions, f"operation_{active['state']}"
     if ledger["state"] not in {"ready", "resumable"}:
         return ["intervene"], "successor_admission_pending"
     correction = ledger.get("correction_request")
@@ -1645,7 +1646,9 @@ def status_run(run_dir: Path) -> dict[str, Any]:
         "operation": _active_actor(ledger), "operation_history": ledger.get("actor_operations", []),
         "readiness_current": _current_readiness(ledger),
         "input_revision_history": ledger.get("input_revisions", []),
-        "next_actions": actions, "blocker": blocker,
+        "next_actions": actions, "blocker": blocker or ledger.get("actor_blocker"),
+        "interventions": ledger.get("interventions", []),
+        "chat_relay_action": "relay precise blocker in active chat; delivery/response unknown unless recorded" if blocker not in {None, "operation_reserved", "operation_running"} or ledger.get("actor_blocker") else None,
     }
 
 
@@ -1717,11 +1720,321 @@ def reserve_operation(
                 updated["correction_request"] = None
             if stage == "preflight" or assignment["can_repair"]:
                 updated["readiness"] = None
+                updated["actor_blocker"] = None
             _validate_ledger(updated)
             atomic_write_json(run_dir / "ledger.json", updated)
             return {"status": "reserved", "assignment": assignment, "state_version": updated["revision"]}
     except (ValueError, OSError, KeyError, TypeError) as error:
         return {**refuse("authority_or_lock_unavailable"), "detail": str(error)}
+
+
+def _actor_operation(ledger: dict[str, Any], operation_id: str) -> dict[str, Any]:
+    operation = next((item for item in ledger.get("actor_operations", [])
+                      if item["operation_id"] == operation_id), None)
+    if operation is None:
+        raise ValueError("Unknown reserved operation")
+    return operation
+
+
+def _save_actor_ledger(run_dir: Path, ledger: dict[str, Any]) -> None:
+    ledger.update(revision=ledger["revision"] + 1, updated_at=_now_iso())
+    _validate_ledger(ledger)
+    atomic_write_json(run_dir / "ledger.json", ledger)
+
+
+def _publish_actor_bytes(path: Path, content: bytes) -> None:
+    if path.exists():
+        if path.read_bytes() != content:
+            raise ValueError(f"Conflicting prepared actor record: {path.name}")
+        return
+    _write_durable_exclusive(path, content)
+
+
+def _actor_directory(run_dir: Path, operation: dict[str, Any]) -> Path:
+    return run_dir / "actors" / operation["operation_id"]
+
+
+def _actor_prompt(assignment: dict[str, Any], inputs: dict[str, Any], policy: dict[str, Any]) -> str:
+    return ("Execute only this frozen assignment. Actor output is a claim, never authority. "
+            "Respect frozen run_policy permissions and task scope. Do not commit, change policy, select another task, or edit controller records. "
+            "Review roles must not edit implementation. Always use a fresh session.\n"
+            "For preflight, check every task-required tool, dependency and installed skill in "
+            "this execution environment. Report tools/dependencies/skills arrays of "
+            "{name, status: passed|blocked, evidence}; use empty arrays only when no such "
+            "prerequisite is required. Report requirements_complete only after checking all "
+            "frozen task requirements. Missing prerequisites mean blocked, never ready.\n"
+            "Return the assigned result schema, echo the exact assignment and observed "
+            "thread.started session_id if known, otherwise null; never invent it. implementation/review results remain raw claims.\n"
+            + json.dumps({"assignment": assignment, "frozen_inputs": inputs, "run_policy": policy}, sort_keys=True))
+
+
+def _same_typed_assignment(value: Any, expected: Any) -> bool:
+    """Compare to validated ledger authority without Python bool/number coercion."""
+    if type(value) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return (value.keys() == expected.keys()
+                and all(_same_typed_assignment(value[key], item)
+                        for key, item in expected.items()))
+    return value == expected
+
+
+def launch_operation(run_dir: Path, assignment: dict[str, Any], *,
+                     codex_bin: str = "codex", timeout_seconds: float = 300) -> dict[str, Any]:
+    """Start one detached transport supervisor, after durable no-relaunch intent."""
+    try:
+        if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+            raise ValueError("Positive finite timeout required")
+        with RunCommandLock(run_dir):
+            ledger, _ = _reservation_context(run_dir)
+            policy, _, inputs = load_input_authority(run_dir, ledger)
+            operation = _actor_operation(ledger, assignment["operation_id"])
+            if not _same_typed_assignment(assignment, operation["assignment"]):
+                raise ValueError("Launch assignment mismatch")
+            if any(assignment[field] != ledger[field] for field in ("inputs_sha256", "policy_sha256", "flow_sha256")):
+                raise ValueError("Stale launch assignment; use current frozen authority")
+            if assignment["actor"] is None:
+                raise ValueError("Verifier uses the successor check pipeline")
+            directory = _actor_directory(run_dir, operation)
+            config = {"assignment": assignment, "execution_authorization": policy["execution_authorization"],
+                      "cwd": policy["repository"], "codex_bin": str(codex_bin),
+                      "timeout_seconds": timeout_seconds}
+            if operation.get("transport"):
+                if _worker_module.read_json(directory / "launch.json") != config:
+                    raise ValueError("Launch replay configuration conflict")
+                return {"status": "replayed", "operation": operation}
+            if operation["state"] != "reserved" or _active_actor(ledger) is not operation:
+                raise ValueError("Only the active reserved operation can launch")
+            directory.mkdir(parents=True, exist_ok=True)
+            content = _canonical_record_bytes(config)
+            _publish_actor_bytes(directory / "launch.json", content)
+            prompt = _actor_prompt(assignment, inputs, policy).encode()
+            _publish_actor_bytes(directory / "prompt.txt", prompt)
+            operation["transport"] = {"configuration_sha256": _sha256_bytes(content),
+                                      "supervisor_pid": None, "outcome": None}
+            # From this point uncertainty is durable. Never relaunch, even if
+            # the coordinator dies before Popen or identity publication.
+            operation["state"] = "unknown"
+            _save_actor_ledger(run_dir, ledger)
+            with (directory / "supervisor.stdout.log").open("x") as output, (directory / "supervisor.stderr.log").open("x") as errors:
+                supervisor = subprocess.Popen(
+                    [sys.executable, str(Path(_worker_module.__file__).resolve()), "actor", "--config", str((directory / "launch.json").resolve())],
+                    stdin=subprocess.DEVNULL, stdout=output, stderr=errors, start_new_session=True,
+                )
+            operation["transport"]["supervisor_pid"] = supervisor.pid
+            operation["state"] = "running"
+            _save_actor_ledger(run_dir, ledger)
+            # Keep the handle until a later observation can reap it in this
+            # coordinator; other coordinators rely solely on durable receipts.
+            _ACTOR_SUPERVISORS[str(directory.resolve())] = supervisor
+            return {"status": "launched", "operation": operation}
+    except (ValueError, OSError, KeyError, TypeError) as error:
+        return {"status": "refused", "reason": "launch_refused", "detail": str(error),
+                "next_actions": ["status", "observe_operation", "intervene"]}
+
+
+_ACTOR_SUPERVISORS: dict[str, subprocess.Popen] = {}
+
+
+def _validate_observed_result(assignment: dict[str, Any], observed: dict[str, Any], result: dict[str, Any]) -> None:
+    if set(result) != {"assignment", "session_id", "status", "summary", "readiness"}:
+        raise ValueError("Malformed actor result")
+    if not _same_typed_assignment(result["assignment"], assignment):
+        raise ValueError("Result assignment mismatch")
+    if not observed.get("thread_id") or result["session_id"] not in (None, observed["thread_id"]):
+        raise ValueError("Result session mismatch or missing observed session")
+    if result["status"] not in {"complete", "blocked", "failed", "needs_input"} or not isinstance(result["summary"], str):
+        raise ValueError("Invalid result status/summary")
+
+
+def _validate_readiness(readiness: dict[str, Any]) -> None:
+    if not isinstance(readiness, dict) or set(readiness) != {"status", "requirements_complete", "tools", "dependencies", "skills"}:
+        raise ValueError("Incomplete readiness payload")
+    if readiness["status"] != "ready" or readiness["requirements_complete"] is not True:
+        raise ValueError("Preflight is not complete and ready")
+    for category in ("tools", "dependencies", "skills"):
+        items = readiness[category]
+        if not isinstance(items, list):
+            raise ValueError(f"Missing prerequisite inventory: {category}")
+        for item in items:
+            if not isinstance(item, dict) or set(item) != {"name", "status", "evidence"}:
+                raise ValueError(f"Malformed prerequisite: {category}")
+            if not isinstance(item["name"], str) or not item["name"] or not isinstance(item["evidence"], str) or not item["evidence"]:
+                raise ValueError(f"Missing prerequisite evidence: {category}")
+            if item["status"] != "passed":
+                raise ValueError(f"Missing {category} prerequisite: {item['name']}; {item['evidence']}")
+
+
+def _admit_actor_outcome(ledger: dict[str, Any], operation: dict[str, Any], observed: dict[str, Any], result: dict[str, Any]) -> str | None:
+    """Single admission extension point. T-004/005 own future semantics."""
+    assignment = operation["assignment"]
+    try:
+        if observed.get("exit_code") != 0 or observed.get("stop_requested") or observed.get("attempt_outcome") in {"timed_out", "interrupted"}:
+            raise ValueError("Actor failed, stopped or interrupted")
+        _validate_observed_result(assignment, observed, result)
+        if assignment["stage"] != "preflight":
+            return None  # Raw implementation/collection/acceptance, no semantics.
+        if result["status"] != "complete":
+            raise ValueError(f"Preflight {result['status']}: {result['summary']}")
+        if any(assignment[field] != ledger[field] for field in ("inputs_sha256", "policy_sha256", "flow_sha256")):
+            raise ValueError("Stale preflight authority")
+        _validate_readiness(result["readiness"])
+        ledger["readiness"] = {field: assignment[field] for field in
+                               ("task_id", "operation_id", "inputs_sha256", "policy_sha256", "flow_sha256")}
+        ledger["readiness"]["status"] = "ready"
+        ledger["current_step"] = "implement"
+        ledger.setdefault("evidence", {})["preflight"] = {
+            "status": "passed", "inputs_sha256": assignment["inputs_sha256"],
+            "operation_id": assignment["operation_id"],
+        }
+        return None
+    except (ValueError, KeyError, TypeError) as error:
+        return str(error)
+
+
+def _read_actor_observation(directory: Path, operation: dict[str, Any]) -> tuple[dict[str, Any], bool]:
+    """Only the adapter's exclusive terminal receipt proves a reaped child."""
+    terminal = directory / "result.state.json"
+    path = terminal if terminal.exists() else directory / "state.json"
+    if not path.exists():
+        return {}, False
+    observed = _worker_module.read_json(path)
+    transport = operation["transport"]
+    if not _same_typed_assignment(observed.get("assignment"), operation["assignment"]) or observed.get("configuration_sha256") != transport["configuration_sha256"]:
+        raise ValueError("Transport observation binding mismatch")
+    terminality = (terminal.exists() and observed.get("terminal_observed") is True
+                   and observed.get("group_absent") is True)
+    return observed, terminality
+
+
+def _open_actor_intervention(ledger: dict[str, Any], operation: dict[str, Any], blocker: str) -> None:
+    record = {"key": operation["operation_id"] + ":" + operation["state"],
+              "blocker": blocker, "evidence": "actors/" + operation["operation_id"],
+              "operation_id": operation["operation_id"],
+              "required_action": "Coordinator inspect retained evidence; resolve liveness or obtain explicit repair authority before retry",
+              "event": "opened", "text": "Relay and response unknown; relay in active coordinator chat"}
+    records = ledger.setdefault("interventions", [])
+    if record not in records:
+        records.append(record)
+
+
+def _publish_actor_outcome(run_dir: Path, ledger: dict[str, Any], operation: dict[str, Any],
+                           observed: dict[str, Any]) -> dict[str, Any]:
+    directory = _actor_directory(run_dir, operation)
+    try:
+        result = _worker_module.read_json(directory / "result.json")
+        blocker = _admit_actor_outcome(ledger, operation, observed, result)
+    except (OSError, ValueError) as error:
+        blocker = f"Missing or malformed actor result: {error}"
+    operation["transport"]["outcome"] = {
+        "observed": observed, "blocker": blocker,
+        "raw_result_path": str(directory / "result.json"),
+        "terminal_path": str(directory / "result.state.json"),
+    }
+    operation["state"] = "terminal"
+    ledger["active_operation_path"] = None
+    ledger["actor_blocker"] = blocker
+    if blocker:
+        _open_actor_intervention(ledger, operation, blocker)
+        if operation["assignment"]["stage"] == "preflight":
+            ledger["readiness"] = None
+            ledger.setdefault("evidence", {})["preflight"] = {
+                "status": "blocked", "inputs_sha256": operation["assignment"]["inputs_sha256"],
+                "operation_id": operation["operation_id"],
+            }
+    _save_actor_ledger(run_dir, ledger)
+    return {"status": "terminal", "operation": operation, "blocker": blocker}
+
+
+def observe_operation(run_dir: Path, operation_id: str) -> dict[str, Any]:
+    """Collect once, retaining invalid raw output without granting eligibility."""
+    try:
+        with RunCommandLock(run_dir):
+            ledger, _ = _reservation_context(run_dir)
+            operation = _actor_operation(ledger, operation_id)
+            if operation["state"] == "terminal":
+                return {"status": "replayed", "operation": operation}
+            if not operation.get("transport"):
+                return {"status": "reserved", "operation": operation}
+            directory = _actor_directory(run_dir, operation)
+            handle = _ACTOR_SUPERVISORS.get(str(directory.resolve()))
+            if handle is not None and handle.poll() is not None:
+                del _ACTOR_SUPERVISORS[str(directory.resolve())]
+            observed, terminal = _read_actor_observation(directory, operation)
+            if not terminal:
+                # Alive is not terminal; absence without a receipt is unknown,
+                # and may hide a surviving child. No automatic retry.
+                pid = operation["transport"]["supervisor_pid"]
+                alive = pid is not None and _worker_module.process_liveness(pid) == "alive"
+                state = "running" if alive and operation["state"] == "running" else "unknown"
+                changed = operation["state"] != state
+                operation["state"] = state
+                before = len(ledger.get("interventions", []))
+                if state == "unknown":
+                    _open_actor_intervention(ledger, operation, "No terminal receipt; actor liveness unresolved; retry and another writer prohibited")
+                if changed or len(ledger.get("interventions", [])) != before:
+                    _save_actor_ledger(run_dir, ledger)
+                return {"status": state, "operation": operation, "observation": observed,
+                        "next_actions": ["observe_operation", "intervene"]}
+            if handle is not None:
+                try:
+                    handle.wait(timeout=1)
+                    _ACTOR_SUPERVISORS.pop(str(directory.resolve()), None)
+                except subprocess.TimeoutExpired:
+                    pass
+            return _publish_actor_outcome(run_dir, ledger, operation, observed)
+    except (ValueError, OSError, KeyError, TypeError) as error:
+        return {"status": "refused", "reason": "observation_refused", "detail": str(error)}
+
+
+def stop_operation(run_dir: Path, operation_id: str) -> dict[str, Any]:
+    """Persist a stop request; the adapter, never a reused PID, receives it."""
+    try:
+        with RunCommandLock(run_dir):
+            ledger, _ = _reservation_context(run_dir)
+            operation = _actor_operation(ledger, operation_id)
+            if operation["state"] == "terminal":
+                return {"status": "replayed", "operation": operation}
+            directory = _actor_directory(run_dir, operation)
+            directory.mkdir(parents=True, exist_ok=True)
+            _publish_actor_bytes(directory / "stop.request.json",
+                                     _canonical_record_bytes({"operation_id": operation_id, "requested": True}))
+            if not operation.get("transport"):
+                operation["state"] = "terminal"
+                ledger["active_operation_path"] = None
+                ledger["actor_blocker"] = "Stopped before launch; reserve fresh preflight or intervene"
+                _save_actor_ledger(run_dir, ledger)
+                return {"status": "terminal", "operation": operation}
+        return observe_operation(run_dir, operation_id)
+    except (ValueError, OSError, KeyError, TypeError) as error:
+        return {"status": "refused", "reason": "stop_refused", "detail": str(error)}
+
+
+def record_intervention(run_dir: Path, request: dict[str, Any]) -> dict[str, Any]:
+    """Retain active-chat relay/response observations; this grants no authority."""
+    try:
+        with RunCommandLock(run_dir):
+            ledger, _ = _reservation_context(run_dir)
+            required = {"key", "blocker", "evidence", "operation_id", "required_action", "event", "text"}
+            if set(request) != required or any(not isinstance(request[f], str) for f in required):
+                raise ValueError("Incomplete intervention request")
+            if any(not request[f] for f in ("key", "blocker", "evidence", "required_action")):
+                raise ValueError("Precise blocker/evidence/owner action required")
+            if request["event"] not in {"opened", "relayed", "response"}:
+                raise ValueError("Unknown chat observation event")
+            if request["operation_id"]:
+                _actor_operation(ledger, request["operation_id"])
+            records = ledger.setdefault("interventions", [])
+            if request in records:
+                return {"status": "replayed", "interventions": records}
+            if any(r["key"] == request["key"] and any(r[f] != request[f] for f in
+                   ("blocker", "evidence", "operation_id", "required_action")) for r in records):
+                raise ValueError("Intervention key conflict")
+            records.append(request)
+            _save_actor_ledger(run_dir, ledger)
+            return {"status": "recorded", "interventions": records}
+    except (ValueError, OSError, KeyError, TypeError) as error:
+        return {"status": "refused", "reason": "intervention_refused", "detail": str(error)}
 
 
 def revise_inputs(run_dir: Path, request: dict[str, Any]) -> dict[str, Any]:
@@ -1838,6 +2151,20 @@ def revise_inputs(run_dir: Path, request: dict[str, Any]) -> dict[str, Any]:
         return refuse("authority_or_lock_unavailable", str(error))
 
 
+def _cli_actor(args: Any) -> int:
+    run_dir = Path(args.run_dir).resolve()
+    if args.command == "launch":
+        result = launch_operation(run_dir, _worker_module.read_json(Path(args.request)),
+                                  codex_bin=args.codex_bin, timeout_seconds=args.timeout_seconds)
+    elif args.command == "intervene":
+        result = record_intervention(run_dir, _worker_module.read_json(Path(args.request)))
+    else:
+        handler = observe_operation if args.command == "observe" else stop_operation
+        result = handler(run_dir, args.operation_id)
+    print(json.dumps(result, sort_keys=True))
+    return int(result["status"] == "refused")
+
+
 def _cli_revise_inputs(args: Any) -> int:
     result = revise_inputs(Path(args.run_dir), json.loads(Path(args.request).read_text()))
     print(json.dumps(result, sort_keys=True))
@@ -1915,6 +2242,17 @@ def build_parser() -> "argparse.ArgumentParser":  # type: ignore[name-defined]
     inputs_parser.add_argument("--run-dir", required=True)
     inputs_parser.add_argument("--request", required=True, help="JSON request including bound owner response")
     inputs_parser.set_defaults(handler=_cli_revise_inputs)
+    for command in ("launch", "observe", "stop", "intervene"):
+        actor_parser = subparsers.add_parser(command)
+        actor_parser.add_argument("--run-dir", required=True)
+        if command in {"launch", "intervene"}:
+            actor_parser.add_argument("--request", required=True)
+        else:
+            actor_parser.add_argument("--operation-id", required=True)
+        if command == "launch":
+            actor_parser.add_argument("--codex-bin", default="codex")
+            actor_parser.add_argument("--timeout-seconds", type=float, default=300)
+        actor_parser.set_defaults(handler=_cli_actor)
     return parser
 
 

@@ -8,21 +8,21 @@
       "name": "independent-original-baseline-review",
       "kind": "skill-guidance",
       "summary": "A fresh reviewer invokes its own installation-local comparison of actual submitted changed/added/deleted Python assets against original B, including relevant test/eval/fixture/harness assets. Verify project, coverage, tools/settings/check compatibility and current byte identity; author I alone is insufficient. Recover current evidence where feasible without relabeling edited bytes as before state. Same-session authors retain SELF_CHECK_ONLY. Review permits only the authorized new numbered report and fresh measurement siblings, with no source/index edits, implicit setup or cross-installation fallback.",
-      "plan_refs": ["CAP-004"],
+      "plan_refs": [{"plan": "docs/project-plan.md", "id": "CAP-004"}],
       "declarations": ["skills/task-implementation-flow/task-maintainability-review/SKILL.md", "skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
     },
     {
       "name": "proportionate-rationale-disposition",
       "kind": "skill-guidance",
       "summary": "Verify affected responsibilities through diff and local context, including rename/extraction helpers, rather than file membership or line movement. Dispose of new/newly crossed, worsening and materially edited retained breaches, naming known report/function/metric values, cohesion and alternative cost. Below/equal-target growth and untouched debt require no individual defense. Agreement can retain a justified breach; correction requires a concrete maintenance problem or hard-rule violation. Unknown counts remain unknown, and lower metrics do not excuse worse ownership, names or navigation.",
-      "plan_refs": ["CAP-004"],
+      "plan_refs": [{"plan": "docs/project-plan.md", "id": "CAP-004"}],
       "declarations": ["skills/task-implementation-flow/task-maintainability-review/SKILL.md", "skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
     },
     {
       "name": "native-evidence-consumption-and-recovery",
       "kind": "skill-guidance",
       "summary": "Review retains native command, whole governed scope, policy, requiredness, owner/stage, checked bytes, result and producer. Validate current saved proof or recover through its owner/authorized focused execution, respecting stricter reviewer-run architecture policy. Aggregate reuse requires established constituent coverage, scope, policy and current bytes. Missing required proof and hard failures remain distinct from advisory status; no new static command, registry requirement, review stage or functional review is introduced.",
-      "plan_refs": ["CAP-005"],
+      "plan_refs": [{"plan": "docs/project-plan.md", "id": "CAP-005"}],
       "declarations": ["skills/task-implementation-flow/task-maintainability-review/SKILL.md", "skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
     },
     {
@@ -41,7 +41,7 @@
     {
       "name": "numbered-maintainability-review-and-dispositions",
       "summary": "Existing numbered review reports carry measurement status/references, current reviewed scope/bytes, every rationale disposition, native evidence, gaps/owners and the complete outstanding route. Required dispositions, gaps and confirmed blockers stay outside the optional three-warning cap. Genuine stops retain outstanding coverage. ACCEPT binds reviewed maintainability bytes only; it cannot close missing mandatory proof or certify functional acceptance. Corrections preserve surviving/resolved finding IDs and reconcile the whole ledger.",
-      "plan_refs": ["ART-005"],
+      "plan_refs": [{"plan": "docs/project-plan.md", "id": "ART-005"}],
       "declarations": ["skills/task-implementation-flow/task-maintainability-review/SKILL.md", "skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
     },
     {
@@ -59,7 +59,7 @@
     {"statement": "Metrics are advisory; justified breaches can be accepted and bare thresholds cannot request correction. Required native failures and missing mandatory proof retain their own policy and owner."},
     {"statement": "Keep original pre-edit B and every historical pair through corrections. Preserve source/index and authorized write boundaries; never recapture edited bytes as original or implicitly install tools."},
     {"statement": "Applicability requires compatible project/coverage/tool/settings/check identities and current submitted bytes. Unknown counts remain unknown; stale/incomplete/uncovered evidence cannot claim a clean comparison."},
-    {"statement": "Independent review requires a fresh session and its own comparison; author self-checks and prepared fixture histories do not establish independent review. Native policy remains authoritative.", "plan_refs": ["INV-004"]},
+    {"statement": "Independent review requires a fresh session and its own comparison; author self-checks and prepared fixture histories do not establish independent review. Native policy remains authoritative.", "plan_refs": [{"plan": "docs/project-plan.md", "id": "INV-004"}]},
     {"statement": "Rationale follows actually affected responsibilities and concrete maintenance cost, not untouched debt, formatting or threshold compliance alone."},
     {"statement": "Changed bytes stale affected verdicts and proof; retain stable finding identities and conditional stage order through fresh discovery and separate acceptance. Advisory warnings add no stage."}
   ],

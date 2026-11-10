@@ -106,7 +106,11 @@ python3 tools/check_contracts.py --root .
 The validator was copied from the active project-local repo-foundation package.
 `tools/check_contracts.py` is this repository's standalone validator; it has no
 installed-skill dependency. It checks the core v1 shape, local paths, subsystem
-references, and generated-index agreement. These are structural checks, not
+references, and generated-index agreement. Plan references use objects such as
+`{"plan": "docs/project-plan.md", "id": "IF-002"}`; the index key is
+`docs/project-plan.md#IF-002`. Ownership is unique per plan/ID pair, so independent
+plans may reuse short IDs. Plan paths must be canonical repository-relative files.
+Legacy strings remain a separate global namespace; new plan mappings use pairs. These are structural checks, not
 semantic acceptance of the described runtime. Records omit plan IDs where
 today's revised plan does not match the older implemented capability. The
 measurement record maps implemented runtime and foundation-discovery surfaces

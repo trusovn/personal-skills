@@ -1,0 +1,154 @@
+Unmodified HEAD controller suite; disposable extraction, no real index/worktree changes
+
+................................................E..EE.....F..E...EE............................
+======================================================================
+ERROR: test_authorized_gap_cannot_excuse_a_targeted_failure (test_controller.ControllerInspectionIntegrationTest.test_authorized_gap_cannot_excuse_a_targeted_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/tests/test_controller.py", line 3652, in test_authorized_gap_cannot_excuse_a_targeted_failure
+    result = controller.inspect_run(run_dir, 10)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+ERROR: test_failed_verification_offers_resume_only_when_policy_escalates (test_controller.ControllerInspectionIntegrationTest.test_failed_verification_offers_resume_only_when_policy_escalates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/tests/test_controller.py", line 3738, in test_failed_verification_offers_resume_only_when_policy_escalates
+    result = controller.inspect_run(run_dir, 10)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+ERROR: test_inspect_keeps_pending_semantic_review_non_accepting (test_controller.ControllerInspectionIntegrationTest.test_inspect_keeps_pending_semantic_review_non_accepting)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/tests/test_controller.py", line 3077, in test_inspect_keeps_pending_semantic_review_non_accepting
+    result = controller.inspect_run(run_dir, 10)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+ERROR: test_repository_gate_authorized_gap_preserves_pending_review (test_controller.ControllerInspectionIntegrationTest.test_repository_gate_authorized_gap_preserves_pending_review)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/tests/test_controller.py", line 3626, in test_repository_gate_authorized_gap_preserves_pending_review
+    result = controller.inspect_run(run_dir, 10)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+ERROR: test_verifier_created_content_drift_is_recorded_and_denies_accept (test_controller.ControllerInspectionIntegrationTest.test_verifier_created_content_drift_is_recorded_and_denies_accept)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/tests/test_controller.py", line 3679, in test_verifier_created_content_drift_is_recorded_and_denies_accept
+    result = controller.inspect_run(run_dir, 10)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+ERROR: test_verifier_created_drift_replay_reuses_published_records (test_controller.ControllerInspectionIntegrationTest.test_verifier_created_drift_replay_reuses_published_records)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/tests/test_controller.py", line 3709, in test_verifier_created_drift_replay_reuses_published_records
+    first = controller.inspect_run(run_dir, 10)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/controller.py", line 1422, in inspect_run
+    execution, execution_digest = _verification_module.execute_verification_plan(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        plan=plan,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        closure_identity=closure_identity,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 543, in execute_verification_plan
+    effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/scripts/verification_runner.py", line 280, in build_sandbox_invocation
+    raise UnsupportedSandbox("sandbox-exec verification is supported only on macOS")
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+======================================================================
+FAIL: test_inspect_reuses_execution_after_crash_with_review_pending (test_controller.ControllerInspectionIntegrationTest.test_inspect_reuses_execution_after_crash_with_review_pending)
+----------------------------------------------------------------------
+task_orchestrator_verification_runner.UnsupportedSandbox: sandbox-exec verification is supported only on macOS
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/tmp/tmpdz3xkdaq/skills/task-orchestrator/tests/test_controller.py", line 3271, in test_inspect_reuses_execution_after_crash_with_review_pending
+    with self.assertRaisesRegex(RuntimeError, "injected crash"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "injected crash" does not match "sandbox-exec verification is supported only on macOS"
+
+----------------------------------------------------------------------
+Ran 95 tests in 6.615s
+
+FAILED (failures=1, errors=6)
+
+EXIT 1

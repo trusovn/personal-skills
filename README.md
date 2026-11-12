@@ -460,12 +460,15 @@ path, not the default way to run the skills above. Its controller currently
 supports frozen-input initialization, status/reservation/revision, and reserved
 actor launch, observation, stop requests and intervention history. Terminal
 preflight can admit readiness. The controller can inspect terminal implementation
-or correction work and run candidate-bound checks. Collection and acceptance
-admission are pending. `run-next` remains a legacy refusal/reporting stub. See the
+or correction work, run candidate-bound checks and admit fresh independent
+collection with collector-owned reruns and finding history. Failed checks use the
+shared bounded correction budget; collection enables a separate acceptance
+assignment. Acceptance admission remains pending. `run-next` remains a legacy
+refusal/reporting stub. See the
 [operator guide](skills/task-orchestrator/references/operator-guide.md) for commands
-and qualification limits. Plan-to-manifest preparation, semantic review/correction
-loops, automatic recovery, completion and unattended end-to-end execution remain
-unimplemented.
+and qualification limits. Plan-to-manifest preparation, semantic acceptance and
+review-driven correction admission, automatic recovery, completion and unattended
+end-to-end execution remain unimplemented.
 Use it only when its current controller contract is specifically needed and
 the required manifest/policy inputs already exist. Otherwise run the bounded
 flow directly under human coordination.

@@ -50,8 +50,17 @@ is cycle zero. After a complete terminal implementation or correction, use
 timeout to `check-candidate`. Checks run in the supplied environment under the
 frozen sbx/YOLO authority. See the
 [T-004.1 producer contract](../docs/tasks/T-004.1/controller-contract.md) for
-commands, evidence paths, replay and drift handling. Collection and acceptance
-admission remain pending.
+commands, evidence paths, replay and drift handling.
+
+After passed current checks, reserve `semantic_review` as `review_collector`,
+save its assignment, then launch and observe it. The fresh collector requests
+`check-collection` with its exact assignment and a timeout to rerun the frozen
+checks through the controller. Terminal collection admission requires the current
+candidate, observed independent session, fresh rerun evidence and explicit
+coverage, gaps and findings. Complete current coverage enables a separate
+acceptance assignment. Acceptance admission remains future work. See the
+[T-004 controller contract](../docs/tasks/T-004/controller-contract.md) for the
+collection payload, rerun protocol, findings, bounded correction and limitations.
 
 Every actor uses a fresh session and frozen `gpt-6.1-sol` low/medium/high mapping.
 The authorized bridge passes approval-never and danger-full-access inside sbx.

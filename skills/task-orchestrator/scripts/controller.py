@@ -1633,6 +1633,8 @@ def _publish_check_outcome(run_dir, ledger, operation, result):
     ledger['actor_blocker'] = result.get('blocker')
     if result['status'] == 'failed':
         ledger.update(correction_request='check_failed')
+    elif result['status'] == 'passed':
+        ledger['current_step'] = 'semantic_review'
     _save_actor_ledger(run_dir, ledger)
 
 
@@ -1724,6 +1726,212 @@ def check_candidate(run_dir: Path, assignment: dict[str, Any], *, timeout_second
         return {'status': 'stale' if 'stale' in str(error).lower() else 'refused', 'reason': str(error)}
 
 
+def _collection_check_paths(operation):
+    identity = operation['operation_id'] + '.rerun'
+    return identity, f'collection-checks/{identity}.json', f'collection-checks/{identity}.intent.json'
+
+
+def _collection_check_unresolved(run_dir, operation):
+    if operation['assignment']['stage'] != 'semantic_review':
+        return False
+    _, result, intent = _collection_check_paths(operation)
+    if not (run_dir / intent).exists():
+        return False
+    try:
+        return 'execution_sha256' not in _worker_module.read_json(run_dir / result)
+    except (OSError, ValueError):
+        return True
+
+
+def _validate_check_artifacts(run_dir, result, identity):
+    raw = (run_dir / result['execution_path']).read_bytes()
+    if _sha256_bytes(raw) != result['execution_sha256']:
+        raise ValueError('Execution record changed')
+    execution = json.loads(raw)
+    _state_module.validate_command_execution_record(execution, expected_closure_identity=identity)
+    for outcome in execution['outcomes']:
+        for stream in ('stdout', 'stderr'):
+            if _sha256_bytes((run_dir / outcome[f'{stream}_path']).read_bytes()) != outcome[f'{stream}_sha256']:
+                raise ValueError('Execution log changed')
+    expected = 'not_run' if not execution['outcomes'] else 'passed' if execution['terminal_reason'] == 'complete' else 'failed'
+    if result['status'] != expected:
+        raise ValueError('Check disposition contradicts execution')
+    return execution
+
+
+def _collection_launch_context(run_dir, ledger, inputs, operation):
+    candidate = _load_current_candidate(run_dir, ledger, inputs)
+    evidence = _evidence_view(ledger, 'verify')
+    if evidence['status'] != 'passed':
+        raise ValueError('Current passed checks required for collection')
+    check = _worker_module.read_json(run_dir / evidence['path'])
+    verifier = _actor_operation(ledger, evidence['operation_id'])
+    if check['assignment'] != verifier['assignment']:
+        raise ValueError('Check assignment mismatch')
+    _validate_check_artifacts(run_dir, check, _check_closure_identity(ledger, verifier, candidate))
+    return {'run_dir': str(run_dir.resolve()), 'controller_path': str(Path(__file__).resolve()),
+            'candidate': candidate, 'check_evidence': check,
+            'prior_findings': ledger.get('outstanding_findings', []),
+            'review_requirements': ['requirements', 'behavior', 'code_quality'],
+            'review_workflow': {
+                'skill_resolution': 'Use matching project-local .agents/skills installations first; source presence is not availability. Never substitute source or refresh installations. Block unavailable mandatory review capabilities.',
+                'collection': 'Fresh independent task-review-discovery gathers evidence without deciding acceptance',
+                'separate_stages': ['task-maintainability-review when required', 'task-contract-registry-updater when contracts change', 'task-review-discovery', 'separate task-acceptance-review'],
+                'authority': 'Frozen brief, verification and repository instructions determine applicability; collection grants no acceptance or deferral authority'},
+            'rerun_callable': 'check_collection(run_dir, assignment, timeout_seconds=...)',
+            'rerun_cli': 'check-collection --run-dir RUN --request ASSIGNMENT --timeout-seconds N'}
+
+
+def _collection_check_context(run_dir, assignment):
+    ledger, flow, policy, inputs, operation = _producer_context(run_dir, assignment['operation_id'])
+    if not _same_typed_assignment(assignment, operation['assignment']) or assignment['stage'] != 'semantic_review':
+        raise ValueError('Exact collector assignment required')
+    if _active_actor(ledger) is not operation or operation['state'] not in {'running', 'unknown'}:
+        raise ValueError('Only the active launched collector can request reruns')
+    observed, _ = _read_actor_observation(_actor_directory(run_dir, operation), operation)
+    if not observed.get('thread_id'):
+        raise ValueError('Observed collector session required')
+    candidate = _load_current_candidate(run_dir, ledger, inputs)
+    if assignment['candidate_sha256'] != ledger.get('candidate_sha256'):
+        raise ValueError('Collector candidate is stale')
+    return ledger, flow, policy, inputs, operation, observed, candidate
+
+
+def check_collection(run_dir: Path, assignment: dict[str, Any], *, timeout_seconds: float) -> dict[str, Any]:
+    """Execute one collector-owned full-plan rerun; never launch another actor."""
+    if type(timeout_seconds) not in {int, float} or not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+        return {'status': 'refused', 'reason': 'timeout_seconds must be positive and finite'}
+    try:
+        with RunCommandLock(run_dir):
+            ledger, flow, policy, inputs, operation, observed, candidate = _collection_check_context(run_dir, assignment)
+            identity, relative, intent_path = _collection_check_paths(operation)
+            checker = dict(operation, operation_id=identity)
+            closure = _check_closure_identity(ledger, checker, candidate)
+            if (run_dir / relative).exists():
+                result = _worker_module.read_json(run_dir / relative)
+                if not _same_typed_assignment(result['assignment'], assignment) or result['timeout_seconds'] != timeout_seconds or result['session_id'] != observed['thread_id']:
+                    raise ValueError('Collector rerun replay conflict')
+                if 'execution_sha256' in result and result['status'] != 'stale':
+                    _validate_check_artifacts(run_dir, result, closure)
+                return result
+            if (run_dir / intent_path).exists():
+                return {'status': 'blocked', 'blocker': 'Collection rerun terminality unresolved; inspect retained intent and logs; do not relaunch'}
+            check_policy = json.loads(json.dumps(policy))
+            check_policy['verification']['authorized_gap'] = None
+            if _state_module.flow_step(flow, 'verify')['mode'] == 'targeted':
+                check_policy['verification']['repository_gate'] = None
+            plan = _verification_module.build_verification_plan({'required_checks': inputs['required_checks']}, check_policy)
+            result = {'operation_id': identity, 'assignment': assignment, 'session_id': observed['thread_id'],
+                      'candidate_sha256': ledger['candidate_sha256'], 'timeout_seconds': timeout_seconds,
+                      'path': relative, 'plan': plan, 'setup': inputs,
+                      'execution_path': f'verification/{identity}.turn-001.execution.json',
+                      'status': 'blocked', 'blocker': None}
+            _publish_actor_bytes(run_dir / intent_path, _canonical_record_bytes(result))
+            (run_dir / 'verification').mkdir(exist_ok=True)
+            try:
+                execution, digest = _verification_module.execute_verification_plan(
+                    plan=plan, repository_cwd=ledger['repository'], permissions=policy['permissions'],
+                    timeout_seconds=timeout_seconds, run_directory=run_dir.resolve(),
+                    execution_path=result['execution_path'], closure_identity=closure,
+                    execution_authorization=policy['execution_authorization'])
+                result['execution_sha256'] = digest
+                result['status'] = 'not_run' if not execution['outcomes'] else 'passed' if execution['terminal_reason'] == 'complete' else 'failed'
+                if _producer_workspace(ledger, inputs) != candidate['workspace']:
+                    result['status'] = 'stale'
+            except (OSError, ValueError, RuntimeError) as error:
+                result['blocker'] = str(error) + '; rerun terminality unresolved; inspect retained evidence'
+            _publish_actor_bytes(run_dir / relative, _canonical_record_bytes(result))
+            return result
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        return {'status': 'stale' if 'stale' in str(error).lower() else 'refused', 'reason': str(error)}
+
+
+def _collection_evidence(ledger, operation, status, blocker=None, path=None):
+    assignment = operation['assignment']
+    ledger.setdefault('evidence', {})['semantic_review'] = {
+        'status': status, 'inputs_sha256': assignment['inputs_sha256'],
+        'candidate_sha256': assignment['candidate_sha256'],
+        'operation_id': operation['operation_id'], 'path': path, 'blocker': blocker}
+
+
+def _validate_current_collection(run_dir, ledger):
+    evidence = ledger.get('evidence', {}).get('semantic_review', {})
+    if evidence.get('status') != 'passed':
+        raise ValueError('Current successful collection required')
+    raw = (run_dir / evidence['path']).read_bytes()
+    record = json.loads(raw)
+    operation = _actor_operation(ledger, evidence['operation_id'])
+    if (_sha256_bytes(raw) != evidence.get('sha256')
+            or not _same_typed_assignment(record['assignment'], operation['assignment'])
+            or record['status'] != 'passed'
+            or any(record['assignment'][key] != ledger[key] for key in ('candidate_sha256', 'inputs_sha256', 'policy_sha256', 'flow_sha256'))):
+        raise ValueError('Admitted collection identity is stale or changed')
+
+
+def _merge_collection_findings(previous, findings, assignment):
+    merged = {finding['id']: json.loads(json.dumps(finding)) for finding in previous}
+    for finding in findings:
+        current = merged.get(finding['id'])
+        history = current.get('history', []) if current else []
+        disposition = current.get('disposition') if current else None
+        if disposition and current and (set(current['evidence']) != set(finding['evidence']) or current['exposure'] != finding['exposure']):
+            disposition = {'status': 'reopened', 'previous': disposition,
+                           'reason': 'new relevant evidence or changed exposure'}
+        snapshot = {**finding, 'operation_id': assignment['operation_id'],
+                    'candidate_sha256': assignment['candidate_sha256'], 'disposition': disposition}
+        merged[finding['id']] = {**finding, 'disposition': disposition, 'history': history + [snapshot]}
+    return list(merged.values())
+
+
+def _admit_collection(run_dir, ledger, operation, observed, result):
+    assignment = operation['assignment']
+    inputs = load_frozen_inputs(run_dir, ledger)
+    if any(assignment[key] != ledger[key] for key in ('inputs_sha256', 'policy_sha256', 'flow_sha256', 'candidate_sha256')):
+        raise ValueError('Collection authority or candidate is stale')
+    candidate = _load_current_candidate(run_dir, ledger, inputs)
+    producer_sessions = {item.get('transport', {}).get('outcome', {}).get('observed', {}).get('thread_id')
+                         for item in ledger['actor_operations'] if item['assignment']['stage'] in {'implement', 'correction'} and item.get('transport', {}).get('outcome')}
+    if observed['thread_id'] in producer_sessions:
+        raise ValueError('Collection session is not independent of implementation/correction')
+    if result['session_id'] != observed['thread_id']:
+        raise ValueError('Collection must bind the observed session explicitly')
+    if result['readiness'] is not None:
+        raise ValueError('Collection cannot supply preflight readiness authority')
+    report = result['collection']
+    _state_module.validate_collection_report(report)
+    _, rerun_path, _ = _collection_check_paths(operation)
+    status, blocker = 'passed', None
+    if report['rerun_path'] is None:
+        status, blocker = 'not_run', 'Missing independent rerun evidence; request fresh collection checks'
+    else:
+        if report['rerun_path'] != rerun_path:
+            raise ValueError('Fresh collector-owned rerun required; historical verifier evidence cannot cover collection')
+        rerun = _worker_module.read_json(run_dir / rerun_path)
+        if not _same_typed_assignment(rerun['assignment'], assignment) or rerun['session_id'] != observed['thread_id'] or rerun['candidate_sha256'] != ledger['candidate_sha256']:
+            raise ValueError('Collector rerun binding mismatch')
+        checker = dict(operation, operation_id=rerun['operation_id'])
+        _validate_check_artifacts(run_dir, rerun, _check_closure_identity(ledger, checker, candidate))
+        status = rerun['status']
+        if status != 'passed':
+            blocker = 'Independent required check failed; bounded check_failed correction required' if status == 'failed' else 'Required independent checks not run; collect missing evidence'
+    if result['status'] != 'complete' or any(item['status'] == 'blocked' for item in report['coverage'].values()):
+        status, blocker = 'blocked', 'Review capability or authority unresolved; inspect report and relay blocker in active chat'
+    elif status == 'passed' and (report['gaps'] or any(item['status'] != 'passed' for item in report['coverage'].values())):
+        status, blocker = 'not_run', 'Required collection coverage gaps; rerun or recollect missing evidence'
+    record = {'assignment': assignment, 'observed': observed, 'report': report,
+              'status': status, 'blocker': blocker}
+    relative = f"collections/{operation['operation_id']}.json"
+    _publish_actor_bytes(run_dir / relative, _canonical_record_bytes(record))
+    findings = _merge_collection_findings(ledger.get('outstanding_findings', []), report['findings'], assignment)
+    ledger['outstanding_findings'] = findings
+    _collection_evidence(ledger, operation, status, blocker, relative)
+    ledger['evidence']['semantic_review']['sha256'] = _sha256_bytes((run_dir / relative).read_bytes())
+    if status == 'failed':
+        ledger['correction_request'] = 'check_failed'
+    ledger['current_step'] = 'acceptance' if status == 'passed' else 'semantic_review'
+    return blocker
+
+
 def _reservation_context(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     ledger = json.loads((run_dir / "ledger.json").read_text())
     _validate_ledger(ledger)
@@ -1796,7 +2004,14 @@ def _reservation_options(ledger: dict[str, Any]) -> tuple[list[str], str | None]
             return ["reserve:preflight"], "current_preflight_readiness_required"
         return ["reserve:correction"], None
     if ledger.get('candidate_path') and not ledger.get('correction_request'):
-        return ['reserve:verify', 'inspect_candidate', 'intervene'], None
+        if ledger['current_step'] == 'preflight' or not _current_readiness(ledger):
+            return ['reserve:preflight'], 'current_preflight_readiness_required'
+        actions = ['reserve:verify', 'inspect_candidate', 'intervene']
+        if _evidence_view(ledger, 'verify')['status'] == 'passed':
+            actions.insert(0, 'reserve:semantic_review')
+            if _evidence_view(ledger, 'semantic_review')['status'] == 'passed':
+                actions.insert(0, 'reserve:acceptance')
+        return actions, None
     stage = ledger["current_step"] or "preflight"
     if stage in {"ready", "preflight"}:
         return ["reserve:preflight"], None
@@ -1831,11 +2046,19 @@ def status_run(run_dir: Path) -> dict[str, Any]:
             _load_current_candidate(run_dir, ledger, load_frozen_inputs(run_dir, ledger))
         except (ValueError, OSError, KeyError):
             ledger = json.loads(json.dumps(ledger))
-            for stage in ('implement', 'verify'):
+            for stage in ('implement', 'verify', 'semantic_review', 'acceptance'):
                 if stage in ledger.get('evidence', {}):
                     ledger['evidence'][stage]['status'] = 'stale'
-            if not _active_actor(ledger):
+            if not _active_actor(ledger) and blocker != 'corrections_exhausted':
                 actions, blocker = ['inspect_candidate', 'intervene'], 'candidate_stale'
+        if ledger.get('evidence', {}).get('semantic_review', {}).get('status') == 'passed':
+            try:
+                _validate_current_collection(run_dir, ledger)
+            except (OSError, ValueError, KeyError, TypeError):
+                ledger = json.loads(json.dumps(ledger))
+                ledger['evidence']['semantic_review']['status'] = 'stale'
+                if not _active_actor(ledger):
+                    actions, blocker = ['reserve:semantic_review', 'intervene'], 'collection_stale'
     return {
         "status": "ok", "run_id": ledger["run_id"], "task_id": task_id,
         "inputs_sha256": ledger["inputs_sha256"],
@@ -1855,7 +2078,7 @@ def status_run(run_dir: Path) -> dict[str, Any]:
         "operation": _active_actor(ledger), "operation_history": ledger.get("actor_operations", []),
         "readiness_current": _current_readiness(ledger),
         "input_revision_history": ledger.get("input_revisions", []),
-        "next_actions": actions, "blocker": blocker or ledger.get("actor_blocker"),
+        "next_actions": actions, "blocker": ledger.get("actor_blocker") if blocker == "operation_unknown" and ledger.get("actor_blocker") else blocker or ledger.get("actor_blocker"),
         "interventions": ledger.get("interventions", []),
         "chat_relay_action": "relay precise blocker in active chat; delivery/response unknown unless recorded" if blocker not in {None, "operation_reserved", "operation_running"} or ledger.get("actor_blocker") else None,
     }
@@ -1889,8 +2112,10 @@ def reserve_operation(
             if expected_version != ledger["revision"]:
                 return refuse("stale_version", ledger)
             inputs = load_frozen_inputs(run_dir, ledger)
-            if stage == 'verify' and ledger.get('candidate_path'):
+            if stage in {'verify', 'semantic_review', 'acceptance'} and ledger.get('candidate_path'):
                 _load_current_candidate(run_dir, ledger, inputs)
+                if stage == 'acceptance':
+                    _validate_current_collection(run_dir, ledger)
             expected_role = "implementer" if stage == "correction" else _state_module.FLOW_STEP_ROLES.get(stage)
             if task_id != inputs["task_id"] or role != expected_role:
                 return refuse("task_or_role_mismatch", ledger)
@@ -1965,7 +2190,7 @@ def _actor_directory(run_dir: Path, operation: dict[str, Any]) -> Path:
     return run_dir / "actors" / operation["operation_id"]
 
 
-def _actor_prompt(assignment: dict[str, Any], inputs: dict[str, Any], policy: dict[str, Any]) -> str:
+def _actor_prompt(assignment: dict[str, Any], inputs: dict[str, Any], policy: dict[str, Any], collection_context=None) -> str:
     return ("Execute only this frozen assignment. Actor output is a claim, never authority. "
             "Respect frozen run_policy permissions and task scope. Do not commit, change policy, select another task, or edit controller records. "
             "Review roles must not edit implementation. Always use a fresh session.\n"
@@ -1975,8 +2200,12 @@ def _actor_prompt(assignment: dict[str, Any], inputs: dict[str, Any], policy: di
             "prerequisite is required. Report requirements_complete only after checking all "
             "frozen task requirements. Missing prerequisites mean blocked, never ready.\n"
             "Return the assigned result schema, echo the exact assignment and observed "
-            "thread.started session_id if known, otherwise null; never invent it. implementation/review results remain raw claims.\n"
-            + json.dumps({"assignment": assignment, "frozen_inputs": inputs, "run_policy": policy}, sort_keys=True))
+            "thread.started session_id if known, otherwise null; never invent it. "
+            "Collection must call check_collection with its exact assignment, rerun every frozen check, "
+            "and report collection {coverage: {requirements, behavior, code_quality}, gaps, findings, rerun_path}. "
+            "Coverage values are passed|blocked|not_run with evidence; findings contain id, evidence, requirement, context, exposure. "
+            "Report evidence only, never acceptance decisions or new disposition/deferral authority.\n"
+            + json.dumps({"assignment": assignment, "frozen_inputs": inputs, "run_policy": policy, "collection_context": collection_context}, sort_keys=True))
 
 
 def _same_typed_assignment(value: Any, expected: Any) -> bool:
@@ -2019,7 +2248,8 @@ def launch_operation(run_dir: Path, assignment: dict[str, Any], *,
             directory.mkdir(parents=True, exist_ok=True)
             content = _canonical_record_bytes(config)
             _publish_actor_bytes(directory / "launch.json", content)
-            prompt = _actor_prompt(assignment, inputs, policy).encode()
+            context = _collection_launch_context(run_dir, ledger, inputs, operation) if assignment['stage'] == 'semantic_review' else None
+            prompt = _actor_prompt(assignment, inputs, policy, context).encode()
             _publish_actor_bytes(directory / "prompt.txt", prompt)
             operation["transport"] = {"configuration_sha256": _sha256_bytes(content),
                                       "supervisor_pid": None, "outcome": None}
@@ -2048,7 +2278,10 @@ _ACTOR_SUPERVISORS: dict[str, subprocess.Popen] = {}
 
 
 def _validate_observed_result(assignment: dict[str, Any], observed: dict[str, Any], result: dict[str, Any]) -> None:
-    if set(result) != {"assignment", "session_id", "status", "summary", "readiness"}:
+    expected = {"assignment", "session_id", "status", "summary", "readiness"}
+    if assignment["stage"] == "semantic_review":
+        expected.add("collection")
+    if set(result) != expected:
         raise ValueError("Malformed actor result")
     if not _same_typed_assignment(result["assignment"], assignment):
         raise ValueError("Result assignment mismatch")
@@ -2076,15 +2309,17 @@ def _validate_readiness(readiness: dict[str, Any]) -> None:
                 raise ValueError(f"Missing {category} prerequisite: {item['name']}; {item['evidence']}")
 
 
-def _admit_actor_outcome(ledger: dict[str, Any], operation: dict[str, Any], observed: dict[str, Any], result: dict[str, Any]) -> str | None:
-    """Single admission extension point. T-004/005 own future semantics."""
+def _admit_actor_outcome(run_dir: Path, ledger: dict[str, Any], operation: dict[str, Any], observed: dict[str, Any], result: dict[str, Any]) -> str | None:
+    """Single admission extension point; T-005 extends acceptance here."""
     assignment = operation["assignment"]
     try:
         if observed.get("exit_code") != 0 or observed.get("stop_requested") or observed.get("attempt_outcome") in {"timed_out", "interrupted"}:
             raise ValueError("Actor failed, stopped or interrupted")
         _validate_observed_result(assignment, observed, result)
+        if assignment["stage"] == "semantic_review":
+            return _admit_collection(run_dir, ledger, operation, observed, result)
         if assignment["stage"] != "preflight":
-            return None  # Raw implementation/collection/acceptance, no semantics.
+            return None  # Implementation and future acceptance remain raw claims.
         if result["status"] != "complete":
             raise ValueError(f"Preflight {result['status']}: {result['summary']}")
         if any(assignment[field] != ledger[field] for field in ("inputs_sha256", "policy_sha256", "flow_sha256")):
@@ -2139,7 +2374,7 @@ def _publish_actor_outcome(run_dir: Path, ledger: dict[str, Any], operation: dic
     directory = _actor_directory(run_dir, operation)
     try:
         result = _worker_module.read_json(directory / "result.json")
-        blocker = _admit_actor_outcome(ledger, operation, observed, result)
+        blocker = _admit_actor_outcome(run_dir, ledger, operation, observed, result)
     except (OSError, ValueError) as error:
         blocker = f"Missing or malformed actor result: {error}"
     operation["transport"]["outcome"] = {
@@ -2152,6 +2387,10 @@ def _publish_actor_outcome(run_dir: Path, ledger: dict[str, Any], operation: dic
     ledger["actor_blocker"] = blocker
     if blocker:
         _open_actor_intervention(ledger, operation, blocker)
+        if operation["assignment"]["stage"] == "semantic_review":
+            evidence = ledger.setdefault("evidence", {}).get("semantic_review", {})
+            if evidence.get("operation_id") != operation["operation_id"]:
+                _collection_evidence(ledger, operation, "stale" if "stale" in blocker.lower() else "missing" if not (directory / "result.json").exists() else "blocked", blocker)
         if operation["assignment"]["stage"] == "preflight":
             ledger["readiness"] = None
             ledger.setdefault("evidence", {})["preflight"] = {
@@ -2192,6 +2431,19 @@ def observe_operation(run_dir: Path, operation_id: str) -> dict[str, Any]:
                     _save_actor_ledger(run_dir, ledger)
                 return {"status": state, "operation": operation, "observation": observed,
                         "next_actions": ["observe_operation", "intervene"]}
+            if _collection_check_unresolved(run_dir, operation):
+                operation["state"] = "unknown"
+                _, rerun_path, _ = _collection_check_paths(operation)
+                blocker = 'Collection rerun terminality unresolved; inspect collection-checks intent and logs before retry'
+                try:
+                    blocker = _worker_module.read_json(run_dir / rerun_path).get('blocker') or blocker
+                except (OSError, ValueError):
+                    pass
+                ledger['actor_blocker'] = blocker
+                _collection_evidence(ledger, operation, 'blocked', blocker, rerun_path)
+                _open_actor_intervention(ledger, operation, blocker)
+                _save_actor_ledger(run_dir, ledger)
+                return {"status": "unknown", "operation": operation, "next_actions": ["intervene"]}
             if handle is not None:
                 try:
                     handle.wait(timeout=1)
@@ -2469,7 +2721,7 @@ def build_parser() -> "argparse.ArgumentParser":  # type: ignore[name-defined]
             actor_parser.add_argument("--codex-bin", default="codex")
             actor_parser.add_argument("--timeout-seconds", type=float, default=300)
         actor_parser.set_defaults(handler=_cli_actor)
-    for command in ('inspect-candidate', 'check-candidate'):
+    for command in ('inspect-candidate', 'check-candidate', 'check-collection'):
         producer = subparsers.add_parser(command)
         producer.add_argument('--run-dir', required=True)
         if command == 'inspect-candidate':
@@ -2486,7 +2738,8 @@ def _cli_producer(args):
     if args.command == 'inspect-candidate':
         result = inspect_candidate(run_dir, args.operation_id)
     else:
-        result = check_candidate(run_dir, _worker_module.read_json(Path(args.request)), timeout_seconds=args.timeout_seconds)
+        runner = check_collection if args.command == 'check-collection' else check_candidate
+        result = runner(run_dir, _worker_module.read_json(Path(args.request)), timeout_seconds=args.timeout_seconds)
     print(json.dumps(result, sort_keys=True))
     return 0 if result['status'] in {'passed', 'failed', 'stale'} else 1
 

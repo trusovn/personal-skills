@@ -10,8 +10,9 @@ Use the deterministic controller as the public operating surface. Treat
 `scripts/codex_worker.py` as an internal transport adapter; do not invoke it
 directly to operate or recover a controller-owned run.
 
-Freshness: 2026-11-09. Current actor commands are `init`, `status`, `reserve`,
-`launch`, `observe`, `stop`, `intervene`, and `revise-inputs`. Legacy `inspect`
+Freshness: 2026-11-12. Current commands are `init`, `status`, `reserve`,
+`launch`, `observe`, `stop`, `intervene`, `revise-inputs`, `inspect-candidate`,
+`check-candidate`, and `check-collection`. Legacy `inspect`
 and `revise-flow` retain mechanical primitives; `run-next` reports pending work.
 
 ## Read the smallest current reference
@@ -88,8 +89,16 @@ python3 <skill-dir>/scripts/controller.py observe --run-dir <external-run-dir> -
 ```
 
 A complete, observed current preflight permits the first implementation
-reservation. Implementation and review outputs remain claims. Follow the
-operator guide for stop, revision and active-chat intervention. The legacy
+reservation. Inspect terminal implementation/correction with `inspect-candidate`,
+reserve `verify`, and execute its exact assignment with `check-candidate`.
+Reserve and launch `semantic_review` for fresh independent collection; that
+collector calls `check-collection` with its exact assignment to rerun the frozen
+checks. Terminal collection is admitted only for the current candidate and observed
+independent session, with explicit coverage, gaps and findings. A real failed check
+authorizes a correction within the shared three-cycle budget. Complete collection
+enables a separate acceptance assignment; acceptance output remains a raw claim.
+See the [T-004 contract](docs/tasks/T-004/controller-contract.md) for payloads
+and limits. Follow the operator guide for stop, revision and active-chat intervention. The legacy
 `scripts/controller.py run-next` command does not launch this flow;
 `scripts/controller.py inspect` does not admit these actor outcomes.
 
@@ -111,7 +120,7 @@ advance occurred.
 Current public commands do not yet provide:
 
 - automatic recovery or same-thread continuation;
-- semantic review and correction loops;
+- semantic acceptance admission or review-driven correction decisions;
 - atomic acceptance, dependency release, and advance;
 - plan-to-manifest preparation; or
 - an unattended end-to-end runner.

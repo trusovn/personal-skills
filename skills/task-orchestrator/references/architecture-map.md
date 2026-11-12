@@ -2,7 +2,7 @@
 
 Status: operator reference
 
-Freshness: 2026-11-09
+Freshness: 2026-11-12
 
 Read only the row that owns the requested behavior, then inspect its primary
 test. Use `controller.py` integration coverage when a public command or
@@ -24,6 +24,7 @@ cross-module flow changes.
 controller.py init
 controller.py status / reserve / launch / observe / stop / intervene
 controller.py revise-inputs
+controller.py inspect-candidate / check-candidate / check-collection
 # Legacy primitives: run-next (refusal stub), inspect, revise-flow
 ```
 
@@ -99,8 +100,9 @@ not establish permissions or lifecycle support for a future harness adapter.
 
 The public controller provides conservative stop requests and terminal observation,
 not automatic recovery or same-thread continuation. It does not provide the complete
-semantic review/correction loop, task commit finalization, atomic completion and
-dependency release, automatic advance, or plan preparation. See the
+semantic acceptance or review-driven correction admission, task commit
+finalization, atomic completion and dependency release, automatic advance, or
+plan preparation. See the
 [current development documents](../docs/README.md) for the desired behavior and
 proposed delivery. Inspect current code and useful tests before extending it.
 
@@ -111,11 +113,16 @@ spawning the detached `codex_worker.py actor` supervisor, and owns one admission
 path (`observe_operation` → `_admit_actor_outcome`). The adapter records process
 and session observations and an exclusive terminal receipt. Missing receipt or
 unresolved group liveness blocks another actor. Stop requests do not signal a
-recorded PID. This path admits preflight readiness and retains terminal producer
-outcomes. The controller separately inspects candidate scope and publishes
-candidate-bound check evidence. See the
+recorded PID. This path admits preflight readiness and current independent
+collection while retaining terminal producer outcomes. The controller separately
+inspects candidate scope and publishes candidate-bound checks. The active
+collector requests one fresh controller-run rerun through `check_collection`;
+its intent, observed session and separate execution identity preserve sole actor
+ownership. Collection retains coverage, gaps and stable finding history; failed
+checks use the inherited shared correction budget. Acceptance remains raw
+transport. See the
 [T-003 lifecycle contract](../docs/tasks/T-003/controller-contract.md) and
-[T-004.1 producer contract](../docs/tasks/T-004.1/controller-contract.md).
+[consolidated T-004 contract](../docs/tasks/T-004/controller-contract.md).
 
 The verification runner retains its legacy macOS containment path. The
 candidate check path uses the same runner with explicit frozen sbx/YOLO

@@ -1146,6 +1146,32 @@ def select_task(ledger: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any
     )
 
 
+def validate_collection_report(report: dict[str, Any]) -> None:
+    """Collection carries evidence, never acceptance or disposition authority."""
+    _validate_exact_object(report, ('coverage', 'gaps', 'findings', 'rerun_path'), 'collection')
+    coverage = report['coverage']
+    _validate_exact_object(coverage, ('requirements', 'behavior', 'code_quality'), 'collection coverage')
+    for category, item in coverage.items():
+        _validate_exact_object(item, ('status', 'evidence'), category)
+        if item['status'] not in {'passed', 'blocked', 'not_run'}:
+            raise ValueError('Invalid collection coverage status')
+        _validate_str(item['evidence'], 'coverage evidence')
+    _validate_str_array(report['gaps'], 'collection gaps', allow_empty=True)
+    if not isinstance(report['findings'], list):
+        raise ValueError('collection findings must be an array')
+    seen = set()
+    for finding in report['findings']:
+        _validate_exact_object(finding, ('id', 'evidence', 'requirement', 'context', 'exposure'), 'finding')
+        for field in ('id', 'requirement', 'context', 'exposure'):
+            _validate_str(finding[field], 'finding ' + field)
+        _validate_str_array(finding['evidence'], 'finding evidence')
+        if finding['id'] in seen:
+            raise ValueError('Duplicate finding identity')
+        seen.add(finding['id'])
+    if report['rerun_path'] is not None:
+        _validate_str(report['rerun_path'], 'collection rerun path')
+
+
 def validate_actor_transport(operation: dict[str, Any]) -> None:
     transport = operation["transport"]
     _validate_exact_object(transport, ("configuration_sha256", "supervisor_pid", "outcome"), "actor transport")

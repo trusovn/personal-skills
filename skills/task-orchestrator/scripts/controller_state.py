@@ -457,6 +457,10 @@ def validate_command_execution_record(
         "version", "closure_identity", "plan", "outcomes", "effective_envelope",
         "started_at", "ended_at", "terminal_reason", "authorized_gap",
     )
+    if "execution_mechanism" in record:
+        if record["execution_mechanism"] != "sbx_yolo":
+            raise ValueError("Invalid execution mechanism")
+        required = (*required, "execution_mechanism")
     _validate_exact_object(record, required, "command execution record")
     if type(record["version"]) is not int or record["version"] != 1:
         raise ValueError("Unsupported command execution record version")

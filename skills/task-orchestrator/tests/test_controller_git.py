@@ -65,6 +65,21 @@ class ControllerGitTest(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
+    def test_candidate_workspace_ignored_evaluated_input_and_visible_drift(self):
+        (self.repo / '.gitignore').write_text('generated/\n')
+        generated = self.repo / 'generated'
+        generated.mkdir()
+        evaluated = generated / 'input'
+        evaluated.write_text('aaaa')
+        first = self.git.capture_candidate_workspace(self.repo, ['generated/input'])
+        (generated / 'output').write_text('irrelevant output')
+        self.assertEqual(first, self.git.capture_candidate_workspace(self.repo, ['generated/input']))
+        evaluated.write_text('bbbb')
+        self.assertNotEqual(first, self.git.capture_candidate_workspace(self.repo, ['generated/input']))
+        second = self.git.capture_candidate_workspace(self.repo, ['generated/input'])
+        (self.repo / 'new ; $literal').write_text('untracked')
+        self.assertNotEqual(second, self.git.capture_candidate_workspace(self.repo, ['generated/input']))
+
     def test_workspace_identity_hashes_same_path_same_size_content(self):
         (self.repo / "allowed.txt").write_text("worker change\n")
         first = self.git.capture_workspace_identity(self.repo)

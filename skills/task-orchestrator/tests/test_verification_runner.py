@@ -615,6 +615,54 @@ class VerificationExecutorLocalProcessTests(unittest.TestCase):
             threading.Event().wait(0.01)
         self.fail(f"process {pid} remained alive")
 
+    def test_explicit_yolo_uses_production_runner_without_sandbox_substitution(self):
+        auth = {"transport": "sbx", "yolo": True, "intervention": "active_chat"}
+        marker = self.repository / 'literal ; $name'
+        command = self.command(f"from pathlib import Path; import os; Path({str(marker)!r}).write_bytes(b'yes'); os.write(1,b'\\xff'); os.write(2,b'\\x00')")
+        record, digest = self.execute(self.plan(command), execution_authorization=auth)
+        self.assertEqual(b'yes', marker.read_bytes())
+        self.assertEqual('sbx_yolo', record['execution_mechanism'])
+        outcome = record['outcomes'][0]
+        self.assertEqual(0, outcome['exit_code'])
+        self.assertNotEqual(str(SANDBOX_EXEC), outcome['effective_argv'][0])
+        self.assertEqual(b'\xff', (self.run_directory / outcome['stdout_path']).read_bytes())
+        self.assertEqual(b'\x00', (self.run_directory / outcome['stderr_path']).read_bytes())
+
+    def test_invalid_yolo_authority_never_executes(self):
+        marker = self.repository / 'marker'
+        plan = self.plan(self.command(f"from pathlib import Path; Path({str(marker)!r}).touch()"))
+        for auth in ({}, {'transport': 'sbx', 'yolo': 1, 'intervention': 'active_chat'},
+                     {'transport': 'sbx', 'yolo': False, 'intervention': 'active_chat'},
+                     {'transport': 'other', 'yolo': True, 'intervention': 'active_chat'}):
+            with self.subTest(auth=auth), self.assertRaises(self.runner.UnsupportedSandbox):
+                self.execute(plan, execution_authorization=auth)
+        self.assertFalse(marker.exists())
+        self.assertEqual([], list(self.verification_directory.iterdir()))
+
+    def test_yolo_timeout_reuses_owned_group_cleanup(self):
+        command = self.command('import time; time.sleep(20)')
+        record, digest = self.execute(self.plan(command), timeout_seconds=0.1,
+            execution_authorization={'transport': 'sbx', 'yolo': True, 'intervention': 'active_chat'})
+        self.assertEqual('timed_out', record['terminal_reason'])
+        self.assertEqual('timed_out', record['outcomes'][0]['status'])
+
+    def yolo_cleanup_control(self, control):
+        original = self.execute
+        def execute(plan, **overrides):
+            overrides['execution_authorization'] = {'transport': 'sbx', 'yolo': True, 'intervention': 'active_chat'}
+            return original(plan, **overrides)
+        with mock.patch.object(self, 'execute', side_effect=execute):
+            control()
+
+    def test_yolo_timeout_descendant_cleanup(self):
+        self.yolo_cleanup_control(self.test_timeout_terminates_the_owned_child_and_grandchild)
+
+    def test_yolo_sigterm_resistant_descendant_cleanup(self):
+        self.yolo_cleanup_control(self.test_timeout_kills_a_grandchild_that_ignores_sigterm)
+
+    def test_yolo_exited_parent_open_pipe_cleanup(self):
+        self.yolo_cleanup_control(self.test_exited_parent_with_open_descendant_pipe_cleans_up_process_group)
+
     def test_two_commands_publish_exact_binary_logs_and_valid_record(self):
         marker = self.repository / "order"
         first = self.command(

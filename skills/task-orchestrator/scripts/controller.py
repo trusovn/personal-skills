@@ -460,7 +460,7 @@ def init_run(
         )
 
     # Capture baseline
-    baseline = capture_initial_baseline(resolved_repo)
+    baseline = _git_module.capture_task_baseline(resolved_repo)
     baseline_ref = f"run-initial.json"
     baseline_path = run_dir / "baselines" / baseline_ref
 
@@ -484,10 +484,7 @@ def init_run(
 
         # Create baselines directory
         (temp_dir / "baselines").mkdir()
-        baseline_data = {
-            "head_oid": baseline["head_oid"],
-            "status": baseline["status"],
-        }
+        baseline_data = baseline
         baseline_path = temp_dir / "baselines" / baseline_ref
         baseline_path.write_text(json.dumps(baseline_data, indent=2, sort_keys=True) + "\n")
 
@@ -893,7 +890,8 @@ def _load_inspection_authority(
         raise ValueError("Selected task baseline reference mismatch")
     baseline_path = run_dir / "baselines" / expected_baseline_ref
     baseline = json.loads(baseline_path.read_text())
-    if set(baseline) != {"head_oid", "index_tree", "status"}:
+    if set(baseline) not in ({"head_oid", "index_tree", "status"},
+                             {"head_oid", "index_tree", "status", "dirty_files"}):
         raise ValueError("Selected task baseline has an invalid shape")
     baseline_digest = sha256_text(canonical_json(baseline))
     if baseline_digest != ledger.get("selected_task_baseline_digest"):
@@ -1529,6 +1527,203 @@ def inspect_run(run_dir: Path, timeout_seconds: float) -> dict[str, Any]:
 
 # Actor assignments are embedded in the ledger: one atomic replace publishes
 # ownership, assignment and its charge together. No receipt is a liveness oracle.
+def _producer_workspace(ledger, inputs):
+    return _git_module.capture_candidate_workspace(Path(ledger['repository']), inputs['allowed_paths'])
+
+
+def _producer_context(run_dir, operation_id):
+    ledger, flow = _reservation_context(run_dir)
+    policy, manifest, inputs = load_input_authority(run_dir, ledger)
+    operation = _actor_operation(ledger, operation_id)
+    assignment = operation['assignment']
+    if any(assignment[k] != ledger[k] for k in ('inputs_sha256', 'policy_sha256', 'flow_sha256')):
+        raise ValueError('Stale operation authority')
+    if assignment['task_id'] != inputs['task_id']:
+        raise ValueError('Task identity mismatch')
+    return ledger, flow, policy, inputs, operation
+
+
+def inspect_candidate(run_dir: Path, operation_id: str) -> dict[str, Any]:
+    """Inspect an admitted terminal producer, never an actor's content claims."""
+    try:
+        with RunCommandLock(run_dir):
+            ledger, flow, policy, inputs, operation = _producer_context(run_dir, operation_id)
+            if _active_actor(ledger):
+                raise ValueError('An operation is active or unknown')
+            if operation['state'] != 'terminal' or operation['assignment']['stage'] not in {'implement', 'correction'}:
+                raise ValueError('Terminal implementation/correction required')
+            producers = [item for item in ledger['actor_operations'] if item['assignment']['stage'] in {'implement', 'correction'}]
+            if operation is not producers[-1]:
+                raise ValueError('Historical producer cannot replace current candidate')
+            outcome = operation.get('transport', {}).get('outcome')
+            if not outcome or outcome['blocker']:
+                raise ValueError('Admitted terminal outcome required')
+            raw = _worker_module.read_json(Path(outcome['raw_result_path']))
+            _validate_observed_result(operation['assignment'], outcome['observed'], raw)
+            if raw['status'] != 'complete':
+                raise ValueError('Producer did not complete')
+            baseline = _worker_module.read_json(run_dir / 'baselines' / ledger['initial_baseline_path'])
+            if sha256_text(canonical_json(baseline)) != ledger['initial_baseline_digest']:
+                raise ValueError('Initial baseline identity mismatch')
+            if 'index_tree' not in baseline or set(baseline.get('dirty_files', {})) != set(baseline['status']):
+                raise ValueError('Frozen baseline lacks owner/index identity; initialize a new reviewed run')
+            workspace = _producer_workspace(ledger, inputs)
+            status = workspace['status']
+            dirty = baseline['status']
+            violations = sorted(p for p in set(dirty) | set(status)
+                                if (p in dirty and (status.get(p) != dirty[p]
+                                                   or workspace['files'].get(p) != baseline['dirty_files'][p]))
+                                or (p not in dirty and p not in inputs['allowed_paths']))
+            staged_paths = _git_module.capture_index_changed_paths(
+                Path(ledger['repository']), baseline['index_tree'], workspace['index_tree_oid'])
+            violations = sorted(set(violations) | {p for p in staged_paths if p in dirty or p not in inputs['allowed_paths']})
+            if workspace['head_oid'] != baseline['head_oid']:
+                violations.append('HEAD changed')
+            if violations:
+                return {'status': 'blocked', 'reason': 'scope_or_owner_work_violation', 'paths': violations}
+            candidate = {'operation_id': operation_id, 'assignment': operation['assignment'],
+                         'baseline_sha256': ledger['initial_baseline_digest'], 'workspace': workspace}
+            digest = sha256_text(canonical_json(candidate))
+            relative = f'candidates/{digest}.json'
+            _publish_actor_bytes(run_dir / relative, _canonical_record_bytes(candidate))
+            if ledger.get('candidate_sha256') != digest:
+                ledger.update(candidate_sha256=digest, candidate_path=relative, current_step='verify')
+                ledger.setdefault('evidence', {})['implement'] = {
+                    'status': 'passed', 'inputs_sha256': ledger['inputs_sha256'],
+                    'candidate_sha256': digest, 'operation_id': operation_id, 'path': relative}
+                _save_actor_ledger(run_dir, ledger)
+            return {'status': 'passed', 'candidate_sha256': digest, 'path': relative}
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        return {'status': 'refused', 'reason': str(error)}
+
+
+def _load_current_candidate(run_dir, ledger, inputs):
+    candidate = _worker_module.read_json(run_dir / ledger['candidate_path'])
+    if sha256_text(canonical_json(candidate)) != ledger['candidate_sha256']:
+        raise ValueError('Candidate artifact identity mismatch')
+    if candidate['workspace'] != _producer_workspace(ledger, inputs):
+        raise ValueError('Candidate is stale')
+    if any(candidate['assignment'][k] != ledger[k] for k in ('inputs_sha256', 'policy_sha256', 'flow_sha256')):
+        raise ValueError('Candidate authority is stale')
+    return candidate
+
+
+def _check_closure_identity(ledger, operation, candidate):
+    assignment = operation['assignment']
+    workspace = candidate['workspace']
+    return {
+        'subject': {'run_id': ledger['run_id'], 'task_id': assignment['task_id'],
+                    'attempt_id': operation['operation_id'], 'turn': 1,
+                    'policy_sha256': ledger['policy_sha256'], 'manifest_sha256': ledger['manifest_sha256'],
+                    'prompt_sha256': ledger['inputs_sha256'],
+                    'selected_task_baseline_sha256': ledger['initial_baseline_digest']},
+        'stage2_git_evidence_sha256': ledger['candidate_sha256'],
+        'post_worker_head_oid': workspace['head_oid'],
+        'post_worker_index_tree_oid': workspace['index_tree_oid'],
+        'post_worker_status_sha256': sha256_text(canonical_json(workspace['status']))}
+
+
+def _publish_check_outcome(run_dir, ledger, operation, result):
+    operation['state'] = 'terminal'
+    ledger['active_operation_path'] = None
+    ledger.setdefault('evidence', {})['verify'] = {
+        'status': result['status'], 'inputs_sha256': ledger['inputs_sha256'],
+        'candidate_sha256': operation['assignment']['candidate_sha256'],
+        'operation_id': operation['operation_id'], 'path': result['path']}
+    ledger['actor_blocker'] = result.get('blocker')
+    if result['status'] == 'failed':
+        ledger.update(correction_request='check_failed')
+    _save_actor_ledger(run_dir, ledger)
+
+
+def check_candidate(run_dir: Path, assignment: dict[str, Any], *, timeout_seconds: float) -> dict[str, Any]:
+    """Run one reserved check once; uncertain interrupted execution never relaunches."""
+    if type(timeout_seconds) not in {int, float} or not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+        return {'status': 'refused', 'reason': 'timeout_seconds must be positive and finite'}
+    try:
+        with RunCommandLock(run_dir):
+            ledger, flow, policy, inputs, operation = _producer_context(run_dir, assignment['operation_id'])
+            if not _same_typed_assignment(assignment, operation['assignment']) or assignment['stage'] != 'verify':
+                raise ValueError('Exact verifier assignment required')
+            if assignment['candidate_sha256'] != ledger.get('candidate_sha256'):
+                raise ValueError('Historical candidate cannot become current')
+            candidate = _load_current_candidate(run_dir, ledger, inputs)
+            relative = f"checks/{operation['operation_id']}.json"
+            path = run_dir / relative
+            if path.exists():
+                result = _worker_module.read_json(path)
+                if not _same_typed_assignment(result['assignment'], assignment) or result['timeout_seconds'] != timeout_seconds:
+                    raise ValueError('Check identity/configuration conflict')
+                if result['status'] == 'blocked' and 'execution_sha256' not in result:
+                    return result
+                execution_raw = (run_dir / result['execution_path']).read_bytes()
+                if _sha256_bytes(execution_raw) != result['execution_sha256']:
+                    raise ValueError('Execution record changed')
+                execution = json.loads(execution_raw)
+                _state_module.validate_command_execution_record(execution, expected_closure_identity=_check_closure_identity(ledger, operation, candidate))
+                for outcome in execution['outcomes']:
+                    for stream in ('stdout', 'stderr'):
+                        if _sha256_bytes((run_dir / outcome[f'{stream}_path']).read_bytes()) != outcome[f'{stream}_sha256']:
+                            raise ValueError('Execution log changed')
+                if operation['state'] != 'terminal':
+                    _publish_check_outcome(run_dir, ledger, operation, result)
+                return result
+            if operation['state'] != 'reserved':
+                return {'status': 'blocked', 'blocker': 'Check execution uncertain; inspect retained evidence and resolve terminality before retry'}
+            if _active_actor(ledger) is not operation:
+                raise ValueError('Check does not own active operation')
+            selected = {'required_checks': inputs['required_checks']}
+            check_policy = json.loads(json.dumps(policy))
+            check_policy['verification']['authorized_gap'] = None
+            omitted = []
+            if _state_module.flow_step(flow, 'verify')['mode'] == 'targeted':
+                if check_policy['verification']['repository_gate']:
+                    omitted.append('repository_gate')
+                check_policy['verification']['repository_gate'] = None
+            plan = _verification_module.build_verification_plan(selected, check_policy)
+            identity = _check_closure_identity(ledger, operation, candidate)
+            execution_path = f"verification/{operation['operation_id']}.turn-001.execution.json"
+            intent = {'assignment': assignment, 'timeout_seconds': timeout_seconds, 'plan': plan,
+                      'candidate_sha256': ledger['candidate_sha256']}
+            _publish_actor_bytes(run_dir / f"checks/{operation['operation_id']}.intent.json", _canonical_record_bytes(intent))
+            operation['state'] = 'unknown'
+            _save_actor_ledger(run_dir, ledger)
+            (run_dir / 'verification').mkdir(exist_ok=True)
+            result = {'assignment': assignment, 'timeout_seconds': timeout_seconds, 'path': relative,
+                      'execution_path': execution_path, 'policy_omissions': omitted, 'plan': plan,
+                      'mechanism_limits': 'YOLO does not enforce filesystem or network restrictions',
+                      'environment': {'cwd': ledger['repository'], 'platform': sys.platform},
+                      'setup': inputs, 'status': 'blocked', 'blocker': None}
+            try:
+                execution, digest = _verification_module.execute_verification_plan(
+                    plan=plan, repository_cwd=ledger['repository'], permissions=policy['permissions'],
+                    timeout_seconds=timeout_seconds, run_directory=run_dir.resolve(), execution_path=execution_path,
+                    closure_identity=identity, execution_authorization=policy['execution_authorization'])
+                result['execution_sha256'] = digest
+                result['status'] = ('not_run' if not execution['outcomes'] else
+                                    'passed' if execution['terminal_reason'] == 'complete' else 'failed')
+                result['post_workspace'] = _producer_workspace(ledger, inputs)
+                if result['post_workspace'] != candidate['workspace']:
+                    result['status'] = 'stale'
+            except (OSError, ValueError, RuntimeError) as error:
+                # No completed record means terminality cannot be inferred. Keep
+                # the operation unknown, even for a truthful infrastructure error.
+                ledger['actor_blocker'] = str(error) + '; inspect retained check evidence before retry'
+                result['blocker'] = ledger['actor_blocker']
+                _publish_actor_bytes(path, _canonical_record_bytes(result))
+                ledger.setdefault('evidence', {})['verify'] = {
+                    'status': 'blocked', 'inputs_sha256': ledger['inputs_sha256'],
+                    'candidate_sha256': ledger['candidate_sha256'],
+                    'operation_id': operation['operation_id'], 'path': relative}
+                _save_actor_ledger(run_dir, ledger)
+                return result
+            _publish_actor_bytes(path, _canonical_record_bytes(result))
+            _publish_check_outcome(run_dir, ledger, operation, result)
+            return result
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        return {'status': 'stale' if 'stale' in str(error).lower() else 'refused', 'reason': str(error)}
+
+
 def _reservation_context(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     ledger = json.loads((run_dir / "ledger.json").read_text())
     _validate_ledger(ledger)
@@ -1584,6 +1779,8 @@ def _evidence_view(ledger: dict[str, Any], stage: str) -> dict[str, Any]:
 
 def _reservation_options(ledger: dict[str, Any]) -> tuple[list[str], str | None]:
     active = _active_actor(ledger)
+    if active and active['assignment']['stage'] == 'verify':
+        return ['check_candidate', 'intervene'], f"check_operation_{active['state']}"
     if active:
         actions = ["launch_operation", "stop_operation", "intervene"] if active["state"] == "reserved" else ["observe_operation", "stop_operation", "intervene"]
         return actions, f"operation_{active['state']}"
@@ -1598,6 +1795,8 @@ def _reservation_options(ledger: dict[str, Any]) -> tuple[list[str], str | None]
         if not _current_readiness(ledger):
             return ["reserve:preflight"], "current_preflight_readiness_required"
         return ["reserve:correction"], None
+    if ledger.get('candidate_path') and not ledger.get('correction_request'):
+        return ['reserve:verify', 'inspect_candidate', 'intervene'], None
     stage = ledger["current_step"] or "preflight"
     if stage in {"ready", "preflight"}:
         return ["reserve:preflight"], None
@@ -1627,6 +1826,16 @@ def status_run(run_dir: Path) -> dict[str, Any]:
     ledger, flow = _reservation_context(run_dir)
     actions, blocker = _reservation_options(ledger)
     task_id = load_frozen_inputs(run_dir, ledger)["task_id"]
+    if ledger.get('candidate_path'):
+        try:
+            _load_current_candidate(run_dir, ledger, load_frozen_inputs(run_dir, ledger))
+        except (ValueError, OSError, KeyError):
+            ledger = json.loads(json.dumps(ledger))
+            for stage in ('implement', 'verify'):
+                if stage in ledger.get('evidence', {}):
+                    ledger['evidence'][stage]['status'] = 'stale'
+            if not _active_actor(ledger):
+                actions, blocker = ['inspect_candidate', 'intervene'], 'candidate_stale'
     return {
         "status": "ok", "run_id": ledger["run_id"], "task_id": task_id,
         "inputs_sha256": ledger["inputs_sha256"],
@@ -1680,6 +1889,8 @@ def reserve_operation(
             if expected_version != ledger["revision"]:
                 return refuse("stale_version", ledger)
             inputs = load_frozen_inputs(run_dir, ledger)
+            if stage == 'verify' and ledger.get('candidate_path'):
+                _load_current_candidate(run_dir, ledger, inputs)
             expected_role = "implementer" if stage == "correction" else _state_module.FLOW_STEP_ROLES.get(stage)
             if task_id != inputs["task_id"] or role != expected_role:
                 return refuse("task_or_role_mismatch", ledger)
@@ -1898,7 +2109,12 @@ def _read_actor_observation(directory: Path, operation: dict[str, Any]) -> tuple
     path = terminal if terminal.exists() else directory / "state.json"
     if not path.exists():
         return {}, False
-    observed = _worker_module.read_json(path)
+    try:
+        observed = _worker_module.read_json(path)
+    except json.JSONDecodeError:
+        # An exclusive receipt path can be visible before its bytes are complete.
+        # Missing terminal proof remains unresolved; never admit or relaunch.
+        return {}, False
     transport = operation["transport"]
     if not _same_typed_assignment(observed.get("assignment"), operation["assignment"]) or observed.get("configuration_sha256") != transport["configuration_sha256"]:
         raise ValueError("Transport observation binding mismatch")
@@ -2253,7 +2469,26 @@ def build_parser() -> "argparse.ArgumentParser":  # type: ignore[name-defined]
             actor_parser.add_argument("--codex-bin", default="codex")
             actor_parser.add_argument("--timeout-seconds", type=float, default=300)
         actor_parser.set_defaults(handler=_cli_actor)
+    for command in ('inspect-candidate', 'check-candidate'):
+        producer = subparsers.add_parser(command)
+        producer.add_argument('--run-dir', required=True)
+        if command == 'inspect-candidate':
+            producer.add_argument('--operation-id', required=True)
+        else:
+            producer.add_argument('--request', required=True)
+            producer.add_argument('--timeout-seconds', type=float, required=True)
+        producer.set_defaults(handler=_cli_producer)
     return parser
+
+
+def _cli_producer(args):
+    run_dir = Path(args.run_dir).resolve()
+    if args.command == 'inspect-candidate':
+        result = inspect_candidate(run_dir, args.operation_id)
+    else:
+        result = check_candidate(run_dir, _worker_module.read_json(Path(args.request)), timeout_seconds=args.timeout_seconds)
+    print(json.dumps(result, sort_keys=True))
+    return 0 if result['status'] in {'passed', 'failed', 'stale'} else 1
 
 
 def _cli_init(args: "argparse.Namespace") -> int:  # type: ignore[name-defined]

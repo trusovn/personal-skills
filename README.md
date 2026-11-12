@@ -459,8 +459,9 @@ into the plan.
 path, not the default way to run the skills above. Its controller currently
 supports frozen-input initialization, status/reservation/revision, and reserved
 actor launch, observation, stop requests and intervention history. Terminal
-preflight can admit readiness; implementation, collection and acceptance outputs
-remain raw claims. `run-next` remains a legacy refusal/reporting stub. See the
+preflight can admit readiness. The controller can inspect terminal implementation
+or correction work and run candidate-bound checks. Collection and acceptance
+admission are pending. `run-next` remains a legacy refusal/reporting stub. See the
 [operator guide](skills/task-orchestrator/references/operator-guide.md) for commands
 and qualification limits. Plan-to-manifest preparation, semantic review/correction
 loops, automatic recovery, completion and unattended end-to-end execution remain

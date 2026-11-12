@@ -110,10 +110,12 @@ def capture_initial_baseline(repository: Path) -> dict[str, Any]:
 
 
 def capture_task_baseline(repository: Path) -> dict[str, Any]:
+    status = capture_git_status(repository)
     return {
         "head_oid": capture_head(repository),
         "index_tree": capture_index_tree(repository),
-        "status": capture_git_status(repository),
+        "status": status,
+        "dirty_files": {name: _capture_file_identity(repository / name) for name in status},
     }
 
 
@@ -331,7 +333,8 @@ def validate_accepted_workspace(
         raise ValueError("Accepted baseline or closure evidence is missing")
     task_baseline = json.loads(baseline_path.read_text())
     closure = json.loads(closure_path.read_text())
-    if set(task_baseline) != {"head_oid", "index_tree", "status"}:
+    if set(task_baseline) not in ({"head_oid", "index_tree", "status"},
+                                  {"head_oid", "index_tree", "status", "dirty_files"}):
         raise ValueError("Accepted task baseline has an invalid shape")
     if _sha256_text(_canonical_json(task_baseline)) != task_baseline_digest:
         raise ValueError("Accepted task baseline digest mismatch")
@@ -476,3 +479,37 @@ def validate_accepted_workspace(
     )
     if observations.get("allowed_changed_paths") != expected_allowed_changes:
         raise ValueError("Accepted closure allowed-path observation mismatch")
+
+
+def _capture_file_identity(path: Path) -> dict[str, Any] | None:
+    """Use the same evaluated identity for candidates and dirty owner work."""
+    if path.is_symlink():
+        return {"link": os.fsdecode(path.readlink()),
+                "referent": hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None,
+                "executable": bool(path.stat().st_mode & 0o111) if path.is_file() else None}
+    if path.is_file():
+        return {"sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "executable": bool(path.stat().st_mode & 0o111)}
+    return None
+
+
+def capture_candidate_workspace(repository: Path, evaluated_paths: list[str]) -> dict[str, Any]:
+    """Hash tracked bytes, visible untracked bytes and explicit evaluated inputs.
+
+    Git-ignored generated output is excluded unless explicitly evaluated. Symlink
+    referents are included because checks can read them, not just link spelling.
+    """
+    status = capture_git_status(repository)
+    tracked = _decode(_run_git(repository, "ls-files", "-z").stdout).split("\0")
+    paths = sorted((set(tracked) | set(status) | set(evaluated_paths)) - {""})
+    files = {name: _capture_file_identity(repository / name) for name in paths}
+    return {"head_oid": capture_head(repository), "index_tree_oid": capture_index_tree(repository),
+            "status": status, "files": files}
+
+
+def capture_index_changed_paths(repository: Path, before: str, after: str) -> list[str]:
+    """Identify staging changes even when porcelain and worktree bytes match."""
+    if before == after:
+        return []
+    output = _run_git(repository, "diff", "--name-only", "--no-renames", "-z", before, after, "--").stdout
+    return [path for path in _decode(output).split("\0") if path]

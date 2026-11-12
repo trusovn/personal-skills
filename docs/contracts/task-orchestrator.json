@@ -9,7 +9,7 @@
     {
       "name": "public-controller",
       "kind": "cli",
-      "summary": "init freezes validated authority; status/reserve/revise-inputs expose single-task control; launch/observe/stop/intervene manage reserved actors. run-next remains a legacy refusal/reporting stub; inspect and revise-flow retain legacy behavior.",
+      "summary": "init freezes validated authority; status/reserve/revise-inputs expose single-task control; launch/observe/stop/intervene manage reserved actors. inspect-candidate and check-candidate produce current scope and check evidence. run-next remains a legacy refusal/reporting stub; inspect and revise-flow retain legacy behavior.",
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
         "skills/task-orchestrator/tests/test_controller.py"
@@ -40,7 +40,7 @@
     {
       "name": "verification-containment",
       "kind": "execution-boundary",
-      "summary": "Plan and run authorized argv checks using macOS /usr/bin/sandbox-exec; unsupported configurations fail before launch, without unrestricted fallback.",
+      "summary": "Run authorized argv checks. Legacy calls require macOS sandbox-exec containment and fail before launch if unsupported. Explicit frozen sbx/YOLO authority runs commands directly in the supplied environment and records sbx_yolo as the mechanism.",
       "declarations": [
         "skills/task-orchestrator/scripts/verification_runner.py",
         "skills/task-orchestrator/tests/test_verification_runner.py"
@@ -69,7 +69,7 @@
     {
       "name": "terminal-preflight-readiness-admission",
       "kind": "lifecycle-boundary",
-      "summary": "observe_operation owns the single outcome-admission path. Only complete current terminal preflight with structured prerequisite attestations admits readiness and the implement cursor. The controller validates attestations, not independent execution of every prerequisite. IF-003 is the preflight slice; implementation/collection/acceptance remain raw claims.",
+      "summary": "observe_operation owns the single outcome-admission path. Only complete current terminal preflight with structured prerequisite attestations admits readiness and the implement cursor. The controller validates attestations, not independent execution of every prerequisite. IF-003 is the preflight slice; candidate inspection and checks use separate controller operations.",
       "plan_refs": [
         {
           "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
@@ -81,12 +81,28 @@
         "skills/task-orchestrator/assets/actor-result.schema.json",
         "skills/task-orchestrator/tests/test_actor_operations.py"
       ]
+    },
+    {
+      "name": "candidate-inspection-and-checks",
+      "kind": "python-api-and-cli",
+      "summary": "inspect_candidate inspects the current admitted terminal implementation or correction against frozen authority and baseline. check_candidate runs the frozen check plan for the exact reserved verify assignment and current candidate. Replay validates retained evidence, and uncertain execution blocks relaunch.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "IF-003"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/docs/tasks/T-004.1/controller-contract.md",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
     }
   ],
   "state_owned": [
     {
       "name": "external-controller-run-directory",
-      "summary": "External controller run directory owns frozen authority, ledger, reservations, correction history, readiness and interventions; actors/operation-NNN holds launch/prompt, process/session diagnostics, raw result, terminal receipt and stop request. These are controller-owned records, without runtime tamper-resistance against authorized full-access actors.",
+      "summary": "External controller run directory owns frozen authority, ledger, reservations, correction history, readiness and interventions; actors/operation-NNN holds launch/prompt, process/session diagnostics, raw result, terminal receipt and stop request. These are controller-owned records, without runtime tamper-resistance against authorized full-access actors. The run directory also owns frozen baseline, candidate, check intent and result, command execution and log records.",
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
         "skills/task-orchestrator/scripts/controller_state.py"
@@ -94,7 +110,7 @@
     },
     {
       "name": "operation-readiness-status",
-      "summary": "Ledger operations retain optional configuration/PID/outcome transport records and one active operation; readiness binds current task/input/policy/flow/terminal preflight. Status exposes history, blocker and next actions; unknown liveness blocks another writer. ART-002 is implemented only for these current lifecycle surfaces.",
+      "summary": "Ledger operations retain transport outcomes, current readiness, and one active operation. ART-002 also records current candidate identity and candidate-bound implementation and verification evidence. Status exposes drift as stale and reports the blocker and next actions. Unknown terminality blocks another operation.",
       "plan_refs": [
         {
           "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
@@ -130,12 +146,13 @@
       "statement": "Missing output, process failure, timeout, or ambiguous liveness does not authorize completion or another writer."
     },
     {
-      "statement": "Automatic recovery, semantic candidate/check/collection/acceptance admission, completion and automatic advancement remain unimplemented. The authorized sbx/YOLO bridge assumes an owner-supplied environment; local fake-executable evidence does not qualify real sbx/provider/model behavior."
+      "statement": "Automatic recovery, semantic collection and acceptance admission, completion and automatic advancement remain unimplemented. The authorized sbx/YOLO bridge assumes an owner-supplied environment; local fake-executable evidence does not qualify real sbx/provider/model behavior."
     }
   ],
   "module_docs": [
     "skills/task-orchestrator/references/architecture-map.md",
-    "skills/task-orchestrator/references/operator-guide.md"
+    "skills/task-orchestrator/references/operator-guide.md",
+    "skills/task-orchestrator/docs/tasks/T-004.1/controller-contract.md"
   ],
   "artifacts": [
     {
@@ -168,6 +185,41 @@
         "skills/task-orchestrator/docs/tasks/T-003/controller-contract.md",
         "skills/task-orchestrator/scripts/codex_worker.py",
         "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
+    },
+    {
+      "name": "candidate-and-scope-identity",
+      "summary": "candidates/<sha256>.json binds the current terminal producer assignment and frozen baseline to HEAD, index tree, status and relevant file identity. Scope violations block publication, and drift makes current evidence stale. New baselines retain dirty owner-file identities, including executable metadata and symlink referents; inspection compares them regardless of allowed-path membership and refuses frozen dirty baselines without that identity.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "ART-003"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/controller_git.py",
+        "skills/task-orchestrator/docs/tasks/T-004.1/controller-contract.md",
+        "skills/task-orchestrator/tests/test_controller_git.py",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
+    },
+    {
+      "name": "candidate-bound-check-evidence",
+      "summary": "checks/<operation-id>.json binds the reserved assignment and evaluated candidate to the check plan, setup, environment and disposition. The execution record and logs preserve command outcomes and output digests. Intent and unknown state prevent rerunning an uncertain execution.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "ART-005"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/scripts/verification_runner.py",
+        "skills/task-orchestrator/docs/tasks/T-004.1/controller-contract.md",
+        "skills/task-orchestrator/tests/test_actor_operations.py",
+        "skills/task-orchestrator/tests/test_verification_runner.py"
       ]
     }
   ]

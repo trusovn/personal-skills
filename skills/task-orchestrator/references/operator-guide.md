@@ -44,10 +44,14 @@ an actor's statements. Missing reported prerequisites block implementation.
 
 After readiness, reserve `--stage implement --role implementer` at the current
 version, save its assignment, launch and observe it. The first implementation
-is cycle zero. An implementation outcome remains a claim. T-004/005 own the
-candidate/check/collection/acceptance admission pipeline; these commands do not
-complete a task. Review transport is available only after those prerequisites
-are admitted; hand-editing successor state is not an operator workflow.
+is cycle zero. After a complete terminal implementation or correction, use
+`inspect-candidate` with the producer operation ID. Reserve `verify` as
+`verifier` for the current candidate, then pass the saved assignment and a
+timeout to `check-candidate`. Checks run in the supplied environment under the
+frozen sbx/YOLO authority. See the
+[T-004.1 producer contract](../docs/tasks/T-004.1/controller-contract.md) for
+commands, evidence paths, replay and drift handling. Collection and acceptance
+admission remain pending.
 
 Every actor uses a fresh session and frozen `gpt-6.1-sol` low/medium/high mapping.
 The authorized bridge passes approval-never and danger-full-access inside sbx.

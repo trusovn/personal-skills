@@ -513,5 +513,393 @@ print(json.dumps(result),flush=True)
                     self.assertEqual(3,len(self.invocations(fake)))
 
 
+    def producer_run(self, check_setup="", extra_checks=None):
+        counter = self.root / 'check-count'
+        (self.repo / 'test_targeted.py').write_text(
+            "from pathlib import Path\n"
+            f"p=Path({str(counter)!r}); p.write_bytes(p.read_bytes()+b'x' if p.exists() else b'x')\n"
+            "PRODUCT = Path('allowed.txt').read_text()\n"
+            "import unittest\nclass ProductTest(unittest.TestCase):\n"
+            "    def test_content(self):\n"
+            "        self.assertEqual('local implementation marker\\n', PRODUCT)\n"
+            "print('real-check-output')\n" + check_setup)
+        (self.repo / '.gitignore').write_text('__pycache__/\n')
+        fake = self.actor()
+        policy = self.policy()
+        policy['verification']['targeted_checks'].extend(extra_checks or [])
+        with mock.patch.object(self, 'policy', return_value=policy):
+            controller, run_dir = self.create_initialized_run()
+        self.preflight(controller, run_dir, fake)
+        reserved = self.reserve(run_dir, 'implement', 'implementation')
+        self.launch(controller, run_dir, reserved, fake)
+        self.terminal(controller, run_dir, reserved['assignment']['operation_id'])
+        return controller, run_dir, reserved['assignment']['operation_id'], counter
+
+    def test_producer_real_check_replay_and_stale_bytes(self):
+        controller, run_dir, operation_id, counter = self.producer_run()
+        candidate = controller.inspect_candidate(run_dir, operation_id)
+        self.assertEqual('passed', candidate['status'], candidate)
+        self.assertEqual(0, controller.status_run(run_dir)['correction_count'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        self.assertEqual('reserved', reserved['status'], reserved)
+        assignment = reserved['assignment']
+        result = controller.check_candidate(run_dir, assignment, timeout_seconds=5)
+        if result['status'] != 'passed':
+            record = json.loads((run_dir / result['execution_path']).read_text())
+            self.fail(str(record) + '\n' + ''.join((run_dir / o['stderr_path']).read_text() for o in record['outcomes']))
+        self.assertEqual(b'x', counter.read_bytes())
+        execution = json.loads((run_dir / result['execution_path']).read_text())
+        self.assertEqual('sbx_yolo', execution['execution_mechanism'])
+        self.assertEqual(0, execution['outcomes'][0]['exit_code'])
+        self.assertIn(b'real-check-output', (run_dir / execution['outcomes'][0]['stdout_path']).read_bytes())
+        request = self.root / 'completed-check.json'
+        request.write_text(json.dumps(assignment))
+        cli = subprocess.run([sys.executable, str(fixtures.CONTROLLER_PATH), 'check-candidate', '--run-dir', str(run_dir), '--request', str(request), '--timeout-seconds', '5'], capture_output=True, text=True)
+        self.assertEqual(0, cli.returncode, cli.stderr)
+        self.assertEqual(result, json.loads(cli.stdout))
+        before = (run_dir / 'ledger.json').read_bytes()
+        self.assertEqual(result, controller.check_candidate(run_dir, assignment, timeout_seconds=5))
+        self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
+        self.assertEqual(b'x', counter.read_bytes())
+        (self.repo / 'allowed.txt').write_text('changed after checking\n')
+        status = controller.status_run(run_dir)
+        self.assertEqual('stale', status['evidence']['verify']['status'])
+        self.assertEqual('stale', controller.check_candidate(run_dir, assignment, timeout_seconds=5)['status'])
+        self.assertEqual(b'x', counter.read_bytes())
+
+    def assert_dirty_owner_identity_protected(self, *, allowed, change):
+        owner = self.repo / 'owner.txt'
+        referent = (self.repo / '__pycache__' if allowed else self.root) / 'owner-referent'
+        referent.parent.mkdir(exist_ok=True)
+        referent.write_text('owner content\n')
+        referent.chmod(0o644)
+        if change == 'mode':
+            owner.write_text('base\n')
+            owner.chmod(0o644)
+        else:
+            owner.symlink_to(self.root / 'original-referent')
+        subprocess.run(['git', '-C', str(self.repo), 'add', 'owner.txt'], check=True)
+        subprocess.run(['git', '-C', str(self.repo), 'commit', '-qm', 'owner'], check=True)
+        if change == 'mode':
+            owner.write_text('dirty owner content\n')
+        else:
+            owner.unlink()
+            owner.symlink_to(referent)
+        controller = load_controller()
+        original_init = controller.init_run
+
+        def initialize(run, policy, manifest, repo):
+            if allowed:
+                data = json.loads(manifest.read_text())
+                data['tasks'][0]['allowed_paths'].append('owner.txt')
+                manifest.write_text(json.dumps(data))
+            return original_init(run, policy, manifest, repo)
+
+        with mock.patch.object(controller, 'init_run', side_effect=initialize), mock.patch.object(fixtures, 'load_controller', return_value=controller):
+            controller, run_dir, operation_id, counter = self.producer_run()
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        before_status = controller.capture_git_status(self.repo)
+        if change == 'mode':
+            owner.chmod(0o755)
+        elif change == 'referent_mode':
+            referent.chmod(0o755)
+        else:
+            referent.write_text('changed owner content\n')
+        self.assertEqual(before_status, controller.capture_git_status(self.repo))
+        ledger_before = (run_dir / 'ledger.json').read_bytes()
+        result = controller.inspect_candidate(run_dir, operation_id)
+        self.assertEqual('blocked', result['status'], result)
+        self.assertIn('owner.txt', result['paths'])
+        self.assertEqual(ledger_before, (run_dir / 'ledger.json').read_bytes())
+        self.assertFalse(counter.exists())
+
+    def test_producer_dirty_owner_mode_outside_scope(self):
+        self.assert_dirty_owner_identity_protected(allowed=False, change='mode')
+
+    def test_producer_dirty_owner_mode_inside_scope(self):
+        self.assert_dirty_owner_identity_protected(allowed=True, change='mode')
+
+    def test_producer_dirty_owner_symlink_referent_outside_scope(self):
+        self.assert_dirty_owner_identity_protected(allowed=False, change='referent')
+
+    def test_producer_dirty_owner_symlink_referent_inside_scope(self):
+        self.assert_dirty_owner_identity_protected(allowed=True, change='referent')
+
+    def test_producer_dirty_owner_symlink_executable_referent(self):
+        self.assert_dirty_owner_identity_protected(allowed=True, change='referent_mode')
+
+    def test_producer_scope_and_invalid_timeout_preserve_state(self):
+        controller, run_dir, operation_id, counter = self.producer_run()
+        (self.repo / 'outside.txt').write_text('outside scope')
+        self.assertEqual('blocked', controller.inspect_candidate(run_dir, operation_id)['status'])
+        self.assertFalse(counter.exists())
+        (self.repo / 'outside.txt').unlink()
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        before = (run_dir / 'ledger.json').read_bytes()
+        for timeout in (0, -1, float('nan'), float('inf'), '5', True):
+            with self.subTest(timeout=timeout):
+                self.assertEqual('refused', controller.check_candidate(run_dir, reserved['assignment'], timeout_seconds=timeout)['status'])
+                self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
+        self.assertFalse(counter.exists())
+
+    def test_producer_failed_product_does_not_pass(self):
+        controller, run_dir, operation_id, counter = self.producer_run()
+        (self.repo / 'allowed.txt').write_text('incorrect product\n')
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        result = controller.check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)
+        self.assertEqual('failed', result['status'], result)
+        self.assertEqual(b'x', counter.read_bytes())
+        self.assertEqual(0, controller.status_run(run_dir)['correction_count'])
+
+    def test_producer_check_side_effect_cannot_publish_pass(self):
+        controller, run_dir, operation_id, counter = self.producer_run(
+            "\nPath('allowed.txt').write_text('check changed product\\n')\n")
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        result = controller.check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)
+        self.assertEqual('stale', result['status'], result)
+        self.assertEqual(b'x', counter.read_bytes())
+        self.assertEqual(0, controller.status_run(run_dir)['correction_count'])
+
+    def test_producer_unknown_check_intent_does_not_relaunch(self):
+        controller, run_dir, operation_id, counter = self.producer_run()
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        with mock.patch.object(controller._verification_module, 'execute_verification_plan', side_effect=RuntimeError('execution interrupted')):
+            result = controller.check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)
+        self.assertEqual('blocked', result['status'])
+        self.assertEqual('unknown', controller.status_run(run_dir)['operation']['state'])
+        result = load_controller().check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)
+        self.assertEqual('blocked', result['status'])
+        self.assertFalse(counter.exists())
+        self.assertEqual('refused', self.reserve(run_dir, 'verify', 'overlap')['status'])
+    def test_producer_assignment_refusals_do_not_mutate_or_launch(self):
+        controller, run_dir, operation_id, counter = self.producer_run()
+        before = (run_dir / 'ledger.json').read_bytes()
+        for bad_id in ('operation-001', 'operation-999'):
+            self.assertEqual('refused', controller.inspect_candidate(run_dir, bad_id)['status'])
+            self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        before = (run_dir / 'ledger.json').read_bytes()
+        for field in ('run_id', 'task_id', 'operation_id', 'inputs_sha256', 'policy_sha256', 'flow_sha256', 'candidate_sha256', 'stage'):
+            with self.subTest(field=field):
+                bad = dict(reserved['assignment'], **{field: 'wrong'})
+                self.assertEqual('refused', controller.check_candidate(run_dir, bad, timeout_seconds=5)['status'])
+                self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
+        self.assertFalse(counter.exists())
+
+    def test_producer_failed_product_correction_retains_history(self):
+        controller, run_dir, operation_id, counter = self.producer_run()
+        (self.repo / 'allowed.txt').write_text('incorrect product\n')
+        candidate = controller.inspect_candidate(run_dir, operation_id)
+        first = self.reserve(run_dir, 'verify', 'first-check')
+        failure = controller.check_candidate(run_dir, first['assignment'], timeout_seconds=5)
+        self.assertEqual('failed', failure['status'])
+        original = (run_dir / failure['path']).read_bytes()
+        correction = self.reserve(run_dir, 'correction', 'fix-product', reason='check_failed')
+        self.assertEqual('reserved', correction['status'], correction)
+        fake = self.actor()
+        self.launch(controller, run_dir, correction, fake)
+        self.terminal(controller, run_dir, correction['assignment']['operation_id'])
+        corrected = controller.inspect_candidate(run_dir, correction['assignment']['operation_id'])
+        self.assertNotEqual(candidate['candidate_sha256'], corrected['candidate_sha256'])
+        second = self.reserve(run_dir, 'verify', 'second-check')
+        success = controller.check_candidate(run_dir, second['assignment'], timeout_seconds=5)
+        self.assertEqual('passed', success['status'], success)
+        self.assertEqual(b'xx', counter.read_bytes())
+        self.assertEqual(original, (run_dir / failure['path']).read_bytes())
+        self.assertEqual(1, controller.status_run(run_dir)['correction_count'])
+        self.assertNotEqual('passed', controller.check_candidate(run_dir, first['assignment'], timeout_seconds=5)['status'])
+        self.assertEqual(b'xx', counter.read_bytes())
+
+    def test_producer_real_interruption_after_result_reuses_one_execution(self):
+        controller, run_dir, operation_id, counter = self.producer_run()
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        request = self.root / 'check-assignment.json'
+        request.write_text(json.dumps(reserved['assignment']))
+        source = r'''
+import json,sys,time
+from pathlib import Path
+sys.path.insert(0,sys.argv[1]); import controller
+run=Path(sys.argv[2]); assignment=json.loads(Path(sys.argv[3]).read_text())
+original=controller._publish_actor_bytes
+def publish(path,content):
+    original(path,content)
+    if path.parent.name=='checks' and not path.name.endswith('.intent.json'):
+        (run/'checkpoint').touch()
+        while True: time.sleep(.01)
+controller._publish_actor_bytes=publish
+controller.check_candidate(run,assignment,timeout_seconds=5)
+'''
+        process = subprocess.Popen([sys.executable, '-c', source, str(fixtures.CONTROLLER_PATH.parent), str(run_dir), str(request)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            self.wait_file(run_dir / 'checkpoint')
+            self.assertEqual(b'x', counter.read_bytes())
+            self.assertEqual('refused', controller.inspect_candidate(run_dir, operation_id)['status'])
+        finally:
+            process.kill(); process.communicate(timeout=5)
+        result = load_controller().check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)
+        self.assertEqual('passed', result['status'], result)
+        self.assertEqual(b'x', counter.read_bytes())
+        self.assertIsNone(controller.status_run(run_dir)['operation'])
+
+
+    def test_producer_drift_during_real_check_and_exclusion(self):
+        import threading
+        gate = self.root / 'release-check'
+        waiting = self.root / 'check-waiting'
+        setup = (f"\nimport time\nPath({str(waiting)!r}).touch()\n"
+                 f"while not Path({str(gate)!r}).exists(): time.sleep(.01)\n")
+        controller, run_dir, operation_id, counter = self.producer_run(setup)
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        results = []
+        worker = threading.Thread(target=lambda: results.append(controller.check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)))
+        worker.start()
+        try:
+            self.wait_file(waiting)
+            self.assertEqual('refused', load_controller().check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)['status'])
+            self.assertEqual('refused', controller.inspect_candidate(run_dir, operation_id)['status'])
+            (self.repo / 'allowed.txt').write_text('changed while checking\n')
+            (self.repo / 'new-untracked').write_text('new evaluated workspace input')
+        finally:
+            gate.touch(); worker.join(timeout=8)
+        self.assertFalse(worker.is_alive())
+        self.assertEqual('stale', results[0]['status'], results)
+        self.assertEqual(b'x', counter.read_bytes())
+        record = json.loads((run_dir / results[0]['execution_path']).read_text())
+        self.assertEqual('passed', record['outcomes'][0]['status'])
+
+
+    def test_partial_terminal_receipt_remains_unresolved_until_complete(self):
+        controller, run_dir = self.create_initialized_run()
+        fake = self.actor()
+        reserved = self.reserve(run_dir)
+        self.launch(controller, run_dir, reserved, fake)
+        directory = run_dir / 'actors' / reserved['assignment']['operation_id']
+        self.wait_file(directory / 'result.state.json')
+        path = directory / 'result.state.json'
+        controller._ACTOR_SUPERVISORS[str(directory.resolve())].wait(timeout=8)
+        raw = path.read_bytes()
+        path.write_bytes(b'{')
+        observation = controller.observe_operation(run_dir, reserved['assignment']['operation_id'])
+        self.assertIn(observation['status'], {'running', 'unknown'})
+        self.assertFalse(controller.status_run(run_dir)['readiness_current'])
+        self.assertEqual('refused', self.reserve(run_dir, key='overlap')['status'])
+        path.write_bytes(raw)
+        self.assertEqual('terminal', self.terminal(controller, run_dir, reserved['assignment']['operation_id'])['status'])
+        self.assertTrue(controller.status_run(run_dir)['readiness_current'])
+        self.assertEqual(1, len(self.invocations(fake)))
+
+    def test_producer_invalid_later_command_plans_before_launch(self):
+        controller, run_dir, operation_id, counter = self.producer_run(extra_checks=["/bin/sh -c 'touch unauthorized'"])
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        before = (run_dir / 'ledger.json').read_bytes()
+        result = controller.check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)
+        self.assertEqual('refused', result['status'], result)
+        self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
+        self.assertFalse(counter.exists())
+        self.assertFalse((self.repo / 'unauthorized').exists())
+
+    def test_producer_missing_later_executable_blocks_before_any_command(self):
+        controller, run_dir, operation_id, counter = self.producer_run(extra_checks=['/nonexistent/task-orchestrator-check'])
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        result = controller.check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)
+        self.assertEqual('blocked', result['status'], result)
+        self.assertIn('executable', result['blocker'].lower())
+        self.assertFalse(counter.exists())
+        self.assertEqual('unknown', controller.status_run(run_dir)['operation']['state'])
+
+    def test_producer_log_collision_preserves_evidence_without_launch(self):
+        controller, run_dir, operation_id, counter = self.producer_run()
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        log = run_dir / 'verification' / (reserved['assignment']['operation_id']+'.turn-001.command-001.stdout.log')
+        log.parent.mkdir(exist_ok=True)
+        log.write_bytes(b'existing evidence')
+        result = controller.check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)
+        self.assertEqual('blocked', result['status'], result)
+        self.assertEqual(b'existing evidence', log.read_bytes())
+        self.assertFalse(counter.exists())
+    def interrupted_check(self, boundary):
+        gate = self.root / 'release'
+        done = self.root / 'child-done'
+        waiting = self.root / 'waiting'
+        setup = ''
+        if boundary == 'during':
+            setup = (f"\nimport time\nPath({str(waiting)!r}).touch()\n"
+                     f"while not Path({str(gate)!r}).exists(): time.sleep(.01)\n"
+                     f"Path({str(done)!r}).touch()\n")
+        controller, run_dir, operation_id, counter = self.producer_run(setup)
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check')
+        request = self.root / 'check-request.json'
+        request.write_text(json.dumps(reserved['assignment']))
+        source = r'''
+import json,sys,time
+from pathlib import Path
+sys.path.insert(0,sys.argv[1]); import controller
+run=Path(sys.argv[2]); assignment=json.loads(Path(sys.argv[3]).read_text())
+if sys.argv[4]=='before':
+    original=controller._save_actor_ledger
+    def save(root,ledger):
+        original(root,ledger)
+        if ledger['actor_operations'][-1]['state']=='unknown':
+            (run/'checkpoint').touch()
+            while True: time.sleep(.01)
+    controller._save_actor_ledger=save
+controller.check_candidate(run,assignment,timeout_seconds=5)
+'''
+        process = subprocess.Popen([sys.executable, '-c', source, str(fixtures.CONTROLLER_PATH.parent), str(run_dir), str(request), boundary], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            self.wait_file(waiting if boundary == 'during' else run_dir / 'checkpoint')
+            self.assertEqual('unknown', controller.status_run(run_dir)['operation']['state'])
+        finally:
+            process.kill(); process.communicate(timeout=5)
+            gate.touch()
+        if boundary == 'during':
+            self.wait_file(done)
+            self.assertEqual(b'x', counter.read_bytes())
+        else:
+            self.assertFalse(counter.exists())
+        before = (run_dir / 'ledger.json').read_bytes()
+        replay = load_controller().check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)
+        self.assertEqual('blocked', replay['status'], replay)
+        self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
+        self.assertEqual('refused', self.reserve(run_dir, 'verify', 'overlap')['status'])
+
+    def test_producer_real_interruption_before_launch_stays_stopped(self):
+        self.interrupted_check('before')
+
+    def test_producer_real_interruption_during_command_stays_stopped(self):
+        self.interrupted_check('during')
+
+    def test_producer_refuses_hidden_staged_owner_change(self):
+        owner = self.repo / 'owner.txt'
+        owner.write_text('committed baseline\n')
+        subprocess.run(['git', '-C', str(self.repo), 'add', 'owner.txt'], check=True)
+        subprocess.run(['git', '-C', str(self.repo), 'commit', '-qm', 'owner baseline'], check=True)
+        owner.write_text('owner staged\n')
+        subprocess.run(['git', '-C', str(self.repo), 'add', 'owner.txt'], check=True)
+        owner.write_text('owner worktree\n')
+        controller, run_dir, operation_id, counter = self.producer_run()
+        status_before = controller.capture_git_status(self.repo)['owner.txt']
+        owner.write_text('changed staging\n')
+        subprocess.run(['git', '-C', str(self.repo), 'add', 'owner.txt'], check=True)
+        owner.write_text('owner worktree\n')
+        self.assertEqual(status_before, controller.capture_git_status(self.repo)['owner.txt'])
+        result = controller.inspect_candidate(run_dir, operation_id)
+        self.assertEqual('blocked', result['status'], result)
+        self.assertIn('owner.txt', result['paths'])
+        self.assertFalse(counter.exists())
+
+
+
 if __name__=='__main__':
     unittest.main()

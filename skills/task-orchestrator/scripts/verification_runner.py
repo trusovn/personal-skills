@@ -511,6 +511,7 @@ def execute_verification_plan(
     execution_path: str,
     closure_identity: dict[str, Any],
     interruption_event: threading.Event | None = None,
+    execution_authorization: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], str]:
     """Preflight, execute, and exclusively publish one command-execution record."""
 
@@ -520,6 +521,14 @@ def execute_verification_plan(
         or timeout_seconds <= 0
     ):
         raise VerificationExecutionError("timeout_seconds must be positive")
+    if execution_authorization is not None and (
+        execution_authorization != {"transport": "sbx", "yolo": True, "intervention": "active_chat"}
+        or execution_authorization.get("yolo") is not True
+    ):
+        raise UnsupportedSandbox("Explicit frozen sbx/YOLO authority required")
+    def invocation(argv):
+        return list(argv) if execution_authorization is not None else build_sandbox_invocation(argv, normalized_permissions)
+
     cwd = _canonical_directory(repository_cwd, "repository_cwd")
     run_dir = _canonical_directory(run_directory, "run_directory")
     normalized_permissions = _normalize_permissions(permissions)
@@ -540,7 +549,7 @@ def execute_verification_plan(
     artifact_paths = [record_path]
     for command in plan["commands"]:
         resolved_argv, fingerprint = _resolve_executable(command["argv"], cwd)
-        effective_argv = build_sandbox_invocation(resolved_argv, normalized_permissions)
+        effective_argv = invocation(resolved_argv)
         stdout_relative = f"verification/{stem}.{command['id']}.stdout.log"
         stderr_relative = f"verification/{stem}.{command['id']}.stderr.log"
         stdout_path = _artifact_path(run_dir, stdout_relative)
@@ -563,7 +572,7 @@ def execute_verification_plan(
     if not record_path.parent.is_dir():
         raise VerificationExecutionError("verification artifact directory does not exist")
 
-    capability = build_sandbox_invocation(["/usr/bin/true"], normalized_permissions)
+    capability = invocation(["/usr/bin/true"])
     capability_result = subprocess.run(
         capability, cwd=cwd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL, check=False, timeout=5,
@@ -695,6 +704,10 @@ def execute_verification_plan(
                         process.stderr.close()
                 raise
 
+            if execution_authorization is not None and process is not None:
+                if _process_group_exists(process.pid):
+                    _terminate_process_group(process)
+                _wait_for_process_group_exit(process.pid, 1)
             ended_at = _utc_now()
             if interrupted:
                 status = "interrupted"
@@ -754,6 +767,8 @@ def execute_verification_plan(
         "terminal_reason": terminal_reason,
         "authorized_gap": authorized_gap,
     }
+    if execution_authorization is not None:
+        record["execution_mechanism"] = "sbx_yolo"
     state.validate_command_execution_record(
         record, expected_closure_identity=closure_identity
     )

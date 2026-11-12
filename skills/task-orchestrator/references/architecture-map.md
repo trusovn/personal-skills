@@ -111,11 +111,12 @@ spawning the detached `codex_worker.py actor` supervisor, and owns one admission
 path (`observe_operation` → `_admit_actor_outcome`). The adapter records process
 and session observations and an exclusive terminal receipt. Missing receipt or
 unresolved group liveness blocks another actor. Stop requests do not signal a
-recorded PID. Only preflight semantics are admitted here; T-004/005 extend this
-same path for other roles. Runtime details and proof limits are in the
-[T-003 contract](../docs/tasks/T-003/controller-contract.md).
+recorded PID. This path admits preflight readiness and retains terminal producer
+outcomes. The controller separately inspects candidate scope and publishes
+candidate-bound check evidence. See the
+[T-003 lifecycle contract](../docs/tasks/T-003/controller-contract.md) and
+[T-004.1 producer contract](../docs/tasks/T-004.1/controller-contract.md).
 
-The older macOS verification runner is a separate historical boundary; actor
-launch in the explicitly approved sbx/YOLO policy does not require its containment
-qualification. The adapter retains the legacy full-access refusal outside the
-authorized actor bridge. No provider identity or outer-system isolation is proved.
+The verification runner retains its legacy macOS containment path. The
+candidate check path uses the same runner with explicit frozen sbx/YOLO
+authority to execute in the supplied environment.

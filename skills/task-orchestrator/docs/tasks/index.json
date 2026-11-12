@@ -62,6 +62,39 @@
       "depends_on": [
         "T-002"
       ]
+    },
+    "T-004": {
+      "kind": "composite",
+      "source_plan_task": "T-004",
+      "brief": "skills/task-orchestrator/docs/tasks/T-004/brief.md",
+      "parent": null,
+      "children": [
+        "T-004.1",
+        "T-004.2"
+      ],
+      "depends_on": [
+        "T-003"
+      ]
+    },
+    "T-004.1": {
+      "kind": "executable",
+      "source_plan_task": "T-004",
+      "brief": "skills/task-orchestrator/docs/tasks/T-004.1/brief.md",
+      "parent": "T-004",
+      "children": [],
+      "depends_on": [
+        "T-003"
+      ]
+    },
+    "T-004.2": {
+      "kind": "executable",
+      "source_plan_task": "T-004",
+      "brief": "skills/task-orchestrator/docs/tasks/T-004.2/brief.md",
+      "parent": "T-004",
+      "children": [],
+      "depends_on": [
+        "T-004.1"
+      ]
     }
   }
 }

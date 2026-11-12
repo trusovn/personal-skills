@@ -46,6 +46,17 @@ incomplete proof or an unresolved applicable blocker. Preserve every gap/finding
 ID and separate evidence, correction and decision owners. Request focused proof
 from the owning stage; do not repeat general maintainability review.
 
+Reconcile the complexity-increase inventory with its dispositions so each
+identified increase is covered, including members of grouped explanations.
+Confirm that the cited inspection supports each disposition, accepting concise
+reasoning for routine local growth. For concerns and retained hotspots, check
+evidence of accumulated maintenance cost, relevant shared-policy consumers,
+alternatives and a concrete present justification. Record confirmation by
+obligation ID or traceable group; return missing or unsupported dispositions to
+maintainability with the exact gap. Complete applicable dispositions before
+ACCEPT, retaining existing advisory measurement availability rules and
+mixed-condition precedence.
+
 Keep the first outstanding stage and complete ordered remainder: affected required
 architecture/maintainability duties, applicable outstanding registry synchronization,
 fresh discovery, then separate acceptance. Omit only absent or demonstrably current
@@ -398,6 +409,8 @@ Admitted discovery: <report/continuation path or absence, coverage completeness>
 Coverage:
 - <stable row ID: cases, submitted evidence, admitted discovery evidence, reconciled pass/fail/blocked/unchecked + reason>
 
+Maintainability dispositions (when applicable): <each obligation ID or traceable group; confirmed with cited evidence, or exact gap/counterargument and owner>
+
 Aggregate gate (consumed): <command or not run, owner/stage, reason, current evidence>
 Questions / unchecked work: <separate summary>
 Scope / residual risk: <summary>
@@ -496,6 +509,8 @@ explicit post-verdict tests-only protocol above.
   evidence from both a valid instance and a deliberately invalid instance that
   targets the relevant constraint; otherwise its row remains blocked/unchecked
   and cannot support `ACCEPT`.
+- Applicable complexity dispositions are explicitly confirmed against current
+  evidence, or their exact gaps/counterarguments and owners prevent advancement.
 - The consumed aggregate-gate record names the command or `not run`, owner,
   stage, reason, and current evidence, without re-executing the gate.
 - Every confirmed finding carries its contextual disposition fields and a

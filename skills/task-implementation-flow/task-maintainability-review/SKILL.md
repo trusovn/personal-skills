@@ -242,13 +242,18 @@ Use the [measurement protocol](references/measurement-review.md) to compare
 actual submitted bytes against the original baseline and verify affected
 responsibilities from the diff and local context. The implementer's comparison
 alone is not independent evidence. Apply the 10/50/5 advisory targets
-proportionately: growth through equality is information only; retained affected
-breaches need explicit rationale dispositions. Explain agreement or a concrete
-counterargument with future maintenance cost and the smallest correction.
+proportionately. Inventory every measured complexity increase and apply the
+reference protocol's short inspection to each; record a compact disposition for
+routine local growth and evidence-backed reasoning for concerns and retained
+hotspots. Inspect relevant consumers of changed shared policy and assess the
+accumulated structure. Explain why retention is acceptable now or give a concrete
+counterargument and the smallest reasonable correction. Keep every required
+disposition visible alongside any measurement gaps and their owners.
 Numbers alone never justify `CHANGES_REQUESTED`, nor excuse worse ownership,
-names or navigation. For each signal ask whether it exposes a concrete
-introduced/worsened design problem. If not, keep it in `WARNINGS` or omit it. Missing evidence and native hard failures retain separate
-status, policy and recovery ownership.
+names or navigation. For other signals ask whether they expose a concrete
+introduced/worsened design problem. If not, keep it in `WARNINGS` or omit it.
+Missing evidence and native hard failures retain separate status, policy and
+recovery ownership.
 
 ### 9. Report every confirmed blocker
 
@@ -326,8 +331,9 @@ MEASUREMENT: complete | partial | missing | incompatible | unavailable | N/A
 - implementer I / independent reviewer R: <exact pairs; current applicability>
 - governed / affected scope and checked bytes: <identities, relationships, unknowns>
 RATIONALE_DISPOSITIONS:
-- <obligation ID; report/function/metric; known before/after; agreement or concrete
-  counterargument, cohesion/alternative cost; evidence or owed explanation/owner>
+- <obligation ID; report/function/metric; known before/after; inspection and
+  retention/correction reason; for concerns/hotspots, evidence, consumers,
+  accumulated cost and alternative; linked finding or explanation gap/owner>
 NATIVE_EVIDENCE:
 - <command; whole governed scope; policy/requiredness; checked-byte identity;
   result; producer/stage; aggregate coverage/reuse, or gap and recovery owner>
@@ -421,6 +427,9 @@ registry work for every test change.
 - Hard failures are separated from advisory signals.
 - Independent current comparison, affected responsibilities and every required
   rationale disposition are recorded, or their exact limits/owners are explicit.
+- Every measured complexity increase has a proportionate disposition; shared-policy
+  branching includes consumer inspection, and retained concerns have a concrete
+  present justification.
 - Required dispositions, evidence gaps and confirmed blockers remain outside the
   optional warning cap; an early decisive finding cannot truncate them.
 - Semantic review is limited to the changed design and immediate architectural impact.

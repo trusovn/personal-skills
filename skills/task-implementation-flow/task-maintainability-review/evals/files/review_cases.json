@@ -179,7 +179,7 @@
     "id": "V-03a",
     "scenario": "V-03a",
     "situation": "Complexity 6 \u2192 8; statements 40 \u2192 49; arguments 3 \u2192 4",
-    "oracle": "Information only. No required per-increase defense or metric-driven refactor.",
+    "oracle": "Inventory complexity 6 to 8 and apply the shared-policy, coordination, responsibility and testability checks. A concise local-growth disposition suffices when supported by the actual code; investigate any concern. Statement/argument growth remains information only absent a semantic concern.",
     "variant": "",
     "seed": "V-04a-complexity"
   },
@@ -187,7 +187,7 @@
     "id": "V-03b",
     "scenario": "V-03b",
     "situation": "Complexity 9 \u2192 10; statements 49 \u2192 50; arguments 4 \u2192 5",
-    "oracle": "Equality is within target. Same information-only handling as V-03a.",
+    "oracle": "Inventory complexity 9 to 10 and record a proportionate disposition as in V-03a. Equality remains within target; inspect shared policy and coordination before justifying retention. Statement/argument equality remains information only absent a semantic concern.",
     "variant": "",
     "seed": "V-04b-complexity"
   },
@@ -211,7 +211,7 @@
     "id": "V-03e",
     "scenario": "V-03e",
     "situation": "Existing breach worsens 11 \u2192 12, 51 \u2192 52 or 6 \u2192 7",
-    "oracle": "Explicitly assess and dispose of the worsening rationale. A threshold alone remains insufficient for rejection.",
+    "oracle": "Explicitly assess and dispose of the worsening rationale, considering the accumulated hotspot rather than only the increment. Cite inspection, a credible maintenance consequence, alternative cost and present retention or correction reason. Trace relevant consumers if the changed branching implements shared policy. A threshold alone remains insufficient for rejection.",
     "variant": "",
     "seed": "V-04e-complexity"
   },

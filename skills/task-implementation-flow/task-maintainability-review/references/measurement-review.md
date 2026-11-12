@@ -76,22 +76,44 @@ Apply these rules to actually affected responsibilities:
 
 | Condition | Disposition duty |
 |---|---|
-| Growth at or below target, including equality | Information only; no individual defense or metric-driven refactor. |
+| Any measured complexity increase, including growth below or to target | Apply the short inspection below and record a proportionate disposition. |
+| New function/responsibility | Assess introduced decision complexity; record absent before-values as unknown. |
+| Statement/argument growth at or below target, including equality | Information only unless it signals a semantic design concern. |
 | New function exceeds target or existing function newly crosses it | Explicitly assess retained structure and useful local alternatives. |
 | Existing breach worsens | Explicitly assess and justify the increase. |
 | Materially edited hotspot remains above target, equal or improved | Consider useful bounded cleanup and explain retention; target compliance is not mandatory. |
 | Hotspot reaches target or stays untouched | No retained-breach rationale; untouched debt is context only. |
 | Metrics fall but ownership/names/navigation worsen | Assess semantic cost with helpers; numbers do not excuse regression. |
 
-Each required obligation identifies report, function, metric, known before/after,
-why the decisions belong together and a plausible alternative's cost. Recover
-missing explanations through the implementer; leave the obligation/gap visible
-until resolved. One cohesive explanation can cover related metrics, but every
-obligation must have an identifiable disposition. Record agreement or a concrete
-counterargument, credible future maintenance cost and smallest reasonable
-correction. A threshold alone cannot cause `CHANGES_REQUESTED`. Preserve naming,
-locality, test-asset and abstraction-cost review from the main protocol. Do not
-split cohesive code, hide arguments or add speculative layers to satisfy metrics.
+Inventory every measured complexity increase in affected functions, including
+below-target growth. For each, check whether the added branching implements
+shared policy, requires coordinated edits across consumers, or worsens
+responsibility boundaries or testability. Assess the accumulated structure as
+well as the latest increment. Carry semantically observed complexity concerns
+through the same review when measurements are unavailable, with explicit gaps.
+
+Record each increase in RATIONALE_DISPOSITIONS with its obligation ID, function,
+known before/after values, and the inspection supporting retention or correction.
+Related functions may share an explanation when each member is identified.
+For routine local growth, one sentence explaining the local responsibility and
+absence of added coordination is sufficient. For a concern or retained hotspot,
+cite inspected paths and concrete evidence, a credible same-kind maintenance
+consequence, a plausible bounded alternative and its cost, and why retention is
+acceptable now or correction is needed. This makes cumulative cost visible even
+when the latest increase is small.
+
+When changed branching implements shared policy, trace its owner and relevant
+consumers, including unchanged ones. Compare their determining rules and explain
+consistency or intentional differences. Use this evidence alongside function
+cohesion to justify the current structure. Ground retained concerns in present
+maintenance cost and existing mitigations, rather than a promise to reassess
+after further growth.
+
+Record agreement or a concrete counterargument to the implementer's rationale.
+Keep unresolved explanations visible with their evidence owner until recovered;
+complete applicable dispositions before ACCEPT. Preserve advisory measurement
+availability rules above. Metrics guide investigation; correction requires a
+concrete design regression or hard-rule violation.
 
 ## Retain native policy beside advisory evidence
 

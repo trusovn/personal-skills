@@ -14,7 +14,7 @@
     {
       "name": "proportionate-rationale-disposition",
       "kind": "skill-guidance",
-      "summary": "Verify affected responsibilities through diff and local context, including rename/extraction helpers, rather than file membership or line movement. Dispose of new/newly crossed, worsening and materially edited retained breaches, naming known report/function/metric values, cohesion and alternative cost. Below/equal-target growth and untouched debt require no individual defense. Agreement can retain a justified breach; correction requires a concrete maintenance problem or hard-rule violation. Unknown counts remain unknown, and lower metrics do not excuse worse ownership, names or navigation.",
+      "summary": "Verify affected responsibilities through diff and local context, including rename/extraction helpers. Inventory every measured complexity increase, apply shared-policy, coordination, responsibility and testability checks, and record a proportionate disposition: concise for routine local growth; evidence of accumulated cost, relevant consumers, alternatives and present justification for concerns and retained hotspots. Grouped explanations identify each member. Retain existing new/crossed/worsening/edited breach obligations, advisory measurement availability and unknown counts. Correction requires a concrete design regression or hard-rule violation.",
       "plan_refs": [{"plan": "docs/project-plan.md", "id": "CAP-004"}],
       "declarations": ["skills/task-implementation-flow/task-maintainability-review/SKILL.md", "skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
     },
@@ -28,7 +28,7 @@
     {
       "name": "downstream-maintainability-evidence-handoff",
       "kind": "skill-guidance",
-      "summary": "Discovery and separate acceptance validate current numbered review scope/bytes, reviewer comparison, dispositions, native coverage and remaining gaps without repeating general maintainability review. Preserve finding IDs and distinct evidence/correction/decision owners. Name the first outstanding stage and full applicable remainder: affected conditional duties, outstanding registry synchronization, fresh discovery, then separate acceptance. Omit only absent/current unaffected stages; significant test/eval/harness corrections stale affected proof. Naming a route executes no downstream stage.",
+      "summary": "Discovery and separate acceptance validate current numbered review scope/bytes, reviewer comparison, dispositions, native coverage and remaining gaps without repeating general maintainability review. Acceptance reconciles the increase inventory with proportionate dispositions, confirms their cited inspection and present justification, and routes missing or unsupported reasoning to maintainability before acceptance. Preserve finding IDs and distinct evidence/correction/decision owners. Name the first outstanding stage and full applicable remainder: affected conditional duties, outstanding registry synchronization, fresh discovery, then separate acceptance. Omit only absent/current unaffected stages; significant test/eval/harness corrections stale affected proof. Naming a route executes no downstream stage.",
       "declarations": ["skills/task-implementation-flow/task-review-discovery/SKILL.md", "skills/task-implementation-flow/task-acceptance-review/SKILL.md", "skills/task-implementation-flow/task-maintainability-review/references/measurement-review.md"]
     }
   ],

@@ -116,6 +116,17 @@ until admitted evidence reconciles them against current bytes. Every
 required/material row must have one of the four results before the decision
 ends. `CHANGES_REQUESTED` does not imply that unlisted areas passed.
 
+### Maintainability dispositions (when applicable)
+
+| Obligation ID / covered increases | Current inspection evidence | Acceptance confirmation or exact gap | Owner / route |
+|---|---|---|---|
+| `<ID; each grouped member>` | `<before/after and cited disposition>` | `<confirmed with reason | missing/unsupported with reason>` | `<owning stage>` |
+
+Reconcile inventory coverage and confirm proportionate reasoning: concise for
+routine local growth; evidence of accumulated cost, shared-policy consumers and
+present justification for concerns/hotspots. Return evidence gaps to
+maintainability under the existing measurement availability policy.
+
 ## 4. Admitted adversarial evidence
 
 Consumed from the discovery report; include only rows relevant to this task.

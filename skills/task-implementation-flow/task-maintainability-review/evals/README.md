@@ -89,3 +89,15 @@ They do not execute or grade an agent. Installer projection and the owning
 measurement suite provide the separate portable/runtime evidence. Live actor
 runs and independent grading need separate approval; T-005 owns the complete
 installed producer-to-consumer journey.
+
+Organization-policy cases reuse the shared [source-guided worked inputs and
+oracles](../../bounded-task-implementer/evals/README.md#organization-policy-source-guided-worked-cases):
+cohesive retention (O-01), a distinct responsibility (O-02), reverse-dependency
+extraction and transaction ownership (O-03), and absent standalone policy
+(O-04), plus equivalent explicitly routed guidance. Inspect the affected cluster
+and consumers against the supplied target policy. Mandatory findings need the
+rule, changed evidence, consequence and bounded correction; advisory size signals
+do not create blockers and untouched debt stays outside scope. These are
+source-guided instruction checks, not independent review of a submission or
+qualification of executed reviewer behavior. Existing eval 10 remains the
+no-standalone-policy control with its original semantic-control setup/oracle.

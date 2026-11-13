@@ -5,6 +5,12 @@
   "owner_paths": ["skills/task-implementation-flow/bounded-task-implementer"],
   "provides": [
     {
+      "name": "target-owned-organization-and-placement",
+      "kind": "skill-guidance",
+      "summary": "Before placement or editing, resolve docs/code-organization.md from the target repository, equivalent explicitly routed authority and relevant module guidance; never substitute the skill installation/source policy. Absence alone neither blocks work nor authorizes policy creation. Before structural additions or material growth, identify responsibility owner, placement and dependency changes; assess the resulting cluster with helpers/consumers during implementation and final self-check and report relevant decisions. Permit a necessary coherent new file within authorized scope; preserve transaction ownership, explicit dependency direction and bounded scope, returning material unresolved architecture/scope conflicts to the owner.",
+      "declarations": ["skills/task-implementation-flow/bounded-task-implementer/SKILL.md"]
+    },
+    {
       "name": "implementer-starting-evidence",
       "kind": "skill-guidance",
       "summary": "Packaged entry validates the supplied baseline's logical project, inventory/source hashes, effective tools/settings/checks and folder coverage before editing; material mismatch returns to focused preflight without replacement capture or relaxed high-assurance freshness. Direct self-preflight attempts installation-local pre-edit capture of authorized supported Python folders, including test/eval/harness assets and existing empty parents, using actual dirty/staged/untracked worktree bytes. No package solely for measurement, implicit setup or cross-installation fallback.",

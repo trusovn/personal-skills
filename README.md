@@ -160,6 +160,12 @@ directory. The check compares only current bytes and retains no versions:
 refresh deliberately by rerunning the installer between check invocations.
 
 **Maintenance contract for future skill changes:**
+The implementer and maintainability reviewer consume a target project's
+`docs/code-organization.md` when present or equivalent explicitly routed
+guidance. The installer ships those consumers but does not copy this source
+repository's organization policy into target projects or own their policy files.
+An absent standalone policy does not block unrelated projects.
+
 `scripts/install_development_skills.py` is part of the distribution surface.
 Any change that renames, moves, adds, or removes a skill that belongs in the
 `development` profile, or changes shared runtime files required by those skills,

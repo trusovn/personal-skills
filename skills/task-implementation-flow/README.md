@@ -18,6 +18,14 @@ lightweight guided flow. Repositories that enable maintainability guardrails can
 insert a focused architecture gate before functional acceptance. A
 high-assurance profile remains available for work that benefits from durable
 handoffs, exact freshness evidence, and machine-readable results.
+
+Implementation and maintainability review resolve organization policy from the
+target repository's `docs/code-organization.md` when present, or equivalent
+explicitly routed authority, plus relevant module guidance. Implementation
+explains owner/placement/dependency changes before structural edits; review
+assesses the affected cluster and accumulated structure against the same policy.
+Missing standalone policy is not a blocker. The source checkout's policy is
+not a default policy for other targets.
 ## Goals
 
 - Make bounded implementation more consistent without repeatedly prompting an

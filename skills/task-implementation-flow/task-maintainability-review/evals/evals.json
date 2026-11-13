@@ -207,7 +207,8 @@
         "It returns VERDICT: ACCEPT after the existing gate passes and confirms no introduced material maintainability blocker.",
         "It accepts explicit ordered phase branches, caller-locked mutation and the documented legacy expires wire field; unfamiliar naming, repeated state assignment or complexity alone are not evidence.",
         "It recognizes the existing shared eligibility/invalidation authority and retained failure details; does not demand a state-machine framework, plugin registry, purity rewrite, logging infrastructure or additional tests as maintainability conditions.",
-        "It reviews the diff rather than untouched retry policy, preserves read-only scope and leaves functional correctness/test adequacy to discovery and acceptance."
+        "It reviews the diff rather than untouched retry policy, preserves read-only scope and leaves functional correctness/test adequacy to discovery and acceptance.",
+        "The target fixture has no standalone docs/code-organization.md. Continue under its existing task/repository/module authority without blocking solely on absence, manufacturing a policy, or applying the skill source checkout's policy. Honor equivalent organization guidance only when explicitly routed by target authority."
       ],
       "execution": {
         "setup": {

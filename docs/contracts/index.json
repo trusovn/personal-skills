@@ -128,6 +128,7 @@
       "contract": "foundation-tools.json",
       "id": "foundation-tools",
       "owner_paths": [
+        "docs/code-organization.md",
         "tests/test_architecture.py",
         "tests/test_foundation_tools.py",
         "tools/check_contracts.py",

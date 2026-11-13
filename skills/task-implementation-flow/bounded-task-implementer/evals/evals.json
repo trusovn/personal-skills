@@ -86,7 +86,8 @@
         "Only `src/auth/session.py` and `tests/auth/test_session.py` are changed.",
         "A focused expired-session regression fails for the intended reason before the production fix and proves the token remains unchanged.",
         "The exact targeted test runs first and passes, followed by the broader discovered suite.",
-        "The final human-readable summary maps every verification scenario ID (V-01, V-02) to current commands, setup/oracle, and results, carries the preflight/context reference and remaining obligations, and does not embed raw JSON."
+        "The final human-readable summary maps every verification scenario ID (V-01, V-02) to current commands, setup/oracle, and results, carries the preflight/context reference and remaining obligations, and does not embed raw JSON.",
+        "The target fixture has no standalone docs/code-organization.md. Continue under its existing task/repository/module authority without blocking solely on absence, manufacturing a policy, or applying the skill source checkout's policy. Honor equivalent organization guidance only when explicitly routed by target authority."
       ]
     },
     {

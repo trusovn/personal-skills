@@ -54,11 +54,38 @@ do not register a future runtime decomposition as implemented capability.
 
 Create `docs/code-organization.md` as the authoritative repository organization
 policy, linked to existing maps rather than duplicating their inventories.
-Cover responsibility-based modules and names, dependency direction, explicit
-inputs/collaborators, ownership of state and invariants, separation of decisions
-from filesystem/process effects, coherent transaction boundaries, proportionate
-use of functions/classes, and placement of focused versus integration tests.
-Apply the rules to production, test/eval, fixture and harness assets.
+Materialize the following recommendations as actionable rules, with their
+applicability and exceptions. These are project design choices informed by
+Python conventions, not a claim that Python mandates one architecture. Apply
+them to production, test/eval, fixture and harness assets.
+
+| Recommendation | Required guidance |
+|---|---|
+| Organize modules by responsibility | Group behavior that owns one coherent concern and changes for related reasons. Use meaningful concern names such as `acceptance` or `candidate_checks`; avoid generic `utils` or `helpers` dumping grounds and arbitrary file halves. An existing large file is not the default destination for a new responsibility. |
+| Use modules as encapsulation boundaries | Expose a small set of named operations; keep implementation helpers internal. Do not require a class merely to group stateless functions, or move a large controller into one equally large class. |
+| Separate decisions from effects | Prefer a functional core with explicit facts in and decisions out. Let an imperative shell perform filesystem/process calls and apply mutations. Keep inherently effectful operations at their real integration boundary rather than forcing artificial purity. |
+| Give rules and state clear owners | Keep each invariant and its determining policy with one authoritative component. Consumers call that owner instead of repeating conditions. Make mutation ownership explicit; avoid hidden global state and order-dependent mutable setup. |
+| Declare dependency direction | Composition/CLI depends on application operations, which depend on rules and infrastructure boundaries as needed. Extracted components must not import the controller or obtain its namespace through a passed module/context bag. Use explicit dependencies and prevent cycles. |
+| Use functions and classes proportionately | Prefer functions for stateless transformations and decisions. Use classes when they own meaningful state, lifecycle or invariants, such as a lock or process session. Add interfaces only for a concrete boundary, variation or test seam. |
+| Preserve coherent transactions | Keep lock scope, authorization, state transitions and durable publication order understandable under one transaction owner. Helper extraction must not scatter these obligations or hide execution order. |
+| Align verification with ownership | Exercise deterministic rules directly through their owning module, and use public-command integration tests for wiring, persistence, process behavior and transactions. Shared fixtures must have explicit ownership and avoid hidden mutation. |
+| Record module responsibilities | For new or materially reorganized modules, briefly document what they own, what belongs elsewhere, their public operations and allowed dependencies. Put this beside the module or in its existing map; do not create a parallel inventory. |
+| Assess accumulated growth | Before adding a responsibility cluster, decide its owner and placement. Review the resulting module and its collaborators, not only individual function metrics. Extract when a concrete responsibility boundary improves navigation, independent testing or change locality; do not split solely to reduce line counts. |
+
+Use the controller discussion as an illustrative decomposition: run storage
+(durability, integrity, locking and persistence), frozen run inputs, candidate
+inspection/checks, review collection, acceptance/dispositions, operation policy,
+actor lifecycle, and CLI/composition. Explain that these are candidate boundaries
+for the later refactoring effort, not an approved eight-file implementation plan.
+For example, acceptance policy belongs with acceptance behavior, while transport
+must not acquire knowledge of finding dispositions. The later effort must resolve
+interfaces and transaction ownership against actual code before moving it.
+
+Reference the official [modules tutorial](https://docs.python.org/3/tutorial/modules.html),
+[Functional Programming HOWTO](https://docs.python.org/3/howto/functional.html)
+and [PEP 8 interface conventions](https://peps.python.org/pep-0008/#public-and-internal-interfaces)
+as background. The actionable local rules, rather than external reading alone,
+must determine placement and review expectations.
 
 Distinguish mandatory rules from advisory investigation triggers. Include brief
 examples showing a cohesive extension, a new responsibility that merits a module,

@@ -270,6 +270,30 @@ tests or evals, identify the remaining coverage and preserve distinct scenarios,
 failure modes, and boundary evidence. Keep maintenance within the task's scope;
 ordinary small changes need no separate report or workflow stage.
 
+## Project organization and placement
+
+Before choosing placement or editing, resolve the **target repository's**
+`docs/code-organization.md` when present and directly relevant module guidance
+from its maps or nearby documentation. Honor equivalent guidance explicitly
+routed by task/repository authority. Resolve these paths from the target root,
+never from the skill installation or this skill's source checkout. If no
+standalone policy exists, continue under existing repository/task authority;
+absence alone neither blocks the task nor authorizes manufacturing a policy.
+Conflicting material architecture authority returns to its owner.
+
+For structural additions or material growth, briefly identify the responsibility
+owner, proposed placement and necessary dependency changes **before editing**.
+Assess the resulting responsibility cluster with helpers and consumers, not
+only individual function metrics. Apply the local policy while implementing
+and during final self-check; include relevant placement/boundary decisions in
+the submission. A cohesive extension can remain with its owner. A necessary new
+file is permitted when it is the smallest coherent implementation of authorized
+behavior; a surgical-change preference alone must not force a distinct concern
+into an existing large module. Wider legacy cleanup or a material unresolved
+architecture/scope decision still returns to the owner. Preserve bounded scope,
+transaction ownership and explicit dependency direction; smaller functions or
+a bare retention claim do not prove good organization.
+
 ## Guided workflow
 
 1. Read applicable instructions, the task authority, and any task-local
@@ -299,7 +323,8 @@ ordinary small changes need no separate report or workflow stage.
    - cross the real boundary only where lower-level evidence cannot prove
      wiring, persistence, filesystem/database/process behavior, concurrency,
      recovery, authorization, or another material risk.
-6. Implement the minimum code and test change. Match local style and do not
+6. Implement the minimum coherent code and test change using the placement
+   decision and applicable project organization policy. Match local style and do not
    create shared infrastructure, dependencies, or public contracts unless the
    task authorizes them.
 7. Verify progressively: run the changed/targeted test first, then the nearest

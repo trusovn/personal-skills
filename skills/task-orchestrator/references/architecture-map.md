@@ -8,6 +8,11 @@ Read only the row that owns the requested behavior, then inspect its primary
 test. Use `controller.py` integration coverage when a public command or
 cross-module flow changes.
 
+For source development in this repository, apply the
+[code organization policy](../../../docs/code-organization.md) before choosing
+placement. This map records current ownership. The [SIDE-004 controller discussion](../../../docs/tasks/SIDE-004/organization-context.md#controller-discussion-candidates-for-later-investigation)
+describes candidate future boundaries, not implemented modules.
+
 | Concern | Source | Primary tests |
 |---|---|---|
 | CLI and controller use cases | `scripts/controller.py` | `tests/test_controller.py` |
@@ -28,9 +33,11 @@ controller.py inspect-candidate / check-candidate / check-collection
 # Legacy primitives: run-next (refusal stub), inspect, revise-flow
 ```
 
-`codex_worker.py` is an internal adapter. A new operator action belongs in the
-controller or the future workflow runner, not in prompt-level calls to the
-adapter.
+`codex_worker.py` is an internal adapter. Route new operator actions through
+public application/CLI composition, with responsibility placement determined by
+the organization policy. Current entry points live in the controller; that fact
+does not make it the default destination for a distinct new concern. Operator
+prompts must not bypass application authority by calling the adapter directly.
 
 ## Verification commands
 

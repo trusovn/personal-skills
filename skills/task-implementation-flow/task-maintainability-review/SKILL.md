@@ -143,6 +143,32 @@ Do not edit architecture config, exceptions, or baselines to make review pass. A
 
 ### 3. Review responsibility and semantic clarity
 
+Resolve the **target repository's** `docs/code-organization.md` when present,
+plus directly relevant module guidance from its maps or nearby documentation.
+Honor equivalent guidance explicitly routed by task/repository authority.
+Resolve from the target root, never the skill installation or source checkout.
+If no standalone policy exists, continue under existing authority without
+manufacturing one or blocking solely on its absence. Contradictory material
+architecture authority follows the existing INCONCLUSIVE/owner route.
+
+Check actual ownership, placement and changed dependency edges against that
+policy. Assess the affected responsibility cluster with its helpers and
+consumers and the resulting accumulated structure. A cohesive extension may
+stay in place; an extraction must improve ownership or comprehension rather
+than merely move lines, import the controller or receive its namespace through
+a module/context bag. Function-level metric explanations and bare retention
+claims cannot justify keeping unrelated responsibilities together.
+
+For a local-policy finding, cite the applicable rule, changed evidence, concrete
+maintenance consequence and bounded correction. Mandatory local-policy
+violations introduced or materially worsened by this task follow the hard-rule
+CHANGES_REQUESTED treatment; advisory triggers require semantic investigation
+and remain warnings unless they establish a concrete regression under this
+review contract. Do not turn advisory metrics into hard rules or demand
+retroactive cleanup of untouched debt. Report relevant placement/boundary
+decisions even when retention is justified. Preserve independent provenance
+and the existing verdict/evidence rules.
+
 Trace a representative changed path through decisions, transformations,
 mutations and failures. Compare with the baseline and established contracts:
 what must the next developer or agent reconstruct to change it safely?

@@ -2,6 +2,10 @@
 
 Verified against the working tree: 2026-10-24.
 
+[Code organization policy](code-organization.md) governs placement, responsibility
+boundaries and accumulated growth for new and materially changed assets. The
+inventory below describes current ownership, not a future decomposition.
+
 | Location | Ownership and nearest precedent |
 |---|---|
 | `skills/<name>/` | Complete skill-owned package: instructions, scripts, references, eval inputs, and local tests. Start at its `SKILL.md`. |

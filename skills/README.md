@@ -41,6 +41,12 @@ task-brief-designer
 Use `senior-code-review`, `ollama-delegate`, `testing-discipline`, and
 `session-handoff` on demand rather than as mandatory stages in either flow.
 
+Implementation and maintainability review read the target repository's
+`docs/code-organization.md` when present, equivalent explicitly routed policy
+and relevant module guidance. Keep that policy project-owned; this profile
+ships the consumers, not this source repository's policy. Missing standalone
+policy does not block work or cause a policy to be generated.
+
 To understand intended work and progress, read the project plan's opening,
 then the current implementation result or acceptance report. See the
 [implementation output contract](task-implementation-flow/bounded-task-implementer/SKILL.md#output-contract)

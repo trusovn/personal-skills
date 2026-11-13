@@ -5,6 +5,12 @@
   "owner_paths": ["skills/task-implementation-flow/task-maintainability-review", "skills/task-implementation-flow/task-review-discovery", "skills/task-implementation-flow/task-acceptance-review"],
   "provides": [
     {
+      "name": "target-owned-organization-review",
+      "kind": "skill-guidance",
+      "summary": "Resolve organization policy and relevant module guidance from the target repository, including equivalent explicitly routed authority, without substituting installation/source policy or blocking/manufacturing policy solely on absence. Independently assess actual ownership, placement, dependency edges and accumulated structure across the affected cluster, helpers and consumers; report relevant placement/boundary decisions, including justified retention. Local-policy findings cite rule, changed evidence, maintenance consequence and bounded correction. Introduced/materially worsened mandatory violations follow hard-rule CHANGES_REQUESTED treatment; advisory signals require semantic investigation and untouched debt stays outside scope. Material authority conflicts retain the existing INCONCLUSIVE/owner route; smaller functions or bare cohesion claims cannot justify unrelated responsibilities.",
+      "declarations": ["skills/task-implementation-flow/task-maintainability-review/SKILL.md"]
+    },
+    {
       "name": "independent-original-baseline-review",
       "kind": "skill-guidance",
       "summary": "A fresh reviewer invokes its own installation-local comparison of actual submitted changed/added/deleted Python assets against original B, including relevant test/eval/fixture/harness assets. Verify project, coverage, tools/settings/check compatibility and current byte identity; author I alone is insufficient. Recover current evidence where feasible without relabeling edited bytes as before state. Same-session authors retain SELF_CHECK_ONLY. Review permits only the authorized new numbered report and fresh measurement siblings, with no source/index edits, implicit setup or cross-installation fallback.",

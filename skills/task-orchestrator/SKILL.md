@@ -10,7 +10,7 @@ Use the deterministic controller as the public operating surface. Treat
 `scripts/codex_worker.py` as an internal transport adapter; do not invoke it
 directly to operate or recover a controller-owned run.
 
-Freshness: 2026-11-12. Current commands are `init`, `status`, `reserve`,
+Freshness: 2026-11-13. Current commands are `init`, `status`, `reserve`,
 `launch`, `observe`, `stop`, `intervene`, `revise-inputs`, `inspect-candidate`,
 `check-candidate`, and `check-collection`. Legacy `inspect`
 and `revise-flow` retain mechanical primitives; `run-next` reports pending work.
@@ -96,9 +96,13 @@ collector calls `check-collection` with its exact assignment to rerun the frozen
 checks. Terminal collection is admitted only for the current candidate and observed
 independent session, with explicit coverage, gaps and findings. A real failed check
 authorizes a correction within the shared three-cycle budget. Complete collection
-enables a separate acceptance assignment; acceptance output remains a raw claim.
-See the [T-004 contract](docs/tasks/T-004/controller-contract.md) for payloads
-and limits. Follow the operator guide for stop, revision and active-chat intervention. The legacy
+enables a separate `acceptance` reservation with role `acceptance_reviewer`.
+Save its assignment, launch a fresh reviewer, then observe it. Admission binds
+its decision to the observed session, current candidate and retained evidence;
+raw output alone grants no acceptance authority. See the
+[T-004 contract](docs/tasks/T-004/controller-contract.md) for collection and the
+[T-005.1 contract](docs/tasks/T-005.1/controller-contract.md) for acceptance,
+conditional review receipts, dispositions and recovery limits. Follow the operator guide for stop, revision and active-chat intervention. The legacy
 `scripts/controller.py run-next` command does not launch this flow;
 `scripts/controller.py inspect` does not admit these actor outcomes.
 
@@ -117,10 +121,21 @@ eligible under the configured command-verification policy. It does not yet
 mean semantic review, atomic task acceptance, dependency release, or automatic
 advance occurred.
 
+Separate acceptance admission exposes `acceptance_decision`, outstanding
+findings and `next_actions` through `status`. Follow those retained routes:
+authorized blocking findings permit a review-driven correction reservation;
+missing evidence routes to verification, recollection or intervention without
+charging a correction; prevented correction or missing authority requires
+intervention. Initial work is cycle zero, with at most three shared check,
+review and repair corrections. Environment repair requires fresh preflight.
+`completion_eligible=true` requires a current separate accept decision and valid
+proof with no active actor. It does not record known issues, publish completion,
+commit, release dependencies or advance tasks. Live sbx/provider/model behavior
+and semantic judgment remain unqualified by local scripted-role tests.
+
 Current public commands do not yet provide:
 
 - automatic recovery or same-thread continuation;
-- semantic acceptance admission or review-driven correction decisions;
 - atomic acceptance, dependency release, and advance;
 - plan-to-manifest preparation; or
 - an unattended end-to-end runner.

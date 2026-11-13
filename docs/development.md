@@ -2,19 +2,35 @@
 
 ## Setup and scope
 
-Use Python 3 and Git. The foundation was exercised with Python 3.14.6 and Git
+Use Python 3 and Git. Install the repository development dependencies once in a
+project virtual environment:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+. .venv/bin/activate
+```
+
+`requirements-dev.txt` pins `jsonschema` for recurring Draft 2020-12 contract
+checks in the maintained orchestrator suite. Missing dependencies fail that
+suite rather than skipping schema evidence. The controller and installed skills
+do not require this repository-only test dependency. After activation, the
+`python3` commands below use the project environment; alternatively invoke
+`.venv/bin/python tools/verify.py` directly. Verification never installs packages.
+
+The foundation was exercised with Python 3.14.6 and Git
 2.54.0; minimum versions and a full host support matrix remain unqualified.
 The existing optional analyzer launcher explicitly requires Python 3.11 or later.
 There is no application build or server to start.
 
-The default local checks use the standard library and disposable filesystem/Git
+The default local checks use the development dependencies and disposable filesystem/Git
 fixtures. They use fake Codex executables and mocked Ollama responses. No
 provider account is needed. See the [project map](project-map.md) for placement
 and the [contract index](contracts/index.json) for implemented reusable surfaces.
 
 | Tier | Prerequisites and limits |
 |---|---|
-| Default local verification | Python and Git available in `PATH`; permission to create temporary directories, local child processes, and disposable Git repositories. |
+| Default local verification | Python with `requirements-dev.txt` installed and Git available in `PATH`; permission to create temporary directories, local child processes, and disposable Git repositories. |
 | Real containment tests | macOS and `/usr/bin/sandbox-exec`, with host permission to run it. Unsupported hosts report skips; execution denial on a supported host is a failure, not a skip. Loopback fixtures do not contact external services. |
 | Skill frontmatter/package validation | Optional PyYAML, imported by `skills/skill-creator/scripts/quick_validate.py`; separate from behavioral tests. |
 | Analyzer evidence | Pinned Radon/Ruff environment under the selected target; installation pins are `scripts/maintainability-requirements.txt` (installed under `.agents/scripts/`). See [analyzer setup](../scripts/measure-maintainability.md). Tests requiring real tools report skips when absent. |

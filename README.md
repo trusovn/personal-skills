@@ -6,7 +6,8 @@ agent skills used by the Local Workbench.
 ## Development
 
 Start with the [project map](docs/project-map.md) and
-[setup and verification guide](docs/development.md). Run the owning focused
+[setup and verification guide](docs/development.md) to install `requirements-dev.txt`
+in the project virtual environment. Run the owning focused
 suite first; use `python3 tools/verify.py` for repository-wide local verification.
 It reports optional skips and excludes live model evals and dependency installs.
 The [contract index](docs/contracts/index.json) routes to currently implemented
@@ -462,12 +463,14 @@ actor launch, observation, stop requests and intervention history. Terminal
 preflight can admit readiness. The controller can inspect terminal implementation
 or correction work, run candidate-bound checks and admit fresh independent
 collection with collector-owned reruns and finding history. Failed checks use the
-shared bounded correction budget; collection enables a separate acceptance
-assignment. Acceptance admission remains pending. `run-next` remains a legacy
+shared bounded correction budget. A fresh separate acceptance reviewer can now
+admit candidate-bound decisions and dispositions, authorize review-driven correction,
+or return missing proof to its owner. Current acceptance exposes completion
+eligibility without publishing completion or writing the known-issue tracker. `run-next` remains a legacy
 refusal/reporting stub. See the
 [operator guide](skills/task-orchestrator/references/operator-guide.md) for commands
-and qualification limits. Plan-to-manifest preparation, semantic acceptance and
-review-driven correction admission, automatic recovery, completion and unattended
+and qualification limits. Plan-to-manifest preparation, automatic recovery,
+known-issue recording, completion and unattended
 end-to-end execution remain unimplemented.
 Use it only when its current controller contract is specifically needed and
 the required manifest/policy inputs already exist. Otherwise run the bounded

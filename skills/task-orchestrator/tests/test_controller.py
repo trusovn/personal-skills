@@ -2510,7 +2510,14 @@ class ControllerReservationTest(unittest.TestCase):
         controller, run_dir = self.create_initialized_run()
         self.ready_implementation(run_dir)
         self.assertEqual(0, self.reserve(run_dir, "implement", "initial")["assignment"]["correction_count"])
-        for count, reason in enumerate(("check_failed", "review_findings", "environment_repair"), 1):
+        # Public review-driven budget composition now lives in test_actor_operations.
+        # These reservation-only fixtures retain check/repair/revision accounting;
+        # a seeded review label must not manufacture admitted decision authority.
+        self.seed_successor(run_dir, stage="verify", correction_request="review_findings")
+        before = self.snapshot(run_dir)
+        self.assertEqual("refused", self.reserve(run_dir, "correction", "seeded-review", "review_findings")["status"])
+        self.assertEqual(before, self.snapshot(run_dir))
+        for count, reason in enumerate(("check_failed", "check_failed", "environment_repair"), 1):
             self.seed_successor(run_dir, stage="verify", correction_request=reason, candidate_sha256="a" * 64)
             request_version = self.read_ledger(run_dir)["revision"]
             result = self.reserve(run_dir, "correction", f"fix-{count}", reason)
@@ -2524,9 +2531,9 @@ class ControllerReservationTest(unittest.TestCase):
                              expected_version=request_version)["status"])
             self.assertEqual("refused", self.reserve(run_dir, "correction", "uncertain", reason)["status"])
             self.assertEqual(before, self.snapshot(run_dir))
-        self.seed_successor(run_dir, stage="verify", correction_request="review_findings")
+        self.seed_successor(run_dir, stage="verify", correction_request="check_failed")
         before = self.snapshot(run_dir)
-        refusal = self.reserve(run_dir, "correction", "fourth", "review_findings")
+        refusal = self.reserve(run_dir, "correction", "fourth", "check_failed")
         self.assertEqual("corrections_exhausted", refusal["reason"])
         self.assertEqual(["intervene"], load_controller().status_run(run_dir)["next_actions"])
         self.assertEqual(before, self.snapshot(run_dir))
@@ -2860,7 +2867,14 @@ class ControllerInputRevisionTest(unittest.TestCase):
         self.assertEqual("refused", self.reserve(run_dir, "implement", "premature")["status"])
         self.ready_implementation(run_dir)
         self.assertEqual(0, self.reserve(run_dir, "implement", "cycle-zero")["assignment"]["correction_count"])
-        for count, reason in enumerate(("check_failed", "review_findings", "environment_repair"), 1):
+        # Public review-driven budget composition now lives in test_actor_operations.
+        # These reservation-only fixtures retain check/repair/revision accounting;
+        # a seeded review label must not manufacture admitted decision authority.
+        self.seed_successor(run_dir, stage="verify", correction_request="review_findings")
+        before = self.snapshot(run_dir)
+        self.assertEqual("refused", self.reserve(run_dir, "correction", "seeded-review", "review_findings")["status"])
+        self.assertEqual(before, self.snapshot(run_dir))
+        for count, reason in enumerate(("check_failed", "check_failed", "environment_repair"), 1):
             self.seed_successor(run_dir, stage="verify", correction_request=reason)
             version = self.read_ledger(run_dir)["revision"]
             reserved = self.reserve(run_dir, "correction", f"fix-{count}", reason)
@@ -2880,9 +2894,9 @@ class ControllerInputRevisionTest(unittest.TestCase):
         before = self.snapshot(run_dir)
         self.assertEqual("successor_admission_pending", self.reserve(run_dir, "implement", "another-cycle-zero")["reason"])
         self.assertEqual(before, self.snapshot(run_dir))
-        self.seed_successor(run_dir, stage="verify", correction_request="review_findings")
+        self.seed_successor(run_dir, stage="verify", correction_request="check_failed")
         before = self.snapshot(run_dir)
-        self.assertEqual("corrections_exhausted", self.reserve(run_dir, "correction", "fourth", "review_findings")["reason"])
+        self.assertEqual("corrections_exhausted", self.reserve(run_dir, "correction", "fourth", "check_failed")["reason"])
         self.assertEqual(before, self.snapshot(run_dir))
         # Public legacy entry points cannot manufacture the missing successor evidence.
         self.assertEqual("successor_inspection_pending", controller.inspect_run(run_dir, 10)["reason"])
@@ -2992,6 +3006,14 @@ class ControllerInspectionIntegrationTest(unittest.TestCase):
             "--codex-bin", str(fake),
         ], text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)
+        # These tests exercise inspection with real commands and durable records.
+        # Real macOS containment is covered by test_verification_runner.py.
+        sandbox = mock.patch.object(
+            controller._verification_module, "build_sandbox_invocation",
+            side_effect=lambda argv, permissions: list(argv),
+        )
+        sandbox.start()
+        self.addCleanup(sandbox.stop)
         return controller, run_dir
 
     def test_verify_off_profile_is_refused_before_execution(self):

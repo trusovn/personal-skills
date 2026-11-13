@@ -9,7 +9,7 @@
     {
       "name": "public-controller",
       "kind": "cli",
-      "summary": "init freezes validated authority; status/reserve/revise-inputs expose single-task control; launch/observe/stop/intervene manage reserved actors. inspect-candidate and check-candidate produce current scope and check evidence; check-collection executes the active collector's fresh rerun. run-next remains a legacy refusal/reporting stub; inspect and revise-flow retain legacy behavior.",
+      "summary": "init freezes validated authority; status/reserve/revise-inputs expose single-task control; launch/observe/stop/intervene manage reserved actors. inspect-candidate and check-candidate produce current scope and check evidence; check-collection executes the active collector's fresh rerun. Separate acceptance is reserved/launched/observed through the same lifecycle; status exposes current decision, completion eligibility and recovery actions. run-next remains a legacy refusal/reporting stub; inspect and revise-flow retain legacy behavior.",
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
         "skills/task-orchestrator/tests/test_controller.py"
@@ -69,7 +69,7 @@
     {
       "name": "terminal-preflight-readiness-admission",
       "kind": "lifecycle-boundary",
-      "summary": "observe_operation owns the single outcome-admission path. Only complete current terminal preflight with structured prerequisite attestations admits readiness and the implement cursor. The controller validates attestations, not independent execution of every prerequisite. Candidate/check production and collection admission extend the same IF-003 boundary; acceptance admission remains future work.",
+      "summary": "observe_operation owns the single outcome-admission path. Only complete current terminal preflight with structured prerequisite attestations admits readiness and the implement cursor. The controller validates attestations, not independent execution of every prerequisite. Candidate/check production and collection admission extend the same IF-003 boundary; separate acceptance admission extends that boundary with current evidence and independent observed-session checks.",
       "plan_refs": [
         {
           "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
@@ -101,7 +101,7 @@
     {
       "name": "independent-collection-and-bounded-correction",
       "kind": "python-api-and-cli",
-      "summary": "A fresh semantic_review/review_collector assignment consumes frozen authority, current candidate/checks and finding history. check_collection runs one full frozen plan bound to the active observed collector session, with separate rerun identity/logs and exclusive replay. observe_operation admits current independent reruns plus explicit coverage/gaps/findings; real check failure uses inherited shared-budget correction. Collection observations do not authorize review-driven correction, acceptance or completion.",
+      "summary": "A fresh semantic_review/review_collector assignment consumes frozen authority, current candidate/checks and finding history. check_collection runs one full frozen plan bound to the active observed collector session, with separate rerun identity/logs and exclusive replay. observe_operation admits current independent reruns plus explicit coverage/gaps/findings; real check failure uses inherited shared-budget correction. Collection observations remain evidence only; separate acceptance can authorize review-driven correction, while completion remains unimplemented.",
       "plan_refs": [
         {
           "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
@@ -115,12 +115,40 @@
         "skills/task-orchestrator/docs/tasks/T-004/controller-contract.md",
         "skills/task-orchestrator/tests/test_actor_operations.py"
       ]
+    },
+    {
+      "name": "separate-acceptance-and-recovery",
+      "kind": "lifecycle-boundary",
+      "summary": "A fresh acceptance_reviewer consumes current checks, independent collection and required conditional-stage receipts. observe_operation admits exact candidate/evidence-bound decisions and dispositions, routes authorized review_findings correction through the shared three-correction budget, and returns missing proof to verify/semantic_review or intervention without charge. Current accept exposes completion_eligible only; no completion or tracker write occurs.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "IF-003"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/docs/tasks/T-005.1/controller-contract.md",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
+    },
+    {
+      "name": "required-conditional-review-receipts",
+      "kind": "configuration-and-artifact",
+      "summary": "Optional frozen task-manifest required_reviews lists maintainability and/or registry (default empty). Acceptance requires passed candidate/input/policy/flow-bound reviews/<candidate>/<stage>.json receipts with independent session identity and existing digest-bound evidence. Receipts are trusted coordinator-supplied records; conditional-role launch and provider attestation are not implemented.",
+      "declarations": [
+        "skills/task-orchestrator/assets/task-manifest.schema.json",
+        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/docs/tasks/T-005.1/controller-contract.md"
+      ]
     }
   ],
   "state_owned": [
     {
       "name": "external-controller-run-directory",
-      "summary": "External controller run directory owns frozen authority, ledger, reservations, correction history, readiness and interventions; actors/operation-NNN holds launch/prompt, process/session diagnostics, raw result, terminal receipt and stop request. These are controller-owned records, without runtime tamper-resistance against authorized full-access actors. The run directory also owns frozen baseline, candidate, check intent and result, command execution and log records. Collection-owned rerun intent/results live in collection-checks/ with separate verification execution/log records; collections/ retains admitted coverage reports. Ledger findings preserve stable IDs, dispositions and history.",
+      "summary": "External controller run directory owns frozen authority, ledger, reservations, correction history, readiness and interventions; actors/operation-NNN holds launch/prompt, process/session diagnostics, raw result, terminal receipt and stop request. These are controller-owned records, without runtime tamper-resistance against authorized full-access actors. The run directory also owns frozen baseline, candidate, check intent and result, command execution and log records. Collection-owned rerun intent/results live in collection-checks/ with separate verification execution/log records; collections/ retains admitted coverage reports. Ledger findings preserve stable IDs, dispositions and history. acceptance-inputs/ retains launch contexts; decisions/ retains admitted decisions and dispositions; reviews/<candidate>/ holds coordinator-supplied conditional-stage receipts.",
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
         "skills/task-orchestrator/scripts/controller_state.py"
@@ -128,7 +156,7 @@
     },
     {
       "name": "operation-readiness-status",
-      "summary": "Ledger operations retain transport outcomes, current readiness and one active operation. ART-002 records candidate-bound implementation/check/collection evidence and finding history. Status exposes drift as stale, retained blockers and truthful next actions; unknown terminality or unresolved collector rerun ownership blocks another actor. Shared correction accounting remains cycle zero plus three authorized corrections; evidence-only reruns/recollection do not charge, and exhaustion remains a precise intervention blocker after revision.",
+      "summary": "Ledger operations retain transport outcomes, current readiness and one active operation. ART-002 records candidate-bound implementation/check/collection/acceptance evidence and finding history. Status exposes drift as stale, retained blockers and truthful next actions; unknown terminality or unresolved collector rerun ownership blocks another actor. Shared correction accounting remains cycle zero plus three authorized corrections; evidence-only reruns/recollection do not charge, and exhaustion remains a precise intervention blocker after revision. Current decision, outstanding dispositions, next actions and completion_eligible are projections of revalidated retained evidence; later evidence operations supersede old decisions without deleting history.",
       "plan_refs": [
         {
           "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
@@ -164,19 +192,20 @@
       "statement": "Missing output, process failure, timeout, or ambiguous liveness does not authorize completion or another writer."
     },
     {
-      "statement": "Automatic recovery, semantic acceptance and review-driven correction admission, completion and automatic advancement remain unimplemented. Collection provides evidence without final acceptance authority. The authorized sbx/YOLO bridge assumes an owner-supplied environment; local scripted-actor evidence does not qualify real sbx/provider/model behavior or semantic review quality."
+      "statement": "Automatic recovery, tracker recording, completion and automatic advancement remain unimplemented. Separate acceptance admits dispositions and recovery authority but does not publish completion. The authorized sbx/YOLO bridge assumes an owner-supplied environment; local scripted-actor evidence does not qualify real sbx/provider/model behavior or semantic review quality."
     }
   ],
   "module_docs": [
     "skills/task-orchestrator/references/architecture-map.md",
     "skills/task-orchestrator/references/operator-guide.md",
     "skills/task-orchestrator/docs/tasks/T-004.1/controller-contract.md",
-    "skills/task-orchestrator/docs/tasks/T-004/controller-contract.md"
+    "skills/task-orchestrator/docs/tasks/T-004/controller-contract.md",
+    "skills/task-orchestrator/docs/tasks/T-005.1/controller-contract.md"
   ],
   "artifacts": [
     {
       "name": "actor-assignment-and-observed-outcome",
-      "summary": "Exact assignment (including recursive JSON value types), observed session/configuration binding, raw result path and terminal adapter receipt are retained per operation; malformed results remain diagnostic. Actor-result envelope contains assignment, session_id, status, summary and readiness.",
+      "summary": "Exact assignment (including recursive JSON value types), observed session/configuration binding, raw result path and terminal adapter receipt are retained per operation; malformed results remain diagnostic. Actor-result envelope contains assignment, session_id, status, summary and readiness. Acceptance alone additionally requires a structured decision with explicit observed session and readiness=null.",
       "plan_refs": [
         {
           "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
@@ -225,7 +254,7 @@
     },
     {
       "name": "candidate-bound-check-evidence",
-      "summary": "checks/<operation-id>.json binds the reserved assignment and evaluated candidate to the check plan, setup, environment and disposition. The execution record and logs preserve command outcomes and output digests. Intent and unknown state prevent rerunning an uncertain execution.",
+      "summary": "checks/<operation-id>.json binds the reserved assignment and evaluated candidate to the check plan, setup, environment and disposition. The execution record and logs preserve command outcomes and output digests. Intent and unknown state prevent rerunning an uncertain execution. Ledger verify evidence retains the result-file SHA-256; collection additionally binds rerun bytes. Older records without these digests require fresh operations, not hash backfill.",
       "plan_refs": [
         {
           "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
@@ -255,6 +284,23 @@
         "skills/task-orchestrator/scripts/controller.py",
         "skills/task-orchestrator/scripts/controller_state.py",
         "skills/task-orchestrator/docs/tasks/T-004/controller-contract.md",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
+    },
+    {
+      "name": "separate-acceptance-decision",
+      "summary": "decisions/<operation>.json retains assignment, observed identity, decision, findings/dispositions, next_actions and correction_request; ledger acceptance evidence binds exact file bytes. Actions are accept/correct/missing_evidence/blocker, with one disposition per retained finding and explicit unfinished owners. Approved unchanged dispositions persist; changed evidence/exposure reopens them with history. Eligibility rechecks workspace, frozen source identity, checks/logs, collection/reruns, conditional proof, decision bytes and known-issue context.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
+          "id": "ART-009"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/assets/actor-result.schema.json",
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/docs/tasks/T-005.1/controller-contract.md",
         "skills/task-orchestrator/tests/test_actor_operations.py"
       ]
     }

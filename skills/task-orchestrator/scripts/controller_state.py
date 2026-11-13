@@ -1029,7 +1029,7 @@ def _validate_task_manifest_schema(manifest: dict[str, Any]) -> None:
         missing_task = task_required - set(task)
         if missing_task:
             raise ValueError(f"Task is missing required fields: {', '.join(sorted(missing_task))}")
-        unknown_task = set(task) - {"id", "title", "brief_path", "dependencies", "allowed_paths", "required_checks"}
+        unknown_task = set(task) - {"id", "title", "brief_path", "dependencies", "allowed_paths", "required_checks", "required_reviews"}
         if unknown_task:
             raise ValueError(f"Task contains unknown fields: {', '.join(sorted(unknown_task))}")
         _validate_str(task["id"], "tasks[].id")
@@ -1038,9 +1038,12 @@ def _validate_task_manifest_schema(manifest: dict[str, Any]) -> None:
         task_ids.add(task["id"])
         _validate_str(task["title"], "tasks[].title")
         _validate_str(task["brief_path"], "tasks[].brief_path")
-        for field in ("dependencies", "required_checks", "allowed_paths"):
+        for field in ("dependencies", "required_checks", "allowed_paths", "required_reviews"):
             if field in task:
                 _validate_str_array(task[field], f"tasks[].{field}", allow_empty=True)
+
+        if any(stage not in {'maintainability', 'registry'} for stage in task.get('required_reviews', [])):
+            raise ValueError('Unknown required conditional review stage')
 
 
 def _detect_dependency_cycles(manifest: dict[str, Any]) -> list[list[str]]:
@@ -1170,6 +1173,61 @@ def validate_collection_report(report: dict[str, Any]) -> None:
         seen.add(finding['id'])
     if report['rerun_path'] is not None:
         _validate_str(report['rerun_path'], 'collection rerun path')
+
+
+def validate_conditional_review(record):
+    _validate_exact_object(record, ('stage', 'status', 'candidate_sha256', 'inputs_sha256',
+                                  'policy_sha256', 'flow_sha256', 'session_id', 'rationale', 'evidence'), 'conditional review')
+    for field in ('stage', 'status', 'session_id', 'rationale'):
+        _validate_str(record[field], field)
+    for field in ('candidate_sha256', 'inputs_sha256', 'policy_sha256', 'flow_sha256'):
+        _validate_sha256(record[field], field)
+    validate_evidence_references(record['evidence'])
+
+
+def validate_evidence_references(references):
+    if not isinstance(references, dict) or not references:
+        raise ValueError('Retained evidence references required')
+    for path, digest in references.items():
+        _validate_run_relative_reference(path, 'evidence path')
+        _validate_sha256(digest, 'evidence digest')
+
+
+def validate_finding_disposition(item):
+    _validate_exact_object(item, ('id', 'kind', 'rationale', 'evidence', 'requirement_violation',
+                                 'material_risk', 'correction_authorized', 'trigger', 'consequence',
+                                 'boundary', 'impact', 'likelihood', 'mitigation', 'compatible_consumers',
+                                 'follow_up', 'reassess_when'), 'disposition')
+    for field in ('id', 'rationale', 'trigger', 'consequence', 'boundary', 'impact', 'likelihood',
+                  'mitigation', 'compatible_consumers', 'follow_up', 'reassess_when'):
+        _validate_str(item[field], field)
+    for field in ('requirement_violation', 'material_risk', 'correction_authorized'):
+        _validate_bool(item[field], field)
+    _validate_str_array(item['evidence'], 'disposition evidence')
+    if item['kind'] not in {'blocking', 'known_issue', 'observation', 'resolved', 'missing_evidence', 'blocker'}:
+        raise ValueError('Invalid finding disposition')
+
+
+def validate_acceptance_decision(decision):
+    _validate_exact_object(decision, ('action', 'rationale', 'evidence', 'dispositions', 'unfinished'), 'acceptance decision')
+    if decision['action'] not in {'accept', 'correct', 'missing_evidence', 'blocker'}:
+        raise ValueError('Invalid acceptance action')
+    _validate_str(decision['rationale'], 'decision rationale')
+    validate_evidence_references(decision['evidence'])
+    if not isinstance(decision['dispositions'], list) or not isinstance(decision['unfinished'], list):
+        raise ValueError('Disposition and unfinished inventories required')
+    seen = set()
+    for item in decision['dispositions']:
+        validate_finding_disposition(item)
+        if item['id'] in seen:
+            raise ValueError('Duplicate finding disposition')
+        seen.add(item['id'])
+    for row in decision['unfinished']:
+        _validate_exact_object(row, ('owner', 'reason', 'evidence'), 'unfinished evidence row')
+        if row['owner'] not in {'verify', 'semantic_review', 'intervene'}:
+            raise ValueError('Unknown evidence owner')
+        _validate_str(row['reason'], 'unfinished reason')
+        _validate_str_array(row['evidence'], 'unfinished evidence')
 
 
 def validate_actor_transport(operation: dict[str, Any]) -> None:
@@ -1559,7 +1617,7 @@ def apply_ledger_update(
         raise ValueError(
             f"Expected ledger revision {expected_revision}, found {next_ledger['revision']}"
         )
-    if set(updater) & {"actor_operations", "readiness", "correction_request", "candidate_sha256", "evidence", "outstanding_findings"}:
+    if set(updater) & {"actor_operations", "readiness", "correction_request", "candidate_sha256", "candidate_path", "evidence", "outstanding_findings"}:
         raise ValueError("Actor admission fields are controller-owned")
     if ledger.get("actor_operations") and set(updater) & {"current_step", "correction_cycle", "active_operation_path"}:
         raise ValueError("Actor reservation cursor is controller-owned")

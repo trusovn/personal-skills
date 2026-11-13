@@ -463,15 +463,27 @@ class VerificationSandboxFailClosedTests(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def test_production_builds_the_adopted_sandbox_invocation(self):
+    def sandbox_invocation(self, argv, permissions, **kwargs):
+        # Model an available macOS executable for construction/validation only.
+        # Dedicated host-gated tests execute the real containment mechanism.
         runner = load_verification_runner()
+        with mock.patch.object(Path, "is_file", return_value=True), mock.patch.object(
+            runner.os, "access", return_value=True,
+        ):
+            return runner.build_sandbox_invocation(
+                argv, permissions, platform="darwin", **kwargs,
+            )
+
+    def test_production_builds_the_adopted_sandbox_invocation(self):
         permissions = _permissions("read-only", [], network=False)
 
-        invocation = runner.build_sandbox_invocation(
-            ["/usr/bin/true"], permissions
-        )
+        invocation = self.sandbox_invocation(["/usr/bin/true"], permissions)
 
-        self.assertEqual(invocation, _sandbox_invocation(["/usr/bin/true"], permissions))
+        self.assertEqual(invocation, [
+            "/usr/bin/sandbox-exec", "-p",
+            "(version 1) (allow default) (deny network*) (deny file-write*)",
+            "/usr/bin/true",
+        ])
 
     def test_unsupported_host_is_rejected(self):
         permissions = _permissions("read-only", [], network=False)
@@ -481,12 +493,12 @@ class VerificationSandboxFailClosedTests(unittest.TestCase):
     def test_unsupported_mode_is_rejected(self):
         permissions = _permissions("unknown", [], network=False)
         with self.assertRaisesRegex(RuntimeError, "unsupported sandbox mode"):
-            _sandbox_invocation(["/usr/bin/true"], permissions)
+            self.sandbox_invocation(["/usr/bin/true"], permissions)
 
     def test_substituted_unrestricted_runner_is_rejected(self):
         permissions = _permissions("read-only", [], network=False)
         with self.assertRaisesRegex(RuntimeError, "exact /usr/bin/sandbox-exec"):
-            _sandbox_invocation(
+            self.sandbox_invocation(
                 ["/usr/bin/true"],
                 permissions,
                 sandbox_executable=Path("/usr/bin/true"),
@@ -496,20 +508,20 @@ class VerificationSandboxFailClosedTests(unittest.TestCase):
         missing = self.root / "missing"
         permissions = _permissions("workspace-write", [missing], network=False)
         with self.assertRaisesRegex(RuntimeError, "existing absolute directory"):
-            _sandbox_invocation(["/usr/bin/true"], permissions)
+            self.sandbox_invocation(["/usr/bin/true"], permissions)
 
     def test_unauthorized_danger_full_access_is_rejected_before_launch(self):
         marker = self.root / "must-not-run"
         permissions = _permissions("danger-full-access", [], network=False)
         with self.assertRaisesRegex(RuntimeError, "lacks separate authorization"):
-            _run(["/usr/bin/touch", marker], permissions)
+            self.sandbox_invocation(["/usr/bin/touch", marker], permissions)
         self.assertFalse(marker.exists())
 
     def test_incomplete_permission_envelope_is_rejected(self):
         permissions = _permissions("read-only", [], network=False)
         permissions.pop("network")
         with self.assertRaisesRegex(RuntimeError, "complete version 1"):
-            _sandbox_invocation(["/usr/bin/true"], permissions)
+            self.sandbox_invocation(["/usr/bin/true"], permissions)
 
 
 class VerificationProcessGroupCleanupTests(unittest.TestCase):

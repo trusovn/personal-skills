@@ -39,6 +39,11 @@
             "uniqueItems": true,
             "items": { "type": "string", "minLength": 1 }
           },
+          "required_reviews": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "enum": ["maintainability", "registry"] }
+          },
           "required_checks": {
             "type": "array",
             "uniqueItems": true,

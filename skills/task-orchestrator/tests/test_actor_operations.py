@@ -9,10 +9,53 @@ import time
 import unittest
 from unittest import mock
 
+from jsonschema import Draft202012Validator, ValidationError
+
 import test_controller as fixtures
 
 load_controller = fixtures.load_controller
 flow_profile = fixtures.flow_profile
+
+
+class RecoveryDecisionTest(unittest.TestCase):
+    def test_correction_ownership_and_budget_precede_evidence_recovery(self):
+        controller = load_controller()
+        identity = {key: 'a' * 64 for key in ('inputs_sha256', 'policy_sha256', 'flow_sha256')}
+        assignment = dict(identity, stage='preflight', role='preflight', task_id='T1', can_repair=False)
+        ready = dict(identity, status='ready', operation_id='preflight', task_id='T1')
+        current = {'correction_request': 'review_findings'}
+        cases = [
+            ('review-current', 'review_findings', 0, True, None, set(), current,
+             ['reserve:correction'], None),
+            ('review-stale', 'review_findings', 0, True, None, {'verify'}, None,
+             ['intervene'], 'correction_authority_stale'),
+            ('review-missing', 'review_findings', 0, True, None, set(), None,
+             ['intervene'], 'correction_authority_stale'),
+            ('review-needs-preflight', 'review_findings', 0, False, None, set(), current,
+             ['reserve:preflight'], 'current_preflight_readiness_required'),
+            ('check-correction', 'check_failed', 0, True, None, {'verify'}, None,
+             ['reserve:correction'], None),
+            ('repair-correction', 'environment_repair', 0, False, None, {'candidate'}, None,
+             ['reserve:correction'], None),
+            ('budget-exhausted', 'review_findings', 3, True, None, {'semantic_review'}, None,
+             ['intervene'], 'corrections_exhausted'),
+            ('active-owner', 'review_findings', 3, True, 'implement', {'verify'}, None,
+             ['launch_operation', 'stop_operation', 'intervene'], 'operation_reserved'),
+            ('active-verifier', 'review_findings', 3, True, 'verify', {'verify'}, None,
+             ['check_candidate', 'intervene'], 'check_operation_reserved'),
+        ]
+        for name, correction, count, readiness, active_stage, stale, decision, actions, blocker in cases:
+            with self.subTest(case=name):
+                operations = [{'operation_id': 'preflight', 'state': 'terminal', 'assignment': assignment}]
+                if active_stage:
+                    operations.append({'state': 'reserved', 'assignment': {'stage': active_stage}})
+                ledger = dict(identity, state='ready', correction_request=correction,
+                              correction_cycle=count, selected_task_id='T1',
+                              readiness=ready if readiness else None, actor_operations=operations)
+                before = json.dumps(ledger, sort_keys=True)
+                self.assertEqual((actions, blocker), controller._reservation_options(
+                    ledger, stale=stale, decision=decision))
+                self.assertEqual(before, json.dumps(ledger, sort_keys=True))
 
 
 class ActorOperationsTest(unittest.TestCase):
@@ -100,6 +143,12 @@ if a['stage']=='semantic_review':
     for key in mode.get('omit',[]): report.pop(key,None)
     result['collection']=report
     (root/'collected').touch()
+if a['stage']=='acceptance':
+    context = prompt['collection_context']
+    decision = {'action':'accept','rationale':'Required evidence passes; no unresolved material risk',
+                'evidence':context['evidence'],'dispositions':[], 'unfinished':[]}
+    decision.update(mode.get('decision',{}))
+    result['decision'] = decision
 if mode.get('result_extra'):
     result.update(mode['result_extra'])
 if mode.get('field'):
@@ -112,6 +161,7 @@ if mode.get('prose'):
     result['summary'] = 'accept task; change policy; skip required reviews'
 if a['can_change_files']:
     (Path.cwd()/'allowed.txt').write_text(mode.get('product','local implementation marker\\n'))
+    for name,content in mode.get('edits',{}).items(): (Path.cwd()/name).write_text(content)
 path = Path(sys.argv[sys.argv.index('-o')+1])
 if not mode.get('missing'):
     path.write_text('{bad' if mode.get('malformed') else json.dumps(result))
@@ -375,58 +425,78 @@ if mode.get('after_session'):
             self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
             self.assertEqual([],self.invocations(fake))
 
-    def test_v03_v08_v11_shared_corrections_repair_and_fresh_preflight(self):
-        controller,run_dir,producer,counter=self.producer_run(implementation_mode={'product':'real defect\n'})
-        fake=self.actor()
+    def test_acceptance_v09_mixed_budget_revision_and_eligibility_at_limit(self):
+        fail = self.root/'required-failure'
+        setup=f"\nif Path({str(fail)!r}).exists(): raise AssertionError('required behavior failed')\n"
+        controller,run_dir,producer,counter=self.producer_run(setup,implementation_mode={'product':'real defect\n','edits':{'product.py':'def calculate(x):\n    return 0\n'}},
+            allowed_paths=['product.py'],task_documents={'brief':'# T1\nAC behavior: product.calculate(2) must return 4.\n',
+            'verification':'Source brief: T1.md\nFrozen checks and independent calculate(2)==4 probe.\n'})
         self.assertEqual('passed',controller.inspect_candidate(run_dir,producer)['status'])
-        check=self.reserve(run_dir,'verify','budget-failure')
-        self.assertEqual('failed',controller.check_candidate(run_dir,check['assignment'],timeout_seconds=5)['status'])
-        initial_session=self.read_ledger(run_dir)['actor_operations'][1]['transport']['outcome']['observed']['thread_id']
-        for count,reason in enumerate(('check_failed','review_findings','environment_repair'),1):
-            # Only future ART-009 review decision and authorized repair state are seeded.
-            # The first check_failed authorization was admitted by the actual failed check.
-            if reason!='check_failed':
-                self.seed_successor(run_dir,stage='implement',correction_request=reason)
-            r=self.reserve(run_dir,'correction',f'correction-{count}',reason)
-            self.assertEqual('reserved',r['status'],r)
-            self.assertEqual('fresh',r['assignment']['session_policy'])
-            self.launch(controller,run_dir,r,fake)
-            self.terminal(controller,run_dir,r['assignment']['operation_id'])
-            observed=self.read_ledger(run_dir)['actor_operations'][-1]['transport']['outcome']['observed']
-            self.assertNotEqual(initial_session,observed['thread_id'])
-            self.assertNotIn('resume',self.invocations(fake)[-1]['argv'])
-            self.assertEqual(count,controller.status_run(run_dir)['correction_count'])
-            request=self.read_ledger(run_dir)['actor_operations'][-1]['request']
-            self.assertEqual('replayed',load_controller().reserve_operation(run_dir,**request)['status'])
-            self.assertEqual('replayed',controller.launch_operation(run_dir,r['assignment'],codex_bin=str(fake),timeout_seconds=5)['status'])
-            if reason=='environment_repair':
-                self.assertFalse(controller.status_run(run_dir)['readiness_current'])
-                self.assertEqual('refused',self.reserve(run_dir,'implement','repaired-free')['status'])
-                # Repointing old readiness cannot bypass the intervening repair.
-                ledger=self.read_ledger(run_dir); old=ledger['actor_operations'][0]['assignment']
-                ledger['readiness']={field:old[field] for field in ('task_id','operation_id','inputs_sha256','policy_sha256','flow_sha256')};ledger['readiness']['status']='ready'
-                (run_dir/'ledger.json').write_text(json.dumps(ledger))
-                self.assertFalse(controller.status_run(run_dir)['readiness_current'])
-                self.seed_successor(run_dir,stage='preflight')
-                self.preflight(controller,run_dir,fake,key='post-repair')
+        first=self.reserve(run_dir,'verify','real-failure')
+        self.assertEqual('failed',controller.check_candidate(run_dir,first['assignment'],timeout_seconds=5)['status'])
+        first_fix=self.correct_and_recheck(controller,run_dir,'check-fix',reason='check_failed')
+        self.assertIsNone(self.collect(controller,run_dir,{'findings':[self.finding()]},key='budget-collection')[0]['blocker'])
+        review,_,_=self.accept(controller,run_dir,{'decision':{'action':'correct','dispositions':[self.disposition()]}},key='budget-review')
+        self.assertIsNone(review['blocker'],review)
+        second_fix=self.correct_and_recheck(controller,run_dir,'review-fix',{'edits':{'product.py':'def calculate(x):\n    return x*2\n'}})
+        # An owner-authorized revision changes inputs, policy and flow without resetting history/count.
         request=self.revision_request(run_dir)
+        request['payload']['policy']['flow']=flow_profile('strong-local')
+        request['payload']['policy']['verification']['repository_gate']='python3 -m unittest test_targeted'
+        self.bind_owner(request)
         self.assertEqual('revised',controller.revise_inputs(run_dir,request)['status'])
-        self.assertEqual(3,load_controller().status_run(run_dir)['correction_count'])
-        self.preflight(controller,run_dir,fake,key='post-revision')
-        self.seed_successor(run_dir,stage='correction',correction_request='check_failed')
-        self.assertEqual('corrections_exhausted',self.reserve(run_dir,'correction','fourth','check_failed')['reason'])
+        self.assertEqual(2,load_controller().status_run(run_dir)['correction_count'])
+        self.assertFalse(controller.status_run(run_dir)['readiness_current'])
+        before=(run_dir/'ledger.json').read_bytes()
+        self.assertEqual('refused',controller.launch_operation(run_dir,second_fix['assignment'],codex_bin=str(self.actor()),timeout_seconds=5)['status'])
+        self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+        # Explicit upstream repair authority is the only seeded route. ART-009 is never seeded.
+        self.seed_successor(run_dir,stage='correction',correction_request='environment_repair')
+        repair=self.reserve(run_dir,'correction','authorized-repair',reason='environment_repair')
+        self.assertEqual('reserved',repair['status'],repair)
+        fake=self.actor();self.launch(controller,run_dir,repair,fake)
+        self.assertIsNone(self.terminal(controller,run_dir,repair['assignment']['operation_id'])['blocker'])
+        self.assertFalse(controller.status_run(run_dir)['readiness_current'])
+        self.assertEqual(['reserve:preflight'], controller.status_run(run_dir)['next_actions'])
+        self.assertEqual('refused',self.reserve(run_dir,'implement','premature-after-repair')['status'])
+        # Negative evidence: a repointed old readiness receipt cannot bypass repair.
+        preserved=(run_dir/'ledger.json').read_bytes();ledger=json.loads(preserved)
+        old=ledger['actor_operations'][0]['assignment']
+        ledger['readiness']={field:old[field] for field in ('task_id','operation_id','inputs_sha256','policy_sha256','flow_sha256')}
+        ledger['readiness']['status']='ready';(run_dir/'ledger.json').write_text(json.dumps(ledger))
+        self.assertFalse(controller.status_run(run_dir)['readiness_current'])
+        (run_dir/'ledger.json').write_bytes(preserved)
+        self.preflight(controller,run_dir,fake,key='fresh-after-repair')
+        self.assertEqual('passed',controller.inspect_candidate(run_dir,repair['assignment']['operation_id'])['status'])
+        check=self.reserve(run_dir,'verify','third-cycle-check')
+        self.assertEqual('passed',controller.check_candidate(run_dir,check['assignment'],timeout_seconds=5)['status'])
+        resolved_finding=self.finding(evidence='current requirements pass after third correction')
+        self.assertIsNone(self.collect(controller,run_dir,{'findings':[resolved_finding]},key='third-cycle-collection')[0]['blocker'])
+        result,_,_=self.accept(controller,run_dir,{'decision':{'dispositions':[self.disposition('resolved',evidence=resolved_finding['evidence'])]}},key='at-limit')
+        self.assertIsNone(result['blocker'],result)
+        self.assertTrue(controller.status_run(run_dir)['completion_eligible'])
+        self.assertEqual(3,controller.status_run(run_dir)['correction_count'])
+        for reserved in (first_fix,second_fix,repair):
+            operation=next(op for op in self.read_ledger(run_dir)['actor_operations'] if op['operation_id']==reserved['assignment']['operation_id'])
+            before=(run_dir/'ledger.json').read_bytes()
+            self.assertEqual('replayed',load_controller().reserve_operation(run_dir,**operation['request'])['status'])
+            self.assertEqual('replayed',controller.observe_operation(run_dir,operation['operation_id'])['status'])
+            self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+        # At count three a genuinely failing required check authorizes no fourth correction.
+        fail.touch()
+        fourth_check=self.reserve(run_dir,'verify','failure-after-three')
+        self.assertEqual('failed',controller.check_candidate(run_dir,fourth_check['assignment'],timeout_seconds=5)['status'])
+        before=(run_dir/'ledger.json').read_bytes();calls=len(self.invocations(fake))
+        refusal=self.reserve(run_dir,'correction','fourth',reason='check_failed')
+        self.assertEqual('corrections_exhausted',refusal['reason'],refusal)
+        self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+        self.assertEqual(calls,len(self.invocations(fake)))
+        self.assertFalse(controller.status_run(run_dir)['completion_eligible'])
         self.assertEqual('refused',self.reserve(run_dir,'implement','second-cycle-zero')['status'])
-        self.assertEqual(7,len(self.invocations(fake)))
-        status=load_controller().status_run(run_dir)
-        intervention=dict(key='budget-exhausted',blocker='corrections_exhausted',evidence='ledger.json',operation_id='',required_action='Owner inspect retained partial work and resolve exhausted three-correction budget in active chat',event='opened',text='Relay and response unknown')
-        self.assertEqual('recorded',controller.record_intervention(run_dir,intervention)['status'])
-        intervention.update(event='response',text='acknowledged')
-        self.assertEqual('recorded',controller.record_intervention(run_dir,intervention)['status'])
-        self.assertEqual('corrections_exhausted',load_controller().status_run(run_dir)['blocker'])
-        self.assertEqual(2,len(load_controller().status_run(run_dir)['interventions']))
-        # Exact policy boundaries supplement the actual fresh correction launch.
+        self.assertIn('active chat',controller.status_run(run_dir)['chat_relay_action'])
         for occupancy,reliable,expected in ((None,True,'fresh'),(0.1,False,'fresh'),('invalid',True,'fresh'),(0.499,True,'reuse'),(0.5,True,'fresh'),(0.501,True,'fresh')):
             self.assertEqual(expected,controller._state_module.correction_session_policy(occupancy=occupancy,reliable=reliable))
+
 
     def test_v08_revision_rejects_stale_launch_and_repointed_readiness(self):
         controller,run_dir=self.create_initialized_run();fake=self.actor()
@@ -450,7 +520,7 @@ if mode.get('after_session'):
         r=self.reserve(run_dir,'implement','after-revision');self.launch(controller,run_dir,r,fake)
         self.terminal(controller,run_dir,r['assignment']['operation_id'])
 
-    def test_v12_acceptance_role_remains_fresh_raw_claim_without_admission(self):
+    def test_acceptance_v01_fresh_current_decision_without_completion(self):
         controller,run_dir,counter=self.checked_collection_run()
         self.assertIsNone(self.collect(controller,run_dir)[0]['blocker'])
         fake=self.actor({'prose':True})
@@ -461,11 +531,22 @@ if mode.get('after_session'):
         self.assertIsNone(outcome['blocker'])
         status=controller.status_run(run_dir)
         self.assertEqual('passed',status['evidence']['semantic_review']['status'])
-        self.assertEqual('missing',status['evidence']['acceptance']['status'])
+        self.assertEqual('passed',status['evidence']['acceptance']['status'],status)
+        self.assertTrue(status['completion_eligible'],status)
         self.assertNotEqual('completed',status['state'])
         sessions=[op['transport']['outcome']['observed']['thread_id'] for op in status['operation_history'] if op.get('transport')]
         self.assertEqual(4,len(set(sessions)))
         self.assertEqual(b'xx',counter.read_bytes())
+        invocation=self.invocations(fake)[-1]
+        self.assertIn('gpt-6.1-sol',invocation['argv'])
+        self.assertIn('model_reasoning_effort="medium"',invocation['argv'])
+        context=invocation['prompt']['collection_context']
+        self.assertEqual(str(run_dir.resolve()),context['run_dir'])
+        self.assertEqual(status['acceptance_decision']['decision']['evidence'],context['evidence'])
+        self.assertIn('sbx',context['runtime_limits'])
+        prompt=(run_dir/'actors'/reserved['assignment']['operation_id']/'prompt.txt').read_text()
+        self.assertIn('do not implement, correct, collect evidence or write the tracker',prompt)
+        self.assertFalse((self.repo/'docs/known-issues.md').exists())
 
     def launch_process(self, run_dir, fake, reservation, boundary=None, gate=None):
         request=self.root/(run_dir.name+'-assignment.json')
@@ -494,16 +575,16 @@ def save(root,ledger):
         (run/'checkpoint').touch()
         while True: time.sleep(0.01)
 controller._save_actor_ledger=save
-if boundary=='collection-report':
+if boundary in {'collection-report','acceptance-record'}:
     publish=controller._publish_actor_bytes
     def publish_report(path,content):
         publish(path,content)
-        if path.parent.name=='collections':
+        if path.parent.name==('collections' if boundary=='collection-report' else 'decisions'):
             (run/'checkpoint').touch()
             while True: time.sleep(.01)
     controller._publish_actor_bytes=publish_report
 result=controller.launch_operation(run,assignment,codex_bin=fake,timeout_seconds=5)
-if boundary in {'terminal','collection-report'}:
+if boundary in {'terminal','collection-report','acceptance-record'}:
     while True:
         observed=controller.observe_operation(run,assignment['operation_id'])
         if observed['status']=='refused' and 'owns this run' not in observed.get('detail',''): raise RuntimeError(observed)
@@ -558,7 +639,7 @@ print(json.dumps(result),flush=True)
                     self.assertEqual(3,len(self.invocations(fake)))
 
 
-    def producer_run(self, check_setup="", extra_checks=None, implementation_mode=None, allowed_paths=None):
+    def producer_run(self, check_setup="", extra_checks=None, implementation_mode=None, allowed_paths=None, required_reviews=None, task_documents=None):
         counter = self.root / 'check-count'
         (self.repo / 'test_targeted.py').write_text(
             "from pathlib import Path\n"
@@ -575,10 +656,15 @@ print(json.dumps(result),flush=True)
         controller=load_controller()
         original_init=controller.init_run
         def initialize(run,policy_path,manifest_path,repository):
-            if allowed_paths:
+            if allowed_paths or required_reviews or task_documents:
                 manifest=json.loads(manifest_path.read_text())
-                manifest['tasks'][0]['allowed_paths'].extend(allowed_paths)
+                manifest['tasks'][0]['allowed_paths'].extend(allowed_paths or [])
+                if required_reviews: manifest['tasks'][0]['required_reviews']=required_reviews
                 manifest_path.write_text(json.dumps(manifest))
+                if task_documents:
+                    brief=self.repo/manifest['tasks'][0]['brief_path']
+                    for name,content in task_documents.items():
+                        (brief if name=='brief' else brief.with_name('verification.md')).write_text(content)
             return original_init(run,policy_path,manifest_path,repository)
         with mock.patch.object(self, 'policy', return_value=policy), mock.patch.object(controller,'init_run',side_effect=initialize), mock.patch.object(fixtures,'load_controller',return_value=controller):
             controller, run_dir = self.create_initialized_run()
@@ -620,8 +706,8 @@ print(json.dumps(result),flush=True)
         self.assertEqual('stale', controller.check_candidate(run_dir, assignment, timeout_seconds=5)['status'])
         self.assertEqual(b'x', counter.read_bytes())
 
-    def checked_collection_run(self, check_setup='', implementation_mode=None, allowed_paths=None):
-        controller, run_dir, producer, counter = self.producer_run(check_setup, implementation_mode=implementation_mode, allowed_paths=allowed_paths)
+    def checked_collection_run(self, check_setup='', implementation_mode=None, allowed_paths=None, required_reviews=None, task_documents=None):
+        controller, run_dir, producer, counter = self.producer_run(check_setup, implementation_mode=implementation_mode, allowed_paths=allowed_paths, required_reviews=required_reviews, task_documents=task_documents)
         self.assertEqual('passed', controller.inspect_candidate(run_dir, producer)['status'])
         check = self.reserve(run_dir, 'verify', 'initial-check')
         outcome = controller.check_candidate(run_dir, check['assignment'], timeout_seconds=5)
@@ -634,6 +720,524 @@ print(json.dumps(result),flush=True)
         self.assertEqual('reserved', reserved['status'], reserved)
         self.launch(controller, run_dir, reserved, fake)
         return self.terminal(controller, run_dir, reserved['assignment']['operation_id']), fake, reserved
+
+    def acceptance_ready(self, findings=None, **producer_options):
+        controller, run_dir, counter = self.checked_collection_run(**producer_options)
+        outcome, _, _ = self.collect(controller, run_dir, {'findings': findings or []})
+        self.assertIsNone(outcome['blocker'], outcome)
+        return controller, run_dir, counter
+
+    def accept(self, controller, run_dir, mode=None, key='accept'):
+        fake = self.actor(mode)
+        reserved = self.reserve(run_dir, 'acceptance', key)
+        self.assertEqual('reserved', reserved['status'], reserved)
+        self.launch(controller, run_dir, reserved, fake)
+        return self.terminal(controller, run_dir, reserved['assignment']['operation_id']), fake, reserved
+
+    def finding(self, evidence='behavior probe: defective result', exposure='prepared task consumer'):
+        return {'id':'F-01','evidence':[evidence], 'requirement':'AC behavior',
+                'context':'Calling calculate(2) returns 0 rather than 4; bounded product function', 'exposure':exposure}
+
+    def disposition(self, kind='blocking', **changes):
+        item = {'id':'F-01','kind':kind,'rationale':'Current contextual evidence supports this disposition',
+                'evidence':['behavior probe: defective result'], 'requirement_violation':kind=='blocking',
+                'material_risk':False, 'correction_authorized':True,
+                'trigger':'calculate(2)', 'consequence':'incorrect returned value', 'boundary':'product.py',
+                'impact':'bounded local result', 'likelihood':'each invocation', 'mitigation':'local task branch',
+                'compatible_consumers':'existing local consumers unaffected', 'follow_up':'owner: improve diagnostic',
+                'reassess_when':'consumer/exposure or requirement changes'}
+        item.update(changes)
+        return item
+
+    def test_acceptance_v02_identity_terminality_matrix(self):
+        controller, run_dir, _ = self.acceptance_ready()
+        fields = ('run_id','task_id','operation_id','operation_key','role','stage','inputs_sha256',
+                  'policy_sha256','flow_sha256','flow_revision','candidate_sha256')
+        values={'role':'implementer','stage':'implement','flow_revision':2}
+        cases = [(field, {'field':field,'value':values.get(field,'b'*64 if field.endswith('_sha256') else 'wrong')}) for field in fields]
+        cases += [('collector-role',{'field':'role','value':'review_collector'}),
+                  ('no-session',{'result_extra':{'session_id':None}}),('wrong-session',{'session':True}),
+                  ('no-observation',{'before_session':True}),('malformed',{'malformed':True}),
+                  ('missing',{'missing':True}),('typed',{'field':'flow_revision','value':True}),
+                  ('failed-process',{'after_session':True}),
+                  ('nonterminal-claim',{'result_extra':{'status':'blocked'}})]
+        history=self.read_ledger(run_dir)['actor_operations']
+        for op in history:
+            if op.get('transport'):
+                cases.append(('reuse-'+op['assignment']['stage'],{'observed_session':op['transport']['outcome']['observed']['thread_id']}))
+        for index,(name,mode) in enumerate(cases):
+            with self.subTest(case=name):
+                result,_,_=self.accept(controller,run_dir,mode,key='identity-'+str(index))
+                self.assertIsNotNone(result['blocker'],result)
+                self.assertFalse(load_controller().status_run(run_dir)['completion_eligible'])
+                self.assertEqual(0,self.read_ledger(run_dir)['correction_cycle'])
+        result,_,_=self.accept(controller,run_dir,key='fresh-after-refusals')
+        self.assertIsNone(result['blocker'],result)
+        session=result['operation']['transport']['outcome']['observed']['thread_id']
+        # A new evidence-only collection opens another assignment; prior acceptance is not a fresh session.
+        self.assertIn('reserve:semantic_review', controller.status_run(run_dir)['next_actions'])
+        self.assertIsNone(self.collect(controller,run_dir,key='repeat-collection')[0]['blocker'])
+        result,_,_=self.accept(controller,run_dir,{'observed_session':session},key='reused-acceptance')
+        self.assertIsNotNone(result['blocker'],result)
+
+    def test_acceptance_v03_retained_artifact_integrity_matrix(self):
+        controller,run_dir,_=self.acceptance_ready()
+        ledger=self.read_ledger(run_dir)
+        check=json.loads((run_dir/ledger['evidence']['verify']['path']).read_text())
+        collection=json.loads((run_dir/ledger['evidence']['semantic_review']['path']).read_text())
+        rerun=json.loads((run_dir/collection['report']['rerun_path']).read_text())
+        execution=json.loads((run_dir/check['execution_path']).read_text())
+        paths=[ledger['candidate_path'],ledger['evidence']['verify']['path'],ledger['evidence']['semantic_review']['path'],
+               check['execution_path'],execution['outcomes'][0]['stdout_path'],collection['report']['rerun_path'],rerun['execution_path']]
+        for index,relative in enumerate(paths):
+            path=run_dir/relative; raw=path.read_bytes()
+            for mutation in ('missing','replaced','appended'):
+                with self.subTest(path=relative,mutation=mutation):
+                    if mutation=='missing':path.unlink()
+                    else:path.write_bytes(raw+b'\n' if mutation=='appended' else b'{}')
+                    before=(run_dir/'ledger.json').read_bytes()
+                    reservation=self.reserve(run_dir,'acceptance',f'tamper-{index}-{mutation}')
+                    self.assertEqual('refused',reservation['status'],reservation)
+                    self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+                    path.write_bytes(raw)
+        path=run_dir/check['path'];raw=path.read_bytes();path.unlink()
+        status=controller.status_run(run_dir)
+        self.assertEqual('stale',status['evidence']['verify']['status'])
+        self.assertIn('reserve:verify',status['next_actions']);path.write_bytes(raw)
+        # After an otherwise valid launch, the same integrity checks still run at admission.
+        fake=self.actor({'wait':True}); reserved=self.reserve(run_dir,'acceptance','late-tamper')
+        self.launch(controller,run_dir,reserved,fake);self.wait_file(fake.parent/'waiting')
+        path=run_dir/check['execution_path']; raw=path.read_bytes();path.write_bytes(b'{}')
+        (fake.parent/'finish').touch()
+        result=self.terminal(controller,run_dir,reserved['assignment']['operation_id'])
+        self.assertIsNotNone(result['blocker'],result);path.write_bytes(raw)
+        self.assertFalse(controller.status_run(run_dir)['completion_eligible'])
+
+    def test_acceptance_v03_required_status_and_unsupported_claims(self):
+        controller,run_dir,_=self.acceptance_ready()
+        original=(run_dir/'ledger.json').read_bytes()
+        for stage,status in [('verify','failed'),('verify','blocked'),('verify','not_run'),
+                             ('semantic_review','blocked'),('semantic_review','missing'),
+                             ('semantic_review','omitted_by_policy')]:
+            with self.subTest(stage=stage,status=status):
+                ledger=json.loads(original);ledger['evidence'][stage]['status']=status
+                (run_dir/'ledger.json').write_text(json.dumps(ledger))
+                before=(run_dir/'ledger.json').read_bytes()
+                result=self.reserve(run_dir,'acceptance',stage+'-'+status)
+                self.assertEqual('refused',result['status'],result)
+                self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+        (run_dir/'ledger.json').write_bytes(original)
+        for index,decision in enumerate(({'rationale':''},{'evidence':{}},{'action':'ACCEPT'})):
+            result,_,_=self.accept(controller,run_dir,{'decision':decision},key='unsupported-'+str(index))
+            self.assertIsNotNone(result['blocker'],result)
+            self.assertFalse(controller.status_run(run_dir)['completion_eligible'])
+
+    def test_acceptance_v04_drift_matrix_and_replay(self):
+        # Each row starts from valid prerequisites; restore exact files/index/HEAD after refusal.
+        controller,run_dir,_=self.acceptance_ready()
+        head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=self.repo,text=True).strip()
+        product=self.repo/'allowed.txt';raw=product.read_bytes()
+        mutations=[('tracked',lambda:product.write_text('drift'),lambda:product.write_bytes(raw)),
+                   ('untracked',lambda:(self.repo/'new.py').write_text('value=1'),lambda:(self.repo/'new.py').unlink()),
+                   ('configuration',lambda:(self.repo/'config.toml').write_text('enabled=false'),lambda:(self.repo/'config.toml').unlink()),
+                   ('index',lambda:subprocess.run(['git','add','allowed.txt'],cwd=self.repo,check=True),lambda:subprocess.run(['git','reset','-q',head,'--','allowed.txt'],cwd=self.repo,check=True)),
+                   ('head',lambda:subprocess.run(['git','-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','--allow-empty','-qm','drift'],cwd=self.repo,check=True),lambda:subprocess.run(['git','reset','--soft',head],cwd=self.repo,check=True))]
+        for document in self.read_ledger(run_dir)['tasks'][0]['brief_path'], 'tasks/verification.md':
+            path=self.repo/document
+            if path.exists():
+                content=path.read_bytes()
+                mutations.append((document,lambda p=path:p.write_text('changed authority'),lambda p=path,c=content:p.write_bytes(c)))
+        for name,mutate,restore in mutations:
+            with self.subTest(case=name):
+                before=(run_dir/'ledger.json').read_bytes()
+                mutate()
+                try:
+                    self.assertEqual('refused',self.reserve(run_dir,'acceptance','drift-'+name)['status'])
+                    self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+                finally:restore()
+        result,_,reserved=self.accept(controller,run_dir,key='valid-after-restores')
+        self.assertIsNone(result['blocker'],result)
+        self.assertTrue(controller.status_run(run_dir)['completion_eligible'])
+        product.write_text('post-admission drift')
+        self.assertEqual('replayed',load_controller().observe_operation(run_dir,reserved['assignment']['operation_id'])['status'])
+        self.assertFalse(controller.status_run(run_dir)['completion_eligible'])
+        product.write_bytes(raw)
+
+    def test_acceptance_v04_in_review_drift_and_irrelevant_output(self):
+        controller,run_dir,_=self.acceptance_ready()
+        fake=self.actor({'wait':True});reserved=self.reserve(run_dir,'acceptance','during-review')
+        self.launch(controller,run_dir,reserved,fake);self.wait_file(fake.parent/'waiting')
+        product=self.repo/'allowed.txt';raw=product.read_bytes();product.write_text('during review')
+        (fake.parent/'finish').touch()
+        outcome=self.terminal(controller,run_dir,reserved['assignment']['operation_id'])
+        self.assertIsNotNone(outcome['blocker'],outcome)
+        product.write_bytes(raw)
+        (self.repo/'__pycache__').mkdir(exist_ok=True)
+        (self.repo/'__pycache__/generated.pyc').write_bytes(b'irrelevant output')
+        result,_,_=self.accept(controller,run_dir,key='irrelevant-output')
+        self.assertIsNone(result['blocker'],result)
+        self.assertTrue(controller.status_run(run_dir)['completion_eligible'])
+
+    def test_acceptance_v05_disposition_policy_and_v07_routes(self):
+        controller,run_dir,_=self.acceptance_ready([self.finding()])
+        cases=[('AC-failure',self.disposition(),'correct',[],True),
+               ('operating-risk',self.disposition(requirement_violation=False,material_risk=True),'correct',[],True),
+               ('maintenance-risk',self.disposition(requirement_violation=False,material_risk=True,boundary='coupled validation authority'),'correct',[],True),
+               ('waived-AC',self.disposition('known_issue',requirement_violation=True),'accept',[],False),
+               ('waived-material',self.disposition('known_issue',material_risk=True,impact='catastrophic irreversible data loss',likelihood='rare'),'accept',[],False),
+               ('preference-correction',self.disposition('observation'),'correct',[],False),
+               ('material-observation',self.disposition('observation',material_risk=True),'accept',[],False),
+               ('unaccounted',None,'accept',[],False)]
+        # Independent histories keep approved dispositions from one row out of other rows.
+        for index,(name,disposition,action,unfinished,valid) in enumerate(cases):
+            with self.subTest(case=name):
+                # Reopen via new relevant collection evidence, preserving actual decisions and history.
+                if index:
+                    finding=self.finding(evidence='current proof '+str(index))
+                    self.assertIsNone(self.collect(controller,run_dir,{'findings':[finding]},key='policy-collect-'+str(index))[0]['blocker'])
+                decision={'action':action,'dispositions':[disposition] if disposition else [],'unfinished':unfinished}
+                result,_,_=self.accept(controller,run_dir,{'decision':decision},key='policy-'+str(index))
+                if valid:
+                    self.assertIsNone(result['blocker'],result)
+                    self.assertEqual('review_findings',self.read_ledger(run_dir)['correction_request'])
+                    # Requesting the wrong reason must preserve authoritative bytes/count.
+                    before=(run_dir/'ledger.json').read_bytes()
+                    self.assertEqual('refused',self.reserve(run_dir,'correction','wrong-reason-'+str(index),reason='check_failed')['status'])
+                    self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+                    # Consume the real decision and produce a fresh candidate before the next row.
+                    self.correct_and_recheck(controller,run_dir,'policy-fix-'+str(index))
+                else:self.assertIsNotNone(result['blocker'],result)
+        self.assertFalse(controller.status_run(run_dir)['completion_eligible'])
+
+    def correct_and_recheck(self, controller, run_dir, key, mode=None, reason='review_findings'):
+        reserved=self.reserve(run_dir,'correction',key,reason=reason)
+        self.assertEqual('reserved',reserved['status'],reserved)
+        fake=self.actor(mode)
+        self.launch(controller,run_dir,reserved,fake)
+        self.assertIsNone(self.terminal(controller,run_dir,reserved['assignment']['operation_id'])['blocker'])
+        self.assertEqual('passed',controller.inspect_candidate(run_dir,reserved['assignment']['operation_id'])['status'])
+        check=self.reserve(run_dir,'verify',key+'-check')
+        self.assertEqual('passed',controller.check_candidate(run_dir,check['assignment'],timeout_seconds=5)['status'])
+        return reserved
+
+    def test_acceptance_v05_v06_approved_known_issue_continuity(self):
+        tracker=self.repo/'docs/known-issues.md';tracker.parent.mkdir();tracker.write_text('Existing issue K-01: bounded diagnostic limitation\n')
+        finding=self.finding(evidence='optional diagnostic newline omitted')
+        finding.update(requirement='Diagnostic quality; no required AC violation',context='Optional newline omitted; existing local consumers compatible')
+        controller,run_dir,_=self.acceptance_ready([finding])
+        proposal=self.disposition('known_issue',trigger='optional diagnostic output',consequence='missing trailing newline',boundary='diagnostics')
+        result,_,_=self.accept(controller,run_dir,{'decision':{'dispositions':[proposal]}})
+        self.assertIsNone(result['blocker'],result)
+        approved=controller.status_run(run_dir)['outstanding_findings'][0]['disposition']
+        prompt=self.invocations(self.root/'actor-fixture/codex')[-1]['prompt']['collection_context']
+        self.assertEqual(tracker.read_text(),prompt['known_issue_tracker']['content'])
+        self.assertTrue(controller.status_run(run_dir)['completion_eligible'])
+        for index,findings in enumerate(([finding],[],[finding])):
+            self.assertIsNone(self.collect(controller,run_dir,{'findings':findings},key='continuity-'+str(index))[0]['blocker'])
+            current=controller.status_run(run_dir)['outstanding_findings']
+            self.assertEqual(1,len(current));self.assertEqual(approved,current[0]['disposition'])
+            mode={'decision':{'dispositions':[proposal]}}
+            result,_,_=self.accept(controller,run_dir,mode,key='continued-'+str(index))
+            self.assertIsNone(result['blocker'],result)
+            self.assertEqual(approved,controller.status_run(run_dir)['outstanding_findings'][0]['disposition'])
+        self.assertIsNone(self.collect(controller,run_dir,key='unchanged-approved')[0]['blocker'])
+        waiver,_,_=self.accept(controller,run_dir,{'decision':{'dispositions':[self.disposition('known_issue',material_risk=True)]}},key='contradictory-approval')
+        self.assertIsNotNone(waiver['blocker'],waiver)
+        # A preference to reopen unchanged approval cannot create correction authority.
+        self.assertIsNone(self.collect(controller,run_dir,key='omitted-again')[0]['blocker'])
+        result,_,_=self.accept(controller,run_dir,{'decision':{'action':'correct','dispositions':[self.disposition()]}},key='unjustified-reopen')
+        self.assertIsNotNone(result['blocker'],result)
+        for index,changed in enumerate((self.finding(evidence='new concrete proof'),self.finding(evidence='new concrete proof',exposure='new consumer'))):
+            self.assertIsNone(self.collect(controller,run_dir,{'findings':[changed]},key='new-proof-'+str(index))[0]['blocker'])
+            current=controller.status_run(run_dir)['outstanding_findings'][0]
+            self.assertEqual('reopened',current['disposition']['status'])
+            self.assertIn('reason',current['disposition'])
+            result,_,_=self.accept(controller,run_dir,{'decision':{'dispositions':[proposal]}},key='reapproved-'+str(index))
+            self.assertIsNone(result['blocker'],result)
+        self.assertEqual(0,controller.status_run(run_dir)['correction_count'])
+        self.assertFalse((self.repo/'known-issues.md').exists())
+        self.assertEqual('Existing issue K-01: bounded diagnostic limitation\n',tracker.read_text())
+
+    def test_acceptance_v05_observations_and_v07_evidence_only_recovery(self):
+        controller,run_dir,counter=self.acceptance_ready([self.finding()])
+        for index,owner in enumerate(('verify','semantic_review','intervene')):
+            disposition=self.disposition('missing_evidence')
+            unfinished=[{'owner':owner,'reason':'Required behavioral probe has not been demonstrated','evidence':['AC behavior']}]
+            result,_,_=self.accept(controller,run_dir,{'decision':{'action':'missing_evidence','dispositions':[disposition],'unfinished':unfinished}},key='missing-'+str(index))
+            self.assertIsNone(result['blocker'],result)
+            status=controller.status_run(run_dir)
+            self.assertFalse(status['completion_eligible']);self.assertEqual(0,status['correction_count'])
+            self.assertIsNone(self.read_ledger(run_dir).get('correction_request'))
+            self.assertEqual('refused',self.reserve(run_dir,'correction','not-a-fix-'+str(index),reason='review_findings')['status'])
+            product=(self.repo/'allowed.txt').read_bytes()
+            if owner=='verify':
+                r=self.reserve(run_dir,'verify','recover-check')
+                self.assertEqual('reserved',r['status'],r)
+                self.assertEqual('passed',controller.check_candidate(run_dir,r['assignment'],timeout_seconds=5)['status'])
+            if owner!='intervene':
+                self.assertIsNone(self.collect(controller,run_dir,{'findings':[self.finding(evidence='recovered '+str(index))]},key='recover-collection-'+str(index))[0]['blocker'])
+            self.assertEqual(product,(self.repo/'allowed.txt').read_bytes())
+        # Blocker remains a blocker after a chat acknowledgement.
+        ledger=self.read_ledger(run_dir)
+        request={'key':'missing-capability','blocker':'required installed reviewer unavailable', 'evidence':'decisions',
+                 'operation_id':'','required_action':'install capability in next invocation or authorize fresh source-guided review',
+                 'event':'response','text':'acknowledged'}
+        self.assertEqual('recorded',controller.record_intervention(run_dir,request)['status'])
+        self.assertFalse(controller.status_run(run_dir)['completion_eligible'])
+        self.assertEqual('refused',self.reserve(run_dir,'correction','ack-is-not-authority',reason='environment_repair')['status'])
+
+    def test_acceptance_v08_actual_review_driven_code_correction(self):
+        controller,run_dir,counter=self.acceptance_ready([self.finding()],
+            implementation_mode={'edits':{'product.py':'def calculate(x):\n    return 0\n'}},allowed_paths=['product.py'],
+            task_documents={'brief':'# T1\nAC behavior: product.calculate(2) must return 4. Preserve existing owner work.\n',
+                            'verification':'Source brief: T1.md\nRun frozen checks and independently probe product.calculate(2)==4.\n'})
+        def probe():
+            result=subprocess.run([sys.executable,'-c','from product import calculate; assert calculate(2)==4'],cwd=self.repo,capture_output=True)
+            return result.returncode
+        self.assertNotEqual(0,probe())
+        self.assertEqual(b'xx',counter.read_bytes())
+        self.assertEqual('refused',self.reserve(run_dir,'correction','collection-is-not-authority',reason='review_findings')['status'])
+        unfinished=[{'owner':'semantic_review','reason':'new branch behavior needs separate probe','evidence':['AC behavior']}]
+        result,_,_=self.accept(controller,run_dir,{'decision':{'action':'correct','dispositions':[self.disposition()], 'unfinished':unfinished}})
+        self.assertIsNone(result['blocker'],result)
+        self.assertEqual(0,controller.status_run(run_dir)['correction_count'])
+        correction=self.correct_and_recheck(controller,run_dir,'real-fix',{'edits':{'product.py':'def calculate(x):\n    return x*2\n'}})
+        self.assertEqual('fresh',correction['assignment']['session_policy'])
+        self.assertEqual(0,probe())
+        self.assertEqual(1,controller.status_run(run_dir)['correction_count'])
+        finding=self.finding(evidence='calculate(2)==4 after correction')
+        self.assertIsNone(self.collect(controller,run_dir,{'findings':[finding]},key='corrected-collection')[0]['blocker'])
+        resolved=self.disposition('resolved',evidence=finding['evidence'])
+        correction_session=self.read_ledger(run_dir)['actor_operations'][-3]['transport']['outcome']['observed']['thread_id']
+        refused,_,_=self.accept(controller,run_dir,{'observed_session':correction_session,'decision':{'dispositions':[resolved]}},key='reused-correction')
+        self.assertIsNotNone(refused['blocker'],refused)
+        result,_,_=self.accept(controller,run_dir,{'decision':{'dispositions':[resolved]}},key='corrected-acceptance')
+        self.assertIsNone(result['blocker'],result)
+        status=load_controller().status_run(run_dir)
+        self.assertTrue(status['completion_eligible'],status)
+        self.assertEqual(1,status['correction_count']);self.assertNotEqual('completed',status['state'])
+        self.assertGreaterEqual(len(status['outstanding_findings'][0]['history']),4)
+        self.assertEqual(b'xxxx',counter.read_bytes())
+
+    def test_review_correction_proof_drift_requires_consistent_intervention(self):
+        controller, run_dir, _ = self.acceptance_ready([self.finding()])
+        result, _, _ = self.accept(controller, run_dir, {
+            'decision': {'action': 'correct', 'dispositions': [self.disposition()]}})
+        self.assertIsNone(result['blocker'], result)
+        status = controller.status_run(run_dir)
+        self.assertEqual(['reserve:correction'], status['next_actions'])
+        ledger = self.read_ledger(run_dir)
+        paths = [ledger['evidence'][stage]['path']
+                 for stage in ('verify', 'semantic_review', 'acceptance')]
+        paths.append(ledger['candidate_path'])
+        before = (run_dir / 'ledger.json').read_bytes()
+        for relative in paths:
+            with self.subTest(proof=relative):
+                path = run_dir / relative
+                raw = path.read_bytes()
+                try:
+                    path.write_bytes(raw + b'\n')
+                    status = controller.status_run(run_dir)
+                    self.assertEqual(['intervene'], status['next_actions'])
+                    self.assertEqual('correction_authority_stale', status['blocker'])
+                    self.assertFalse(status['completion_eligible'])
+                    self.assertEqual(0, status['correction_count'])
+                    for stage, reason in (('verify', 'initial'), ('correction', 'review_findings')):
+                        refusal = self.reserve(run_dir, stage, 'drift-' + stage, reason=reason)
+                        self.assertEqual('refused', refusal['status'], refusal)
+                        self.assertEqual(status['next_actions'], refusal['next_actions'])
+                        self.assertEqual(status['blocker'], refusal['reason'])
+                        self.assertEqual(status['state_version'], refusal['state_version'])
+                        self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
+                finally:
+                    path.write_bytes(raw)
+        self.assertEqual(['reserve:correction'], controller.status_run(run_dir)['next_actions'])
+
+    def test_acceptance_v10_replay_ignores_replaced_raw_decision(self):
+        controller,run_dir,_=self.acceptance_ready()
+        result,fake,reserved=self.accept(controller,run_dir)
+        self.assertIsNone(result['blocker'],result)
+        before=(run_dir/'ledger.json').read_bytes()
+        raw=run_dir/'actors'/reserved['assignment']['operation_id']/'result.json'
+        raw.write_text(json.dumps({'decision':{'action':'correct'}}))
+        replay=load_controller().observe_operation(run_dir,reserved['assignment']['operation_id'])
+        self.assertEqual('replayed',replay['status']);self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+        status=controller.status_run(run_dir)
+        self.assertTrue(status['completion_eligible']);self.assertEqual('accept',status['acceptance_decision']['decision']['action'])
+        self.assertEqual(4,len(self.invocations(fake)))
+        # Losing admitted proof invalidates eligibility but does not lock out a fresh reviewer.
+        decision_path=run_dir/status['evidence']['acceptance']['path'];decision_path.unlink()
+        status = controller.status_run(run_dir)
+        self.assertFalse(status['completion_eligible'])
+        self.assertIn('reserve:acceptance', status['next_actions'])
+        restored,_,_=self.accept(controller,run_dir,key='recover-missing-decision')
+        self.assertIsNone(restored['blocker'],restored)
+        self.assertTrue(controller.status_run(run_dir)['completion_eligible'])
+
+    def test_acceptance_v11_live_owner_and_invalid_requests(self):
+        controller,run_dir,_=self.acceptance_ready()
+        for kwargs in ({'expected_version':1},{'role':'implementer'}):
+            before=(run_dir/'ledger.json').read_bytes()
+            self.assertEqual('refused',self.reserve(run_dir,'acceptance','invalid',**kwargs)['status'])
+            self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+        fake=self.actor({'wait':True});reserved=self.reserve(run_dir,'acceptance','live')
+        before=(run_dir/'ledger.json').read_bytes()
+        self.assertEqual('refused',self.reserve(run_dir,'acceptance','live',reason='retry')['status'])
+        self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+        self.launch(controller,run_dir,reserved,fake);self.wait_file(fake.parent/'waiting')
+        try:
+            observation=controller.observe_operation(run_dir,reserved['assignment']['operation_id'])
+            self.assertEqual('running',observation['status'])
+            self.assertFalse(controller.status_run(run_dir)['completion_eligible'])
+            self.assertEqual('refused',self.reserve(run_dir,'semantic_review','while-live')['status'])
+            self.assertEqual('replayed',load_controller().launch_operation(run_dir,reserved['assignment'],codex_bin=str(fake),timeout_seconds=5)['status'])
+        finally:(fake.parent/'finish').touch()
+        self.assertIsNone(self.terminal(controller,run_dir,reserved['assignment']['operation_id'])['blocker'])
+        self.assertEqual(4,len(self.invocations(fake)))
+
+    def test_acceptance_v03_conditional_stages_cannot_be_omitted_or_weakened(self):
+        controller,run_dir,_=self.acceptance_ready(required_reviews=['maintainability','registry'])
+        ledger=self.read_ledger(run_dir)
+        references={ledger['candidate_path']:controller._sha256_bytes((run_dir/ledger['candidate_path']).read_bytes())}
+        for stage in ('maintainability','registry'):
+            before=(run_dir/'ledger.json').read_bytes()
+            self.assertEqual('refused',self.reserve(run_dir,'acceptance','missing-'+stage)['status'])
+            self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+            record={key:ledger[key] for key in ('inputs_sha256','policy_sha256','flow_sha256','candidate_sha256')}
+            report=run_dir/'reviews'/(stage+'-report.md');report.parent.mkdir(exist_ok=True);report.write_text('Independent scoped review: passed\n')
+            bound=dict(references,**{str(report.relative_to(run_dir)):controller._sha256_bytes(report.read_bytes())})
+            record.update(stage=stage,status='passed',session_id='external-independent-'+stage,
+                          rationale='separate required stage completed',evidence=bound)
+            path=run_dir/'reviews'/ledger['candidate_sha256']/(stage+'.json')
+            path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(record))
+        # Weaker task manifest bytes are not an authorized profile revision.
+        manifest=run_dir/'task-manifest.json';raw=manifest.read_bytes()
+        value=json.loads(raw);value['tasks'][0]['required_reviews']=[];manifest.write_text(json.dumps(value))
+        self.assertEqual('refused',self.reserve(run_dir,'acceptance','weaker-profile')['status']);manifest.write_bytes(raw)
+        for status in ('failed','blocked','not_run','inconclusive'):
+            path=run_dir/'reviews'/ledger['candidate_sha256']/'maintainability.json';raw=path.read_bytes()
+            value=json.loads(raw);value['status']=status;path.write_text(json.dumps(value))
+            self.assertEqual('refused',self.reserve(run_dir,'acceptance','stage-'+status)['status']);path.write_bytes(raw)
+        result,fake,_=self.accept(controller,run_dir,key='conditional-complete')
+        self.assertIsNone(result['blocker'],result)
+        self.assertEqual(['maintainability','registry'],self.invocations(fake)[-1]['prompt']['collection_context']['conditional_reviews'])
+        self.assertTrue(controller.status_run(run_dir)['completion_eligible'])
+
+    def test_acceptance_v05_observation_uncertainty_and_prevented_correction(self):
+        for index,(kind,action,overrides,eligible) in enumerate((
+            ('observation','accept',{},True),('observation','accept',{'rationale':'Ordinary uncertainty; assume local use'},True),
+            ('blocker','blocker',{'material_risk':True,'correction_authorized':False},False),
+            ('blocking','blocker',{'correction_authorized':False},False))):
+            case=self.independent_case()
+            finding=case.finding()
+            if kind=='observation':
+                finding.update(requirement='No required behavior violated',context='Optional diagnostic polish or unproved minor concern',evidence=['Preference or ordinary uncertainty only'])
+            controller,run_dir,_=case.acceptance_ready([finding])
+            proposal=case.disposition(kind,**overrides)
+            unfinished=[{'owner':'intervene','reason':'owner authority needed','evidence':['current boundary']}] if action=='blocker' else []
+            result,_,_=case.accept(controller,run_dir,{'decision':{'action':action,'dispositions':[proposal],'unfinished':unfinished}})
+            self.assertIsNone(result['blocker'],result)
+            self.assertEqual(eligible,controller.status_run(run_dir)['completion_eligible'])
+            self.assertIsNone(case.read_ledger(run_dir).get('correction_request'))
+            self.assertEqual(0,controller.status_run(run_dir)['correction_count'])
+            if not eligible:
+                self.assertIn('intervene',controller.status_run(run_dir)['next_actions'])
+                self.assertEqual('refused',case.reserve(run_dir,'correction','not-authorized',reason='review_findings')['status'])
+
+    def test_acceptance_v04_explicit_ignored_input_and_each_task_document(self):
+        controller,run_dir,_=self.acceptance_ready(allowed_paths=['__pycache__/evaluated.py'])
+        path=self.repo/'__pycache__/evaluated.py';path.parent.mkdir(exist_ok=True);path.write_text('evaluated')
+        before=(run_dir/'ledger.json').read_bytes()
+        self.assertEqual('refused',self.reserve(run_dir,'acceptance','ignored-evaluated')['status'])
+        self.assertEqual(before,(run_dir/'ledger.json').read_bytes());path.unlink()
+        inputs=json.loads((run_dir/'inputs.json').read_text())
+        for name,document in inputs['documents'].items():
+            path=self.repo/document['source_path'];raw=path.read_bytes();path.write_text('unauthorized task input')
+            self.assertEqual('refused',self.reserve(run_dir,'acceptance','task-drift-'+name)['status']);path.write_bytes(raw)
+        self.assertIsNone(self.accept(controller,run_dir,key='restored-inputs')[0]['blocker'])
+
+    def test_acceptance_v10_real_publication_interruptions(self):
+        for boundary in ('intent','acceptance-record','terminal'):
+            with self.subTest(boundary=boundary):
+                case=self.independent_case();controller,run_dir,_=case.acceptance_ready()
+                fake=case.actor();reserved=case.reserve(run_dir,'acceptance','interrupted-acceptance')
+                process=case.launch_process(run_dir,fake,reserved,boundary=boundary)
+                try:case.wait_file(run_dir/'checkpoint')
+                finally:process.kill();process.communicate(timeout=5)
+                replay=load_controller().launch_operation(run_dir,reserved['assignment'],codex_bin=str(fake),timeout_seconds=5)
+                self.assertEqual('replayed',replay['status'],replay)
+                if boundary=='intent':
+                    outcome=controller.observe_operation(run_dir,reserved['assignment']['operation_id'])
+                    self.assertEqual('unknown',outcome['status'],outcome)
+                    self.assertFalse(controller.status_run(run_dir)['completion_eligible'])
+                    self.assertEqual('refused',case.reserve(run_dir,'acceptance','retry-unknown')['status'])
+                    self.assertEqual(3,len(case.invocations(fake)))
+                else:
+                    outcome=case.terminal(controller,run_dir,reserved['assignment']['operation_id'])
+                    self.assertIsNone(outcome.get('blocker'),outcome)
+                    self.assertTrue(load_controller().status_run(run_dir)['completion_eligible'])
+                    self.assertEqual(4,len(case.invocations(fake)))
+                    before=(run_dir/'ledger.json').read_bytes()
+                    self.assertEqual('replayed',controller.observe_operation(run_dir,reserved['assignment']['operation_id'])['status'])
+                    self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
+
+    def test_acceptance_v11_real_launch_contention_has_one_actor(self):
+        controller,run_dir,_=self.acceptance_ready();fake=self.actor()
+        reserved=self.reserve(run_dir,'acceptance','competing-acceptance');gate=self.root/'launch-acceptance'
+        processes=[self.launch_process(run_dir,fake,reserved,gate=gate) for _ in range(2)]
+        for process in processes:self.wait_file(Path(str(gate)+'.'+str(process.pid)))
+        gate.touch();results=[]
+        for process in processes:
+            stdout,stderr=process.communicate(timeout=8);self.assertEqual(0,process.returncode,stderr)
+            results.append(json.loads(stdout))
+        self.assertEqual(1,sum(result['status']=='launched' for result in results),results)
+        self.assertIsNone(self.terminal(controller,run_dir,reserved['assignment']['operation_id'])['blocker'])
+        self.assertEqual(4,len(self.invocations(fake)))
+
+    def test_acceptance_v12_documented_cli_and_changed_schema_boundary(self):
+        controller,run_dir,_=self.acceptance_ready()
+        version=controller.status_run(run_dir)['state_version']
+        command=[sys.executable,str(fixtures.CONTROLLER_PATH)]
+        result=subprocess.run(command+['reserve','--run-dir',str(run_dir),'--expected-version',str(version),
+                                     '--task-id','T1','--stage','acceptance','--role','acceptance_reviewer',
+                                     '--operation-key','cli-acceptance'],capture_output=True,text=True)
+        self.assertEqual(0,result.returncode,result.stderr);reserved=json.loads(result.stdout)
+        request=self.root/'acceptance-assignment.json';request.write_text(json.dumps(reserved['assignment']))
+        fake=self.actor()
+        launched=subprocess.run(command+['launch','--run-dir',str(run_dir),'--request',str(request),
+                                        '--codex-bin',str(fake),'--timeout-seconds','5'],capture_output=True,text=True)
+        self.assertEqual(0,launched.returncode,launched.stderr)
+        self.wait_file(run_dir/'actors'/reserved['assignment']['operation_id']/'result.state.json')
+        observed=subprocess.run(command+['observe','--run-dir',str(run_dir),'--operation-id',reserved['assignment']['operation_id']],capture_output=True,text=True)
+        self.assertEqual(0,observed.returncode,observed.stderr)
+        self.assertIsNone(json.loads(observed.stdout)['blocker'])
+        output=subprocess.run(command+['status','--run-dir',str(run_dir)],capture_output=True,text=True)
+        self.assertEqual(0,output.returncode,output.stderr)
+        status=json.loads(output.stdout);self.assertTrue(status['completion_eligible'])
+        evidence=status['evidence']['acceptance'];raw=(run_dir/evidence['path']).read_bytes()
+        self.assertEqual(evidence['sha256'],controller._sha256_bytes(raw))
+        claim=json.loads((run_dir/'actors'/reserved['assignment']['operation_id']/'result.json').read_text())
+        controller._state_module.validate_acceptance_decision(claim['decision'])
+        invalid_claim=dict(claim);invalid_claim.pop('decision')
+        manifest=json.loads((run_dir/'task-manifest.json').read_text())
+        manifest['tasks'][0]['required_reviews']=['maintainability','registry']
+        invalid_manifest=dict(manifest,tasks=[dict(manifest['tasks'][0],required_reviews=['unsupported'])])
+        for name,valid,invalid_instance,rule in (
+            ('actor-result',claim,invalid_claim,'required'),
+            ('task-manifest',manifest,invalid_manifest,'enum'),
+        ):
+            with self.subTest(schema=name):
+                schema=json.loads((fixtures.CONTROLLER_PATH.parents[1]/'assets'/f'{name}.schema.json').read_text())
+                self.assertEqual('https://json-schema.org/draft/2020-12/schema',schema['$schema'])
+                Draft202012Validator.check_schema(schema)
+                validator=Draft202012Validator(schema)
+                validator.validate(valid)
+                with self.assertRaises(ValidationError) as rejected:
+                    validator.validate(invalid_instance)
+                self.assertEqual(rule,rejected.exception.validator)
+        invalid=dict(claim['decision'],action='complete_task')
+        with self.assertRaises(ValueError):controller._state_module.validate_acceptance_decision(invalid)
+        self.assertNotEqual('completed',status['state'])
 
     def test_collection_v01_current_independent_rerun_and_handoff(self):
         controller, run_dir, counter = self.checked_collection_run()

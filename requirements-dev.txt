@@ -1,0 +1,2 @@
+# Executable Draft 2020-12 schema contract checks in the maintained test suite.
+jsonschema==4.25.1

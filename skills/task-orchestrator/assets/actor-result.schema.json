@@ -359,6 +359,170 @@
         "rerun_path"
       ],
       "additionalProperties": false
+    },
+    "decision": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "enum": [
+            "accept",
+            "correct",
+            "missing_evidence",
+            "blocker"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "dispositions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "enum": [
+                  "blocking",
+                  "known_issue",
+                  "observation",
+                  "resolved",
+                  "missing_evidence",
+                  "blocker"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "trigger": {
+                "type": "string",
+                "minLength": 1
+              },
+              "consequence": {
+                "type": "string",
+                "minLength": 1
+              },
+              "boundary": {
+                "type": "string",
+                "minLength": 1
+              },
+              "impact": {
+                "type": "string",
+                "minLength": 1
+              },
+              "likelihood": {
+                "type": "string",
+                "minLength": 1
+              },
+              "mitigation": {
+                "type": "string",
+                "minLength": 1
+              },
+              "compatible_consumers": {
+                "type": "string",
+                "minLength": 1
+              },
+              "follow_up": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reassess_when": {
+                "type": "string",
+                "minLength": 1
+              },
+              "requirement_violation": {
+                "type": "boolean"
+              },
+              "material_risk": {
+                "type": "boolean"
+              },
+              "correction_authorized": {
+                "type": "boolean"
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "rationale",
+              "trigger",
+              "consequence",
+              "boundary",
+              "impact",
+              "likelihood",
+              "mitigation",
+              "compatible_consumers",
+              "follow_up",
+              "reassess_when",
+              "requirement_violation",
+              "material_risk",
+              "correction_authorized",
+              "evidence"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "unfinished": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "owner": {
+                "enum": [
+                  "verify",
+                  "semantic_review",
+                  "intervene"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "owner",
+              "reason",
+              "evidence"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "action",
+        "rationale",
+        "evidence",
+        "dispositions",
+        "unfinished"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
@@ -397,6 +561,36 @@
         "not": {
           "required": [
             "collection"
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assignment": {
+            "properties": {
+              "stage": {
+                "const": "acceptance"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "decision"
+        ],
+        "properties": {
+          "readiness": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "not": {
+          "required": [
+            "decision"
           ]
         }
       }

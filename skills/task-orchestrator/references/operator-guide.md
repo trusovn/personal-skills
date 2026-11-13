@@ -1,7 +1,7 @@
 # Task Orchestrator Operator Guide
 
 Status: operator reference
-Freshness: 2026-11-09
+Freshness: 2026-11-13
 
 Use the controller from inside an existing owner-approved Docker sbx on a
 separate branch. This is an operating assumption, not a containment guarantee.
@@ -58,9 +58,29 @@ save its assignment, then launch and observe it. The fresh collector requests
 checks through the controller. Terminal collection admission requires the current
 candidate, observed independent session, fresh rerun evidence and explicit
 coverage, gaps and findings. Complete current coverage enables a separate
-acceptance assignment. Acceptance admission remains future work. See the
-[T-004 controller contract](../docs/tasks/T-004/controller-contract.md) for the
-collection payload, rerun protocol, findings, bounded correction and limitations.
+acceptance assignment. See the
+[T-004 controller contract](../docs/tasks/T-004/controller-contract.md) for
+collection payloads and rerun protocol.
+
+Reserve `--stage acceptance --role acceptance_reviewer` at the current version,
+save the returned assignment, then launch and observe it using the same commands
+above. Required conditional maintainability/registry receipts must already exist
+when declared by the frozen manifest. Admission requires a fresh observed
+reviewer, current candidate/evidence and a disposition for every retained finding.
+The [T-005.1 controller contract](../docs/tasks/T-005.1/controller-contract.md)
+defines receipts, decision payloads, evidence digests and replay rules.
+
+Read `status` for `acceptance_decision`, `outstanding_findings` and `next_actions`.
+An authorized blocking finding enables review-driven correction; reservation
+charges one of the three shared check/review/repair corrections after cycle zero.
+Missing evidence routes to verify, recollect or intervene without charging a
+correction. Prevented correction or missing authority requires intervention;
+environment repair requires fresh preflight. Follow the retained route rather
+than inferring authority from raw actor output. A current `accept` with valid
+proof and no active actor yields `completion_eligible=true`; this is a consumer
+signal, not a command. It does not record known issues, publish completion,
+commit, release dependencies or advance tasks. Local scripted actors do not
+qualify live sbx/provider/model execution or semantic reviewer judgment.
 
 Every actor uses a fresh session and frozen `gpt-6.1-sol` low/medium/high mapping.
 The authorized bridge passes approval-never and danger-full-access inside sbx.

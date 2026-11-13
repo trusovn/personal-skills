@@ -451,6 +451,7 @@ def init_run(
         }
     inputs["allowed_paths"] = selected["allowed_paths"]
     inputs["required_checks"] = selected.get("required_checks", [])
+    inputs["required_reviews"] = selected.get("required_reviews", [])
     inputs_bytes = _canonical_record_bytes(inputs)
 
     # Enforce run directory is outside the repository
@@ -1598,8 +1599,9 @@ def inspect_candidate(run_dir: Path, operation_id: str) -> dict[str, Any]:
 
 
 def _load_current_candidate(run_dir, ledger, inputs):
-    candidate = _worker_module.read_json(run_dir / ledger['candidate_path'])
-    if sha256_text(canonical_json(candidate)) != ledger['candidate_sha256']:
+    raw = (run_dir / ledger['candidate_path']).read_bytes()
+    candidate = json.loads(raw)
+    if _sha256_bytes(raw) != ledger['candidate_sha256']:
         raise ValueError('Candidate artifact identity mismatch')
     if candidate['workspace'] != _producer_workspace(ledger, inputs):
         raise ValueError('Candidate is stale')
@@ -1629,7 +1631,8 @@ def _publish_check_outcome(run_dir, ledger, operation, result):
     ledger.setdefault('evidence', {})['verify'] = {
         'status': result['status'], 'inputs_sha256': ledger['inputs_sha256'],
         'candidate_sha256': operation['assignment']['candidate_sha256'],
-        'operation_id': operation['operation_id'], 'path': result['path']}
+        'operation_id': operation['operation_id'], 'path': result['path'],
+        'sha256': _sha256_bytes((run_dir / result['path']).read_bytes())}
     ledger['actor_blocker'] = result.get('blocker')
     if result['status'] == 'failed':
         ledger.update(correction_request='check_failed')
@@ -1761,14 +1764,7 @@ def _validate_check_artifacts(run_dir, result, identity):
 
 def _collection_launch_context(run_dir, ledger, inputs, operation):
     candidate = _load_current_candidate(run_dir, ledger, inputs)
-    evidence = _evidence_view(ledger, 'verify')
-    if evidence['status'] != 'passed':
-        raise ValueError('Current passed checks required for collection')
-    check = _worker_module.read_json(run_dir / evidence['path'])
-    verifier = _actor_operation(ledger, evidence['operation_id'])
-    if check['assignment'] != verifier['assignment']:
-        raise ValueError('Check assignment mismatch')
-    _validate_check_artifacts(run_dir, check, _check_closure_identity(ledger, verifier, candidate))
+    check = _current_checks(run_dir, ledger, candidate)
     return {'run_dir': str(run_dir.resolve()), 'controller_path': str(Path(__file__).resolve()),
             'candidate': candidate, 'check_evidence': check,
             'prior_findings': ledger.get('outstanding_findings', []),
@@ -1855,17 +1851,25 @@ def _collection_evidence(ledger, operation, status, blocker=None, path=None):
 
 
 def _validate_current_collection(run_dir, ledger):
-    evidence = ledger.get('evidence', {}).get('semantic_review', {})
+    evidence = _evidence_view(ledger, 'semantic_review')
     if evidence.get('status') != 'passed':
         raise ValueError('Current successful collection required')
-    raw = (run_dir / evidence['path']).read_bytes()
-    record = json.loads(raw)
+    record = _retained_json(run_dir, evidence['path'], evidence.get('sha256'))
     operation = _actor_operation(ledger, evidence['operation_id'])
-    if (_sha256_bytes(raw) != evidence.get('sha256')
-            or not _same_typed_assignment(record['assignment'], operation['assignment'])
+    if (not _same_typed_assignment(record['assignment'], operation['assignment'])
             or record['status'] != 'passed'
             or any(record['assignment'][key] != ledger[key] for key in ('candidate_sha256', 'inputs_sha256', 'policy_sha256', 'flow_sha256'))):
         raise ValueError('Admitted collection identity is stale or changed')
+    _state_module.validate_collection_report(record['report'])
+    if record['report']['gaps'] or any(item['status'] != 'passed' for item in record['report']['coverage'].values()):
+        raise ValueError('Incomplete collection')
+    rerun = _retained_json(run_dir, record['report']['rerun_path'], record['rerun_sha256'])
+    if not _same_typed_assignment(rerun['assignment'], operation['assignment']) or rerun['session_id'] != record['observed']['thread_id']:
+        raise ValueError('Collection rerun provenance changed')
+    candidate = _load_current_candidate(run_dir, ledger, load_frozen_inputs(run_dir, ledger))
+    checker = dict(operation, operation_id=rerun['operation_id'])
+    _validate_check_artifacts(run_dir, rerun, _check_closure_identity(ledger, checker, candidate))
+    return record
 
 
 def _merge_collection_findings(previous, findings, assignment):
@@ -1919,7 +1923,8 @@ def _admit_collection(run_dir, ledger, operation, observed, result):
     elif status == 'passed' and (report['gaps'] or any(item['status'] != 'passed' for item in report['coverage'].values())):
         status, blocker = 'not_run', 'Required collection coverage gaps; rerun or recollect missing evidence'
     record = {'assignment': assignment, 'observed': observed, 'report': report,
-              'status': status, 'blocker': blocker}
+              'status': status, 'blocker': blocker,
+              'rerun_sha256': _sha256_bytes((run_dir / report['rerun_path']).read_bytes()) if report['rerun_path'] else None}
     relative = f"collections/{operation['operation_id']}.json"
     _publish_actor_bytes(run_dir / relative, _canonical_record_bytes(record))
     findings = _merge_collection_findings(ledger.get('outstanding_findings', []), report['findings'], assignment)
@@ -1930,6 +1935,213 @@ def _admit_collection(run_dir, ledger, operation, observed, result):
         ledger['correction_request'] = 'check_failed'
     ledger['current_step'] = 'acceptance' if status == 'passed' else 'semantic_review'
     return blocker
+
+
+def _retained_bytes(run_dir, relative, digest):
+    if not isinstance(relative, str) or not _is_valid_repo_relative_path(relative):
+        raise ValueError('Invalid retained evidence path')
+    path = run_dir / relative
+    if not path.resolve().is_relative_to(run_dir.resolve()):
+        raise ValueError('Evidence escapes run directory')
+    raw = path.read_bytes()
+    if _sha256_bytes(raw) != digest:
+        raise ValueError('Retained evidence changed: ' + relative)
+    return raw
+
+
+def _retained_json(run_dir, relative, digest):
+    return json.loads(_retained_bytes(run_dir, relative, digest))
+
+
+def _current_checks(run_dir, ledger, candidate):
+    evidence = _evidence_view(ledger, 'verify')
+    if evidence['status'] != 'passed':
+        raise ValueError('Current passed required checks required')
+    result = _retained_json(run_dir, evidence['path'], evidence.get('sha256'))
+    operation = _actor_operation(ledger, evidence['operation_id'])
+    if (not _same_typed_assignment(result['assignment'], operation['assignment'])
+            or any(result['assignment'][key] != ledger[key] for key in
+                   ('candidate_sha256', 'inputs_sha256', 'policy_sha256', 'flow_sha256'))
+            or result['status'] != 'passed'):
+        raise ValueError('Required check identity mismatch')
+    _validate_check_artifacts(run_dir, result, _check_closure_identity(ledger, operation, candidate))
+    return result
+
+
+def _conditional_reviews(run_dir, ledger, inputs):
+    records = {}
+    for stage in inputs.get('required_reviews', []):
+        relative = f"reviews/{ledger['candidate_sha256']}/{stage}.json"
+        raw = (run_dir / relative).read_bytes()
+        record = json.loads(raw)
+        _state_module.validate_conditional_review(record)
+        if (record['stage'] != stage or record['status'] != 'passed'
+                or any(record[key] != ledger[key] for key in
+                       ('candidate_sha256', 'inputs_sha256', 'policy_sha256', 'flow_sha256'))):
+            raise ValueError('Missing current required conditional review: ' + stage)
+        sessions = {item.get('transport', {}).get('outcome', {}).get('observed', {}).get('thread_id')
+                    for item in ledger['actor_operations'] if item['assignment']['stage'] in {'implement', 'correction'}}
+        if record['session_id'] in sessions:
+            raise ValueError('Conditional review is not independent')
+        for path, digest in record['evidence'].items():
+            _retained_bytes(run_dir, path, digest)
+        records[relative] = _sha256_bytes(raw)
+    return records
+
+
+def _acceptance_context(run_dir, ledger, inputs):
+    candidate = _load_current_candidate(run_dir, ledger, inputs)
+    for document in inputs['documents'].values():
+        source = Path(ledger['repository']) / document['source_path']
+        if _sha256_bytes(source.read_bytes()) != document.get('source_sha256', document['sha256']):
+            raise ValueError('Frozen task source changed; explicit revision and fresh preflight required')
+    if not _current_readiness(ledger):
+        raise ValueError('Current preflight required')
+    checks = _current_checks(run_dir, ledger, candidate)
+    collection = _validate_current_collection(run_dir, ledger)
+    references = {ledger['candidate_path']: _sha256_bytes((run_dir / ledger['candidate_path']).read_bytes())}
+    for stage in ('verify', 'semantic_review'):
+        item = ledger['evidence'][stage]
+        references[item['path']] = item['sha256']
+    references.update(_conditional_reviews(run_dir, ledger, inputs))
+    tracker = Path(ledger['repository']) / 'docs/known-issues.md'
+    known_issues = {'path': 'docs/known-issues.md', 'content': tracker.read_text(),
+                    'sha256': _sha256_bytes(tracker.read_bytes())} if tracker.is_file() else None
+    return {'run_dir': str(run_dir.resolve()), 'candidate': candidate, 'checks': checks, 'collection': collection,
+            'known_issue_tracker': known_issues,
+            'evidence': references, 'findings': ledger.get('outstanding_findings', []),
+            'conditional_reviews': inputs.get('required_reviews', []),
+            'conditional_review_records': {path: _worker_module.read_json(run_dir / path)
+                                           for path in references if path.startswith('reviews/')},
+            'known_issue_history': [finding for finding in ledger.get('outstanding_findings', [])
+                                    if finding.get('disposition')],
+            'runtime_limits': 'Scripted local roles do not qualify sbx, provider/model identity, edit isolation or semantic judgment; no completion or tracker write is authorized.'}
+
+
+def _acceptance_launch_context(run_dir, ledger, inputs, operation):
+    context = _acceptance_context(run_dir, ledger, inputs)
+    relative = f"acceptance-inputs/{operation['operation_id']}.json"
+    _publish_actor_bytes(run_dir / relative, _canonical_record_bytes(context))
+    return context
+
+
+def _disposition_for_finding(finding, proposal, assignment, observed):
+    if proposal['kind'] == 'known_issue' and (proposal['requirement_violation'] or proposal['material_risk']):
+        raise ValueError('Deferral cannot waive a requirement or material risk')
+    if proposal['kind'] == 'blocking' and not (proposal['requirement_violation'] or proposal['material_risk']):
+        raise ValueError('Preference alone cannot authorize correction')
+    if proposal['kind'] in {'observation', 'resolved'} and (proposal['requirement_violation'] or proposal['material_risk']):
+        raise ValueError('Unresolved violation/material risk cannot become an observation or resolution')
+    previous = finding.get('disposition')
+    if previous and previous['status'] == 'approved':
+        if previous['kind'] != proposal['kind']:
+            raise ValueError('Unchanged approved disposition cannot reopen without new evidence/exposure')
+        return previous
+    return {**proposal, 'status': 'approved', 'acceptance_operation_id': assignment['operation_id'],
+            'session_id': observed['thread_id'], 'candidate_sha256': assignment['candidate_sha256']}
+
+
+def _acceptance_dispositions(ledger, decision, assignment, observed):
+    findings = json.loads(json.dumps(ledger.get('outstanding_findings', [])))
+    proposals = {item['id']: item for item in decision['dispositions']}
+    if set(proposals) != {finding['id'] for finding in findings}:
+        raise ValueError('Every retained finding must have exactly one disposition')
+    for finding in findings:
+        proposal = proposals[finding['id']]
+        disposition = _disposition_for_finding(finding, proposal, assignment, observed)
+        if disposition != finding.get('disposition'):
+            finding.setdefault('history', []).append({'acceptance_operation_id': assignment['operation_id'],
+                                                      'disposition': disposition})
+        finding['disposition'] = disposition
+    return findings
+
+
+def _acceptance_route(decision, findings):
+    blockers = [item['disposition'] for item in findings if item['disposition']['kind'] == 'blocking']
+    unresolved = any(item['disposition']['kind'] in {'missing_evidence', 'blocker'} for item in findings)
+    action = decision['action']
+    if action == 'correct':
+        if not any(item['correction_authorized'] for item in blockers):
+            raise ValueError('Supported authorized blocker required for review_findings')
+        return ['reserve:correction'], 'review_findings'
+    if any(item['correction_authorized'] for item in blockers):
+        raise ValueError('Authorized blocking correction takes precedence')
+    if action == 'accept':
+        if blockers or unresolved or decision['unfinished']:
+            raise ValueError('Accept cannot erase outstanding findings or required evidence')
+        return ['completion_eligible'], None
+    if action == 'missing_evidence':
+        if not decision['unfinished']:
+            raise ValueError('Missing proof requires its reason and evidence owner')
+        return sorted({('reserve:' + row['owner']) if row['owner'] != 'intervene' else 'intervene'
+                       for row in decision['unfinished']}), None
+    return ['intervene'], None
+
+
+def _admit_acceptance(run_dir, ledger, operation, observed, result):
+    assignment = operation['assignment']
+    if (result['status'] != 'complete' or result['readiness'] is not None
+            or result['session_id'] != observed['thread_id']):
+        raise ValueError('Acceptance requires a complete explicitly observed separate session')
+    if any(assignment[key] != ledger[key] for key in
+           ('inputs_sha256', 'policy_sha256', 'flow_sha256', 'candidate_sha256', 'flow_revision')):
+        raise ValueError('Acceptance authority is stale')
+    prior_sessions = {item.get('transport', {}).get('outcome', {}).get('observed', {}).get('thread_id')
+                      for item in ledger['actor_operations'] if item is not operation}
+    if observed['thread_id'] in prior_sessions:
+        raise ValueError('Acceptance must use a fresh independent session')
+    inputs = load_frozen_inputs(run_dir, ledger)
+    context = _acceptance_context(run_dir, ledger, inputs)
+    launched = _worker_module.read_json(run_dir / f"acceptance-inputs/{operation['operation_id']}.json")
+    if context != launched:
+        raise ValueError('Acceptance evidence changed during review')
+    if observed['thread_id'] in {review['session_id'] for review in context['conditional_review_records'].values()}:
+        raise ValueError('Acceptance must be separate from conditional reviewers')
+    decision = result['decision']
+    _state_module.validate_acceptance_decision(decision)
+    if decision['evidence'] != context['evidence']:
+        raise ValueError('Decision must reference exact current required evidence')
+    findings = _acceptance_dispositions(ledger, decision, assignment, observed)
+    actions, correction = _acceptance_route(decision, findings)
+    relative = f"decisions/{operation['operation_id']}.json"
+    record = {'assignment': assignment, 'observed': observed, 'decision': decision,
+              'findings': findings, 'next_actions': actions, 'correction_request': correction}
+    _publish_actor_bytes(run_dir / relative, _canonical_record_bytes(record))
+    ledger['outstanding_findings'] = findings
+    ledger['evidence']['acceptance'] = {
+        'status': 'passed' if decision['action'] == 'accept' else 'failed' if correction else 'not_run' if decision['action'] == 'missing_evidence' else 'blocked',
+        'inputs_sha256': assignment['inputs_sha256'], 'candidate_sha256': assignment['candidate_sha256'],
+        'operation_id': assignment['operation_id'], 'path': relative,
+        'sha256': _sha256_bytes((run_dir / relative).read_bytes())}
+    ledger['correction_request'] = correction
+    ledger['current_step'] = 'acceptance'
+    if decision['action'] == 'blocker':
+        ledger.setdefault('interventions', []).append({
+            'key': assignment['operation_id'] + ':acceptance', 'blocker': decision['rationale'],
+            'evidence': relative, 'operation_id': assignment['operation_id'],
+            'required_action': 'Coordinator relay decision blocker and unfinished owner requests in active chat; acknowledgement grants no authority',
+            'event': 'opened', 'text': 'Relay and response unknown'})
+    return None
+
+
+def _current_acceptance(run_dir, ledger):
+    evidence = _evidence_view(ledger, 'acceptance')
+    if evidence['status'] in {'missing', 'stale'} or not evidence.get('path'):
+        return None
+    record = _retained_json(run_dir, evidence['path'], evidence['sha256'])
+    operation = _actor_operation(ledger, evidence['operation_id'])
+    if not _same_typed_assignment(record['assignment'], operation['assignment']):
+        raise ValueError('Acceptance assignment changed')
+    # A subsequent evidence operation supersedes the old decision before checking
+    # the new evidence against it. It must not lock evidence recovery out.
+    if any(item['assignment']['stage'] in {'verify', 'semantic_review', 'acceptance'}
+           for item in ledger['actor_operations'][ledger['actor_operations'].index(operation) + 1:]):
+        return None
+    context = _acceptance_context(run_dir, ledger, load_frozen_inputs(run_dir, ledger))
+    launched = _worker_module.read_json(run_dir / f"acceptance-inputs/{operation['operation_id']}.json")
+    if record['decision']['evidence'] != context['evidence'] or launched['known_issue_tracker'] != context['known_issue_tracker']:
+        raise ValueError('Acceptance proof is stale')
+    return record
 
 
 def _reservation_context(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -1985,7 +2197,9 @@ def _evidence_view(ledger: dict[str, Any], stage: str) -> dict[str, Any]:
     return item
 
 
-def _reservation_options(ledger: dict[str, Any]) -> tuple[list[str], str | None]:
+def _reservation_options(
+    ledger: dict[str, Any], *, stale: set[str], decision: dict[str, Any] | None,
+) -> tuple[list[str], str | None]:
     active = _active_actor(ledger)
     if active and active['assignment']['stage'] == 'verify':
         return ['check_candidate', 'intervene'], f"check_operation_{active['state']}"
@@ -1999,18 +2213,36 @@ def _reservation_options(ledger: dict[str, Any]) -> tuple[list[str], str | None]
         return ["intervene"], "corrections_exhausted"
     if correction == "environment_repair":
         return ["reserve:correction"], None
+    if correction == "review_findings" and (
+        decision is None or decision.get("correction_request") != "review_findings"
+    ):
+        return ["intervene"], "correction_authority_stale"
     if correction in {"check_failed", "review_findings"}:
         if not _current_readiness(ledger):
             return ["reserve:preflight"], "current_preflight_readiness_required"
         return ["reserve:correction"], None
+    if ledger.get('candidate_path') and (
+        ledger['current_step'] == 'preflight' or not _current_readiness(ledger)
+    ):
+        return ['reserve:preflight'], 'current_preflight_readiness_required'
+    if 'candidate' in stale:
+        return ['inspect_candidate', 'intervene'], 'candidate_stale'
+    if 'verify' in stale:
+        return ['reserve:verify', 'intervene'], 'checks_stale'
+    if 'semantic_review' in stale:
+        return ['reserve:semantic_review', 'intervene'], 'collection_stale'
+    if decision and decision['decision']['action'] != 'accept':
+        return list(dict.fromkeys(decision['next_actions'] + ['intervene'])), decision['decision']['rationale']
+    if 'acceptance' in stale:
+        return ['reserve:acceptance', 'reserve:verify', 'reserve:semantic_review', 'intervene'], 'acceptance_stale'
     if ledger.get('candidate_path') and not ledger.get('correction_request'):
-        if ledger['current_step'] == 'preflight' or not _current_readiness(ledger):
-            return ['reserve:preflight'], 'current_preflight_readiness_required'
         actions = ['reserve:verify', 'inspect_candidate', 'intervene']
         if _evidence_view(ledger, 'verify')['status'] == 'passed':
             actions.insert(0, 'reserve:semantic_review')
             if _evidence_view(ledger, 'semantic_review')['status'] == 'passed':
                 actions.insert(0, 'reserve:acceptance')
+        if decision:
+            actions = decision['next_actions'] + actions
         return actions, None
     stage = ledger["current_step"] or "preflight"
     if stage in {"ready", "preflight"}:
@@ -2036,29 +2268,49 @@ def _reservation_options(ledger: dict[str, Any]) -> tuple[list[str], str | None]
     return ["intervene"], "successor_completion_pending"
 
 
-def status_run(run_dir: Path) -> dict[str, Any]:
-    """Read one atomic ledger snapshot without advancing state or taking a lock."""
-    ledger, flow = _reservation_context(run_dir)
-    actions, blocker = _reservation_options(ledger)
-    task_id = load_frozen_inputs(run_dir, ledger)["task_id"]
+def _reservation_evidence(run_dir, ledger, inputs):
+    """Collect current proof facts without selecting actions or mutating authority."""
+    ledger = json.loads(json.dumps(ledger))
+    stale = set()
     if ledger.get('candidate_path'):
         try:
-            _load_current_candidate(run_dir, ledger, load_frozen_inputs(run_dir, ledger))
-        except (ValueError, OSError, KeyError):
-            ledger = json.loads(json.dumps(ledger))
+            candidate = _load_current_candidate(run_dir, ledger, inputs)
+        except (ValueError, OSError, KeyError, TypeError):
+            stale.add('candidate')
             for stage in ('implement', 'verify', 'semantic_review', 'acceptance'):
                 if stage in ledger.get('evidence', {}):
                     ledger['evidence'][stage]['status'] = 'stale'
-            if not _active_actor(ledger) and blocker != 'corrections_exhausted':
-                actions, blocker = ['inspect_candidate', 'intervene'], 'candidate_stale'
+        if ledger.get('evidence', {}).get('verify', {}).get('status') == 'passed':
+            try:
+                _current_checks(run_dir, ledger, candidate)
+            except (OSError, ValueError, KeyError, TypeError):
+                stale.add('verify')
+                ledger['evidence']['verify']['status'] = 'stale'
         if ledger.get('evidence', {}).get('semantic_review', {}).get('status') == 'passed':
             try:
                 _validate_current_collection(run_dir, ledger)
             except (OSError, ValueError, KeyError, TypeError):
-                ledger = json.loads(json.dumps(ledger))
+                stale.add('semantic_review')
                 ledger['evidence']['semantic_review']['status'] = 'stale'
-                if not _active_actor(ledger):
-                    actions, blocker = ['reserve:semantic_review', 'intervene'], 'collection_stale'
+    decision = None
+    if ledger.get('evidence', {}).get('acceptance', {}).get('path'):
+        try:
+            decision = _current_acceptance(run_dir, ledger)
+        except (OSError, ValueError, KeyError, TypeError):
+            stale.add('acceptance')
+            ledger['evidence']['acceptance']['status'] = 'stale'
+    return ledger, stale, decision
+
+
+def status_run(run_dir: Path) -> dict[str, Any]:
+    """Read one atomic ledger snapshot without advancing state or taking a lock."""
+    ledger, flow = _reservation_context(run_dir)
+    inputs = load_frozen_inputs(run_dir, ledger)
+    task_id = inputs['task_id']
+    ledger, stale, decision = _reservation_evidence(run_dir, ledger, inputs)
+    actions, blocker = _reservation_options(ledger, stale=stale, decision=decision)
+    eligible = bool(decision and decision['decision']['action'] == 'accept'
+                    and not _active_actor(ledger) and not ledger.get('correction_request'))
     return {
         "status": "ok", "run_id": ledger["run_id"], "task_id": task_id,
         "inputs_sha256": ledger["inputs_sha256"],
@@ -2074,6 +2326,7 @@ def status_run(run_dir: Path) -> dict[str, Any]:
                      ("preflight", "implement", "verify", "semantic_review", "acceptance")},
         "policy_omissions": ["repository_gate"] if _state_module.flow_step(flow, "verify")["mode"] == "targeted" else [],
         "required_evidence": ["preflight", "implement", "verify", "semantic_review", "acceptance"],
+        "completion_eligible": eligible, "acceptance_decision": decision,
         "outstanding_findings": ledger.get("outstanding_findings", []),
         "operation": _active_actor(ledger), "operation_history": ledger.get("actor_operations", []),
         "readiness_current": _current_readiness(ledger),
@@ -2089,8 +2342,14 @@ def reserve_operation(
     role: str, operation_key: str, reason: str = "initial",
 ) -> dict[str, Any]:
     """Reserve only current permitted work. T-003 owns launch/outcome admission."""
+    options = None
+
     def refuse(code: str, ledger: dict[str, Any] | None = None) -> dict[str, Any]:
-        actions, _ = _reservation_options(ledger) if ledger else (["intervene"], None)
+        if ledger and options is None:
+            view, stale, decision = _reservation_evidence(run_dir, ledger, load_frozen_inputs(run_dir, ledger))
+            actions, _ = _reservation_options(view, stale=stale, decision=decision)
+        else:
+            actions, _ = options or (["intervene"], None)
         return {"status": "refused", "reason": code, "next_actions": actions,
                 "state_version": ledger["revision"] if ledger else None}
 
@@ -2112,16 +2371,20 @@ def reserve_operation(
             if expected_version != ledger["revision"]:
                 return refuse("stale_version", ledger)
             inputs = load_frozen_inputs(run_dir, ledger)
-            if stage in {'verify', 'semantic_review', 'acceptance'} and ledger.get('candidate_path'):
-                _load_current_candidate(run_dir, ledger, inputs)
-                if stage == 'acceptance':
-                    _validate_current_collection(run_dir, ledger)
+            view, stale, decision = _reservation_evidence(run_dir, ledger, inputs)
+            options = _reservation_options(view, stale=stale, decision=decision)
+            actions, blocker = options
             expected_role = "implementer" if stage == "correction" else _state_module.FLOW_STEP_ROLES.get(stage)
             if task_id != inputs["task_id"] or role != expected_role:
                 return refuse("task_or_role_mismatch", ledger)
-            actions, blocker = _reservation_options(ledger)
             if f"reserve:{stage}" not in actions:
                 return refuse(blocker or "stage_mismatch", ledger)
+            if stage in {'verify', 'semantic_review', 'acceptance'} and ledger.get('candidate_path'):
+                _load_current_candidate(run_dir, ledger, inputs)
+                if stage == 'semantic_review':
+                    _current_checks(run_dir, ledger, _load_current_candidate(run_dir, ledger, inputs))
+                if stage == 'acceptance':
+                    _acceptance_context(run_dir, ledger, inputs)
             is_correction = stage == "correction"
             if (is_correction and reason != ledger.get("correction_request")) or (
                 not is_correction and reason not in {"initial", "retry"}
@@ -2191,7 +2454,19 @@ def _actor_directory(run_dir: Path, operation: dict[str, Any]) -> Path:
 
 
 def _actor_prompt(assignment: dict[str, Any], inputs: dict[str, Any], policy: dict[str, Any], collection_context=None) -> str:
-    return ("Execute only this frozen assignment. Actor output is a claim, never authority. "
+    role_instructions = (
+        "Acceptance: consume independent collection; do not implement, correct, collect evidence or write the tracker. "
+        "Return decision {action: accept|correct|missing_evidence|blocker, rationale, evidence: exact context.evidence, dispositions, unfinished}. "
+        "Account for every retained finding, including omissions. Missing proof is not a deferrable defect. "
+        "A confirmed AC/gate violation or material operating/maintenance risk requires fix-now with separate impact and likelihood; preference alone is an observation. "
+        "Known issues require bounded non-material effect, compatible consumers, follow-up and reassessment; waive no AC/check/proof/material risk. "
+        "Preserve unchanged approvals; reopen only for new relevant evidence/exposure, stating why. "
+        "Authorized bounded blockers take precedence over missing proof; retain each unfinished row with its owner. "
+        "Unavailable mandatory installed roles block the profile unless explicit source-guided authority exists. "
+        if assignment['stage'] == 'acceptance' else
+        "Collection reports evidence only, never acceptance decisions or new disposition/deferral authority. "
+    )
+    return (role_instructions + "Execute only this frozen assignment. Actor output is a claim, never authority. "
             "Respect frozen run_policy permissions and task scope. Do not commit, change policy, select another task, or edit controller records. "
             "Review roles must not edit implementation. Always use a fresh session.\n"
             "For preflight, check every task-required tool, dependency and installed skill in "
@@ -2204,7 +2479,7 @@ def _actor_prompt(assignment: dict[str, Any], inputs: dict[str, Any], policy: di
             "Collection must call check_collection with its exact assignment, rerun every frozen check, "
             "and report collection {coverage: {requirements, behavior, code_quality}, gaps, findings, rerun_path}. "
             "Coverage values are passed|blocked|not_run with evidence; findings contain id, evidence, requirement, context, exposure. "
-            "Report evidence only, never acceptance decisions or new disposition/deferral authority.\n"
+            "Follow the assigned role boundary.\n"
             + json.dumps({"assignment": assignment, "frozen_inputs": inputs, "run_policy": policy, "collection_context": collection_context}, sort_keys=True))
 
 
@@ -2248,7 +2523,7 @@ def launch_operation(run_dir: Path, assignment: dict[str, Any], *,
             directory.mkdir(parents=True, exist_ok=True)
             content = _canonical_record_bytes(config)
             _publish_actor_bytes(directory / "launch.json", content)
-            context = _collection_launch_context(run_dir, ledger, inputs, operation) if assignment['stage'] == 'semantic_review' else None
+            context = _collection_launch_context(run_dir, ledger, inputs, operation) if assignment['stage'] == 'semantic_review' else _acceptance_launch_context(run_dir, ledger, inputs, operation) if assignment['stage'] == 'acceptance' else None
             prompt = _actor_prompt(assignment, inputs, policy, context).encode()
             _publish_actor_bytes(directory / "prompt.txt", prompt)
             operation["transport"] = {"configuration_sha256": _sha256_bytes(content),
@@ -2281,6 +2556,8 @@ def _validate_observed_result(assignment: dict[str, Any], observed: dict[str, An
     expected = {"assignment", "session_id", "status", "summary", "readiness"}
     if assignment["stage"] == "semantic_review":
         expected.add("collection")
+    if assignment["stage"] == "acceptance":
+        expected.add("decision")
     if set(result) != expected:
         raise ValueError("Malformed actor result")
     if not _same_typed_assignment(result["assignment"], assignment):
@@ -2310,7 +2587,7 @@ def _validate_readiness(readiness: dict[str, Any]) -> None:
 
 
 def _admit_actor_outcome(run_dir: Path, ledger: dict[str, Any], operation: dict[str, Any], observed: dict[str, Any], result: dict[str, Any]) -> str | None:
-    """Single admission extension point; T-005 extends acceptance here."""
+    """Single admission extension point for controller-owned actor authority."""
     assignment = operation["assignment"]
     try:
         if observed.get("exit_code") != 0 or observed.get("stop_requested") or observed.get("attempt_outcome") in {"timed_out", "interrupted"}:
@@ -2318,8 +2595,10 @@ def _admit_actor_outcome(run_dir: Path, ledger: dict[str, Any], operation: dict[
         _validate_observed_result(assignment, observed, result)
         if assignment["stage"] == "semantic_review":
             return _admit_collection(run_dir, ledger, operation, observed, result)
+        if assignment["stage"] == "acceptance":
+            return _admit_acceptance(run_dir, ledger, operation, observed, result)
         if assignment["stage"] != "preflight":
-            return None  # Implementation and future acceptance remain raw claims.
+            return None  # Producer claims require separate candidate inspection.
         if result["status"] != "complete":
             raise ValueError(f"Preflight {result['status']}: {result['summary']}")
         if any(assignment[field] != ledger[field] for field in ("inputs_sha256", "policy_sha256", "flow_sha256")):
@@ -2334,7 +2613,7 @@ def _admit_actor_outcome(run_dir: Path, ledger: dict[str, Any], operation: dict[
             "operation_id": assignment["operation_id"],
         }
         return None
-    except (ValueError, KeyError, TypeError) as error:
+    except (OSError, ValueError, KeyError, TypeError) as error:
         return str(error)
 
 
@@ -2387,6 +2666,11 @@ def _publish_actor_outcome(run_dir: Path, ledger: dict[str, Any], operation: dic
     ledger["actor_blocker"] = blocker
     if blocker:
         _open_actor_intervention(ledger, operation, blocker)
+        if operation['assignment']['stage'] == 'acceptance':
+            ledger.setdefault('evidence', {})['acceptance'] = {
+                'status': 'blocked', 'inputs_sha256': operation['assignment']['inputs_sha256'],
+                'candidate_sha256': operation['assignment']['candidate_sha256'],
+                'operation_id': operation['operation_id'], 'blocker': blocker}
         if operation["assignment"]["stage"] == "semantic_review":
             evidence = ledger.setdefault("evidence", {}).get("semantic_review", {})
             if evidence.get("operation_id") != operation["operation_id"]:
@@ -2570,11 +2854,13 @@ def revise_inputs(run_dir: Path, request: dict[str, Any]) -> dict[str, Any]:
             inputs = {"version": 1, "task_id": task_id, "revision_key": request["revision_key"],
                       "policy_sha256": policy_digest, "manifest_sha256": manifest_digest,
                       "allowed_paths": selected["allowed_paths"],
-                      "required_checks": selected.get("required_checks", []), "documents": {}}
+                      "required_checks": selected.get("required_checks", []),
+                      "required_reviews": selected.get("required_reviews", []), "documents": {}}
             for name, content in payload["documents"].items():
                 source = selected["brief_path"] if name == "brief" else str(Path(selected["brief_path"]).with_name("verification.md"))
                 inputs["documents"][name] = {"source_path": source, "content": content,
-                                             "sha256": _sha256_bytes(content.encode("utf-8"))}
+                                             "sha256": _sha256_bytes(content.encode("utf-8")),
+                                             "source_sha256": _sha256_bytes((Path(ledger["repository"]) / source).read_bytes())}
             inputs_digest = _sha256_bytes(_canonical_record_bytes(inputs))
             bundle_bytes = _canonical_record_bytes({"version": 1, "request": request, "inputs": inputs})
             history = ledger.get("input_revisions", [])

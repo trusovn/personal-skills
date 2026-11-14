@@ -13,7 +13,7 @@
     {
       "name": "architecture-check",
       "kind": "unittest-policy",
-      "summary": "CLEAN checks for declared runtime/test separation, shared-runtime independence from skill imports, and the existing orchestrator sibling dependency direction; computed loading still needs review.",
+      "summary": "CLEAN checks for declared runtime/test separation, shared-runtime independence from skill imports, and the explicit orchestrator workflow/domain dependency allow-list. Components cannot import the controller; domain rules and runtime consumers cannot import the state compatibility facade; the declared allow-list is checked for cycles. Literal _load_component calls are included; computed loading still needs review.",
       "declarations": ["tests/test_architecture.py"]
     },
     {
@@ -26,7 +26,7 @@
   "artifacts": [
     {
       "name": "repository-code-organization-policy",
-      "summary": "Project-owned policy governs new/materially changed production, test, eval, fixture and harness assets: responsibility placement, module encapsulation, decisions/effects, state/rule ownership, dependency direction, proportionate functions/classes, coherent transactions, verification ownership, module documentation and accumulated growth. Explain owner/placement/dependencies before structural additions or material growth and concrete exceptions; return unresolved material architecture/scope decisions to the owner. Mandatory rules govern introduced/materially worsened structure; metrics remain advisory, untouched debt stays outside scope and no review stage is added. Maps describe current ownership; candidate controller boundaries are future context, not implemented decomposition. The development installer ships consumers, not this project policy.",
+      "summary": "Project-owned policy governs new/materially changed production, test, eval, fixture and harness assets: responsibility placement, module encapsulation, decisions/effects, state/rule ownership, dependency direction, proportionate functions/classes, coherent transactions, verification ownership, module documentation and accumulated growth. Explain owner/placement/dependencies before structural additions or material growth and concrete exceptions; return unresolved material architecture/scope decisions to the owner. Mandatory rules govern introduced/materially worsened structure; metrics remain advisory, untouched debt stays outside scope and no review stage is added. Maps describe current ownership. The development installer ships consumers, not this project policy.",
       "declarations": ["docs/code-organization.md"]
     }
   ],

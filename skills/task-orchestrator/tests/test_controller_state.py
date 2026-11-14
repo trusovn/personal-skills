@@ -10,6 +10,25 @@ STATE_PATH = Path(__file__).parents[1] / "scripts" / "controller_state.py"
 CONTROLLER_PATH = Path(__file__).parents[1] / "scripts" / "controller.py"
 
 
+COMPATIBILITY_OWNERS = {
+    '_detect_dependency_cycles': ('task_manifest', '_detect_dependency_cycles'),
+    '_is_valid_repo_relative_path': ('record_validation', 'is_valid_repo_relative_path'),
+    '_validate_ledger': ('ledger', 'validate_ledger'),
+    '_validate_task_manifest_schema': ('task_manifest', 'validate_task_manifest_structure'),
+    'apply_ledger_update': ('ledger', 'apply_ledger_update'),
+    'build_attempt_record': ('execution_contracts', 'build_attempt_record'),
+    'canonical_json': ('record_serialization', 'canonical_json'),
+    'select_task': ('task_manifest', 'select_task'),
+    'sha256_text': ('record_serialization', 'sha256_text'),
+    'transition_run': ('ledger', 'transition_run'),
+    'transition_task': ('ledger', 'transition_task'),
+    'validate_attempt_record': ('execution_contracts', 'validate_attempt_record'),
+    'validate_ledger': ('ledger', 'validate_ledger'),
+    'validate_run_policy': ('run_policy', 'validate_run_policy'),
+    'validate_task_manifest': ('task_manifest', 'validate_task_manifest'),
+}
+
+
 def load_controller_state():
     spec = importlib.util.spec_from_file_location(
         "task_orchestrator_controller_state", STATE_PATH
@@ -18,6 +37,16 @@ def load_controller_state():
     assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
+
+
+def load_rule_owner(name):
+    spec = importlib.util.spec_from_file_location(
+        "task_orchestrator_rule_loading", STATE_PATH.with_name("__init__.py")
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module.load_component(name)
 
 
 def load_controller():
@@ -141,7 +170,8 @@ class ControllerStateContractTest(unittest.TestCase):
             "select_task", "validate_ledger", "apply_ledger_update",
         ):
             with self.subTest(name=name):
-                self.assertEqual(STATE_PATH, Path(getattr(state, name).__code__.co_filename))
+                owner, symbol = COMPATIBILITY_OWNERS[name]
+                self.assertIs(getattr(load_rule_owner(owner), symbol), getattr(state, name))
 
     def test_controller_compatibility_names_delegate_to_state_module(self):
         controller = load_controller()
@@ -154,7 +184,8 @@ class ControllerStateContractTest(unittest.TestCase):
             "_detect_dependency_cycles", "_is_valid_repo_relative_path", "_validate_ledger",
         ):
             with self.subTest(name=name):
-                self.assertEqual(STATE_PATH, Path(getattr(controller, name).__code__.co_filename))
+                owner, symbol = COMPATIBILITY_OWNERS[name]
+                self.assertIs(getattr(load_rule_owner(owner), symbol), getattr(controller, name))
 
         controller.validate_run_policy(self.policy())
         self.assertEqual(
@@ -165,25 +196,26 @@ class ControllerStateContractTest(unittest.TestCase):
         )
 
     def test_canonical_json_and_attempt_record_keep_exact_digests(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
+        record_serialization = load_rule_owner("record_serialization")
         policy = self.policy()
 
-        self.assertEqual('{"a":1,"b":2}', state.canonical_json({"b": 2, "a": 1}))
+        self.assertEqual('{"a":1,"b":2}', record_serialization.canonical_json({"b": 2, "a": 1}))
         self.assertEqual(
             hashlib.sha256(b'{"a":1,"b":2}').hexdigest(),
-            state.sha256_text(state.canonical_json({"b": 2, "a": 1})),
+            record_serialization.sha256_text(record_serialization.canonical_json({"b": 2, "a": 1})),
         )
-        record = state.build_attempt_record(
+        record = execution_contracts.build_attempt_record(
             task_id="T1", brief_path="tasks/T1.md", prompt="prompt", policy=policy,
             flow=policy["flow"], flow_revision=1,
-            flow_sha256=state.sha256_text(
-                state.canonical_json(policy["flow"]) + "\n"
+            flow_sha256=record_serialization.sha256_text(
+                record_serialization.canonical_json(policy["flow"]) + "\n"
             ),
             baseline_ref="run-initial.json",
         )
         self.assertEqual(hashlib.sha256(b"prompt").hexdigest(), record["prompt_sha256"])
         self.assertEqual(
-            hashlib.sha256(state.canonical_json(policy).encode()).hexdigest(),
+            hashlib.sha256(record_serialization.canonical_json(policy).encode()).hexdigest(),
             record["policy_sha256"],
         )
         self.assertEqual({
@@ -193,11 +225,11 @@ class ControllerStateContractTest(unittest.TestCase):
             "prompt_sha256": hashlib.sha256(b"prompt").hexdigest(),
             "baseline_ref": "run-initial.json",
             "policy_sha256": hashlib.sha256(
-                state.canonical_json(policy).encode()
+                record_serialization.canonical_json(policy).encode()
             ).hexdigest(),
             "flow_revision": 1,
-            "flow_sha256": state.sha256_text(
-                state.canonical_json(policy["flow"]) + "\n"
+            "flow_sha256": record_serialization.sha256_text(
+                record_serialization.canonical_json(policy["flow"]) + "\n"
             ),
             "transport": "codex-cli",
             "model": "gpt-6.1-sol",
@@ -209,47 +241,47 @@ class ControllerStateContractTest(unittest.TestCase):
         }, record)
 
     def test_versioned_workflow_profiles_and_cursor(self):
-        state = load_controller_state()
+        flow_policy = load_rule_owner("flow_policy")
 
         for profile in ("fast-local", "reviewed", "strong-local"):
             with self.subTest(profile=profile):
                 flow = json.loads(json.dumps(self.flow(profile)))
-                state.validate_flow_profile(flow)
+                flow_policy.validate_flow_profile(flow)
                 self.assertEqual(
                     flow,
-                    state.resolve_flow_profile(dict(self.policy(), flow=flow)),
+                    flow_policy.resolve_flow_profile(dict(self.policy(), flow=flow)),
                 )
 
         custom = self.flow("reviewed")
         custom["profile"] = "custom"
         custom["steps"][3]["mode"] = "targeted_plus_repository_gate"
-        state.validate_flow_profile(custom)
+        flow_policy.validate_flow_profile(custom)
 
-        cursor = state.transition_flow_cursor(
+        cursor = flow_policy.transition_flow_cursor(
             custom, {"current_step": None, "correction_cycle": 0}, "select"
         )
         self.assertEqual({"current_step": "ready", "correction_cycle": 0}, cursor)
         for expected in ("preflight", "implement"):
-            cursor = state.transition_flow_cursor(custom, cursor, "advance")
+            cursor = flow_policy.transition_flow_cursor(custom, cursor, "advance")
             self.assertEqual(expected, cursor["current_step"])
-        cursor = state.transition_flow_cursor(custom, cursor, "advance")
+        cursor = flow_policy.transition_flow_cursor(custom, cursor, "advance")
         self.assertEqual("verify", cursor["current_step"])
-        cursor = state.transition_flow_cursor(custom, cursor, "advance")
+        cursor = flow_policy.transition_flow_cursor(custom, cursor, "advance")
         self.assertEqual("semantic_review", cursor["current_step"])
-        cursor = state.transition_flow_cursor(
+        cursor = flow_policy.transition_flow_cursor(
             custom, cursor, "begin_correction",
             result="CHANGES_REQUESTED",
         )
         self.assertEqual(
             {"current_step": "correction", "correction_cycle": 1}, cursor
         )
-        cursor = state.transition_flow_cursor(custom, cursor, "complete_correction")
+        cursor = flow_policy.transition_flow_cursor(custom, cursor, "complete_correction")
         self.assertEqual(
             {"current_step": "verify", "correction_cycle": 1}, cursor
         )
 
     def test_flow_validation_rejects_closed_contract_violations(self):
-        state = load_controller_state()
+        flow_policy = load_rule_owner("flow_policy")
         cases = []
 
         def changed(mutator):
@@ -274,19 +306,19 @@ class ControllerStateContractTest(unittest.TestCase):
         for index, flow in enumerate(cases):
             with self.subTest(case=index):
                 with self.assertRaises(ValueError):
-                    state.validate_flow_profile(flow)
+                    flow_policy.validate_flow_profile(flow)
 
     def test_correction_limit_and_structured_envelopes_are_authority_safe(self):
-        state = load_controller_state()
+        flow_policy = load_rule_owner("flow_policy")
         flow = self.flow("reviewed")
         cursor = {"current_step": "acceptance", "correction_cycle": 2}
-        correction = state.transition_flow_cursor(
+        correction = flow_policy.transition_flow_cursor(
             flow, cursor, "begin_correction", result="CHANGES_REQUESTED"
         )
-        review = state.transition_flow_cursor(
+        review = flow_policy.transition_flow_cursor(
             flow, correction, "complete_correction"
         )
-        exhausted = state.transition_flow_cursor(
+        exhausted = flow_policy.transition_flow_cursor(
             flow, review, "begin_correction", result="findings"
         )
         self.assertEqual(
@@ -323,22 +355,22 @@ class ControllerStateContractTest(unittest.TestCase):
             "artifact_refs": ["reviews/review-001.json"],
             "payload": {"version": 1, "reference": "reviews/findings-001.json"},
         }
-        state.validate_handoff_envelope(handoff, expected_subject=subject)
-        state.validate_step_outcome(outcome, expected_subject=subject)
+        flow_policy.validate_handoff_envelope(handoff, expected_subject=subject)
+        flow_policy.validate_step_outcome(outcome, expected_subject=subject)
 
         for unsafe in ("/tmp/evidence", "../evidence", "evidence//record"):
             invalid = json.loads(json.dumps(handoff))
             invalid["evidence_refs"] = [unsafe]
             with self.subTest(unsafe=unsafe):
                 with self.assertRaises(ValueError):
-                    state.validate_handoff_envelope(invalid, expected_subject=subject)
+                    flow_policy.validate_handoff_envelope(invalid, expected_subject=subject)
         injected = json.loads(json.dumps(outcome))
         injected["flow"] = self.flow()
         with self.assertRaises(ValueError):
-            state.validate_step_outcome(injected, expected_subject=subject)
+            flow_policy.validate_step_outcome(injected, expected_subject=subject)
 
     def test_flow_cursor_rejects_step_cycle_incoherence(self):
-        state = load_controller_state()
+        flow_policy = load_rule_owner("flow_policy")
         flow = self.flow("reviewed")
         invalid_cursors = (
             {"current_step": "correction", "correction_cycle": 0},
@@ -349,7 +381,7 @@ class ControllerStateContractTest(unittest.TestCase):
         for cursor in invalid_cursors:
             with self.subTest(cursor=cursor):
                 with self.assertRaisesRegex(ValueError, "correction cycle"):
-                    state.validate_flow_cursor(flow, cursor)
+                    flow_policy.validate_flow_cursor(flow, cursor)
 
         for cursor in (
             {"current_step": "implement", "correction_cycle": 0},
@@ -360,22 +392,23 @@ class ControllerStateContractTest(unittest.TestCase):
             {"current_step": "accept", "correction_cycle": 2},
         ):
             with self.subTest(cursor=cursor):
-                state.validate_flow_cursor(flow, cursor)
+                flow_policy.validate_flow_cursor(flow, cursor)
 
         impossible = {"current_step": "semantic_review", "correction_cycle": 4}
         with self.assertRaisesRegex(ValueError, "correction cycle"):
-            state.transition_flow_cursor(
+            flow_policy.transition_flow_cursor(
                 flow, impossible, "begin_correction",
                 result="CHANGES_REQUESTED",
             )
 
     def test_required_stages_roles_policy_and_context_boundaries(self):
-        state = load_controller_state()
+        flow_policy = load_rule_owner("flow_policy")
+        run_policy = load_rule_owner("run_policy")
         for kind in ("ready", "preflight", "implement", "verify", "semantic_review", "acceptance", "accept", "completed"):
             flow = self.flow()
             flow["steps"] = [step for step in flow["steps"] if step["kind"] != kind]
             with self.subTest(omitted=kind), self.assertRaises(ValueError):
-                state.validate_flow_profile(flow)
+                flow_policy.validate_flow_profile(flow)
         for mutator in (
             lambda f: f["steps"][4].update(role="acceptance_reviewer"),
             lambda f: f["steps"].reverse(),
@@ -386,9 +419,9 @@ class ControllerStateContractTest(unittest.TestCase):
             flow = self.flow()
             mutator(flow)
             with self.assertRaises(ValueError):
-                state.validate_flow_profile(flow)
+                flow_policy.validate_flow_profile(flow)
         for occupancy, reliable, expected in ((0.49, True, "reuse"), (0.5, True, "fresh"), (0.51, True, "fresh"), (None, True, "fresh"), (0.1, False, "fresh")):
-            self.assertEqual(expected, state.correction_session_policy(occupancy=occupancy, reliable=reliable))
+            self.assertEqual(expected, flow_policy.correction_session_policy(occupancy=occupancy, reliable=reliable))
         self.assertEqual({
             "light": {"model": "gpt-6.1-sol", "reasoning": "low"},
             "standard": {"model": "gpt-6.1-sol", "reasoning": "medium"},
@@ -407,48 +440,49 @@ class ControllerStateContractTest(unittest.TestCase):
                 "result": result, "evidence_status": "reported", "artifact_refs": [], "payload": {"version": 1, "reference": None},
             }
             with self.assertRaises(ValueError):
-                state.validate_step_outcome(envelope)
+                flow_policy.validate_step_outcome(envelope)
         for field in ("execution_authorization", "flow"):
             policy = self.policy()
             del policy[field]
             with self.assertRaises(ValueError):
-                state.validate_run_policy(policy)
+                run_policy.validate_run_policy(policy)
         policy = self.policy()
         policy["task_ids"].append("T2")
         with self.assertRaisesRegex(ValueError, "exactly one"):
-            state.validate_run_policy(policy)
+            run_policy.validate_run_policy(policy)
 
     def test_corrections_share_budget_including_environment_repair(self):
-        state = load_controller_state()
+        flow_policy = load_rule_owner("flow_policy")
         flow = self.flow()
         cursor = {"current_step": "verify", "correction_cycle": 0}
         for stage, cause in (("verify", "findings"), ("semantic_review", "environment_repair"), ("acceptance", "CHANGES_REQUESTED")):
             cursor["current_step"] = stage
             before = cursor["correction_cycle"]
-            cursor = state.transition_flow_cursor(flow, cursor, "begin_correction", result=cause)
+            cursor = flow_policy.transition_flow_cursor(flow, cursor, "begin_correction", result=cause)
             self.assertEqual({"current_step": "correction", "correction_cycle": before + 1}, cursor)
-            cursor = state.transition_flow_cursor(flow, cursor, "complete_correction")
+            cursor = flow_policy.transition_flow_cursor(flow, cursor, "complete_correction")
             self.assertEqual("verify", cursor["current_step"])
-        exhausted = state.transition_flow_cursor(flow, cursor, "begin_correction", result="environment_repair")
+        exhausted = flow_policy.transition_flow_cursor(flow, cursor, "begin_correction", result="environment_repair")
         self.assertEqual({"current_step": "verify", "correction_cycle": 3, "stop_action": "escalate"}, exhausted)
 
     def test_policy_never_defaults_missing_or_malformed_authorization(self):
-        state = load_controller_state()
+        flow_policy = load_rule_owner("flow_policy")
+        run_policy = load_rule_owner("run_policy")
         for authorization in (None, {}, {"transport": "codex-cli", "yolo": True, "intervention": "active_chat"}, {"transport": "sbx", "yolo": 1, "intervention": "active_chat"}, {"transport": "sbx", "yolo": False, "intervention": "active_chat"}, {"transport": "sbx", "yolo": True, "intervention": "none"}):
             with self.subTest(authorization=authorization):
                 policy = self.policy()
                 policy["execution_authorization"] = authorization
                 with self.assertRaises(ValueError):
-                    state.validate_run_policy(policy)
+                    run_policy.validate_run_policy(policy)
         with self.assertRaisesRegex(ValueError, "explicit flow"):
-            state.resolve_flow_profile({})
+            flow_policy.resolve_flow_profile({})
         totals_only = {"input_tokens": 100, "output_tokens": 10}
-        self.assertEqual("fresh", state.correction_session_policy(occupancy=totals_only, reliable=True))
+        self.assertEqual("fresh", flow_policy.correction_session_policy(occupancy=totals_only, reliable=True))
         for value in (None, -0.1, float("nan"), float("inf"), True):
-            self.assertEqual("fresh", state.correction_session_policy(occupancy=value, reliable=True))
+            self.assertEqual("fresh", flow_policy.correction_session_policy(occupancy=value, reliable=True))
 
     def test_valid_manifest_keeps_exact_ledger_entries(self):
-        state = load_controller_state()
+        task_manifest = load_rule_owner("task_manifest")
 
         self.assertEqual({
             "manifest_id": "test-feature",
@@ -463,45 +497,47 @@ class ControllerStateContractTest(unittest.TestCase):
                 "state": "initialized",
                 "attempt_ids": [],
             }],
-        }, state.validate_task_manifest(self.policy(), self.manifest(), self.repository))
+        }, task_manifest.validate_task_manifest(self.policy(), self.manifest(), self.repository))
 
     def test_policy_and_manifest_rejections_keep_error_contracts(self):
-        state = load_controller_state()
+        run_policy = load_rule_owner("run_policy")
+        task_manifest = load_rule_owner("task_manifest")
         policy = self.policy()
         policy["unknown"] = True
         with self.assertRaisesRegex(ValueError, "unknown top-level fields: unknown"):
-            state.validate_run_policy(policy)
+            run_policy.validate_run_policy(policy)
 
         manifest = self.manifest()
         manifest["tasks"][0]["allowed_paths"] = ["allowed.txt", "allowed.txt"]
         with self.assertRaisesRegex(ValueError, "allowed_paths items must be unique"):
-            state.validate_task_manifest(self.policy(), manifest, self.repository)
+            task_manifest.validate_task_manifest(self.policy(), manifest, self.repository)
 
     def test_missing_duplicate_unknown_and_wrong_type_errors_are_exact(self):
-        state = load_controller_state()
+        run_policy = load_rule_owner("run_policy")
+        task_manifest = load_rule_owner("task_manifest")
         cases = []
 
         policy = self.policy()
         del policy["run_id"]
-        cases.append((state.validate_run_policy, (policy,), "Run policy is missing: run_id"))
+        cases.append((run_policy.validate_run_policy, (policy,), "Run policy is missing: run_id"))
         policy = self.policy()
         policy["task_ids"] = ["T1", "T1"]
-        cases.append((state.validate_run_policy, (policy,), "task_ids items must be unique"))
+        cases.append((run_policy.validate_run_policy, (policy,), "task_ids items must be unique"))
         policy = self.policy()
         policy["permissions"]["network"] = "no"
-        cases.append((state.validate_run_policy, (policy,), "permissions.network must be a boolean"))
+        cases.append((run_policy.validate_run_policy, (policy,), "permissions.network must be a boolean"))
 
         manifest = self.manifest()
         manifest["extra"] = True
         cases.append((
-            state.validate_task_manifest,
+            task_manifest.validate_task_manifest,
             (self.policy(), manifest, self.repository),
             "Task manifest contains unknown fields: extra",
         ))
         manifest = self.manifest()
         del manifest["tasks"][0]["title"]
         cases.append((
-            state.validate_task_manifest,
+            task_manifest.validate_task_manifest,
             (self.policy(), manifest, self.repository),
             "Task is missing required fields: title",
         ))
@@ -512,7 +548,7 @@ class ControllerStateContractTest(unittest.TestCase):
                     function(*arguments)
 
     def test_graph_and_path_errors_are_exact(self):
-        state = load_controller_state()
+        task_manifest = load_rule_owner("task_manifest")
 
         manifest = self.manifest()
         manifest["tasks"][0]["dependencies"] = ["missing"]
@@ -520,7 +556,7 @@ class ControllerStateContractTest(unittest.TestCase):
             ValueError,
             "^Task T1 depends on missing which does not exist in manifest$",
         ):
-            state.validate_task_manifest(self.policy(), manifest, self.repository)
+            task_manifest.validate_task_manifest(self.policy(), manifest, self.repository)
 
         manifest = self.manifest()
         manifest["tasks"][0]["allowed_paths"] = ["../escape"]
@@ -528,7 +564,7 @@ class ControllerStateContractTest(unittest.TestCase):
             ValueError,
             "^Task T1 allowed_path '\\.\\./escape' is not a valid repository-relative path$",
         ):
-            state.validate_task_manifest(self.policy(), manifest, self.repository)
+            task_manifest.validate_task_manifest(self.policy(), manifest, self.repository)
 
         (self.repository / "tasks" / "T2.md").write_text("# T2\n")
         policy = self.policy()
@@ -546,17 +582,18 @@ class ControllerStateContractTest(unittest.TestCase):
             ValueError,
             "^Dependency cycle detected in manifest: T1 -> T2 -> T1$",
         ):
-            state.validate_task_manifest(policy, manifest, self.repository)
+            task_manifest.validate_task_manifest(policy, manifest, self.repository)
 
     def test_selection_transition_and_ledger_update_are_pure(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
+        task_manifest = load_rule_owner("task_manifest")
         ledger = self.ledger()
         ledger["state"] = "ready"
         ledger["tasks"][0]["state"] = "ready"
 
-        self.assertEqual("T1", state.select_task(ledger, self.policy())["id"])
-        self.assertEqual("awaiting_inspection", state.transition_task("running", "awaiting_inspection"))
-        updated = state.apply_ledger_update(
+        self.assertEqual("T1", task_manifest.select_task(ledger, self.policy())["id"])
+        self.assertEqual("awaiting_inspection", ledger_rules.transition_task("running", "awaiting_inspection"))
+        updated = ledger_rules.apply_ledger_update(
             ledger, {}, "2026-07-16T01:00:00+00:00", expected_revision=1
         )
         self.assertEqual("ready", updated["state"])
@@ -564,7 +601,8 @@ class ControllerStateContractTest(unittest.TestCase):
         self.assertEqual(1, ledger["revision"])
 
     def test_unavailable_selection_and_invalid_transitions_are_exact(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
+        task_manifest = load_rule_owner("task_manifest")
         ledger = self.ledger()
         ledger["state"] = "ready"
         ledger["tasks"][0]["state"] = "ready"
@@ -574,19 +612,19 @@ class ControllerStateContractTest(unittest.TestCase):
             ValueError,
             "^No ready tasks found\\. Completed: \\[\\]\\. Task IDs: \\['T1'\\]$",
         ):
-            state.select_task(ledger, self.policy())
+            task_manifest.select_task(ledger, self.policy())
 
         with self.assertRaisesRegex(
             ValueError, "^Task transition running -> accepted is not allowed$"
         ):
-            state.transition_task("running", "accepted")
+            ledger_rules.transition_task("running", "accepted")
 
         identity = {"run_id": "run-1", "task_id": "T1", "attempt_id": "attempt-1"}
         stale = dict(identity, attempt_id="attempt-0")
         with self.assertRaisesRegex(
             ValueError, "^Acceptance closure identity does not match current evidence$"
         ):
-            state.transition_task(
+            ledger_rules.transition_task(
                 "awaiting_inspection",
                 "accepted",
                 closure_decision={
@@ -598,10 +636,11 @@ class ControllerStateContractTest(unittest.TestCase):
             )
 
     def test_malformed_attempt_and_incoherent_ledger_errors_are_exact(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
+        ledger_rules = load_rule_owner("ledger")
 
         with self.assertRaisesRegex(ValueError, "^Attempt record is missing task_id$"):
-            state.validate_attempt_record({})
+            execution_contracts.validate_attempt_record({})
 
         ledger = self.ledger()
         original = json.dumps(ledger, sort_keys=True)
@@ -609,30 +648,31 @@ class ControllerStateContractTest(unittest.TestCase):
             ValueError,
             "^'running' state requires both selected_task_id and active_attempt_id$",
         ):
-            state.apply_ledger_update(
+            ledger_rules.apply_ledger_update(
                 ledger, {"state": "running"}, "2026-07-16T01:00:00+00:00",
                 expected_revision=1,
             )
         self.assertEqual(original, json.dumps(ledger, sort_keys=True))
 
     def test_attempt_record_rejects_tampered_actor_selection(self):
-        state = load_controller_state()
-        attempt = state.build_attempt_record(
+        execution_contracts = load_rule_owner("execution_contracts")
+        record_serialization = load_rule_owner("record_serialization")
+        attempt = execution_contracts.build_attempt_record(
             task_id="T1",
             brief_path="tasks/T1.md",
             prompt="implement T1",
             policy=self.policy(),
             flow=self.flow(),
             flow_revision=1,
-            flow_sha256=state.sha256_text(
-                state.canonical_json(self.flow()) + "\n"
+            flow_sha256=record_serialization.sha256_text(
+                record_serialization.canonical_json(self.flow()) + "\n"
             ),
             baseline_ref="task-001.json",
         )
         attempt["model"] = "tampered-model"
 
         with self.assertRaises(ValueError):
-            state.validate_attempt_record(attempt)
+            execution_contracts.validate_attempt_record(attempt)
 
     def persist_ledger_fixture(self, run_dir, ledger):
         """Persist current authority so state-update probes reach their invariant."""
@@ -651,7 +691,7 @@ class ControllerStateContractTest(unittest.TestCase):
                 "verification": {"source_path": "tasks/verification.md", "content": "Check T1\n", "sha256": hashlib.sha256(b"Check T1\n").hexdigest()},
             }, "allowed_paths": ["allowed.txt"], "required_checks": [],
         }
-        inputs_bytes = controller._canonical_record_bytes(inputs)
+        inputs_bytes = controller._storage_module.canonical_record_bytes(inputs)
         (run_dir / "inputs.json").write_bytes(inputs_bytes)
         ledger.update(
             policy_sha256=controller.sha256_text(controller.canonical_json(policy)),
@@ -664,12 +704,12 @@ class ControllerStateContractTest(unittest.TestCase):
         return path
 
     def test_invalid_ledger_update_leaves_input_unchanged(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         ledger = self.ledger()
         original = json.dumps(ledger, sort_keys=True)
 
         with self.assertRaisesRegex(ValueError, "Ledger task IDs are immutable"):
-            state.apply_ledger_update(
+            ledger_rules.apply_ledger_update(
                 ledger, {"tasks": []}, "2026-07-16T01:00:00+00:00",
                 expected_revision=1,
             )
@@ -704,7 +744,7 @@ class ControllerStateContractTest(unittest.TestCase):
         self.assertEqual(original, ledger_path.read_bytes())
 
     def test_persisted_updates_enforce_frozen_state_transitions(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         ledger = self.ledger()
         ledger["state"] = "ready"
         ledger["tasks"] = [
@@ -723,7 +763,7 @@ class ControllerStateContractTest(unittest.TestCase):
         with self.assertRaisesRegex(
             ValueError, "Task transition ready -> accepted is not allowed"
         ):
-            state.apply_ledger_update(
+            ledger_rules.apply_ledger_update(
                 ledger, {"tasks": accepted_tasks},
                 "2026-07-16T01:00:00+00:00", expected_revision=1,
             )
@@ -768,13 +808,13 @@ class ControllerStateContractTest(unittest.TestCase):
         }
 
         with self.assertRaisesRegex(ValueError, "identity does not match"):
-            state.apply_ledger_update(
+            ledger_rules.apply_ledger_update(
                 finalizing, updater, "2026-07-16T01:00:00+00:00",
                 expected_revision=1,
                 closure_decision=dict(decision, identity=dict(identity, attempt_id="attempt-000")),
                 cursor_action="task_boundary",
             )
-        released = state.apply_ledger_update(
+        released = ledger_rules.apply_ledger_update(
             finalizing, updater, "2026-07-16T01:00:00+00:00",
             expected_revision=1, closure_decision=decision,
             cursor_action="task_boundary",
@@ -784,7 +824,7 @@ class ControllerStateContractTest(unittest.TestCase):
         self.assertEqual(["accepted", "ready"], [task["state"] for task in released["tasks"]])
 
     def test_acceptance_cannot_change_attempt_history(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         controller = load_controller()
         ledger = self.ledger()
         ledger.update({
@@ -831,7 +871,7 @@ class ControllerStateContractTest(unittest.TestCase):
         with self.assertRaisesRegex(
             ValueError, "acceptance cannot append or replace attempt history"
         ):
-            state.apply_ledger_update(
+            ledger_rules.apply_ledger_update(
                 ledger, updater, "2026-07-16T01:00:00+00:00",
                 expected_revision=1, closure_decision=decision,
                 cursor_action="task_boundary",
@@ -855,7 +895,7 @@ class ControllerStateContractTest(unittest.TestCase):
         self.assertEqual(original_updater, json.dumps(updater, sort_keys=True))
 
     def test_stage_3_transition_tables_are_exhaustive(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         run_edges = {
             "initialized": {"ready", "stopped"},
             "ready": {"running", "stopped"},
@@ -874,32 +914,32 @@ class ControllerStateContractTest(unittest.TestCase):
             "accepted": set(),
             "stopped": set(),
         }
-        self.assertEqual(run_edges, state.ALLOWED_RUN_TRANSITIONS)
-        self.assertEqual(task_edges, state.ALLOWED_TASK_TRANSITIONS)
+        self.assertEqual(run_edges, ledger_rules.ALLOWED_RUN_TRANSITIONS)
+        self.assertEqual(task_edges, ledger_rules.ALLOWED_TASK_TRANSITIONS)
         for current, requested_states in run_edges.items():
             for requested in run_edges:
                 if requested in requested_states:
-                    self.assertEqual(requested, state.transition_run(current, requested))
+                    self.assertEqual(requested, ledger_rules.transition_run(current, requested))
                 else:
                     with self.assertRaises(ValueError):
-                        state.transition_run(current, requested)
+                        ledger_rules.transition_run(current, requested)
         for current, requested_states in task_edges.items():
             for requested in task_edges:
                 if requested == "accepted" and requested in requested_states:
                     identity = {"run_id": "run-1", "task_id": "T1", "attempt_id": "attempt-1"}
-                    self.assertEqual(requested, state.transition_task(
+                    self.assertEqual(requested, ledger_rules.transition_task(
                         current, requested,
                         closure_decision={"accepted": True, "allowed_transitions": ["accepted"], "identity": identity},
                         expected_identity=identity,
                     ))
                 elif requested in requested_states:
-                    self.assertEqual(requested, state.transition_task(current, requested))
+                    self.assertEqual(requested, ledger_rules.transition_task(current, requested))
                 else:
                     with self.assertRaises(ValueError):
-                        state.transition_task(current, requested)
+                        ledger_rules.transition_task(current, requested)
 
     def test_stage_3_ledger_coherence_and_reference_order(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         ledger = self.ledger()
         ledger.update({
             "state": "running", "selected_task_id": "T1",
@@ -907,7 +947,7 @@ class ControllerStateContractTest(unittest.TestCase):
             "current_step": "implement",
         })
         ledger["tasks"][0].update({"state": "running", "attempt_ids": ["attempt-001"]})
-        state.validate_ledger(ledger)
+        ledger_rules.validate_ledger(ledger)
 
         ledger.update({
             "state": "awaiting_inspection", "active_attempt_id": None,
@@ -915,23 +955,23 @@ class ControllerStateContractTest(unittest.TestCase):
             "last_closure_sha256": "a" * 64,
         })
         ledger["tasks"][0]["state"] = "awaiting_inspection"
-        state.validate_ledger(ledger)
+        ledger_rules.validate_ledger(ledger)
         ledger["last_decision_path"] = "decisions/decision-001.json"
         with self.assertRaisesRegex(ValueError, "decision.*verification"):
-            state.validate_ledger(ledger)
+            ledger_rules.validate_ledger(ledger)
 
         ledger["last_verification_path"] = "verification/verification-001.json"
         ledger["active_operation_path"] = "operations/operation-001.json"
         ledger["state"] = "finalizing"
-        state.validate_ledger(ledger)
+        ledger_rules.validate_ledger(ledger)
 
         ledger["state"] = "resumable"
         ledger["tasks"][0]["state"] = "resumable"
         ledger["active_operation_path"] = None
-        state.validate_ledger(ledger)
+        ledger_rules.validate_ledger(ledger)
 
     def test_stage_3_references_are_non_empty_strings_or_null(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
 
         def finalizing_ledger():
             ledger = self.ledger()
@@ -964,26 +1004,26 @@ class ControllerStateContractTest(unittest.TestCase):
                     with self.assertRaisesRegex(
                         ValueError, f"{field} must be a non-empty string"
                     ):
-                        state.validate_ledger(ledger)
+                        ledger_rules.validate_ledger(ledger)
                     self.assertEqual(original, json.dumps(ledger, sort_keys=True))
 
-        state.validate_ledger(finalizing_ledger())
+        ledger_rules.validate_ledger(finalizing_ledger())
         nullable = self.ledger()
-        state.validate_ledger(nullable)
+        ledger_rules.validate_ledger(nullable)
         self.assertTrue(all(nullable[field] is None for field in reference_fields))
 
         invalid_digest = finalizing_ledger()
         invalid_digest["last_closure_sha256"] = "not-a-digest"
         with self.assertRaisesRegex(ValueError, "last_closure_sha256"):
-            state.validate_ledger(invalid_digest)
+            ledger_rules.validate_ledger(invalid_digest)
 
         unpaired_digest = self.ledger()
         unpaired_digest["last_closure_sha256"] = "a" * 64
         with self.assertRaisesRegex(ValueError, "closure reference"):
-            state.validate_ledger(unpaired_digest)
+            ledger_rules.validate_ledger(unpaired_digest)
 
     def test_stage_3_ledger_coherence_rejects_each_critical_corruption(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
 
         def running_ledger():
             ledger = self.ledger()
@@ -1037,7 +1077,7 @@ class ControllerStateContractTest(unittest.TestCase):
             self.ledger(), ready, running_ledger(), awaiting_ledger(),
             resumable_ledger(), finalizing_ledger(), stopped,
         ):
-            state.validate_ledger(ledger)
+            ledger_rules.validate_ledger(ledger)
 
         corruptions = []
         ledger = running_ledger()
@@ -1111,11 +1151,11 @@ class ControllerStateContractTest(unittest.TestCase):
             original = json.dumps(ledger, sort_keys=True)
             with self.subTest(index=index):
                 with self.assertRaises(ValueError):
-                    state.validate_ledger(ledger)
+                    ledger_rules.validate_ledger(ledger)
                 self.assertEqual(original, json.dumps(ledger, sort_keys=True))
 
     def test_nonselected_task_cannot_hold_ownership_bearing_state(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         ledger = self.ledger()
         ledger.update({"state": "ready"})
         ledger["tasks"][0]["state"] = "ready"
@@ -1127,10 +1167,10 @@ class ControllerStateContractTest(unittest.TestCase):
         })
 
         with self.assertRaisesRegex(ValueError, "Only the selected task"):
-            state.validate_ledger(ledger)
+            ledger_rules.validate_ledger(ledger)
 
     def test_running_active_attempt_must_be_latest(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         ledger = self.ledger()
         ledger.update({
             "state": "running", "selected_task_id": "T1",
@@ -1143,10 +1183,10 @@ class ControllerStateContractTest(unittest.TestCase):
         })
 
         with self.assertRaisesRegex(ValueError, "latest selected task attempt"):
-            state.validate_ledger(ledger)
+            ledger_rules.validate_ledger(ledger)
 
     def test_ready_state_requires_exact_dependency_ready_set(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         ledger = self.ledger()
         ledger.update({"state": "ready"})
         ledger["tasks"][0]["state"] = "ready"
@@ -1157,10 +1197,10 @@ class ControllerStateContractTest(unittest.TestCase):
         })
 
         with self.assertRaisesRegex(ValueError, "exactly the dependency-ready"):
-            state.validate_ledger(ledger)
+            ledger_rules.validate_ledger(ledger)
 
     def test_stopped_state_rejects_ownership_bearing_tasks(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         for task_state in ("running", "awaiting_inspection", "resumable"):
             with self.subTest(task_state=task_state):
                 ledger = self.ledger()
@@ -1173,10 +1213,10 @@ class ControllerStateContractTest(unittest.TestCase):
                     "attempt_ids": ["attempt-002"],
                 })
                 with self.assertRaisesRegex(ValueError, "stopped.*active task state"):
-                    state.validate_ledger(ledger)
+                    ledger_rules.validate_ledger(ledger)
 
     def test_ledger_scalar_and_array_boundaries(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         invalid_fields = (
             ("revision", True, "positive integer"),
             ("revision", 0, "positive integer"),
@@ -1197,11 +1237,11 @@ class ControllerStateContractTest(unittest.TestCase):
                 ledger[field] = value
                 original = json.dumps(ledger, sort_keys=True)
                 with self.assertRaisesRegex(ValueError, error):
-                    state.validate_ledger(ledger)
+                    ledger_rules.validate_ledger(ledger)
                 self.assertEqual(original, json.dumps(ledger, sort_keys=True))
 
     def test_ledger_task_identity_and_history_boundaries(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         invalid_tasks = (
             ({"id": ""}, "non-empty and unique"),
             ({"id": None}, "non-empty and unique"),
@@ -1215,11 +1255,11 @@ class ControllerStateContractTest(unittest.TestCase):
                 ledger["tasks"][0].update(fields)
                 original = json.dumps(ledger, sort_keys=True)
                 with self.assertRaisesRegex(ValueError, error):
-                    state.validate_ledger(ledger)
+                    ledger_rules.validate_ledger(ledger)
                 self.assertEqual(original, json.dumps(ledger, sort_keys=True))
 
     def test_incoherent_updates_preserve_input_and_persisted_bytes(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         controller = load_controller()
 
         partial_ready = self.ledger()
@@ -1262,7 +1302,7 @@ class ControllerStateContractTest(unittest.TestCase):
                 original_ledger = json.dumps(ledger, sort_keys=True)
                 original_updater = json.dumps(updater, sort_keys=True)
                 with self.assertRaisesRegex(ValueError, error):
-                    state.apply_ledger_update(
+                    ledger_rules.apply_ledger_update(
                         ledger, updater, "2026-07-16T01:00:00+00:00",
                         expected_revision=1,
                     )
@@ -1283,7 +1323,7 @@ class ControllerStateContractTest(unittest.TestCase):
                 self.assertEqual(original_updater, json.dumps(updater, sort_keys=True))
 
     def test_selection_uses_persisted_ready_state_and_accepted_dependencies(self):
-        state = load_controller_state()
+        task_manifest = load_rule_owner("task_manifest")
         ledger = self.ledger()
         ledger["state"] = "ready"
         ledger["tasks"] = [
@@ -1294,29 +1334,29 @@ class ControllerStateContractTest(unittest.TestCase):
                 "required_checks": [], "state": "ready", "attempt_ids": [],
             },
         ]
-        self.assertEqual("T2", state.select_task(ledger, self.policy())["id"])
+        self.assertEqual("T2", task_manifest.select_task(ledger, self.policy())["id"])
         self.assertEqual([], ledger["completed_task_ids"])
         ledger["tasks"][1]["state"] = "initialized"
         with self.assertRaisesRegex(ValueError, "No ready tasks"):
-            state.select_task(ledger, self.policy())
+            task_manifest.select_task(ledger, self.policy())
 
     def test_expected_revision_and_authority_are_immutable(self):
-        state = load_controller_state()
+        ledger_rules = load_rule_owner("ledger")
         ledger = self.ledger()
         original = json.dumps(ledger, sort_keys=True)
         with self.assertRaisesRegex(ValueError, "Expected ledger revision 0, found 1"):
-            state.apply_ledger_update(
+            ledger_rules.apply_ledger_update(
                 ledger, {}, "2026-07-16T01:00:00+00:00", expected_revision=0
             )
         changed_tasks = [dict(task) for task in ledger["tasks"]]
         changed_tasks[0]["allowed_paths"] = ["other.txt"]
         with self.assertRaisesRegex(ValueError, "authority is immutable"):
-            state.apply_ledger_update(
+            ledger_rules.apply_ledger_update(
                 ledger, {"tasks": changed_tasks}, "2026-07-16T01:00:00+00:00",
                 expected_revision=1,
             )
         with self.assertRaisesRegex(ValueError, "authority is immutable"):
-            state.apply_ledger_update(
+            ledger_rules.apply_ledger_update(
                 ledger,
                 {
                     "flow_revision": 2,
@@ -1327,11 +1367,12 @@ class ControllerStateContractTest(unittest.TestCase):
                 expected_revision=1,
             )
         with self.assertRaisesRegex(ValueError, "revision is controller-owned"):
-            state.apply_ledger_update(
+            ledger_rules.apply_ledger_update(
                 ledger, {"revision": 0}, "2026-07-16T01:00:00+00:00",
                 expected_revision=1,
             )
         self.assertEqual(original, json.dumps(ledger, sort_keys=True))
+
 
 
 class Stage3RecordContractTest(unittest.TestCase):
@@ -1468,20 +1509,20 @@ class Stage3RecordContractTest(unittest.TestCase):
         }
 
     def test_attempt_turn_identity_rejects_mismatched_turn(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
         expected = self.identity()
         stale = dict(expected, turn=2)
 
         with self.assertRaisesRegex(ValueError, "identity does not match expected subject"):
-            state.validate_attempt_turn_identity(stale, expected=expected)
+            execution_contracts.validate_attempt_turn_identity(stale, expected=expected)
 
     def test_exact_identity_and_record_fixtures_validate(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
         subject = self.identity()
         closure = self.closure_identity()
-        state.validate_attempt_turn_identity(subject, expected=subject)
-        state.validate_closure_identity(closure, expected_subject=subject)
-        state.validate_command_execution_record(
+        execution_contracts.validate_attempt_turn_identity(subject, expected=subject)
+        execution_contracts.validate_closure_identity(closure, expected_subject=subject)
+        execution_contracts.validate_command_execution_record(
             self.execution(), expected_closure_identity=closure
         )
 
@@ -1492,7 +1533,7 @@ class Stage3RecordContractTest(unittest.TestCase):
         })
         failed["outcomes"] = [self.outcome(status="failed")]
         failed["terminal_reason"] = "command_failed"
-        state.validate_command_execution_record(failed, expected_closure_identity=closure)
+        execution_contracts.validate_command_execution_record(failed, expected_closure_identity=closure)
 
         authorized_gap = self.execution()
         authorized_gap["outcomes"][0] = self.outcome(status="authorized_gap")
@@ -1502,34 +1543,34 @@ class Stage3RecordContractTest(unittest.TestCase):
             "owner": "controller",
             "follow_up": "run the gate before release",
         }
-        state.validate_command_execution_record(
+        execution_contracts.validate_command_execution_record(
             authorized_gap, expected_closure_identity=closure
         )
 
-        state.validate_verification_record(
+        execution_contracts.validate_verification_record(
             self.verification(), expected_closure_identity=closure,
             expected_execution_sha256="9" * 64,
         )
         failed_verification = self.verification()
         failed_verification["outcome"] = "failed"
         failed_verification["drift_findings"] = ["tracked workspace drift"]
-        state.validate_verification_record(
+        execution_contracts.validate_verification_record(
             failed_verification, expected_closure_identity=closure,
             expected_execution_sha256="9" * 64,
         )
         for accepted in (True, False):
-            state.validate_closure_decision(
+            execution_contracts.validate_closure_decision(
                 self.decision(accepted), expected_closure_identity=closure,
                 expected_verification_sha256="a" * 64,
             )
         for operation_state in ("prepared", "effects_complete", "complete", "mismatch"):
-            state.validate_finalization_operation(
+            execution_contracts.validate_finalization_operation(
                 self.operation(operation_state), expected_closure_identity=closure,
                 expected_decision_sha256="c" * 64,
             )
 
     def test_identity_fields_are_exact_canonical_and_input_preserving(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
         subject = self.identity()
         closure = self.closure_identity()
         original_subject = json.dumps(subject, sort_keys=True)
@@ -1539,17 +1580,17 @@ class Stage3RecordContractTest(unittest.TestCase):
             missing = dict(subject)
             del missing[field]
             with self.subTest(kind="missing", field=field), self.assertRaises(ValueError):
-                state.validate_attempt_turn_identity(missing)
+                execution_contracts.validate_attempt_turn_identity(missing)
             changed = dict(subject)
             changed[field] = 2 if field == "turn" else "changed"
             with self.subTest(kind="changed", field=field), self.assertRaises(ValueError):
-                state.validate_attempt_turn_identity(changed, expected=subject)
+                execution_contracts.validate_attempt_turn_identity(changed, expected=subject)
         with self.assertRaisesRegex(ValueError, "unknown fields"):
-            state.validate_attempt_turn_identity(dict(subject, own_sha256="f" * 64))
+            execution_contracts.validate_attempt_turn_identity(dict(subject, own_sha256="f" * 64))
         with self.assertRaisesRegex(ValueError, "positive integer"):
-            state.validate_attempt_turn_identity(dict(subject, turn=True))
+            execution_contracts.validate_attempt_turn_identity(dict(subject, turn=True))
         with self.assertRaisesRegex(ValueError, "lowercase SHA-256"):
-            state.validate_attempt_turn_identity(dict(subject, policy_sha256="A" * 64))
+            execution_contracts.validate_attempt_turn_identity(dict(subject, policy_sha256="A" * 64))
 
         for field in tuple(closure):
             changed = json.loads(json.dumps(closure))
@@ -1558,12 +1599,12 @@ class Stage3RecordContractTest(unittest.TestCase):
             else:
                 changed[field] = "changed"
             with self.subTest(kind="closure", field=field), self.assertRaises(ValueError):
-                state.validate_closure_identity(changed, expected_subject=subject)
+                execution_contracts.validate_closure_identity(changed, expected_subject=subject)
         self.assertEqual(original_subject, json.dumps(subject, sort_keys=True))
         self.assertEqual(original_closure, json.dumps(closure, sort_keys=True))
 
     def test_each_consuming_identity_link_rejects_stale_data(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
         closure = self.closure_identity()
         subject_changes = {
             "run_id": "run-2", "task_id": "T2", "attempt_id": "attempt-002",
@@ -1579,7 +1620,7 @@ class Stage3RecordContractTest(unittest.TestCase):
             with self.subTest(field=field), self.assertRaisesRegex(
                 ValueError, "execution closure identity"
             ):
-                state.validate_command_execution_record(
+                execution_contracts.validate_command_execution_record(
                     execution, expected_closure_identity=closure
                 )
         for field, value in (
@@ -1595,41 +1636,42 @@ class Stage3RecordContractTest(unittest.TestCase):
             with self.subTest(field=field), self.assertRaisesRegex(
                 ValueError, "execution closure identity"
             ):
-                state.validate_command_execution_record(
+                execution_contracts.validate_command_execution_record(
                     execution, expected_closure_identity=closure
                 )
 
         verification = self.verification()
         with self.assertRaisesRegex(ValueError, "execution digest"):
-            state.validate_verification_record(
+            execution_contracts.validate_verification_record(
                 verification, expected_closure_identity=closure,
                 expected_execution_sha256="0" * 64,
             )
         decision = self.decision()
         with self.assertRaisesRegex(ValueError, "verification digest"):
-            state.validate_closure_decision(
+            execution_contracts.validate_closure_decision(
                 decision, expected_closure_identity=closure,
                 expected_verification_sha256="0" * 64,
             )
         operation = self.operation()
         with self.assertRaisesRegex(ValueError, "decision digest"):
-            state.validate_finalization_operation(
+            execution_contracts.validate_finalization_operation(
                 operation, expected_closure_identity=closure,
                 expected_decision_sha256="0" * 64,
             )
 
     def test_canonical_digests_bind_the_acyclic_chain(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
+        record_serialization = load_rule_owner("record_serialization")
         closure = self.closure_identity()
         execution = self.execution()
         external_execution_json = json.dumps(
             execution, sort_keys=True, separators=(",", ":")
         )
-        self.assertEqual(external_execution_json, state.canonical_json(execution))
+        self.assertEqual(external_execution_json, record_serialization.canonical_json(execution))
         execution_digest = hashlib.sha256(external_execution_json.encode()).hexdigest()
         verification = self.verification()
         verification["execution_sha256"] = execution_digest
-        state.validate_verification_record(
+        execution_contracts.validate_verification_record(
             verification, expected_closure_identity=closure,
             expected_execution_sha256=execution_digest,
         )
@@ -1639,25 +1681,25 @@ class Stage3RecordContractTest(unittest.TestCase):
         verification_digest = hashlib.sha256(external_verification_json.encode()).hexdigest()
         decision = self.decision()
         decision["verification_sha256"] = verification_digest
-        state.validate_closure_decision(
+        execution_contracts.validate_closure_decision(
             decision, expected_closure_identity=closure,
             expected_verification_sha256=verification_digest,
         )
         with self.assertRaisesRegex(ValueError, "unknown fields"):
-            state.validate_verification_record(
+            execution_contracts.validate_verification_record(
                 dict(verification, own_sha256="d" * 64),
                 expected_closure_identity=closure,
                 expected_execution_sha256=execution_digest,
             )
         with self.assertRaisesRegex(ValueError, "unknown fields"):
-            state.validate_closure_decision(
+            execution_contracts.validate_closure_decision(
                 dict(decision, own_sha256="e" * 64),
                 expected_closure_identity=closure,
                 expected_verification_sha256=verification_digest,
             )
 
     def test_execution_rejects_duplicates_types_times_and_contradictions(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
         closure = self.closure_identity()
         cases = []
         record = self.execution()
@@ -1688,12 +1730,12 @@ class Stage3RecordContractTest(unittest.TestCase):
         cases.append(record)
         for index, record in enumerate(cases):
             with self.subTest(index=index), self.assertRaises(ValueError):
-                state.validate_command_execution_record(
+                execution_contracts.validate_command_execution_record(
                     record, expected_closure_identity=closure
                 )
 
     def test_artifact_paths_are_exact_and_structurally_safe(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
         closure = self.closure_identity()
         for invalid in (
             "/verification/log", "verification/../log", "verification//log",
@@ -1704,14 +1746,14 @@ class Stage3RecordContractTest(unittest.TestCase):
             record = self.verification()
             record["execution_path"] = invalid
             with self.subTest(path=invalid), self.assertRaises(ValueError):
-                state.validate_verification_record(
+                execution_contracts.validate_verification_record(
                     record, expected_closure_identity=closure,
                     expected_execution_sha256="9" * 64,
                 )
         decision = self.decision()
         decision["verification_path"] = "decisions/attempt-001.turn-001.json"
         with self.assertRaisesRegex(ValueError, "verification/"):
-            state.validate_closure_decision(
+            execution_contracts.validate_closure_decision(
                 decision, expected_closure_identity=closure,
                 expected_verification_sha256="a" * 64,
             )
@@ -1720,12 +1762,12 @@ class Stage3RecordContractTest(unittest.TestCase):
             "decisions/attempt-001.turn-001.command-001.stdout.log"
         )
         with self.assertRaisesRegex(ValueError, "verification/"):
-            state.validate_command_execution_record(
+            execution_contracts.validate_command_execution_record(
                 execution, expected_closure_identity=closure
             )
 
     def test_decision_verdict_gap_and_semantic_review_are_consistent(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
         closure = self.closure_identity()
         cases = []
         record = self.decision()
@@ -1746,13 +1788,13 @@ class Stage3RecordContractTest(unittest.TestCase):
         cases.append(record)
         for index, record in enumerate(cases):
             with self.subTest(index=index), self.assertRaises(ValueError):
-                state.validate_closure_decision(
+                execution_contracts.validate_closure_decision(
                     record, expected_closure_identity=closure,
                     expected_verification_sha256="a" * 64,
                 )
 
     def test_operation_transitions_are_ordered_append_only_and_pure(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
         closure = self.closure_identity()
         prepared = self.operation("prepared")
         effects = self.operation("effects_complete")
@@ -1760,17 +1802,17 @@ class Stage3RecordContractTest(unittest.TestCase):
         original_prepared = json.dumps(prepared, sort_keys=True)
         original_effects = json.dumps(effects, sort_keys=True)
 
-        updated = state.update_finalization_operation(
+        updated = execution_contracts.update_finalization_operation(
             prepared, effects, expected_state="prepared",
             expected_closure_identity=closure, expected_decision_sha256="c" * 64,
         )
         self.assertEqual(effects, updated)
-        completed = state.update_finalization_operation(
+        completed = execution_contracts.update_finalization_operation(
             effects, complete, expected_state="effects_complete",
             expected_closure_identity=closure, expected_decision_sha256="c" * 64,
         )
         self.assertEqual(complete, completed)
-        replayed = state.update_finalization_operation(
+        replayed = execution_contracts.update_finalization_operation(
             complete, complete, expected_state="complete",
             expected_closure_identity=closure, expected_decision_sha256="c" * 64,
         )
@@ -1780,7 +1822,7 @@ class Stage3RecordContractTest(unittest.TestCase):
         self.assertEqual(original_effects, json.dumps(effects, sort_keys=True))
 
     def test_operation_rejects_skips_stale_updates_and_history_changes(self):
-        state = load_controller_state()
+        execution_contracts = load_rule_owner("execution_contracts")
         closure = self.closure_identity()
         prepared = self.operation("prepared")
         effects = self.operation("effects_complete")
@@ -1800,27 +1842,27 @@ class Stage3RecordContractTest(unittest.TestCase):
         cases.append((complete, effects, "complete"))
         for index, (current, proposed, expected_state) in enumerate(cases):
             with self.subTest(index=index), self.assertRaises(ValueError):
-                state.update_finalization_operation(
+                execution_contracts.update_finalization_operation(
                     current, proposed, expected_state=expected_state,
                     expected_closure_identity=closure,
                     expected_decision_sha256="c" * 64,
                 )
 
         mismatch = self.operation("mismatch")
-        updated = state.update_finalization_operation(
+        updated = execution_contracts.update_finalization_operation(
             prepared, mismatch, expected_state="prepared",
             expected_closure_identity=closure, expected_decision_sha256="c" * 64,
         )
         self.assertEqual("mismatch", updated["state"])
         effects_mismatch = self.operation("mismatch")
         effects_mismatch["effect_evidence"] = effects["effect_evidence"]
-        updated = state.update_finalization_operation(
+        updated = execution_contracts.update_finalization_operation(
             effects, effects_mismatch, expected_state="effects_complete",
             expected_closure_identity=closure, expected_decision_sha256="c" * 64,
         )
         self.assertEqual("mismatch", updated["state"])
         with self.assertRaisesRegex(ValueError, "not allowed"):
-            state.update_finalization_operation(
+            execution_contracts.update_finalization_operation(
                 mismatch, complete, expected_state="mismatch",
                 expected_closure_identity=closure,
                 expected_decision_sha256="c" * 64,

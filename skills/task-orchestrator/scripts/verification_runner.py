@@ -20,6 +20,15 @@ from pathlib import Path, PurePath
 from typing import Any
 
 
+_loader_spec = importlib.util.spec_from_file_location(
+    "task_orchestrator_component_loading", Path(__file__).with_name("__init__.py"),
+)
+_loader = importlib.util.module_from_spec(_loader_spec)
+assert _loader_spec.loader is not None
+_loader_spec.loader.exec_module(_loader)
+_load_component = _loader.load_component
+
+
 SHELL_LAUNCHERS = frozenset(
     {"bash", "csh", "dash", "fish", "ksh", "sh", "tcsh", "zsh"}
 )
@@ -392,15 +401,6 @@ def _validate_plan(plan: dict[str, Any], *, dependency_install: bool) -> None:
             raise VerificationExecutionError("authorized gap semantics are invalid")
 
 
-def _load_controller_state():
-    path = Path(__file__).with_name("controller_state.py")
-    spec = importlib.util.spec_from_file_location("task_orchestrator_controller_state", path)
-    if spec is None or spec.loader is None:
-        raise VerificationExecutionError("controller record validator is unavailable")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
 
 def _canonical_directory(value: str | Path, field: str) -> Path:
     path = Path(value)
@@ -533,8 +533,8 @@ def execute_verification_plan(
     run_dir = _canonical_directory(run_directory, "run_directory")
     normalized_permissions = _normalize_permissions(permissions)
     _validate_plan(plan, dependency_install=normalized_permissions["dependency_install"])
-    state = _load_controller_state()
-    state.validate_closure_identity(closure_identity)
+    execution_contracts = _load_component("execution_contracts")
+    execution_contracts.validate_closure_identity(closure_identity)
 
     subject = closure_identity["subject"]
     stem = f"{subject['attempt_id']}.turn-{subject['turn']:03d}"
@@ -769,10 +769,10 @@ def execute_verification_plan(
     }
     if execution_authorization is not None:
         record["execution_mechanism"] = "sbx_yolo"
-    state.validate_command_execution_record(
+    execution_contracts.validate_command_execution_record(
         record, expected_closure_identity=closure_identity
     )
-    serialized = state.canonical_json(record).encode()
+    serialized = _load_component("record_serialization").canonical_json(record).encode()
     digest = hashlib.sha256(serialized).hexdigest()
     with record_path.open("xb") as output:
         output.write(serialized)

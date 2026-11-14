@@ -79,6 +79,39 @@
     "docs/project-plan.md#INV-009": [
       "measurement"
     ],
+    "skills/task-orchestrator/docs/code-organization-cleanup-plan.md#ART-004": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/code-organization-cleanup-plan.md#CAP-002": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/code-organization-cleanup-plan.md#FLOW-003": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/code-organization-cleanup-plan.md#IF-001": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/code-organization-cleanup-plan.md#IF-002": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/code-organization-cleanup-plan.md#IF-003": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/code-organization-cleanup-plan.md#IF-004": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/code-organization-cleanup-plan.md#INV-002": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/code-organization-cleanup-plan.md#INV-003": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/code-organization-cleanup-plan.md#INV-004": [
+      "task-orchestrator"
+    ],
+    "skills/task-orchestrator/docs/code-organization-cleanup-plan.md#INV-005": [
+      "task-orchestrator"
+    ],
     "skills/task-orchestrator/docs/local-harness-orchestration-plan.md#ART-002": [
       "task-orchestrator"
     ],

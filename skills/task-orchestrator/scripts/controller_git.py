@@ -11,16 +11,16 @@ import subprocess
 from typing import Any
 
 
-_state_spec = importlib.util.spec_from_file_location(
-    "task_orchestrator_controller_state_for_git",
-    Path(__file__).with_name("controller_state.py"),
+_serialization_spec = importlib.util.spec_from_file_location(
+    "task_orchestrator_record_serialization_for_git",
+    Path(__file__).with_name("record_serialization.py"),
 )
-_state_module = importlib.util.module_from_spec(_state_spec)
-assert _state_spec.loader is not None
-_state_spec.loader.exec_module(_state_module)
+_serialization = importlib.util.module_from_spec(_serialization_spec)
+assert _serialization_spec.loader is not None
+_serialization_spec.loader.exec_module(_serialization)
 
-_sha256_text = _state_module.sha256_text
-_canonical_json = _state_module.canonical_json
+_sha256_text = _serialization.sha256_text
+_canonical_json = _serialization.canonical_json
 
 
 def _run_git(repository: Path, *args: str) -> subprocess.CompletedProcess[bytes]:

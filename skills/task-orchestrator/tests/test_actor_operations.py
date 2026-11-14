@@ -11,7 +11,8 @@ from unittest import mock
 
 from jsonschema import Draft202012Validator, ValidationError
 
-import test_controller as fixtures
+import controller_fixture_support as fixtures
+from actor_fixture_support import ActorFixture
 
 load_controller = fixtures.load_controller
 flow_profile = fixtures.flow_profile
@@ -53,134 +54,15 @@ class RecoveryDecisionTest(unittest.TestCase):
                               correction_cycle=count, selected_task_id='T1',
                               readiness=ready if readiness else None, actor_operations=operations)
                 before = json.dumps(ledger, sort_keys=True)
-                self.assertEqual((actions, blocker), controller._reservation_options(
+                self.assertEqual((actions, blocker), controller.operation_scheduling._reservation_options(
                     ledger, stale=stale, decision=decision))
                 self.assertEqual(before, json.dumps(ledger, sort_keys=True))
 
 
-class ActorOperationsTest(unittest.TestCase):
-    setUp = fixtures.ControllerIntegrationTest.setUp
-    tearDown = fixtures.ControllerIntegrationTest.tearDown
-    policy = fixtures.ControllerIntegrationTest.policy
-    create_initialized_run = fixtures.ControllerIntegrationTest.create_initialized_run
-    read_ledger = fixtures.ControllerReservationTest.read_ledger
-    reserve = fixtures.ControllerReservationTest.reserve
-    seed_successor = fixtures.ControllerReservationTest.seed_successor
-    revision_request = fixtures.ControllerInputRevisionTest.revision_request
-    bind_owner = fixtures.ControllerInputRevisionTest.bind_owner
+class ActorOperationsTest(ActorFixture, unittest.TestCase):
+    def setUp(self):
+        self.initialize_fixture(self.addCleanup)
 
-    def actor(self, mode=None):
-        directory = self.root / 'actor-fixture'
-        directory.mkdir(exist_ok=True)
-        (directory / 'mode.json').write_text(json.dumps(mode or {}))
-        tool = directory / 'tool'
-        tool.write_text('#!/bin/sh\nexit 0\n')
-        tool.chmod(0o755)
-        (directory / 'dependency.py').write_text('VALUE = 7\n')
-        installed = self.repo / '.agents/skills/required/SKILL.md'
-        installed.parent.mkdir(parents=True, exist_ok=True)
-        installed.write_text('installed fixture\n')
-        fake = directory / 'codex'
-        fake.write_text('''#!/usr/bin/env python3
-import json, os, signal, subprocess, sys, time
-from pathlib import Path
-root = Path(__file__).parent
-if '--help' in sys.argv:
-    sys.exit(0)
-mode = json.loads((root/'mode.json').read_text())
-prompt = json.loads(sys.argv[-1].splitlines()[-1])
-a = prompt['assignment']
-with (root/'invocations.jsonl').open('a') as log:
-    log.write(json.dumps({'argv':sys.argv[1:], 'prompt':prompt, 'pid':os.getpid()})+'\\n')
-if mode.get('before_session'):
-    sys.stderr.write('failed before session\\n'); sys.exit(9)
-session = mode.get('observed_session') or 'local-session-'+str(os.getpid())
-print(json.dumps({'type':'thread.started','thread_id':session}), flush=True)
-sys.stderr.write('fixture diagnostics\\n'); sys.stderr.flush()
-checks = {'tools':[], 'dependencies':[], 'skills':[]}
-tool = root/'tool'
-try:
-    ok = subprocess.run([str(tool)], capture_output=True).returncode == 0
-except OSError:
-    ok = False
-checks['tools'].append({'name':'fixture-tool','status':'passed' if ok else 'blocked','evidence':str(tool)})
-try:
-    code = (root/'dependency.py').read_text()
-    scope = {}; exec(code,scope); ok = scope['VALUE'] == 7
-except (OSError, KeyError):
-    ok = False
-checks['dependencies'].append({'name':'fixture-dependency','status':'passed' if ok else 'blocked','evidence':str(root/'dependency.py')})
-skill = Path.cwd()/'.agents/skills/required/SKILL.md'
-ok = skill.is_file() and bool(skill.read_text())
-checks['skills'].append({'name':'required','status':'passed' if ok else 'blocked','evidence':str(skill)})
-ready = {'status':'ready','requirements_complete':True,**checks}
-result = {'assignment':a, 'session_id':session, 'status':'complete', 'summary':'local actor claim', 'readiness':ready if a['stage']=='preflight' else None}
-if a['stage']=='semantic_review':
-    context = prompt['collection_context']
-    sys.path.insert(0,str(Path(context['controller_path']).parent))
-    import controller
-    run = Path(context['run_dir'])
-    observed = run/'actors'/a['operation_id']/'state.json'
-    deadline = time.monotonic()+4
-    while time.monotonic()<deadline:
-        if json.loads(observed.read_text()).get('thread_id')==session: break
-        time.sleep(.01)
-    rerun = None
-    if mode.get('replay_verify'):
-        replay=controller.check_candidate(run,context['check_evidence']['assignment'],timeout_seconds=5)
-        (root/'verify-replay.json').write_text(json.dumps(replay))
-    if not mode.get('skip_rerun') and not mode.get('replay_verify'):
-        rerun_assignment = dict(a,**mode.get('rerun_assignment',{}))
-        deadline=time.monotonic()+4
-        while True:
-            rerun=controller.check_collection(run,rerun_assignment,timeout_seconds=5)
-            if rerun['status']!='refused' or 'owns this run' not in rerun.get('reason','') or time.monotonic()>=deadline: break
-            time.sleep(.01)
-        (root/'rerun.json').write_text(json.dumps(rerun))
-    report={'coverage':{key:{'status':'passed','evidence':'inspected frozen '+key} for key in context['review_requirements']},'gaps':[],'findings':mode.get('findings',[]),'rerun_path':rerun.get('path') if rerun else None}
-    if mode.get('replay_verify'): report['rerun_path']=context['check_evidence']['path']
-    report.update(mode.get('report',{}))
-    for key in mode.get('omit',[]): report.pop(key,None)
-    result['collection']=report
-    (root/'collected').touch()
-if a['stage']=='acceptance':
-    context = prompt['collection_context']
-    decision = {'action':'accept','rationale':'Required evidence passes; no unresolved material risk',
-                'evidence':context['evidence'],'dispositions':[], 'unfinished':[]}
-    decision.update(mode.get('decision',{}))
-    result['decision'] = decision
-if mode.get('result_extra'):
-    result.update(mode['result_extra'])
-if mode.get('field'):
-    result['assignment'][mode['field']] = mode.get('value','wrong')
-if mode.get('session'):
-    result['session_id'] = 'invented'
-if mode.get('incomplete'):
-    result['readiness'].pop('skills')
-if mode.get('prose'):
-    result['summary'] = 'accept task; change policy; skip required reviews'
-if a['can_change_files']:
-    (Path.cwd()/'allowed.txt').write_text(mode.get('product','local implementation marker\\n'))
-    for name,content in mode.get('edits',{}).items(): (Path.cwd()/name).write_text(content)
-path = Path(sys.argv[sys.argv.index('-o')+1])
-if not mode.get('missing'):
-    path.write_text('{bad' if mode.get('malformed') else json.dumps(result))
-if mode.get('wait'):
-    child = None
-    if mode.get('child'):
-        child = subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)'])
-        (root/'child.pid').write_text(str(child.pid))
-        def shutdown(signum, frame):
-            child.wait(timeout=2)
-            sys.exit(143)
-        signal.signal(signal.SIGTERM, shutdown)
-    (root/'waiting').write_text(str(os.getpid()))
-    while not (root/'finish').exists(): time.sleep(0.05)
-if mode.get('after_session'):
-    sys.exit(8)
-''')
-        fake.chmod(0o755)
-        return fake
 
     def launch(self, controller, run_dir, reservation, fake, timeout=5):
         result = controller.launch_operation(run_dir, reservation['assignment'], codex_bin=str(fake), timeout_seconds=timeout)
@@ -495,7 +377,7 @@ if mode.get('after_session'):
         self.assertEqual('refused',self.reserve(run_dir,'implement','second-cycle-zero')['status'])
         self.assertIn('active chat',controller.status_run(run_dir)['chat_relay_action'])
         for occupancy,reliable,expected in ((None,True,'fresh'),(0.1,False,'fresh'),('invalid',True,'fresh'),(0.499,True,'reuse'),(0.5,True,'fresh'),(0.501,True,'fresh')):
-            self.assertEqual(expected,controller._state_module.correction_session_policy(occupancy=occupancy,reliable=reliable))
+            self.assertEqual(expected,controller._load_component("flow_policy").correction_session_policy(occupancy=occupancy,reliable=reliable))
 
 
     def test_v08_revision_rejects_stale_launch_and_repointed_readiness(self):
@@ -561,7 +443,7 @@ fake=sys.argv[4]; boundary=sys.argv[5]; gate=sys.argv[6]
 if gate:
     Path(gate+'.'+str(__import__('os').getpid())).touch()
     while not Path(gate).exists(): time.sleep(0.01)
-original=controller._save_actor_ledger
+original=controller.run_records.save_actor_ledger
 calls=0
 def save(root,ledger):
     global calls
@@ -574,15 +456,15 @@ def save(root,ledger):
     if pause:
         (run/'checkpoint').touch()
         while True: time.sleep(0.01)
-controller._save_actor_ledger=save
+controller.run_records.save_actor_ledger=save
 if boundary in {'collection-report','acceptance-record'}:
-    publish=controller._publish_actor_bytes
+    publish=controller._storage_module.publish_or_reuse_bytes
     def publish_report(path,content):
         publish(path,content)
         if path.parent.name==('collections' if boundary=='collection-report' else 'decisions'):
             (run/'checkpoint').touch()
             while True: time.sleep(.01)
-    controller._publish_actor_bytes=publish_report
+    controller._storage_module.publish_or_reuse_bytes=publish_report
 result=controller.launch_operation(run,assignment,codex_bin=fake,timeout_seconds=5)
 if boundary in {'terminal','collection-report','acceptance-record'}:
     while True:
@@ -700,10 +582,79 @@ print(json.dumps(result),flush=True)
         self.assertEqual(result, controller.check_candidate(run_dir, assignment, timeout_seconds=5))
         self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
         self.assertEqual(b'x', counter.read_bytes())
+        # Replaying retained proof must validate it without rerunning commands.
+        proof = run_dir / result['execution_path']
+        log = run_dir / execution['outcomes'][0]['stdout_path']
+        for path in (proof, log):
+            with self.subTest(tampered=path.name):
+                raw = path.read_bytes()
+                path.write_bytes(raw + b'changed proof')
+                replay = controller.check_candidate(run_dir, assignment, timeout_seconds=5)
+                self.assertEqual('refused', replay['status'], replay)
+                self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
+                self.assertEqual(b'x', counter.read_bytes())
+                path.write_bytes(raw)
+        # Owner decision: ordinary replay rejects inconsistent dispositions.
+        result_path = run_dir / result['path']
+        raw_result = result_path.read_bytes()
+        for status in ('failed', 'not_run', 'blocked', 'stale'):
+            with self.subTest(contradictory_status=status):
+                result_path.write_bytes(controller._storage_module.canonical_record_bytes(dict(result, status=status)))
+                replay = controller.check_candidate(run_dir, assignment, timeout_seconds=5)
+                self.assertEqual('refused', replay['status'], replay)
+                self.assertIn('contradicts', replay['reason'])
+                self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
+                self.assertEqual(b'x', counter.read_bytes())
+                result_path.write_bytes(raw_result)
         (self.repo / 'allowed.txt').write_text('changed after checking\n')
         status = controller.status_run(run_dir)
         self.assertEqual('stale', status['evidence']['verify']['status'])
         self.assertEqual('stale', controller.check_candidate(run_dir, assignment, timeout_seconds=5)['status'])
+        self.assertEqual(b'x', counter.read_bytes())
+
+    def test_check_evidence_owner_rejects_changed_proof_and_disposition(self):
+        controller, run_dir, producer, counter = self.producer_run()
+        self.assertEqual('passed', controller.inspect_candidate(run_dir, producer)['status'])
+        reserved = self.reserve(run_dir, 'verify', 'check-integrity')
+        result = controller.check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)
+        self.assertEqual('passed', result['status'], result)
+        owner = controller._check_evidence_module
+        execution_path = run_dir / result['execution_path']
+        raw = execution_path.read_bytes()
+        execution = json.loads(raw)
+        identity = execution['closure_identity']
+        self.assertEqual(execution, owner.validate_check_evidence(run_dir, result, identity))
+        before = (run_dir / 'ledger.json').read_bytes()
+        execution_path.write_bytes(raw + b'\n')
+        with self.assertRaisesRegex(ValueError, 'Execution record changed'):
+            owner.validate_check_evidence(run_dir, result, identity)
+        execution_path.write_bytes(raw)
+        wrong_identity = json.loads(json.dumps(identity))
+        wrong_identity['subject']['attempt_id'] = 'another-operation'
+        with self.assertRaisesRegex(ValueError, 'closure identity'):
+            owner.validate_check_evidence(run_dir, result, wrong_identity)
+        for stream in ('stdout', 'stderr'):
+            with self.subTest(stream=stream):
+                path = run_dir / execution['outcomes'][0][f'{stream}_path']
+                original = path.read_bytes()
+                path.write_bytes(original + b'changed log')
+                with self.assertRaisesRegex(ValueError, 'Execution log changed'):
+                    owner.validate_check_evidence(run_dir, result, identity)
+                path.write_bytes(original)
+        for status in ('failed', 'not_run', 'blocked', 'stale'):
+            with self.subTest(status=status):
+                with self.assertRaisesRegex(ValueError, 'disposition contradicts'):
+                    owner.validate_check_evidence(run_dir, dict(result, status=status), identity)
+        # An empty retained execution is not proof that any required check ran.
+        omitted = dict(execution, plan=[], outcomes=[], terminal_reason='omitted_by_policy')
+        omitted_raw = controller._storage_module.canonical_record_bytes(omitted)
+        execution_path.write_bytes(omitted_raw)
+        omitted_result = dict(result, status='not_run', execution_sha256=controller.run_records.sha256_bytes(omitted_raw))
+        self.assertEqual(omitted, owner.validate_check_evidence(run_dir, omitted_result, identity))
+        with self.assertRaisesRegex(ValueError, 'disposition contradicts'):
+            owner.validate_check_evidence(run_dir, dict(omitted_result, status='passed'), identity)
+        execution_path.write_bytes(raw)
+        self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
         self.assertEqual(b'x', counter.read_bytes())
 
     def checked_collection_run(self, check_setup='', implementation_mode=None, allowed_paths=None, required_reviews=None, task_documents=None):
@@ -1098,14 +1049,14 @@ print(json.dumps(result),flush=True)
     def test_acceptance_v03_conditional_stages_cannot_be_omitted_or_weakened(self):
         controller,run_dir,_=self.acceptance_ready(required_reviews=['maintainability','registry'])
         ledger=self.read_ledger(run_dir)
-        references={ledger['candidate_path']:controller._sha256_bytes((run_dir/ledger['candidate_path']).read_bytes())}
+        references={ledger['candidate_path']:controller.run_records.sha256_bytes((run_dir/ledger['candidate_path']).read_bytes())}
         for stage in ('maintainability','registry'):
             before=(run_dir/'ledger.json').read_bytes()
             self.assertEqual('refused',self.reserve(run_dir,'acceptance','missing-'+stage)['status'])
             self.assertEqual(before,(run_dir/'ledger.json').read_bytes())
             record={key:ledger[key] for key in ('inputs_sha256','policy_sha256','flow_sha256','candidate_sha256')}
             report=run_dir/'reviews'/(stage+'-report.md');report.parent.mkdir(exist_ok=True);report.write_text('Independent scoped review: passed\n')
-            bound=dict(references,**{str(report.relative_to(run_dir)):controller._sha256_bytes(report.read_bytes())})
+            bound=dict(references,**{str(report.relative_to(run_dir)):controller.run_records.sha256_bytes(report.read_bytes())})
             record.update(stage=stage,status='passed',session_id='external-independent-'+stage,
                           rationale='separate required stage completed',evidence=bound)
             path=run_dir/'reviews'/ledger['candidate_sha256']/(stage+'.json')
@@ -1215,9 +1166,9 @@ print(json.dumps(result),flush=True)
         self.assertEqual(0,output.returncode,output.stderr)
         status=json.loads(output.stdout);self.assertTrue(status['completion_eligible'])
         evidence=status['evidence']['acceptance'];raw=(run_dir/evidence['path']).read_bytes()
-        self.assertEqual(evidence['sha256'],controller._sha256_bytes(raw))
+        self.assertEqual(evidence['sha256'],controller.run_records.sha256_bytes(raw))
         claim=json.loads((run_dir/'actors'/reserved['assignment']['operation_id']/'result.json').read_text())
-        controller._state_module.validate_acceptance_decision(claim['decision'])
+        controller._load_component("review_contracts").validate_acceptance_decision(claim['decision'])
         invalid_claim=dict(claim);invalid_claim.pop('decision')
         manifest=json.loads((run_dir/'task-manifest.json').read_text())
         manifest['tasks'][0]['required_reviews']=['maintainability','registry']
@@ -1236,7 +1187,7 @@ print(json.dumps(result),flush=True)
                     validator.validate(invalid_instance)
                 self.assertEqual(rule,rejected.exception.validator)
         invalid=dict(claim['decision'],action='complete_task')
-        with self.assertRaises(ValueError):controller._state_module.validate_acceptance_decision(invalid)
+        with self.assertRaises(ValueError):controller._load_component("review_contracts").validate_acceptance_decision(invalid)
         self.assertNotEqual('completed',status['state'])
 
     def test_collection_v01_current_independent_rerun_and_handoff(self):
@@ -1408,8 +1359,8 @@ print(json.dumps(result),flush=True)
 
     def independent_case(self):
         case = ActorOperationsTest('runTest')
+        self.addCleanup(case.doCleanups)
         case.setUp()
-        self.addCleanup(case.tearDown)
         return case
 
     def assert_collection_stale(self, controller, run_dir, operation_id, counter, previous_count):
@@ -1513,6 +1464,38 @@ print(json.dumps(result),flush=True)
                 self.assertEqual('stale',controller.status_run(run_dir)['evidence']['semantic_review']['status'])
                 self.assertEqual(b'xx',counter.read_bytes())
                 self.assertIn('changed during collection',path.read_text())
+
+    def test_collection_replay_rejects_changed_execution_logs_and_disposition(self):
+        controller, run_dir, counter = self.checked_collection_run()
+        fake = self.actor({'wait': True})
+        reserved = self.reserve(run_dir, 'semantic_review', 'integrity-replay')
+        self.launch(controller, run_dir, reserved, fake)
+        self.wait_file(fake.parent / 'waiting')
+        assignment = reserved['assignment']
+        rerun = controller.check_collection(run_dir, assignment, timeout_seconds=5)
+        self.assertEqual('passed', rerun['status'], rerun)
+        result_path = run_dir / rerun['path']
+        execution_path = run_dir / rerun['execution_path']
+        execution = json.loads(execution_path.read_bytes())
+        log_path = run_dir / execution['outcomes'][0]['stdout_path']
+        mutations = [(result_path, controller._storage_module.canonical_record_bytes(dict(rerun, status='failed'))),
+                     (execution_path, execution_path.read_bytes() + b'\n'),
+                     (log_path, log_path.read_bytes() + b'changed collector log')]
+        before = (run_dir / 'ledger.json').read_bytes()
+        for path, changed in mutations:
+            with self.subTest(path=path.name):
+                original = path.read_bytes()
+                path.write_bytes(changed)
+                replay = controller.check_collection(run_dir, assignment, timeout_seconds=5)
+                self.assertEqual('refused', replay['status'], replay)
+                self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
+                self.assertEqual(b'xx', counter.read_bytes())
+                path.write_bytes(original)
+        self.assertEqual(rerun, controller.check_collection(run_dir, assignment, timeout_seconds=5))
+        (fake.parent / 'finish').touch()
+        admitted = self.terminal(controller, run_dir, assignment['operation_id'])
+        self.assertIsNone(admitted['blocker'], admitted)
+        self.assertEqual(b'xx', counter.read_bytes())
 
     def test_collection_v11_capability_blocker_and_public_request_refusals(self):
         controller,run_dir,counter=self.checked_collection_run()
@@ -1734,11 +1717,19 @@ print(json.dumps(result),flush=True)
         controller, run_dir, operation_id, counter = self.producer_run(
             "\nPath('allowed.txt').write_text('check changed product\\n')\n")
         self.assertEqual('passed', controller.inspect_candidate(run_dir, operation_id)['status'])
+        unchanged_product = (self.repo / 'allowed.txt').read_bytes()
         reserved = self.reserve(run_dir, 'verify', 'check')
         result = controller.check_candidate(run_dir, reserved['assignment'], timeout_seconds=5)
         self.assertEqual('stale', result['status'], result)
         self.assertEqual(b'x', counter.read_bytes())
         self.assertEqual(0, controller.status_run(run_dir)['correction_count'])
+        # A legitimate recorded divergence stays stale even if the owner restores
+        # the candidate bytes; replay must not execute the side-effecting check.
+        (self.repo / 'allowed.txt').write_bytes(unchanged_product)
+        before = (run_dir / 'ledger.json').read_bytes()
+        self.assertEqual(result, controller.check_candidate(run_dir, reserved['assignment'], timeout_seconds=5))
+        self.assertEqual(before, (run_dir / 'ledger.json').read_bytes())
+        self.assertEqual(b'x', counter.read_bytes())
 
     def test_producer_unknown_check_intent_does_not_relaunch(self):
         controller, run_dir, operation_id, counter = self.producer_run()
@@ -1803,13 +1794,13 @@ import json,sys,time
 from pathlib import Path
 sys.path.insert(0,sys.argv[1]); import controller
 run=Path(sys.argv[2]); assignment=json.loads(Path(sys.argv[3]).read_text())
-original=controller._publish_actor_bytes
+original=controller._storage_module.publish_or_reuse_bytes
 def publish(path,content):
     original(path,content)
     if path.parent.name=='checks' and not path.name.endswith('.intent.json'):
         (run/'checkpoint').touch()
         while True: time.sleep(.01)
-controller._publish_actor_bytes=publish
+controller._storage_module.publish_or_reuse_bytes=publish
 controller.check_candidate(run,assignment,timeout_seconds=5)
 '''
         process = subprocess.Popen([sys.executable, '-c', source, str(fixtures.CONTROLLER_PATH.parent), str(run_dir), str(request)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -1860,7 +1851,7 @@ controller.check_candidate(run,assignment,timeout_seconds=5)
         directory = run_dir / 'actors' / reserved['assignment']['operation_id']
         self.wait_file(directory / 'result.state.json')
         path = directory / 'result.state.json'
-        controller._ACTOR_SUPERVISORS[str(directory.resolve())].wait(timeout=8)
+        controller.actor_lifecycle._ACTOR_SUPERVISORS[str(directory.resolve())].wait(timeout=8)
         raw = path.read_bytes()
         path.write_bytes(b'{')
         observation = controller.observe_operation(run_dir, reserved['assignment']['operation_id'])
@@ -1924,13 +1915,13 @@ from pathlib import Path
 sys.path.insert(0,sys.argv[1]); import controller
 run=Path(sys.argv[2]); assignment=json.loads(Path(sys.argv[3]).read_text())
 if sys.argv[4]=='before':
-    original=controller._save_actor_ledger
+    original=controller.run_records.save_actor_ledger
     def save(root,ledger):
         original(root,ledger)
         if ledger['actor_operations'][-1]['state']=='unknown':
             (run/'checkpoint').touch()
             while True: time.sleep(.01)
-    controller._save_actor_ledger=save
+    controller.run_records.save_actor_ledger=save
 controller.check_candidate(run,assignment,timeout_seconds=5)
 '''
         process = subprocess.Popen([sys.executable, '-c', source, str(fixtures.CONTROLLER_PATH.parent), str(run_dir), str(request), boundary], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -1975,8 +1966,6 @@ controller.check_candidate(run,assignment,timeout_seconds=5)
         self.assertEqual('blocked', result['status'], result)
         self.assertIn('owner.txt', result['paths'])
         self.assertFalse(counter.exists())
-
-
 
 if __name__=='__main__':
     unittest.main()

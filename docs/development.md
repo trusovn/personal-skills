@@ -97,9 +97,13 @@ dynamic loads in root runtime scripts/tools and skill-owned runtime scripts:
 
 - Runtime code does not import test-only modules or fixture support.
 - Shared runtime does not import skill packages.
-- Existing orchestrator dependencies follow the explicit sibling allow-list:
-  controller composes the modules, Git/verification may use state, and state
-  and transport do not depend on controller or each other.
+- Orchestrator dependencies follow the explicit sibling allow-list: the controller
+  composes named workflows; scheduling/lifecycle consume review and candidate
+  workflows, which use authority/records and existing rule/infrastructure owners.
+  Components never import the controller. Domain rules use their explicit owners;
+  flow/review contracts use shared predicates, execution uses flow/run policy,
+  and ledger composes ownership/history checks. Runtime consumers cannot import
+  the state compatibility facade. Transport remains independent.
 
 This is a narrow source check, not a Python dependency resolver. Computed loads,
 filesystem paths, transitive dependencies, permissions, and semantic ownership

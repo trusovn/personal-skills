@@ -1,113 +1,22 @@
 import fcntl
-import hashlib
-import importlib.util
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
 import time
 import unittest
 from unittest import mock
 
-
-CONTROLLER_PATH = Path(__file__).parents[1] / "scripts" / "controller.py"
-
-
-# Historical transport mechanics have no public launch route in the new policy.
-# Exercise them explicitly, preserving Git/timeout/inspection regression oracles.
-LEGACY_CONTROLLER = [sys.executable, "-c", (
-    "import sys; from pathlib import Path; "
-    f"sys.path.insert(0, {str(CONTROLLER_PATH.parent)!r}); "
-    "import controller; parser = controller.build_parser(); args = parser.parse_args(); "
-    "args.handler = controller._legacy_run_next if args.command == 'run-next' else args.handler; "
-    "sys.exit(args.handler(args))"
-)]
+from controller_fixture_support import (
+    CONTROLLER_PATH, LEGACY_CONTROLLER, ControllerFixture, canonical_bytes,
+    flow_profile, load_controller, sha256_bytes, stage_transport_fixture,
+)
 
 
-def load_controller():
-    spec = importlib.util.spec_from_file_location("task_orchestrator_controller", CONTROLLER_PATH)
-    module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
-    spec.loader.exec_module(module)
-    return module
-
-
-def canonical_bytes(value):
-    return (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode()
-
-
-def sha256_bytes(value):
-    return hashlib.sha256(value).hexdigest()
-
-
-def flow_profile(profile="fast-local"):
-    path = Path(__file__).parents[1] / "assets" / "examples" / f"{profile}-flow.json"
-    return json.loads(path.read_text())
-
-
-def stage_transport_fixture(run_dir):
-    """Seed the transport boundary; this does not prove readiness admission.
-
-    T-002.1 has no ready/preflight admission adapter. Transport/inspection
-    regressions start from this explicit fixture, while the pending-stage test
-    exercises the real initial boundary without this setup.
-    """
-    path = run_dir / "ledger.json"
-    ledger = json.loads(path.read_text())
-    ledger.update(selected_task_id="T1", current_step="implement")
-    path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
-
-
-class ControllerContractTest(unittest.TestCase):
+class ControllerContractTest(ControllerFixture, unittest.TestCase):
     def setUp(self):
-        self.temp_dir = tempfile.TemporaryDirectory()
-        self.root = Path(self.temp_dir.name)
-        self.repo = self.root / "repo"
-        self.repo.mkdir()
-        subprocess.run(["git", "init", "-q", str(self.repo)], check=True)
-        subprocess.run(["git", "-C", str(self.repo), "config", "user.name", "Test"], check=True)
-        subprocess.run(
-            ["git", "-C", str(self.repo), "config", "user.email", "test@example.invalid"],
-            check=True,
-        )
-        (self.repo / "allowed.txt").write_text("baseline\n")
-        subprocess.run(["git", "-C", str(self.repo), "add", "allowed.txt"], check=True)
-        subprocess.run(["git", "-C", str(self.repo), "commit", "-qm", "baseline"], check=True)
-
-    def tearDown(self):
-        self.temp_dir.cleanup()
-
-    def policy(self, *, commit_mode="off"):
-        return {
-            "version": 2,
-            "execution_authorization": {"transport": "sbx", "yolo": True, "intervention": "active_chat"},
-            "run_id": "run-1",
-            "repository": str(self.repo),
-            "task_ids": ["T1"],
-            "verification": {
-                "targeted_checks": ["python3 -m unittest test_targeted"],
-                "repository_gate": "make verify",
-                "authorized_gap": None,
-            },
-            "permissions": {
-                "sandbox": "workspace-write",
-                "approval_policy": "never",
-                "network": False,
-                "dependency_install": False,
-                "writable_roots": [str(self.repo)],
-                "danger_full_access_authorized": False,
-            },
-            "commit_policy": {"mode": commit_mode},
-            "stop_policy": {
-                "on_blocked": "stop",
-                "on_failed": "stop",
-                "on_needs_input": "escalate",
-                "on_unexpected_changes": "stop",
-            },
-            "flow": flow_profile(),
-        }
+        self.initialize_fixture(self.addCleanup)
 
     def complete_result(self):
         return {
@@ -1121,7 +1030,7 @@ class ControllerContractTest(unittest.TestCase):
         self.assertFalse((run_dir / "attempts").exists())
 
     def test_direct_update_ledger_obeys_run_lock(self):
-        controller, run_dir = ControllerIntegrationTest.create_initialized_run(self, name="locked-run")
+        controller, run_dir = self.create_initialized_run(name="locked-run")
         ledger_path = run_dir / "ledger.json"
         lock_path = run_dir / "controller.lock"
         holder_code = (
@@ -1277,157 +1186,34 @@ if __name__ == "__main__":
     unittest.main()
 
 
-class ControllerIntegrationTest(unittest.TestCase):
+class ControllerIntegrationTest(ControllerFixture, unittest.TestCase):
     """Integration tests for controller CLI (init + run-next) using fake transport."""
 
     def setUp(self):
-        self.temp_dir = tempfile.TemporaryDirectory()
-        self.root = Path(self.temp_dir.name)
-        self.repo = self.root / "repo"
-        self.repo.mkdir()
-        subprocess.run(["git", "init", "-q", str(self.repo)], check=True)
-        subprocess.run(["git", "-C", str(self.repo), "config", "user.name", "Test"], check=True)
-        subprocess.run(
-            ["git", "-C", str(self.repo), "config", "user.email", "test@example.invalid"],
-            check=True,
-        )
-        (self.repo / "allowed.txt").write_text("baseline\n")
-        subprocess.run(["git", "-C", str(self.repo), "add", "allowed.txt"], check=True)
-        subprocess.run(["git", "-C", str(self.repo), "commit", "-qm", "baseline"], check=True)
+        self.initialize_fixture(self.addCleanup)
 
-    def tearDown(self):
-        self.temp_dir.cleanup()
-
-    def policy(self):
-        return {
-            "version": 2,
-            "execution_authorization": {"transport": "sbx", "yolo": True, "intervention": "active_chat"},
-            "run_id": "run-1",
-            "repository": str(self.repo),
-            "task_ids": ["T1"],
-            "verification": {
-                "targeted_checks": ["python3 -m unittest test_targeted"],
-                "repository_gate": "make verify",
-                "authorized_gap": None,
-            },
-            "permissions": {
-                "sandbox": "workspace-write",
-                "approval_policy": "never",
-                "network": False,
-                "dependency_install": False,
-                "writable_roots": [str(self.repo)],
-                "danger_full_access_authorized": False,
-            },
-            "commit_policy": {"mode": "off"},
-            "stop_policy": {
-                "on_blocked": "stop",
-                "on_failed": "stop",
-                "on_needs_input": "escalate",
-                "on_unexpected_changes": "stop",
-            },
-            "flow": flow_profile(),
-        }
-
-    def write_fake_codex(
-        self, *, write_result=True, created_paths=("new.txt",),
-        preflight_ready=None, preflight_release=None,
-        worker_ready=None, worker_release=None, mutate_repository=True,
-        clean_mutation=False, task_id="T1",
-    ):
-        """Write a fake codex that emits a thread and a valid result."""
-        fake = self.root / "fake-codex"
-        preflight_ready_path = str(preflight_ready) if preflight_ready else None
-        preflight_release_path = str(preflight_release) if preflight_release else None
-        worker_ready_path = str(worker_ready) if worker_ready else None
-        worker_release_path = str(worker_release) if worker_release else None
-        result_files = ["allowed.txt", *created_paths] if mutate_repository else []
-        fake.write_text(
-            f"""#!/usr/bin/env python3
-import json
-from pathlib import Path
-import subprocess
-import sys
-import time
-
-def signal_and_wait(ready_value, release_value):
-    if ready_value is None:
-        return
-    Path(ready_value).write_text("ready\\n")
-    deadline = time.monotonic() + 10
-    release_path = Path(release_value)
-    while not release_path.exists():
-        if time.monotonic() >= deadline:
-            raise SystemExit("timed out waiting for test release")
-        time.sleep(0.01)
-
-args = sys.argv[1:]
-log_path = Path({str(self.root / 'argv.json')!r})
-log = json.loads(log_path.read_text()) if log_path.exists() else []
-log.append(args)
-log_path.write_text(json.dumps(log))
-if "--help" in args:
-    signal_and_wait({preflight_ready_path!r}, {preflight_release_path!r})
-    raise SystemExit(0)
-signal_and_wait({worker_ready_path!r}, {worker_release_path!r})
-if {mutate_repository!r}:
-    allowed = Path.cwd() / "allowed.txt"
-    if not {clean_mutation!r}:
-        allowed.write_text("committed change\\n")
-        subprocess.run(["git", "add", "allowed.txt"], check=True)
-        subprocess.run(["git", "commit", "-qm", "unauthorized worker commit"], check=True)
-        allowed.write_text("staged change\\n")
-        subprocess.run(["git", "add", "allowed.txt"], check=True)
-    allowed.write_text("worker change\\n")
-    created_paths = {created_paths!r}
-    for index, path in enumerate(created_paths):
-        Path.cwd().joinpath(path).write_text(f"untracked content {{index}}\\n")
-print(json.dumps({{"type": "thread.started", "thread_id": "thread-fake-001"}}), flush=True)
-if {write_result!r} and "-o" in args:
-    result_path = Path(args[args.index("-o") + 1])
-    result_path.write_text(json.dumps({{
-        "status": "complete",
-        "task_id": {task_id!r},
-        "summary": "Implemented task {task_id}.",
-        "files_changed": {result_files!r},
-        "verification": [],
-        "decisions": [],
-        "questions": [],
-        "risks": [],
-        "next_action": "Inspect the diff."
-    }}))
-raise SystemExit(0)
-"""
-        )
-        fake.chmod(0o755)
-        return fake
-
-    def create_initialized_run(self, *, flow=None, name="run-flow"):
-        controller = load_controller()
-        run_dir = self.root / "runs" / name
-        policy_path = self.root / f"{name}-policy.json"
-        manifest_path = self.root / f"{name}-manifest.json"
-        policy = self.policy()
-        if flow is not None:
-            policy["flow"] = flow
-        controller.persist_run_policy(policy_path, policy)
-        (self.repo / "tasks").mkdir(exist_ok=True)
-        (self.repo / "tasks" / "T1.md").write_text("# T1\n")
-        (self.repo / "tasks" / "verification.md").write_text("Source brief: T1.md\n")
-        manifest_path.write_text(json.dumps({
-            "version": 1,
-            "manifest_id": "flow-boundary",
-            "completed_task_ids": [],
-            "tasks": [{
-                "id": "T1",
-                "title": "Test task",
-                "brief_path": "tasks/T1.md",
-                "dependencies": [],
-                "allowed_paths": ["allowed.txt"],
-                "required_checks": ["python3 -m unittest test_targeted"],
-            }],
-        }, indent=2, sort_keys=True) + "\n")
-        controller.init_run(run_dir, policy_path, manifest_path, self.repo)
-        return controller, run_dir
+    def test_copied_installation_initializes_without_reusing_source_dependencies(self):
+        import shutil
+        controller, original = self.create_initialized_run()
+        copied_scripts = self.root / "copied-installation" / "scripts"
+        shutil.copytree(CONTROLLER_PATH.parent, copied_scripts,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        copied = load_controller(copied_scripts / "controller.py")
+        copied_run = self.root / "runs" / "copied"
+        source_run = self.root / "runs" / "source-interrupted"
+        repeated = load_controller()
+        policy = original / "run-policy.json"
+        manifest = original / "task-manifest.json"
+        with mock.patch.object(controller._storage_module, "write_durable_exclusive",
+                               side_effect=OSError("source storage interrupted")):
+            copied.init_run(copied_run, policy, manifest, self.repo)
+            self.assertEqual("ready", copied.status_run(copied_run)["state"])
+            self.assertEqual("# T1\n", copied.load_frozen_inputs(
+                copied_run, self.read_ledger(copied_run))["documents"]["brief"]["content"])
+            with self.assertRaisesRegex(OSError, "source storage interrupted"):
+                repeated.init_run(source_run, policy, manifest, self.repo)
+        self.assertFalse(source_run.exists())
+        self.assertEqual("ready", controller.status_run(original)["state"])
 
     def test_frozen_authority_survives_source_edits(self):
         controller, run_dir = self.create_initialized_run()
@@ -1446,7 +1232,7 @@ raise SystemExit(0)
             with self.subTest(source=path):
                 path.write_text("unapproved replacement\n")
                 self.assertEqual(frozen, controller.load_frozen_inputs(run_dir, ledger))
-                controller._load_flow_authority(run_dir, ledger)
+                controller.run_authority.load_flow_authority(run_dir, ledger)
                 self.assertEqual(before, {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()})
 
     def test_old_run_continuation_refuses_without_mutation(self):
@@ -1624,7 +1410,7 @@ raise SystemExit(0)
         )
 
         with mock.patch.object(
-            controller,
+            controller.run_authority,
             "_write_flow_pointer",
             side_effect=RuntimeError("injected pointer pre-commit failure"),
         ):
@@ -1633,18 +1419,18 @@ raise SystemExit(0)
         self.assertEqual(ledger_bytes, (run_dir / "ledger.json").read_bytes())
         self.assertEqual(
             "reviewed",
-            controller._load_flow_authority(run_dir, ledger)["profile"],
+            controller.run_authority.load_flow_authority(run_dir, ledger)["profile"],
         )
         self.assertTrue((run_dir / "flows/flow-003.json").is_file())
 
-        write_flow_pointer = controller._write_flow_pointer
+        write_flow_pointer = controller.run_authority._write_flow_pointer
 
         def write_flow_pointer_then_fail(*args, **kwargs):
             write_flow_pointer(*args, **kwargs)
             raise RuntimeError("injected pointer publication failure")
 
         with mock.patch.object(
-            controller,
+            controller.run_authority,
             "_write_flow_pointer",
             side_effect=write_flow_pointer_then_fail,
         ):
@@ -1655,7 +1441,7 @@ raise SystemExit(0)
         self.assertEqual(3, committed_ledger["flow_revision"])
         self.assertEqual(
             "fast-local",
-            controller._load_flow_authority(run_dir, committed_ledger)["profile"],
+            controller.run_authority.load_flow_authority(run_dir, committed_ledger)["profile"],
         )
 
         restored = controller.revise_flow(run_dir, reviewed_path)
@@ -1694,7 +1480,7 @@ raise SystemExit(0)
         child = os.fork()
         if child == 0:
             with mock.patch.object(
-                controller,
+                controller.run_authority,
                 "_write_flow_pointer",
                 side_effect=lambda *_, **__: os._exit(23),
             ):
@@ -1707,7 +1493,7 @@ raise SystemExit(0)
 
         ledger = json.loads((run_dir / "ledger.json").read_text())
         try:
-            current = controller._load_flow_authority(run_dir, ledger)
+            current = controller.run_authority.load_flow_authority(run_dir, ledger)
         except ValueError as error:
             self.fail(f"flow revision exposed split authority: {error}")
         self.assertEqual("fast-local", current["profile"])
@@ -1718,7 +1504,7 @@ raise SystemExit(0)
         ledger = json.loads((run_dir / "ledger.json").read_text())
         self.assertEqual(
             "reviewed",
-            controller._load_flow_authority(run_dir, ledger)["profile"],
+            controller.run_authority.load_flow_authority(run_dir, ledger)["profile"],
         )
 
     def test_tampered_flow_fails_before_worker_preflight_or_run_mutation(self):
@@ -1782,7 +1568,7 @@ raise SystemExit(0)
                     "correction_cycle": correction_cycle,
                 })
                 with self.assertRaisesRegex(ValueError, "correction cycle"):
-                    controller._load_flow_authority(run_dir, invalid)
+                    controller.run_authority.load_flow_authority(run_dir, invalid)
 
         ledger.update({
             "selected_task_id": "T1",
@@ -1892,15 +1678,15 @@ raise SystemExit(0)
         ledger = json.loads((run_dir / "ledger.json").read_text())
         # Fixture for the historical integrity checker, not an acceptance path.
         ledger["tasks"][0]["state"] = "accepted"
-        controller._validate_accepted_workspace(run_dir, ledger)
+        controller.legacy_attempts._validate_accepted_workspace(run_dir, ledger)
         before = {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()}
         accepted_bytes = (self.repo / "allowed.txt").read_bytes()
         (self.repo / "allowed.txt").write_text("later ordinary drift\n")
         with self.assertRaisesRegex(ValueError, "Repository bytes changed after acceptance"):
-            controller._validate_accepted_workspace(run_dir, ledger)
+            controller.legacy_attempts._validate_accepted_workspace(run_dir, ledger)
         self.assertEqual(before, {p.relative_to(run_dir): p.read_bytes() for p in run_dir.rglob("*") if p.is_file()})
         (self.repo / "allowed.txt").write_bytes(accepted_bytes)
-        controller._validate_accepted_workspace(run_dir, ledger)
+        controller.legacy_attempts._validate_accepted_workspace(run_dir, ledger)
         ledger["state"] = "ready"
         ledger["selected_task_id"] = None
         with self.assertRaisesRegex(ValueError, "No ready tasks found"):
@@ -2182,7 +1968,7 @@ raise SystemExit(0)
                 fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
                 stopped_tasks = [dict(entry) for entry in running["tasks"]]
                 stopped_tasks[0]["state"] = "stopped"
-                controller._update_ledger_locked(run_dir, {
+                controller.run_authority.update_ledger_locked(run_dir, {
                     "state": "stopped",
                     "selected_task_id": None,
                     "active_attempt_id": None,
@@ -2255,11 +2041,10 @@ raise SystemExit(0)
         self.assertFalse((run_dir / "closure").exists())
 
 
-class ControllerReservationTest(unittest.TestCase):
-    setUp = ControllerIntegrationTest.setUp
-    tearDown = ControllerIntegrationTest.tearDown
-    policy = ControllerIntegrationTest.policy
-    create_initialized_run = ControllerIntegrationTest.create_initialized_run
+class ControllerReservationTest(ControllerFixture, unittest.TestCase):
+
+    def setUp(self):
+        self.initialize_fixture(self.addCleanup)
 
     def test_reserve_replay_survives_reload(self):
         controller, run_dir = self.create_initialized_run()
@@ -2272,43 +2057,6 @@ class ControllerReservationTest(unittest.TestCase):
         self.assertEqual("replayed", replay["status"])
         self.assertEqual(first["assignment"], replay["assignment"])
         self.assertEqual(before, (run_dir / "ledger.json").read_bytes())
-
-    def read_ledger(self, run_dir):
-        return json.loads((run_dir / "ledger.json").read_text())
-
-    def seed_successor(self, run_dir, *, stage=None, readiness=False, **changes):
-        """Test-only T-003/004/005 admission; no production outcome is claimed."""
-        ledger = self.read_ledger(run_dir)
-        if ledger["actor_operations"]:
-            ledger["actor_operations"][-1]["state"] = "terminal"
-        ledger["active_operation_path"] = None
-        if stage:
-            ledger["current_step"] = stage
-        if readiness:
-            operation = ledger["actor_operations"][-1]
-            ledger["readiness"] = {field: operation["assignment"][field] for field in
-                                   ("task_id", "operation_id", "inputs_sha256", "policy_sha256", "flow_sha256")}
-            ledger["readiness"]["status"] = "ready"
-        ledger.update(changes)
-        ledger["revision"] += 1
-        (run_dir / "ledger.json").write_text(json.dumps(ledger))
-
-    def reserve(self, run_dir, stage="preflight", key="first", reason="initial", **overrides):
-        request = dict(expected_version=self.read_ledger(run_dir)["revision"], task_id="T1",
-                       stage=stage, role={"correction": "implementer", "implement": "implementer",
-                       "verify": "verifier", "semantic_review": "review_collector",
-                       "acceptance": "acceptance_reviewer", "preflight": "preflight"}[stage],
-                       operation_key=key, reason=reason)
-        request.update(overrides)
-        return load_controller().reserve_operation(run_dir, **request)
-
-    def snapshot(self, run_dir):
-        return {str(path): path.read_bytes() for root in (run_dir, self.repo)
-                for path in root.rglob("*") if path.is_file() and path.name != "controller.lock"}
-
-    def ready_implementation(self, run_dir, key="ready"):
-        self.assertEqual("reserved", self.reserve(run_dir, key=key)["status"])
-        self.seed_successor(run_dir, stage="implement", readiness=True)
 
     def test_public_cli_contract_and_weakened_authority_refusal(self):
         controller, run_dir = self.create_initialized_run()
@@ -2341,7 +2089,8 @@ class ControllerReservationTest(unittest.TestCase):
 
     def test_status_is_read_only_and_preserves_evidence_distinctions(self):
         controller, run_dir = self.create_initialized_run()
-        self.ready_implementation(run_dir)
+        self.assertEqual("reserved", self.reserve(run_dir, key="ready")["status"])
+        self.seed_successor(run_dir, stage="implement", readiness=True)
         ledger = self.read_ledger(run_dir)
         for evidence_status, expected in (("passed", "passed"), ("failed", "failed"),
                 ("stale", "stale"), ("blocked", "blocked"), ("missing", "missing"),
@@ -2404,7 +2153,8 @@ class ControllerReservationTest(unittest.TestCase):
             controller, run_dir = self.create_initialized_run(
                 flow=flow_profile(profile), name=f"identity-{profile}-{stage}")
             if stage != "preflight":
-                self.ready_implementation(run_dir)
+                self.assertEqual("reserved", self.reserve(run_dir, key="ready")["status"])
+                self.seed_successor(run_dir, stage="implement", readiness=True)
             if prior:
                 ledger = self.read_ledger(run_dir)
                 evidence = {prior: {"status": "passed", "inputs_sha256": ledger["inputs_sha256"],
@@ -2458,7 +2208,8 @@ class ControllerReservationTest(unittest.TestCase):
 
     def test_terminal_assignment_retains_historical_authority(self):
         controller, run_dir = self.create_initialized_run()
-        self.ready_implementation(run_dir)
+        self.assertEqual("reserved", self.reserve(run_dir, key="ready")["status"])
+        self.seed_successor(run_dir, stage="implement", readiness=True)
         self.assertEqual("reserved", self.reserve(run_dir, "implement", "initial")["status"])
         self.seed_successor(run_dir, stage="verify", candidate_sha256="a" * 64)
         ledger = self.read_ledger(run_dir)
@@ -2508,7 +2259,8 @@ class ControllerReservationTest(unittest.TestCase):
 
     def test_shared_budget_repair_replay_restart_and_fourth_refusal(self):
         controller, run_dir = self.create_initialized_run()
-        self.ready_implementation(run_dir)
+        self.assertEqual("reserved", self.reserve(run_dir, key="ready")["status"])
+        self.seed_successor(run_dir, stage="implement", readiness=True)
         self.assertEqual(0, self.reserve(run_dir, "implement", "initial")["assignment"]["correction_count"])
         # Public review-driven budget composition now lives in test_actor_operations.
         # These reservation-only fixtures retain check/repair/revision accounting;
@@ -2547,7 +2299,8 @@ class ControllerReservationTest(unittest.TestCase):
         self.seed_successor(run_dir, stage="implement")
         denied = self.reserve(run_dir, "implement", "too-soon")
         self.assertEqual("current_preflight_readiness_required", denied["reason"])
-        self.ready_implementation(run_dir, key="re-preflight")
+        self.assertEqual("reserved", self.reserve(run_dir, key="re-preflight")["status"])
+        self.seed_successor(run_dir, stage="implement", readiness=True)
         result = self.reserve(run_dir, "implement", "initial-after-repair")
         self.assertEqual("reserved", result["status"], result)
         self.assertEqual(1, result["assignment"]["correction_count"])
@@ -2559,7 +2312,8 @@ class ControllerReservationTest(unittest.TestCase):
 
     def test_free_evidence_and_preflight_retries_never_authorize_repair(self):
         controller, run_dir = self.create_initialized_run()
-        self.ready_implementation(run_dir)
+        self.assertEqual("reserved", self.reserve(run_dir, key="ready")["status"])
+        self.seed_successor(run_dir, stage="implement", readiness=True)
         self.assertEqual("reserved", self.reserve(run_dir, "implement", "initial")["status"])
         for stage, prior in (("verify", "implement"), ("semantic_review", "verify"), ("acceptance", "semantic_review")):
             ledger = self.read_ledger(run_dir)
@@ -2586,7 +2340,8 @@ class ControllerReservationTest(unittest.TestCase):
             before = self.snapshot(run_dir)
             self.assertEqual("refused", self.reserve(run_dir, **overrides)["status"])
             self.assertEqual(before, self.snapshot(run_dir))
-        self.ready_implementation(run_dir)
+        self.assertEqual("reserved", self.reserve(run_dir, key="ready")["status"])
+        self.seed_successor(run_dir, stage="implement", readiness=True)
         good = self.read_ledger(run_dir)
         variants = [None]
         for field, value in (("inputs_sha256", "b" * 64), ("operation_id", "absent"),
@@ -2633,41 +2388,11 @@ class ControllerReservationTest(unittest.TestCase):
             controller.update_ledger(run_dir, {"readiness": good["readiness"]}, expected_revision=good["revision"])
 
 
-
-class ControllerInputRevisionTest(unittest.TestCase):
+class ControllerInputRevisionTest(ControllerFixture, unittest.TestCase):
     # Reuse owning real-file fixtures without inheriting unrelated test cases.
-    setUp = ControllerReservationTest.setUp
-    tearDown = ControllerReservationTest.tearDown
-    policy = ControllerReservationTest.policy
-    create_initialized_run = ControllerReservationTest.create_initialized_run
-    read_ledger = ControllerReservationTest.read_ledger
-    seed_successor = ControllerReservationTest.seed_successor
-    reserve = ControllerReservationTest.reserve
-    snapshot = ControllerReservationTest.snapshot
-    ready_implementation = ControllerReservationTest.ready_implementation
 
-    def revision_request(self, run_dir, *, key="owner-revision", **changes):
-        ledger = self.read_ledger(run_dir)
-        if ledger.get("input_revisions"):
-            prior = ledger["input_revisions"][-1]["request"]["payload"]
-            payload = json.loads(json.dumps(prior))
-        else:
-            payload = {"policy": json.loads((run_dir / "run-policy.json").read_text()),
-                       "manifest": json.loads((run_dir / "task-manifest.json").read_text()),
-                       "documents": {name: item["content"] for name, item in
-                                     json.loads((run_dir / "inputs.json").read_text())["documents"].items()}}
-        payload["documents"]["brief"] += "\nOwner-approved requirement\n"
-        request = dict(expected_version=ledger["revision"], task_id="T1", revision_key=key,
-                       payload=payload)
-        request.update(changes)
-        self.bind_owner(request)
-        return request
-
-    def bind_owner(self, request):
-        bound = {field: value for field, value in request.items() if field != "authorization"}
-        request["authorization"] = dict(kind="owner_response", decision="authorize_input_revision",
-                                       owner="task-owner", provenance="active-chat/response-17",
-                                       request_sha256=sha256_bytes(canonical_bytes(bound).rstrip(b"\n")))
+    def setUp(self):
+        self.initialize_fixture(self.addCleanup)
 
     def test_authorized_document_policy_and_scope_revisions_preserve_old_files(self):
         controller, run_dir = self.create_initialized_run()
@@ -2775,7 +2500,8 @@ class ControllerInputRevisionTest(unittest.TestCase):
         for variant in ("brief", "verification", "policy"):
             with self.subTest(variant=variant):
                 controller, run_dir = self.create_initialized_run(name=f"invalidation-{variant}")
-                self.ready_implementation(run_dir)
+                self.assertEqual("reserved", self.reserve(run_dir, key="ready")["status"])
+                self.seed_successor(run_dir, stage="implement", readiness=True)
                 old = self.read_ledger(run_dir)
                 evidence = {stage: dict(status="passed", inputs_sha256=old["inputs_sha256"],
                                        candidate_sha256="a" * 64, reference=f"evidence/{stage}.json")
@@ -2817,7 +2543,8 @@ class ControllerInputRevisionTest(unittest.TestCase):
                     self.seed_successor(run_dir, stage=stage, candidate_sha256="a" * 64)
                     self.assertEqual("successor_evidence_required", self.reserve(run_dir, stage, f"old-{stage}")["reason"])
                 (run_dir / "ledger.json").write_bytes(canonical_bytes(revised))
-                self.ready_implementation(run_dir, key="fresh-ready")
+                self.assertEqual("reserved", self.reserve(run_dir, key="fresh-ready")["status"])
+                self.seed_successor(run_dir, stage="implement", readiness=True)
                 self.assertEqual("reserved", self.reserve(run_dir, "implement", "fresh-implementation")["status"])
 
     def test_interrupted_publication_and_exact_replay(self):
@@ -2831,8 +2558,8 @@ class ControllerInputRevisionTest(unittest.TestCase):
                 def fault(path, value):
                     if boundary == "after_pointer": write(path, value)
                     raise OSError("injected publication interruption")
-                target = "_write_durable_exclusive" if boundary == "before_content" else "atomic_write_json"
-                with mock.patch.object(controller, target, side_effect=fault):
+                target = "write_durable_exclusive" if boundary == "before_content" else "atomic_write_json"
+                with mock.patch.object(controller.input_revision.storage, target, side_effect=fault):
                     uncertain = controller.revise_inputs(run_dir, request)
                     self.assertEqual("revision_publication_uncertain", uncertain["reason"])
                     self.assertIsNone(uncertain["state_version"])
@@ -2865,7 +2592,8 @@ class ControllerInputRevisionTest(unittest.TestCase):
     def test_composed_three_corrections_revision_and_legacy_guards(self):
         controller, run_dir = self.create_initialized_run()
         self.assertEqual("refused", self.reserve(run_dir, "implement", "premature")["status"])
-        self.ready_implementation(run_dir)
+        self.assertEqual("reserved", self.reserve(run_dir, key="ready")["status"])
+        self.seed_successor(run_dir, stage="implement", readiness=True)
         self.assertEqual(0, self.reserve(run_dir, "implement", "cycle-zero")["assignment"]["correction_count"])
         # Public review-driven budget composition now lives in test_actor_operations.
         # These reservation-only fixtures retain check/repair/revision accounting;
@@ -2890,7 +2618,8 @@ class ControllerInputRevisionTest(unittest.TestCase):
         self.assertEqual(history, self.read_ledger(run_dir)["actor_operations"])
         self.assertEqual(3, load_controller().status_run(run_dir)["correction_count"])
         self.assertEqual(["reserve:preflight"], controller.status_run(run_dir)["next_actions"])
-        self.ready_implementation(run_dir, key="post-revision-preflight")
+        self.assertEqual("reserved", self.reserve(run_dir, key="post-revision-preflight")["status"])
+        self.seed_successor(run_dir, stage="implement", readiness=True)
         before = self.snapshot(run_dir)
         self.assertEqual("successor_admission_pending", self.reserve(run_dir, "implement", "another-cycle-zero")["reason"])
         self.assertEqual(before, self.snapshot(run_dir))
@@ -2929,7 +2658,7 @@ class ControllerInputRevisionTest(unittest.TestCase):
                     "def interrupt(path, value):\n"
                     f"    if {committed!r}: write(path, value)\n"
                     "    os._exit(23)\n"
-                    "controller.atomic_write_json = interrupt\n"
+                    "controller.input_revision.storage.atomic_write_json = interrupt\n"
                     "controller.revise_inputs(Path(sys.argv[1]), json.loads(Path(sys.argv[2]).read_text()))\n"
                 )
                 result = subprocess.run([sys.executable, "-c", script, str(run_dir), str(path)],
@@ -2959,11 +2688,10 @@ class ControllerInputRevisionTest(unittest.TestCase):
         self.assertEqual(before, self.snapshot(run_dir))
 
 
-class ControllerInspectionIntegrationTest(unittest.TestCase):
-    setUp = ControllerIntegrationTest.setUp
-    tearDown = ControllerIntegrationTest.tearDown
-    policy = ControllerIntegrationTest.policy
-    write_fake_codex = ControllerIntegrationTest.write_fake_codex
+class ControllerInspectionIntegrationTest(ControllerFixture, unittest.TestCase):
+
+    def setUp(self):
+        self.initialize_fixture(self.addCleanup)
 
     def create_clean_inspection_run(
         self, *, targeted="/usr/bin/true", repository_gate=None, authorized_gap=None,

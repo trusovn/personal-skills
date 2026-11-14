@@ -1,26 +1,150 @@
 {
   "schema_version": 1,
   "id": "task-orchestrator",
-  "summary": "Current experimental controller primitives; not a complete accepted-task workflow.",
+  "summary": "Experimental CLI composing named application workflows; not a complete accepted-task workflow.",
   "owner_paths": [
     "skills/task-orchestrator"
   ],
   "provides": [
     {
+      "name": "isolated-test-fixture-construction",
+      "kind": "reusable-test-support",
+      "summary": "Controller and actor fixture builders create per-occurrence disposable repositories, external runs and actor configuration. Callers register cleanup before setup; support owns construction without test-case imports or behavioral assertions. Owning test modules retain scenario orchestration and oracles; local fake actors do not qualify provider judgment or containment.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/code-organization-cleanup-plan.md",
+          "id": "CAP-002"
+        },
+        {
+          "plan": "skills/task-orchestrator/docs/code-organization-cleanup-plan.md",
+          "id": "IF-004"
+        },
+        {
+          "plan": "skills/task-orchestrator/docs/code-organization-cleanup-plan.md",
+          "id": "ART-004"
+        },
+        {
+          "plan": "skills/task-orchestrator/docs/code-organization-cleanup-plan.md",
+          "id": "FLOW-003"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/tests/controller_fixture_support.py",
+        "skills/task-orchestrator/tests/actor_fixture_support.py",
+        "skills/task-orchestrator/tests/test_fixture_support.py",
+        "skills/task-orchestrator/tests/test_controller.py",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
+    },
+    {
+      "name": "acceptance-decision-policy",
+      "kind": "cross-module-python-api",
+      "summary": "acceptance.evaluate_acceptance consumes validated retained findings, a validated decision and explicit operation/session/candidate identity values. It returns proposed findings with approved disposition/history continuity, next actions and correction reason without input mutation or I/O. Authorized blocking correction takes precedence over missing proof. acceptance_workflow gathers and validates current evidence and identity; actor_lifecycle owns the enclosing observation transaction/publication and ledger commit, while operation_scheduling owns correction-budget reservations.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/code-organization-cleanup-plan.md",
+          "id": "IF-001"
+        },
+        {
+          "plan": "skills/task-orchestrator/docs/code-organization-cleanup-plan.md",
+          "id": "INV-004"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/scripts/acceptance.py",
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/acceptance_workflow.py",
+        "skills/task-orchestrator/tests/test_acceptance.py",
+        "skills/task-orchestrator/tests/test_actor_operations.py"
+      ]
+    },
+    {
+      "name": "run-storage-publication-and-lock-lifecycle",
+      "kind": "cross-module-python-api",
+      "summary": "run_storage owns JSON-object reads, canonical record bytes, ordinary atomic JSON replacement, durable exclusive byte publication, exact actor-byte and validated-record replay, and RunCommandLock resource lifecycle. Replacement retains pretty JSON/newline and no fsync promise; durable exclusive publication fsyncs file then links without overwrite and syncs parent; legacy inspection records use exclusive direct creation and file fsync only. Exact replay rejects conflicts without repair. Application command owners retain authorization, lock scope, publication order and ledger transitions; run_records supplies shared record access without taking transaction authority. Transport-local storage remains adapter-owned, with no transport/storage import dependency.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/code-organization-cleanup-plan.md",
+          "id": "IF-002"
+        },
+        {
+          "plan": "skills/task-orchestrator/docs/code-organization-cleanup-plan.md",
+          "id": "INV-002"
+        },
+        {
+          "plan": "skills/task-orchestrator/docs/code-organization-cleanup-plan.md",
+          "id": "INV-003"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/scripts/run_storage.py",
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/actor_lifecycle.py",
+        "skills/task-orchestrator/scripts/run_authority.py",
+        "skills/task-orchestrator/scripts/run_records.py",
+        "skills/task-orchestrator/tests/test_run_storage.py",
+        "skills/task-orchestrator/tests/test_controller.py",
+        "skills/task-orchestrator/tests/test_actor_operations.py",
+        "tests/test_architecture.py"
+      ]
+    },
+    {
+      "name": "retained-check-evidence-integrity",
+      "kind": "cross-module-python-api",
+      "summary": "check_evidence validates retained execution/result digest binding, execution structure and exact closure identity via execution_contracts, log digests and derived not_run/passed/failed disposition. validate_execution_evidence returns validated execution facts; validate_check_evidence additionally rejects contradictory result status; execution_disposition is shared by producers. Ordinary verifier replay uses strict validation; genuine verifier stale replay requires recorded workspace divergence and validates facts. Collector stale/incomplete replay retains its application exception and cannot become passed downstream proof. Candidate/collection workflows retain stage/session/rerun authority, freshness, omissions, recovery, no-relaunch and publication; application commands retain locks and ledger mutation; evidence validation never launches or writes.",
+      "plan_refs": [
+        {
+          "plan": "skills/task-orchestrator/docs/code-organization-cleanup-plan.md",
+          "id": "IF-003"
+        },
+        {
+          "plan": "skills/task-orchestrator/docs/code-organization-cleanup-plan.md",
+          "id": "INV-005"
+        }
+      ],
+      "declarations": [
+        "skills/task-orchestrator/scripts/check_evidence.py",
+        "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/review_collection.py",
+        "skills/task-orchestrator/scripts/candidate_checks.py",
+        "skills/task-orchestrator/scripts/execution_contracts.py",
+        "skills/task-orchestrator/tests/test_actor_operations.py",
+        "tests/test_architecture.py"
+      ]
+    },
+    {
       "name": "public-controller",
       "kind": "cli",
-      "summary": "init freezes validated authority; status/reserve/revise-inputs expose single-task control; launch/observe/stop/intervene manage reserved actors. inspect-candidate and check-candidate produce current scope and check evidence; check-collection executes the active collector's fresh rerun. Separate acceptance is reserved/launched/observed through the same lifecycle; status exposes current decision, completion eligibility and recovery actions. run-next remains a legacy refusal/reporting stub; inspect and revise-flow retain legacy behavior.",
+      "summary": "init freezes validated authority; status/reserve/revise-inputs expose single-task control; launch/observe/stop/intervene manage reserved actors. inspect-candidate and check-candidate produce current scope and check evidence; check-collection executes the active collector's fresh rerun. Separate acceptance is reserved/launched/observed through the same lifecycle; status exposes current decision, completion eligibility and recovery actions. run-next remains a legacy refusal/reporting stub; inspect and revise-flow retain legacy behavior. Public Python entry points alias their application owners. File-based and direct CLI loading bind components to the resolved installation path without changing sys.path; repeated loads share components within that installation, while copied installations remain isolated.",
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/__init__.py",
+        "skills/task-orchestrator/scripts/legacy_attempts.py",
+        "skills/task-orchestrator/scripts/legacy_inspection.py",
+        "skills/task-orchestrator/scripts/review_collection.py",
+        "skills/task-orchestrator/scripts/candidate_checks.py",
+        "skills/task-orchestrator/scripts/input_revision.py",
+        "skills/task-orchestrator/scripts/actor_lifecycle.py",
+        "skills/task-orchestrator/scripts/operation_scheduling.py",
+        "skills/task-orchestrator/scripts/run_authority.py",
         "skills/task-orchestrator/tests/test_controller.py"
       ]
     },
     {
       "name": "validated-state-and-record-contracts",
       "kind": "python-api-and-schema",
-      "summary": "Pure state/record validation, closed flow profiles, cursor transitions, assignments and optional actor transport/outcome bindings. Data contracts do not establish a complete runnable workflow.",
+      "summary": "Responsibility-owned domain validation: flow_policy owns profiles/cursors/session reuse and step envelopes; run_policy owns permissions/verification policy; task_manifest owns manifest structure, graph/path validation and selection; execution_contracts owns attempt/execution/closure/finalization identities; review_contracts owns collection/findings/conditional and acceptance records. ledger.validate_ledger composes ownership, actor/revision history and reference consistency; authorized updates remain pure. Shared serialization and record predicates have no domain dependencies. controller_state preserves prior function/constant and private compatibility aliases; runtime consumers import narrow owners. Persisted formats and behavior are unchanged. Data contracts do not establish a complete runnable workflow.",
       "declarations": [
         "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/scripts/flow_policy.py",
+        "skills/task-orchestrator/scripts/run_policy.py",
+        "skills/task-orchestrator/scripts/task_manifest.py",
+        "skills/task-orchestrator/scripts/execution_contracts.py",
+        "skills/task-orchestrator/scripts/review_contracts.py",
+        "skills/task-orchestrator/scripts/ledger.py",
+        "skills/task-orchestrator/scripts/record_serialization.py",
+        "skills/task-orchestrator/scripts/record_validation.py",
+        "skills/task-orchestrator/scripts/__init__.py",
         "skills/task-orchestrator/assets",
         "skills/task-orchestrator/tests/test_controller_state.py"
       ]
@@ -62,6 +186,8 @@
       ],
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/actor_lifecycle.py",
+        "skills/task-orchestrator/scripts/operation_scheduling.py",
         "skills/task-orchestrator/scripts/codex_worker.py",
         "skills/task-orchestrator/tests/test_actor_operations.py"
       ]
@@ -69,7 +195,7 @@
     {
       "name": "terminal-preflight-readiness-admission",
       "kind": "lifecycle-boundary",
-      "summary": "observe_operation owns the single outcome-admission path. Only complete current terminal preflight with structured prerequisite attestations admits readiness and the implement cursor. The controller validates attestations, not independent execution of every prerequisite. Candidate/check production and collection admission extend the same IF-003 boundary; separate acceptance admission extends that boundary with current evidence and independent observed-session checks.",
+      "summary": "observe_operation owns the single outcome-admission path. Only complete current terminal preflight with structured prerequisite attestations admits readiness and the implement cursor. actor_lifecycle validates attestations, not independent execution of every prerequisite. Candidate/check production and collection admission extend the same IF-003 boundary; separate acceptance admission extends that boundary with current evidence and independent observed-session checks.",
       "plan_refs": [
         {
           "plan": "skills/task-orchestrator/docs/local-harness-orchestration-plan.md",
@@ -78,6 +204,8 @@
       ],
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/run_records.py",
+        "skills/task-orchestrator/scripts/actor_lifecycle.py",
         "skills/task-orchestrator/assets/actor-result.schema.json",
         "skills/task-orchestrator/tests/test_actor_operations.py"
       ]
@@ -94,6 +222,7 @@
       ],
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/candidate_checks.py",
         "skills/task-orchestrator/docs/tasks/T-004.1/controller-contract.md",
         "skills/task-orchestrator/tests/test_actor_operations.py"
       ]
@@ -110,7 +239,9 @@
       ],
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
-        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/scripts/actor_lifecycle.py",
+        "skills/task-orchestrator/scripts/review_collection.py",
+        "skills/task-orchestrator/scripts/review_contracts.py",
         "skills/task-orchestrator/assets/actor-result.schema.json",
         "skills/task-orchestrator/docs/tasks/T-004/controller-contract.md",
         "skills/task-orchestrator/tests/test_actor_operations.py"
@@ -128,9 +259,14 @@
       ],
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
-        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/scripts/operation_scheduling.py",
+        "skills/task-orchestrator/scripts/actor_lifecycle.py",
+        "skills/task-orchestrator/scripts/acceptance_workflow.py",
+        "skills/task-orchestrator/scripts/review_contracts.py",
         "skills/task-orchestrator/docs/tasks/T-005.1/controller-contract.md",
-        "skills/task-orchestrator/tests/test_actor_operations.py"
+        "skills/task-orchestrator/tests/test_actor_operations.py",
+        "skills/task-orchestrator/scripts/acceptance.py",
+        "skills/task-orchestrator/tests/test_acceptance.py"
       ]
     },
     {
@@ -139,8 +275,10 @@
       "summary": "Optional frozen task-manifest required_reviews lists maintainability and/or registry (default empty). Acceptance requires passed candidate/input/policy/flow-bound reviews/<candidate>/<stage>.json receipts with independent session identity and existing digest-bound evidence. Receipts are trusted coordinator-supplied records; conditional-role launch and provider attestation are not implemented.",
       "declarations": [
         "skills/task-orchestrator/assets/task-manifest.schema.json",
-        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/scripts/review_contracts.py",
+        "skills/task-orchestrator/scripts/task_manifest.py",
         "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/acceptance_workflow.py",
         "skills/task-orchestrator/docs/tasks/T-005.1/controller-contract.md"
       ]
     }
@@ -151,7 +289,11 @@
       "summary": "External controller run directory owns frozen authority, ledger, reservations, correction history, readiness and interventions; actors/operation-NNN holds launch/prompt, process/session diagnostics, raw result, terminal receipt and stop request. These are controller-owned records, without runtime tamper-resistance against authorized full-access actors. The run directory also owns frozen baseline, candidate, check intent and result, command execution and log records. Collection-owned rerun intent/results live in collection-checks/ with separate verification execution/log records; collections/ retains admitted coverage reports. Ledger findings preserve stable IDs, dispositions and history. acceptance-inputs/ retains launch contexts; decisions/ retains admitted decisions and dispositions; reviews/<candidate>/ holds coordinator-supplied conditional-stage receipts.",
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
-        "skills/task-orchestrator/scripts/controller_state.py"
+        "skills/task-orchestrator/scripts/actor_lifecycle.py",
+        "skills/task-orchestrator/scripts/input_revision.py",
+        "skills/task-orchestrator/scripts/run_records.py",
+        "skills/task-orchestrator/scripts/run_authority.py",
+        "skills/task-orchestrator/scripts/ledger.py"
       ]
     },
     {
@@ -165,7 +307,9 @@
       ],
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
-        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/scripts/run_records.py",
+        "skills/task-orchestrator/scripts/operation_scheduling.py",
+        "skills/task-orchestrator/scripts/ledger.py",
         "skills/task-orchestrator/tests/test_actor_operations.py"
       ]
     },
@@ -180,6 +324,7 @@
       ],
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/actor_lifecycle.py",
         "skills/task-orchestrator/tests/test_actor_operations.py"
       ]
     }
@@ -215,6 +360,9 @@
       "declarations": [
         "skills/task-orchestrator/assets/actor-result.schema.json",
         "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/run_records.py",
+        "skills/task-orchestrator/scripts/actor_lifecycle.py",
+        "skills/task-orchestrator/scripts/operation_scheduling.py",
         "skills/task-orchestrator/scripts/codex_worker.py",
         "skills/task-orchestrator/tests/test_actor_operations.py"
       ]
@@ -246,6 +394,7 @@
       ],
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
+        "skills/task-orchestrator/scripts/candidate_checks.py",
         "skills/task-orchestrator/scripts/controller_git.py",
         "skills/task-orchestrator/docs/tasks/T-004.1/controller-contract.md",
         "skills/task-orchestrator/tests/test_controller_git.py",
@@ -263,7 +412,9 @@
       ],
       "declarations": [
         "skills/task-orchestrator/scripts/controller.py",
-        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/scripts/review_collection.py",
+        "skills/task-orchestrator/scripts/candidate_checks.py",
+        "skills/task-orchestrator/scripts/execution_contracts.py",
         "skills/task-orchestrator/scripts/verification_runner.py",
         "skills/task-orchestrator/docs/tasks/T-004.1/controller-contract.md",
         "skills/task-orchestrator/tests/test_actor_operations.py",
@@ -282,7 +433,8 @@
       "declarations": [
         "skills/task-orchestrator/assets/actor-result.schema.json",
         "skills/task-orchestrator/scripts/controller.py",
-        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/scripts/review_collection.py",
+        "skills/task-orchestrator/scripts/review_contracts.py",
         "skills/task-orchestrator/docs/tasks/T-004/controller-contract.md",
         "skills/task-orchestrator/tests/test_actor_operations.py"
       ]
@@ -299,9 +451,12 @@
       "declarations": [
         "skills/task-orchestrator/assets/actor-result.schema.json",
         "skills/task-orchestrator/scripts/controller.py",
-        "skills/task-orchestrator/scripts/controller_state.py",
+        "skills/task-orchestrator/scripts/acceptance_workflow.py",
+        "skills/task-orchestrator/scripts/review_contracts.py",
         "skills/task-orchestrator/docs/tasks/T-005.1/controller-contract.md",
-        "skills/task-orchestrator/tests/test_actor_operations.py"
+        "skills/task-orchestrator/tests/test_actor_operations.py",
+        "skills/task-orchestrator/scripts/acceptance.py",
+        "skills/task-orchestrator/tests/test_acceptance.py"
       ]
     }
   ]
